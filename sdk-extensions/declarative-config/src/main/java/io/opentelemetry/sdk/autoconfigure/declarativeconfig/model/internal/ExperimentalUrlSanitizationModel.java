@@ -41,7 +41,7 @@ public class ExperimentalUrlSanitizationModel {
   }
 
   @JsonProperty("sensitive_query_parameters")
-  public ExperimentalUrlSanitizationModel withSensitiveQueryParameters(
+  public ExperimentalUrlSanitizationModel setSensitiveQueryParameters(
       List<String> sensitiveQueryParameters) {
     this.sensitiveQueryParameters = sensitiveQueryParameters;
     return this;

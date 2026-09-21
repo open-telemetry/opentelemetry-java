@@ -49,13 +49,13 @@ class PropagatorFactoryTest {
         Arguments.argumentSet(
             "structured list",
             new PropagatorModel()
-                .withComposite(
+                .setComposite(
                     Arrays.asList(
                         new TextMapPropagatorModel()
-                            .withTracecontext(new TraceContextPropagatorModel()),
-                        new TextMapPropagatorModel().withBaggage(new BaggagePropagatorModel()),
-                        new TextMapPropagatorModel().withB3multi(new B3MultiPropagatorModel()),
-                        new TextMapPropagatorModel().withB3(new B3PropagatorModel()))),
+                            .setTracecontext(new TraceContextPropagatorModel()),
+                        new TextMapPropagatorModel().setBaggage(new BaggagePropagatorModel()),
+                        new TextMapPropagatorModel().setB3multi(new B3MultiPropagatorModel()),
+                        new TextMapPropagatorModel().setB3(new B3PropagatorModel()))),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     W3CTraceContextPropagator.getInstance(),
@@ -64,7 +64,7 @@ class PropagatorFactoryTest {
                     B3Propagator.injectingSingleHeader()))),
         Arguments.argumentSet(
             "string list",
-            new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3 ,none"),
+            new PropagatorModel().setCompositeList("tracecontext,baggage,b3multi,b3 ,none"),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     W3CTraceContextPropagator.getInstance(),
@@ -74,12 +74,12 @@ class PropagatorFactoryTest {
         Arguments.argumentSet(
             "structured list and string list",
             new PropagatorModel()
-                .withComposite(
+                .setComposite(
                     Arrays.asList(
                         new TextMapPropagatorModel()
-                            .withTracecontext(new TraceContextPropagatorModel()),
-                        new TextMapPropagatorModel().withBaggage(new BaggagePropagatorModel())))
-                .withCompositeList("b3multi,b3"),
+                            .setTracecontext(new TraceContextPropagatorModel()),
+                        new TextMapPropagatorModel().setBaggage(new BaggagePropagatorModel())))
+                .setCompositeList("b3multi,b3"),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     W3CTraceContextPropagator.getInstance(),
@@ -89,12 +89,12 @@ class PropagatorFactoryTest {
         Arguments.argumentSet(
             "structured list and string list with overlap",
             new PropagatorModel()
-                .withComposite(
+                .setComposite(
                     Arrays.asList(
                         new TextMapPropagatorModel()
-                            .withTracecontext(new TraceContextPropagatorModel()),
-                        new TextMapPropagatorModel().withBaggage(new BaggagePropagatorModel())))
-                .withCompositeList("tracecontext,b3multi,b3"),
+                            .setTracecontext(new TraceContextPropagatorModel()),
+                        new TextMapPropagatorModel().setBaggage(new BaggagePropagatorModel())))
+                .setCompositeList("tracecontext,b3multi,b3"),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     W3CTraceContextPropagator.getInstance(),
@@ -104,16 +104,16 @@ class PropagatorFactoryTest {
         Arguments.argumentSet(
             "spi structured list",
             new PropagatorModel()
-                .withComposite(
+                .setComposite(
                     Collections.singletonList(
-                        new TextMapPropagatorModel().withExtensionProperty("test", null))),
+                        new TextMapPropagatorModel().setExtensionProperty("test", null))),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     new TextMapPropagatorComponentProvider.TestTextMapPropagator(
                         DeclarativeConfigProperties.empty())))),
         Arguments.argumentSet(
             "spi string list",
-            new PropagatorModel().withCompositeList("test"),
+            new PropagatorModel().setCompositeList("test"),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     new TextMapPropagatorComponentProvider.TestTextMapPropagator(
@@ -125,7 +125,7 @@ class PropagatorFactoryTest {
     assertThatThrownBy(
             () ->
                 PropagatorFactory.getInstance()
-                    .create(new PropagatorModel().withCompositeList("foo"), context))
+                    .create(new PropagatorModel().setCompositeList("foo"), context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.context.propagation.TextMapPropagator with name \"foo\".");

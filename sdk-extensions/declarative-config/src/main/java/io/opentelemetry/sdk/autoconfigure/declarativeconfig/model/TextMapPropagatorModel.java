@@ -67,7 +67,7 @@ public class TextMapPropagatorModel {
   }
 
   @JsonProperty(TRACECONTEXT)
-  public TextMapPropagatorModel withTracecontext(TraceContextPropagatorModel tracecontext) {
+  public TextMapPropagatorModel setTracecontext(TraceContextPropagatorModel tracecontext) {
     this.tracecontext = tracecontext;
     return this;
   }
@@ -88,7 +88,7 @@ public class TextMapPropagatorModel {
   }
 
   @JsonProperty(BAGGAGE)
-  public TextMapPropagatorModel withBaggage(BaggagePropagatorModel baggage) {
+  public TextMapPropagatorModel setBaggage(BaggagePropagatorModel baggage) {
     this.baggage = baggage;
     return this;
   }
@@ -108,7 +108,7 @@ public class TextMapPropagatorModel {
   }
 
   @JsonProperty(B_3)
-  public TextMapPropagatorModel withB3(B3PropagatorModel b3) {
+  public TextMapPropagatorModel setB3(B3PropagatorModel b3) {
     this.b3 = b3;
     return this;
   }
@@ -129,7 +129,7 @@ public class TextMapPropagatorModel {
   }
 
   @JsonProperty(B_3_MULTI)
-  public TextMapPropagatorModel withB3multi(B3MultiPropagatorModel b3multi) {
+  public TextMapPropagatorModel setB3multi(B3MultiPropagatorModel b3multi) {
     this.b3multi = b3multi;
     return this;
   }
@@ -140,7 +140,7 @@ public class TextMapPropagatorModel {
   }
 
   @JsonAnySetter
-  public TextMapPropagatorModel withExtensionProperty(String name, @Nullable Object value) {
+  public TextMapPropagatorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

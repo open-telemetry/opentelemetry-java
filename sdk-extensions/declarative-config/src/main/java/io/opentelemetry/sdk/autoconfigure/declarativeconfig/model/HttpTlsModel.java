@@ -64,7 +64,7 @@ public class HttpTlsModel {
   }
 
   @JsonProperty(CA_FILE)
-  public HttpTlsModel withCaFile(String caFile) {
+  public HttpTlsModel setCaFile(String caFile) {
     this.caFile = caFile;
     return this;
   }
@@ -87,7 +87,7 @@ public class HttpTlsModel {
   }
 
   @JsonProperty(KEY_FILE)
-  public HttpTlsModel withKeyFile(String keyFile) {
+  public HttpTlsModel setKeyFile(String keyFile) {
     this.keyFile = keyFile;
     return this;
   }
@@ -110,7 +110,7 @@ public class HttpTlsModel {
   }
 
   @JsonProperty(CERT_FILE)
-  public HttpTlsModel withCertFile(String certFile) {
+  public HttpTlsModel setCertFile(String certFile) {
     this.certFile = certFile;
     return this;
   }
@@ -121,7 +121,7 @@ public class HttpTlsModel {
   }
 
   @JsonAnySetter
-  public HttpTlsModel withExtensionProperty(String name, @Nullable Object value) {
+  public HttpTlsModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -90,7 +90,7 @@ class ResourceConfigurationTest {
   }
 
   @Test
-  void serviceInstanceIdIsValidUUID() {
+  void serviceInstanceIdIsValidUuid() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.service.name", "test-service");
 

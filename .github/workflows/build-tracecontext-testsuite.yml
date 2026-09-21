@@ -32,7 +32,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: integration-tests/tracecontext/docker
           push: true
@@ -44,6 +44,6 @@ jobs:
     needs:
       - publish
     if: always()
-    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@8079110d7e793bd38b1a5219ef8f8280dab9139e # v0.7.0
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@68c7b2f0ef9cd9c1e2b71d3018f63127be189578 # v0.14.0
     with:
       success: ${{ needs.publish.result == 'success' }}

@@ -38,10 +38,10 @@ public final class LogRecordExporterModelAccessor {
         OTLP_FILE, model.getExtensionProperties(), ExperimentalOtlpFileExporterModel.class);
   }
 
-  public static LogRecordExporterModel withOtlpFile(
+  public static LogRecordExporterModel setOtlpFile(
       LogRecordExporterModel model, ExperimentalOtlpFileExporterModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(OTLP_FILE, value);
+    model.setExtensionProperty(OTLP_FILE, value);
     return model;
   }
 }

@@ -19,7 +19,13 @@ public interface BaggageEntryMetadata {
     return ImmutableEntryMetadata.EMPTY;
   }
 
-  /** Returns a new {@link BaggageEntryMetadata} with the given value. */
+  /**
+   * Returns a new {@link BaggageEntryMetadata} with the given value.
+   *
+   * <p>For W3C baggage propagation, {@code metadata} must contain only tab (0x09) or printable
+   * ASCII (0x20-0x7E) excluding {@code "}, {@code ,}, and {@code \}. Entries whose metadata
+   * contains other characters are dropped on inject.
+   */
   static BaggageEntryMetadata create(String metadata) {
     return ImmutableEntryMetadata.create(metadata);
   }

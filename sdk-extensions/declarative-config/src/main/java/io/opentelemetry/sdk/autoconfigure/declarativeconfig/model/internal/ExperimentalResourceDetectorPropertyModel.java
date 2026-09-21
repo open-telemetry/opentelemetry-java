@@ -27,7 +27,7 @@ public class ExperimentalResourceDetectorPropertyModel {
   }
 
   @JsonAnySetter
-  public ExperimentalResourceDetectorPropertyModel withAdditionalProperty(
+  public ExperimentalResourceDetectorPropertyModel setAdditionalProperty(
       String name, Object value) {
     this.additionalProperties.put(name, value);
     return this;

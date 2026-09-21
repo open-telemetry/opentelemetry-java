@@ -86,7 +86,7 @@ public class AggregationModel {
   }
 
   @JsonProperty(DEFAULT)
-  public AggregationModel withDefault(DefaultAggregationModel _default) {
+  public AggregationModel setDefault(DefaultAggregationModel _default) {
     this._default = _default;
     return this;
   }
@@ -109,7 +109,7 @@ public class AggregationModel {
   }
 
   @JsonProperty(DROP)
-  public AggregationModel withDrop(DropAggregationModel drop) {
+  public AggregationModel setDrop(DropAggregationModel drop) {
     this.drop = drop;
     return this;
   }
@@ -135,7 +135,7 @@ public class AggregationModel {
   }
 
   @JsonProperty(EXPLICIT_BUCKET_HISTOGRAM)
-  public AggregationModel withExplicitBucketHistogram(
+  public AggregationModel setExplicitBucketHistogram(
       ExplicitBucketHistogramAggregationModel explicitBucketHistogram) {
     this.explicitBucketHistogram = explicitBucketHistogram;
     return this;
@@ -163,7 +163,7 @@ public class AggregationModel {
   }
 
   @JsonProperty(BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)
-  public AggregationModel withBase2ExponentialBucketHistogram(
+  public AggregationModel setBase2ExponentialBucketHistogram(
       Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram) {
     this.base2ExponentialBucketHistogram = base2ExponentialBucketHistogram;
     return this;
@@ -187,7 +187,7 @@ public class AggregationModel {
   }
 
   @JsonProperty(LAST_VALUE)
-  public AggregationModel withLastValue(LastValueAggregationModel lastValue) {
+  public AggregationModel setLastValue(LastValueAggregationModel lastValue) {
     this.lastValue = lastValue;
     return this;
   }
@@ -210,7 +210,7 @@ public class AggregationModel {
   }
 
   @JsonProperty(SUM)
-  public AggregationModel withSum(SumAggregationModel sum) {
+  public AggregationModel setSum(SumAggregationModel sum) {
     this.sum = sum;
     return this;
   }
@@ -221,7 +221,7 @@ public class AggregationModel {
   }
 
   @JsonAnySetter
-  public AggregationModel withExtensionProperty(String name, @Nullable Object value) {
+  public AggregationModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

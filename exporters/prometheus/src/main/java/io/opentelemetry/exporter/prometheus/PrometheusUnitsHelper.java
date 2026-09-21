@@ -38,8 +38,8 @@ class PrometheusUnitsHelper {
     initUnit("KiBy", "kibibytes", "kibibyte");
     initUnit("MiBy", "mebibytes", "mebibyte");
     initUnit("GiBy", "gibibytes", "gibibyte");
-    initUnit("TiBy", "tibibytes", "tibibyte");
-    initUnit("KBy", "kilobytes", "kilobyte");
+    initUnit("TiBy", "tebibytes", "tebibyte");
+    initUnit("kBy", "kilobytes", "kilobyte");
     initUnit("MBy", "megabytes", "megabyte");
     initUnit("GBy", "gigabytes", "gigabyte");
     initUnit("TBy", "terabytes", "terabyte");

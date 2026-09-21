@@ -93,7 +93,7 @@ public class CardinalityLimitsModel {
   }
 
   @JsonProperty(DEFAULT)
-  public CardinalityLimitsModel withDefault(Integer _default) {
+  public CardinalityLimitsModel setDefault(Integer _default) {
     this._default = _default;
     return this;
   }
@@ -113,7 +113,7 @@ public class CardinalityLimitsModel {
   }
 
   @JsonProperty(COUNTER)
-  public CardinalityLimitsModel withCounter(Integer counter) {
+  public CardinalityLimitsModel setCounter(Integer counter) {
     this.counter = counter;
     return this;
   }
@@ -133,7 +133,7 @@ public class CardinalityLimitsModel {
   }
 
   @JsonProperty(GAUGE)
-  public CardinalityLimitsModel withGauge(Integer gauge) {
+  public CardinalityLimitsModel setGauge(Integer gauge) {
     this.gauge = gauge;
     return this;
   }
@@ -153,7 +153,7 @@ public class CardinalityLimitsModel {
   }
 
   @JsonProperty(HISTOGRAM)
-  public CardinalityLimitsModel withHistogram(Integer histogram) {
+  public CardinalityLimitsModel setHistogram(Integer histogram) {
     this.histogram = histogram;
     return this;
   }
@@ -174,7 +174,7 @@ public class CardinalityLimitsModel {
   }
 
   @JsonProperty(OBSERVABLE_COUNTER)
-  public CardinalityLimitsModel withObservableCounter(Integer observableCounter) {
+  public CardinalityLimitsModel setObservableCounter(Integer observableCounter) {
     this.observableCounter = observableCounter;
     return this;
   }
@@ -195,7 +195,7 @@ public class CardinalityLimitsModel {
   }
 
   @JsonProperty(OBSERVABLE_GAUGE)
-  public CardinalityLimitsModel withObservableGauge(Integer observableGauge) {
+  public CardinalityLimitsModel setObservableGauge(Integer observableGauge) {
     this.observableGauge = observableGauge;
     return this;
   }
@@ -216,7 +216,7 @@ public class CardinalityLimitsModel {
   }
 
   @JsonProperty(OBSERVABLE_UP_DOWN_COUNTER)
-  public CardinalityLimitsModel withObservableUpDownCounter(Integer observableUpDownCounter) {
+  public CardinalityLimitsModel setObservableUpDownCounter(Integer observableUpDownCounter) {
     this.observableUpDownCounter = observableUpDownCounter;
     return this;
   }
@@ -237,7 +237,7 @@ public class CardinalityLimitsModel {
   }
 
   @JsonProperty(UP_DOWN_COUNTER)
-  public CardinalityLimitsModel withUpDownCounter(Integer upDownCounter) {
+  public CardinalityLimitsModel setUpDownCounter(Integer upDownCounter) {
     this.upDownCounter = upDownCounter;
     return this;
   }
@@ -248,7 +248,7 @@ public class CardinalityLimitsModel {
   }
 
   @JsonAnySetter
-  public CardinalityLimitsModel withExtensionProperty(String name, @Nullable Object value) {
+  public CardinalityLimitsModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -10,6 +10,8 @@ import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrp
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetricExporterModel.ENDPOINT;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetricExporterModel.HEADERS;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetricExporterModel.HEADERS_LIST;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetricExporterModel.MAX_REQUEST_SIZE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetricExporterModel.MAX_RESPONSE_SIZE;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetricExporterModel.TEMPORALITY_PREFERENCE;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetricExporterModel.TIMEOUT;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetricExporterModel.TLS;
@@ -35,6 +37,8 @@ import javax.annotation.Nullable;
   HEADERS,
   HEADERS_LIST,
   COMPRESSION,
+  MAX_REQUEST_SIZE,
+  MAX_RESPONSE_SIZE,
   TIMEOUT,
   TEMPORALITY_PREFERENCE,
   DEFAULT_HISTOGRAM_AGGREGATION
@@ -47,6 +51,8 @@ public class OtlpGrpcMetricExporterModel {
   static final String HEADERS = "headers";
   static final String HEADERS_LIST = "headers_list";
   static final String COMPRESSION = "compression";
+  static final String MAX_REQUEST_SIZE = "max_request_size";
+  static final String MAX_RESPONSE_SIZE = "max_response_size";
   static final String TIMEOUT = "timeout";
   static final String TEMPORALITY_PREFERENCE = "temporality_preference";
   static final String DEFAULT_HISTOGRAM_AGGREGATION = "default_histogram_aggregation";
@@ -59,6 +65,8 @@ public class OtlpGrpcMetricExporterModel {
     STABLE_PROPERTIES.put(TLS, GrpcTlsModel.class);
     STABLE_PROPERTIES.put(HEADERS_LIST, String.class);
     STABLE_PROPERTIES.put(COMPRESSION, String.class);
+    STABLE_PROPERTIES.put(MAX_REQUEST_SIZE, Integer.class);
+    STABLE_PROPERTIES.put(MAX_RESPONSE_SIZE, Integer.class);
     STABLE_PROPERTIES.put(TIMEOUT, Integer.class);
     STABLE_PROPERTIES.put(TEMPORALITY_PREFERENCE, ExporterTemporalityPreferenceModel.class);
     STABLE_PROPERTIES.put(
@@ -72,6 +80,8 @@ public class OtlpGrpcMetricExporterModel {
   @Nullable private List<NameStringValuePairModel> headers;
   @Nullable private String headersList;
   @Nullable private String compression;
+  @Nullable private Integer maxRequestSize;
+  @Nullable private Integer maxResponseSize;
   @Nullable private Integer timeout;
   @Nullable private ExporterTemporalityPreferenceModel temporalityPreference;
   @Nullable private ExporterDefaultHistogramAggregationModel defaultHistogramAggregation;
@@ -92,7 +102,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(ENDPOINT)
-  public OtlpGrpcMetricExporterModel withEndpoint(String endpoint) {
+  public OtlpGrpcMetricExporterModel setEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
   }
@@ -112,7 +122,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(TLS)
-  public OtlpGrpcMetricExporterModel withTls(GrpcTlsModel tls) {
+  public OtlpGrpcMetricExporterModel setTls(GrpcTlsModel tls) {
     this.tls = tls;
     return this;
   }
@@ -131,7 +141,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(HEADERS)
-  public OtlpGrpcMetricExporterModel withHeaders(List<NameStringValuePairModel> headers) {
+  public OtlpGrpcMetricExporterModel setHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
   }
@@ -156,7 +166,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(HEADERS_LIST)
-  public OtlpGrpcMetricExporterModel withHeadersList(String headersList) {
+  public OtlpGrpcMetricExporterModel setHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
   }
@@ -178,8 +188,55 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(COMPRESSION)
-  public OtlpGrpcMetricExporterModel withCompression(String compression) {
+  public OtlpGrpcMetricExporterModel setCompression(String compression) {
     this.compression = compression;
+    return this;
+  }
+
+  /**
+   * Configure the maximum size of each export request message in bytes, before compression.
+   *
+   * <p>Value must be non-negative. A value of 0 indicates no limit (infinity) and is not
+   * recommended.
+   *
+   * <p>If omitted or null, 67108864 (64 MiB) is used.
+   */
+  @JsonProperty(MAX_REQUEST_SIZE)
+  @Nullable
+  public Integer getMaxRequestSize() {
+    if (maxRequestSize == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          MAX_REQUEST_SIZE, extensionProperties, Integer.class);
+    }
+    return maxRequestSize;
+  }
+
+  @JsonProperty(MAX_REQUEST_SIZE)
+  public OtlpGrpcMetricExporterModel setMaxRequestSize(Integer maxRequestSize) {
+    this.maxRequestSize = maxRequestSize;
+    return this;
+  }
+
+  /**
+   * Configure the maximum size of each export response in bytes, after decompression.
+   *
+   * <p>Value must be positive.
+   *
+   * <p>If omitted or null, 4194304 (4 MiB) is used.
+   */
+  @JsonProperty(MAX_RESPONSE_SIZE)
+  @Nullable
+  public Integer getMaxResponseSize() {
+    if (maxResponseSize == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          MAX_RESPONSE_SIZE, extensionProperties, Integer.class);
+    }
+    return maxResponseSize;
+  }
+
+  @JsonProperty(MAX_RESPONSE_SIZE)
+  public OtlpGrpcMetricExporterModel setMaxResponseSize(Integer maxResponseSize) {
+    this.maxResponseSize = maxResponseSize;
     return this;
   }
 
@@ -200,7 +257,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(TIMEOUT)
-  public OtlpGrpcMetricExporterModel withTimeout(Integer timeout) {
+  public OtlpGrpcMetricExporterModel setTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
@@ -231,7 +288,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(TEMPORALITY_PREFERENCE)
-  public OtlpGrpcMetricExporterModel withTemporalityPreference(
+  public OtlpGrpcMetricExporterModel setTemporalityPreference(
       ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
@@ -263,7 +320,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(DEFAULT_HISTOGRAM_AGGREGATION)
-  public OtlpGrpcMetricExporterModel withDefaultHistogramAggregation(
+  public OtlpGrpcMetricExporterModel setDefaultHistogramAggregation(
       ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
     return this;
@@ -275,7 +332,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonAnySetter
-  public OtlpGrpcMetricExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public OtlpGrpcMetricExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,
@@ -299,6 +356,10 @@ public class OtlpGrpcMetricExporterModel {
         + headersList
         + ", compression="
         + compression
+        + ", maxRequestSize="
+        + maxRequestSize
+        + ", maxResponseSize="
+        + maxResponseSize
         + ", timeout="
         + timeout
         + ", temporalityPreference="
@@ -323,6 +384,10 @@ public class OtlpGrpcMetricExporterModel {
     h ^= (this.getHeadersList() == null) ? 0 : this.getHeadersList().hashCode();
     h *= 1000003;
     h ^= (this.getCompression() == null) ? 0 : this.getCompression().hashCode();
+    h *= 1000003;
+    h ^= (this.getMaxRequestSize() == null) ? 0 : this.getMaxRequestSize().hashCode();
+    h *= 1000003;
+    h ^= (this.getMaxResponseSize() == null) ? 0 : this.getMaxResponseSize().hashCode();
     h *= 1000003;
     h ^= (this.getTimeout() == null) ? 0 : this.getTimeout().hashCode();
     h *= 1000003;
@@ -355,6 +420,12 @@ public class OtlpGrpcMetricExporterModel {
           && (this.getCompression() == null
               ? that.getCompression() == null
               : this.getCompression().equals(that.getCompression()))
+          && (this.getMaxRequestSize() == null
+              ? that.getMaxRequestSize() == null
+              : this.getMaxRequestSize().equals(that.getMaxRequestSize()))
+          && (this.getMaxResponseSize() == null
+              ? that.getMaxResponseSize() == null
+              : this.getMaxResponseSize().equals(that.getMaxResponseSize()))
           && (this.getTimeout() == null
               ? that.getTimeout() == null
               : this.getTimeout().equals(that.getTimeout()))

@@ -62,7 +62,7 @@ public class ViewModel {
   }
 
   @JsonProperty(SELECTOR)
-  public ViewModel withSelector(ViewSelectorModel selector) {
+  public ViewModel setSelector(ViewSelectorModel selector) {
     this.selector = selector;
     return this;
   }
@@ -82,7 +82,7 @@ public class ViewModel {
   }
 
   @JsonProperty(STREAM)
-  public ViewModel withStream(ViewStreamModel stream) {
+  public ViewModel setStream(ViewStreamModel stream) {
     this.stream = stream;
     return this;
   }
@@ -93,7 +93,7 @@ public class ViewModel {
   }
 
   @JsonAnySetter
-  public ViewModel withExtensionProperty(String name, @Nullable Object value) {
+  public ViewModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

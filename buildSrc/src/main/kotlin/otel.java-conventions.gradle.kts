@@ -46,7 +46,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "14.0.0"
+  toolVersion = "14.1.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -353,8 +353,10 @@ testing {
           // To remove these warnings, we attach the byte-buddy-agent used by mockito directly.
           val mockitoAgent: FileCollection = mockitoAgent
           doFirst {
+            // -Xshare:off: the agent appends to the bootstrap classpath, which disables CDS and
+            // causes a warning in every test process without it.
             val mockitoAgentJar = mockitoAgent.files.single { it.name.contains("byte-buddy-agent")}
-            jvmArgs("-javaagent:${mockitoAgentJar}")
+            jvmArgs("-Xshare:off", "-javaagent:${mockitoAgentJar}")
           }
         }
       }

@@ -7,7 +7,6 @@ plugins {
 
 description = "OpenTelemetry - Profiles Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.profiles")
-otelJava.requireSuppressWarningsExplanation.set(false)
 
 val versions = project.property("versions") as Map<*, *>
 

@@ -78,7 +78,7 @@ public class BatchLogRecordProcessorModel {
   }
 
   @JsonProperty(SCHEDULE_DELAY)
-  public BatchLogRecordProcessorModel withScheduleDelay(Integer scheduleDelay) {
+  public BatchLogRecordProcessorModel setScheduleDelay(Integer scheduleDelay) {
     this.scheduleDelay = scheduleDelay;
     return this;
   }
@@ -100,7 +100,7 @@ public class BatchLogRecordProcessorModel {
   }
 
   @JsonProperty(EXPORT_TIMEOUT)
-  public BatchLogRecordProcessorModel withExportTimeout(Integer exportTimeout) {
+  public BatchLogRecordProcessorModel setExportTimeout(Integer exportTimeout) {
     this.exportTimeout = exportTimeout;
     return this;
   }
@@ -120,7 +120,7 @@ public class BatchLogRecordProcessorModel {
   }
 
   @JsonProperty(MAX_QUEUE_SIZE)
-  public BatchLogRecordProcessorModel withMaxQueueSize(Integer maxQueueSize) {
+  public BatchLogRecordProcessorModel setMaxQueueSize(Integer maxQueueSize) {
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -141,7 +141,7 @@ public class BatchLogRecordProcessorModel {
   }
 
   @JsonProperty(MAX_EXPORT_BATCH_SIZE)
-  public BatchLogRecordProcessorModel withMaxExportBatchSize(Integer maxExportBatchSize) {
+  public BatchLogRecordProcessorModel setMaxExportBatchSize(Integer maxExportBatchSize) {
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
   }
@@ -162,7 +162,7 @@ public class BatchLogRecordProcessorModel {
   }
 
   @JsonProperty(EXPORTER)
-  public BatchLogRecordProcessorModel withExporter(LogRecordExporterModel exporter) {
+  public BatchLogRecordProcessorModel setExporter(LogRecordExporterModel exporter) {
     this.exporter = exporter;
     return this;
   }
@@ -173,7 +173,7 @@ public class BatchLogRecordProcessorModel {
   }
 
   @JsonAnySetter
-  public BatchLogRecordProcessorModel withExtensionProperty(String name, @Nullable Object value) {
+  public BatchLogRecordProcessorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

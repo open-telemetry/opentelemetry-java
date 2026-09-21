@@ -162,6 +162,7 @@ public final class AttributesMap implements Attributes {
     return totalAddedValues;
   }
 
+  // put requires matching key/value types, and the stored key type is checked before casting.
   @SuppressWarnings("unchecked")
   @Override
   @Nullable

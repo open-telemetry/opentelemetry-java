@@ -37,10 +37,10 @@ jobs:
 
       - name: Set up Java 21
         if: matrix.language == 'java'
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 26.0.2+10
 
       - name: Set up gradle
         # zizmor: ignore[cache-poisoning] This workflow analyzes release branches
@@ -51,7 +51,7 @@ jobs:
           cache-read-only: true
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
+        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           languages: ${{ matrix.language }}
           # using "linked" helps to keep up with the latest Kotlin support
@@ -68,7 +68,7 @@ jobs:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
+        uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           category: "/language:${{matrix.language}}"
 
@@ -78,6 +78,6 @@ jobs:
     needs:
       - analyze
     if: always() && github.event_name == 'schedule'
-    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@8079110d7e793bd38b1a5219ef8f8280dab9139e # v0.7.0
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@68c7b2f0ef9cd9c1e2b71d3018f63127be189578 # v0.14.0
     with:
       success: ${{ needs.analyze.result == 'success' }}

@@ -82,31 +82,31 @@ class LoggerProviderFactoryTest {
             "full configuration",
             LoggerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
-                LoggerProviderModelAccessor.withLoggerConfigurator(
+                LoggerProviderModelAccessor.setLoggerConfigurator(
                     new LoggerProviderModel()
-                        .withLimits(
+                        .setLimits(
                             new LogRecordLimitsModel()
-                                .withAttributeCountLimit(1)
-                                .withAttributeValueLengthLimit(2))
-                        .withProcessors(
+                                .setAttributeCountLimit(1)
+                                .setAttributeValueLengthLimit(2))
+                        .setProcessors(
                             Collections.singletonList(
                                 new LogRecordProcessorModel()
-                                    .withBatch(
+                                    .setBatch(
                                         new BatchLogRecordProcessorModel()
-                                            .withExporter(
+                                            .setExporter(
                                                 new LogRecordExporterModel()
-                                                    .withOtlpHttp(new OtlpHttpExporterModel()))))),
+                                                    .setOtlpHttp(new OtlpHttpExporterModel()))))),
                     new ExperimentalLoggerConfiguratorModel()
-                        .withDefaultConfig(new ExperimentalLoggerConfigModel().withEnabled(false))
-                        .withLoggers(
+                        .setDefaultConfig(new ExperimentalLoggerConfigModel().setEnabled(false))
+                        .setLoggers(
                             Collections.singletonList(
                                 new ExperimentalLoggerMatcherAndConfigModel()
-                                    .withName("foo")
-                                    .withConfig(
+                                    .setName("foo")
+                                    .setConfig(
                                         new ExperimentalLoggerConfigModel()
-                                            .withEnabled(true)
-                                            .withTraceBased(true)
-                                            .withMinimumSeverity(SeverityNumberModel.INFO)))))),
+                                            .setEnabled(true)
+                                            .setTraceBased(true)
+                                            .setMinimumSeverity(SeverityNumberModel.INFO)))))),
             setLoggerConfigurator(
                     SdkLoggerProvider.builder(),
                     ScopeConfigurator.<LoggerConfig>builder()

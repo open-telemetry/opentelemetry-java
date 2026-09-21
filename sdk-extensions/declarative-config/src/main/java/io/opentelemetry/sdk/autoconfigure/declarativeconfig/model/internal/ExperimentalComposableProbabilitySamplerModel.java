@@ -30,7 +30,7 @@ public class ExperimentalComposableProbabilitySamplerModel {
   }
 
   @JsonProperty("ratio")
-  public ExperimentalComposableProbabilitySamplerModel withRatio(Double ratio) {
+  public ExperimentalComposableProbabilitySamplerModel setRatio(Double ratio) {
     this.ratio = ratio;
     return this;
   }

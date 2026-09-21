@@ -55,7 +55,7 @@ public class SimpleLogRecordProcessorModel {
   }
 
   @JsonProperty(EXPORTER)
-  public SimpleLogRecordProcessorModel withExporter(LogRecordExporterModel exporter) {
+  public SimpleLogRecordProcessorModel setExporter(LogRecordExporterModel exporter) {
     this.exporter = exporter;
     return this;
   }
@@ -66,7 +66,7 @@ public class SimpleLogRecordProcessorModel {
   }
 
   @JsonAnySetter
-  public SimpleLogRecordProcessorModel withExtensionProperty(String name, @Nullable Object value) {
+  public SimpleLogRecordProcessorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

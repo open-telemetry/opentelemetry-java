@@ -38,10 +38,10 @@ public final class PushMetricExporterModelAccessor {
         OTLP_FILE, model.getExtensionProperties(), ExperimentalOtlpFileMetricExporterModel.class);
   }
 
-  public static PushMetricExporterModel withOtlpFile(
+  public static PushMetricExporterModel setOtlpFile(
       PushMetricExporterModel model, ExperimentalOtlpFileMetricExporterModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(OTLP_FILE, value);
+    model.setExtensionProperty(OTLP_FILE, value);
     return model;
   }
 }

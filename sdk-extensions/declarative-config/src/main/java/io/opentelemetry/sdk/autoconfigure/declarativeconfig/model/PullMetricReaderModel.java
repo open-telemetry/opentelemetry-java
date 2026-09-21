@@ -63,7 +63,7 @@ public class PullMetricReaderModel {
   }
 
   @JsonProperty(EXPORTER)
-  public PullMetricReaderModel withExporter(PullMetricExporterModel exporter) {
+  public PullMetricReaderModel setExporter(PullMetricExporterModel exporter) {
     this.exporter = exporter;
     return this;
   }
@@ -80,7 +80,7 @@ public class PullMetricReaderModel {
   }
 
   @JsonProperty(PRODUCERS)
-  public PullMetricReaderModel withProducers(List<MetricProducerModel> producers) {
+  public PullMetricReaderModel setProducers(List<MetricProducerModel> producers) {
     this.producers = producers;
     return this;
   }
@@ -101,7 +101,7 @@ public class PullMetricReaderModel {
   }
 
   @JsonProperty(CARDINALITY_LIMITS)
-  public PullMetricReaderModel withCardinalityLimits(CardinalityLimitsModel cardinalityLimits) {
+  public PullMetricReaderModel setCardinalityLimits(CardinalityLimitsModel cardinalityLimits) {
     this.cardinalityLimits = cardinalityLimits;
     return this;
   }
@@ -112,7 +112,7 @@ public class PullMetricReaderModel {
   }
 
   @JsonAnySetter
-  public PullMetricReaderModel withExtensionProperty(String name, @Nullable Object value) {
+  public PullMetricReaderModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

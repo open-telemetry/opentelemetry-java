@@ -55,7 +55,7 @@ public class LoggerProviderModel {
   }
 
   @JsonProperty(PROCESSORS)
-  public LoggerProviderModel withProcessors(List<LogRecordProcessorModel> processors) {
+  public LoggerProviderModel setProcessors(List<LogRecordProcessorModel> processors) {
     this.processors = processors;
     return this;
   }
@@ -76,7 +76,7 @@ public class LoggerProviderModel {
   }
 
   @JsonProperty(LIMITS)
-  public LoggerProviderModel withLimits(LogRecordLimitsModel limits) {
+  public LoggerProviderModel setLimits(LogRecordLimitsModel limits) {
     this.limits = limits;
     return this;
   }
@@ -87,7 +87,7 @@ public class LoggerProviderModel {
   }
 
   @JsonAnySetter
-  public LoggerProviderModel withExtensionProperty(String name, @Nullable Object value) {
+  public LoggerProviderModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -84,6 +84,25 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void extractWithLambdaGetter() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(PROPAGATION_HEADER, TRACE_ID + ":" + SPAN_ID + ":0:1");
+    carrier.put(BAGGAGE_PREFIX + "key", "value");
+    TextMapGetter<Map<String, String>> lambdaGetter =
+        (map, key) -> map == null ? null : map.get(key);
+
+    Context extracted = jaegerPropagator.extract(Context.root(), carrier, lambdaGetter);
+
+    assertThat(getSpanContext(extracted))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
+    assertThat(Baggage.fromContext(extracted).isEmpty()).isTrue();
+    assertThat(jaegerPropagator.extract(Context.root(), Collections.emptyMap(), lambdaGetter))
+        .isSameAs(Context.root());
+  }
+
+  @Test
   void inject_invalidContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     jaegerPropagator.inject(

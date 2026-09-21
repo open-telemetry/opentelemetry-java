@@ -41,10 +41,10 @@ public final class LoggerProviderModelAccessor {
         ExperimentalLoggerConfiguratorModel.class);
   }
 
-  public static LoggerProviderModel withLoggerConfigurator(
+  public static LoggerProviderModel setLoggerConfigurator(
       LoggerProviderModel model, ExperimentalLoggerConfiguratorModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(LOGGER_CONFIGURATOR, value);
+    model.setExtensionProperty(LOGGER_CONFIGURATOR, value);
     return model;
   }
 }

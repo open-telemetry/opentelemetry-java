@@ -47,11 +47,11 @@ class IdGeneratorFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "random id generator",
-            new IdGeneratorModel().withRandom(new RandomIdGeneratorModel()),
+            new IdGeneratorModel().setRandom(new RandomIdGeneratorModel()),
             IdGenerator.random()),
         Arguments.argumentSet(
             "SPI id generator",
-            new IdGeneratorModel().withExtensionProperty("test", null),
+            new IdGeneratorModel().setExtensionProperty("test", null),
             IdGeneratorComponentProvider.TestIdGenerator.create()));
   }
 
@@ -68,7 +68,7 @@ class IdGeneratorFactoryTest {
         Arguments.argumentSet(
             "unknown SPI id generator",
             new IdGeneratorModel()
-                .withExtensionProperty("unknown_key", Collections.singletonMap("key1", "value")),
+                .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value")),
             "No component provider detected for io.opentelemetry.sdk.trace.IdGenerator with name \"unknown_key\"."));
   }
 }

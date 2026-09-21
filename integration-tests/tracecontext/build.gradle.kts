@@ -22,6 +22,7 @@ dependencies {
 tasks {
   val shadowJar = named<Jar>("shadowJar") {
     archiveFileName.set("tracecontext-tests.jar")
+    exclude("META-INF/*.kotlin_module") // not needed at runtime. avoids KotlinModuleMetadataTransformer warning
 
     manifest {
       attributes("Main-Class" to "io.opentelemetry.Application")

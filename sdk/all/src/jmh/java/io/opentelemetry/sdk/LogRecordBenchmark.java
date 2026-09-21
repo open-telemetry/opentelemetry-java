@@ -37,7 +37,7 @@ import org.openjdk.jmh.annotations.Warmup;
  *
  * <ul>
  *   <li>{@link BenchmarkState#logSize}: the size of the log record, which is a composite of the
- *       number of attributes, length of body, and whether an attribute is attached to the log
+ *       number of attributes, length of body, and whether an exception is attached to the log
  *       record.
  * </ul>
  *

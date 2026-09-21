@@ -43,11 +43,11 @@ public final class LogRecordProcessorModelAccessor {
         ExperimentalEventToSpanEventBridgeLogRecordProcessorModel.class);
   }
 
-  public static LogRecordProcessorModel withEventToSpanEventBridge(
+  public static LogRecordProcessorModel setEventToSpanEventBridge(
       LogRecordProcessorModel model,
       ExperimentalEventToSpanEventBridgeLogRecordProcessorModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(EVENT_TO_SPAN_EVENT_BRIDGE, value);
+    model.setExtensionProperty(EVENT_TO_SPAN_EVENT_BRIDGE, value);
     return model;
   }
 }

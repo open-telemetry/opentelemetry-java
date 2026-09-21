@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.ATTRIBUTE_COUNT_LIMIT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.ATTRIBUTE_VALUE_DEPTH_LIMIT;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.ATTRIBUTE_VALUE_LENGTH_LIMIT;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.EVENT_ATTRIBUTE_COUNT_LIMIT;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.EVENT_COUNT_LIMIT;
@@ -28,6 +29,7 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
   ATTRIBUTE_VALUE_LENGTH_LIMIT,
+  ATTRIBUTE_VALUE_DEPTH_LIMIT,
   ATTRIBUTE_COUNT_LIMIT,
   EVENT_COUNT_LIMIT,
   LINK_COUNT_LIMIT,
@@ -38,6 +40,7 @@ import javax.annotation.Nullable;
 public class SpanLimitsModel {
 
   static final String ATTRIBUTE_VALUE_LENGTH_LIMIT = "attribute_value_length_limit";
+  static final String ATTRIBUTE_VALUE_DEPTH_LIMIT = "attribute_value_depth_limit";
   static final String ATTRIBUTE_COUNT_LIMIT = "attribute_count_limit";
   static final String EVENT_COUNT_LIMIT = "event_count_limit";
   static final String LINK_COUNT_LIMIT = "link_count_limit";
@@ -49,6 +52,7 @@ public class SpanLimitsModel {
   static {
     STABLE_PROPERTIES = new HashMap<>();
     STABLE_PROPERTIES.put(ATTRIBUTE_VALUE_LENGTH_LIMIT, Integer.class);
+    STABLE_PROPERTIES.put(ATTRIBUTE_VALUE_DEPTH_LIMIT, Integer.class);
     STABLE_PROPERTIES.put(ATTRIBUTE_COUNT_LIMIT, Integer.class);
     STABLE_PROPERTIES.put(EVENT_COUNT_LIMIT, Integer.class);
     STABLE_PROPERTIES.put(LINK_COUNT_LIMIT, Integer.class);
@@ -59,6 +63,7 @@ public class SpanLimitsModel {
   private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
 
   @Nullable private Integer attributeValueLengthLimit;
+  @Nullable private Integer attributeValueDepthLimit;
   @Nullable private Integer attributeCountLimit;
   @Nullable private Integer eventCountLimit;
   @Nullable private Integer linkCountLimit;
@@ -84,8 +89,37 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(ATTRIBUTE_VALUE_LENGTH_LIMIT)
-  public SpanLimitsModel withAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
+  public SpanLimitsModel setAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
+    return this;
+  }
+
+  /**
+   * Configure the maximum attribute value depth for nested array and map values. Overrides
+   * .attribute_limits.attribute_value_depth_limit.
+   *
+   * <p>Depth starts at 1 for the top-level attribute value and increments when descending into
+   * array elements or map values.
+   *
+   * <p>Array or map values deeper than the limit are replaced with an empty value.
+   *
+   * <p>Value must be positive.
+   *
+   * <p>If omitted or null, 64 is used.
+   */
+  @JsonProperty(ATTRIBUTE_VALUE_DEPTH_LIMIT)
+  @Nullable
+  public Integer getAttributeValueDepthLimit() {
+    if (attributeValueDepthLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          ATTRIBUTE_VALUE_DEPTH_LIMIT, extensionProperties, Integer.class);
+    }
+    return attributeValueDepthLimit;
+  }
+
+  @JsonProperty(ATTRIBUTE_VALUE_DEPTH_LIMIT)
+  public SpanLimitsModel setAttributeValueDepthLimit(Integer attributeValueDepthLimit) {
+    this.attributeValueDepthLimit = attributeValueDepthLimit;
     return this;
   }
 
@@ -107,7 +141,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(ATTRIBUTE_COUNT_LIMIT)
-  public SpanLimitsModel withAttributeCountLimit(Integer attributeCountLimit) {
+  public SpanLimitsModel setAttributeCountLimit(Integer attributeCountLimit) {
     this.attributeCountLimit = attributeCountLimit;
     return this;
   }
@@ -130,7 +164,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(EVENT_COUNT_LIMIT)
-  public SpanLimitsModel withEventCountLimit(Integer eventCountLimit) {
+  public SpanLimitsModel setEventCountLimit(Integer eventCountLimit) {
     this.eventCountLimit = eventCountLimit;
     return this;
   }
@@ -153,7 +187,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(LINK_COUNT_LIMIT)
-  public SpanLimitsModel withLinkCountLimit(Integer linkCountLimit) {
+  public SpanLimitsModel setLinkCountLimit(Integer linkCountLimit) {
     this.linkCountLimit = linkCountLimit;
     return this;
   }
@@ -176,7 +210,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(EVENT_ATTRIBUTE_COUNT_LIMIT)
-  public SpanLimitsModel withEventAttributeCountLimit(Integer eventAttributeCountLimit) {
+  public SpanLimitsModel setEventAttributeCountLimit(Integer eventAttributeCountLimit) {
     this.eventAttributeCountLimit = eventAttributeCountLimit;
     return this;
   }
@@ -199,7 +233,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(LINK_ATTRIBUTE_COUNT_LIMIT)
-  public SpanLimitsModel withLinkAttributeCountLimit(Integer linkAttributeCountLimit) {
+  public SpanLimitsModel setLinkAttributeCountLimit(Integer linkAttributeCountLimit) {
     this.linkAttributeCountLimit = linkAttributeCountLimit;
     return this;
   }
@@ -210,7 +244,7 @@ public class SpanLimitsModel {
   }
 
   @JsonAnySetter
-  public SpanLimitsModel withExtensionProperty(String name, @Nullable Object value) {
+  public SpanLimitsModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,
@@ -226,6 +260,8 @@ public class SpanLimitsModel {
     return "SpanLimitsModel{"
         + "attributeValueLengthLimit="
         + attributeValueLengthLimit
+        + ", attributeValueDepthLimit="
+        + attributeValueDepthLimit
         + ", attributeCountLimit="
         + attributeCountLimit
         + ", eventCountLimit="
@@ -249,6 +285,11 @@ public class SpanLimitsModel {
         (this.getAttributeValueLengthLimit() == null)
             ? 0
             : this.getAttributeValueLengthLimit().hashCode();
+    h *= 1000003;
+    h ^=
+        (this.getAttributeValueDepthLimit() == null)
+            ? 0
+            : this.getAttributeValueDepthLimit().hashCode();
     h *= 1000003;
     h ^= (this.getAttributeCountLimit() == null) ? 0 : this.getAttributeCountLimit().hashCode();
     h *= 1000003;
@@ -280,6 +321,9 @@ public class SpanLimitsModel {
       return (this.getAttributeValueLengthLimit() == null
               ? that.getAttributeValueLengthLimit() == null
               : this.getAttributeValueLengthLimit().equals(that.getAttributeValueLengthLimit()))
+          && (this.getAttributeValueDepthLimit() == null
+              ? that.getAttributeValueDepthLimit() == null
+              : this.getAttributeValueDepthLimit().equals(that.getAttributeValueDepthLimit()))
           && (this.getAttributeCountLimit() == null
               ? that.getAttributeCountLimit() == null
               : this.getAttributeCountLimit().equals(that.getAttributeCountLimit()))

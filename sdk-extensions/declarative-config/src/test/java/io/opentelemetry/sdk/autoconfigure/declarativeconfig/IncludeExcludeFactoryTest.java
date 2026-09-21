@@ -36,23 +36,23 @@ class IncludeExcludeFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "both null",
-            new IncludeExcludeModel().withIncluded(null).withExcluded(null),
+            new IncludeExcludeModel().setIncluded(null).setExcluded(null),
             IncludeExcludePredicate.createPatternMatching(null, null)),
         Arguments.argumentSet(
             "included present excluded null",
-            new IncludeExcludeModel().withIncluded(Arrays.asList("foo", "bar")).withExcluded(null),
+            new IncludeExcludeModel().setIncluded(Arrays.asList("foo", "bar")).setExcluded(null),
             IncludeExcludePredicate.createPatternMatching(Arrays.asList("foo", "bar"), null)),
         Arguments.argumentSet(
             "included null excluded present",
             new IncludeExcludeModel()
-                .withIncluded(null)
-                .withExcluded(Collections.singletonList("baz")),
+                .setIncluded(null)
+                .setExcluded(Collections.singletonList("baz")),
             IncludeExcludePredicate.createPatternMatching(null, Collections.singletonList("baz"))),
         Arguments.argumentSet(
             "both present",
             new IncludeExcludeModel()
-                .withIncluded(Arrays.asList("foo", "bar"))
-                .withExcluded(Collections.singletonList("baz")),
+                .setIncluded(Arrays.asList("foo", "bar"))
+                .setExcluded(Collections.singletonList("baz")),
             IncludeExcludePredicate.createPatternMatching(
                 Arrays.asList("foo", "bar"), Collections.singletonList("baz"))));
   }
@@ -69,11 +69,11 @@ class IncludeExcludeFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "included empty",
-            new IncludeExcludeModel().withIncluded(Collections.emptyList()).withExcluded(null),
+            new IncludeExcludeModel().setIncluded(Collections.emptyList()).setExcluded(null),
             "included must not be empty"),
         Arguments.argumentSet(
             "excluded empty",
-            new IncludeExcludeModel().withIncluded(null).withExcluded(Collections.emptyList()),
+            new IncludeExcludeModel().setIncluded(null).setExcluded(Collections.emptyList()),
             "excluded must not be empty"));
   }
 }

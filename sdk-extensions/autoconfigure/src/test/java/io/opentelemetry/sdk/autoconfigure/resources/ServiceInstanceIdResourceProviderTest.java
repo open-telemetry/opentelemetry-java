@@ -31,7 +31,7 @@ class ServiceInstanceIdResourceProviderTest {
   }
 
   @Test
-  void createResource_generatesValidUUID() {
+  void createResource_generatesValidUuid() {
     ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
     DefaultConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());
 
