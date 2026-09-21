@@ -9,8 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -500,15 +502,12 @@ class PeriodicMetricReaderTest {
 
     // Trigger manual flush
     CompletableResultCode flushResult = reader.forceFlush();
-    // Verify that the first batch WAS exported
-    verify(mockExporter, times(1)).export(any());
-    // At this point, batch 1 is stuck waiting. Batch 2 should NOT be exported yet.
-    // We verify that export was only called once in total so far.
-    verify(mockExporter, times(1)).export(any());
-    // Now we complete the first batch
+    // Batch 1 is exported and stuck waiting on batch1Result. Batch 2 must not start yet.
+    verify(mockExporter, timeout(2000).times(1)).export(any());
+    verify(mockExporter, after(100).times(1)).export(any());
+    // Complete batch 1; batch 2 should now be exported.
     batch1Result.succeed();
-    // Verify that the second batch IS NOW exported
-    verify(mockExporter, times(2)).export(any());
+    verify(mockExporter, timeout(2000).times(2)).export(any());
     // Ensure the flush operation completes successfully
     assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
     reader.shutdown();
@@ -544,20 +543,21 @@ class PeriodicMetricReaderTest {
 
     CompletableResultCode flushResult = reader.forceFlush();
 
-    verify(mockExporter, times(1)).export(any());
+    verify(mockExporter, timeout(2000).times(1)).export(any());
+    verify(mockExporter, after(100).times(1)).export(any());
 
     batch1Result.succeed();
-    verify(mockExporter, times(2)).export(any());
+    verify(mockExporter, timeout(2000).times(2)).export(any());
+    verify(mockExporter, after(100).times(2)).export(any());
 
     batch2Result.fail();
-    verify(mockExporter, times(3)).export(any());
+    verify(mockExporter, timeout(2000).times(3)).export(any());
 
     batch3Result.succeed();
 
-    // Failed export results are logged, but forceFlush preserves the prior
-    // partial-success
-    // behavior.
-    assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+    // forceFlush fails if any batch failed.
+    flushResult.join(5, TimeUnit.SECONDS);
+    assertThat(flushResult.isSuccess()).isFalse();
 
     logCapturer.assertContains("Exporter failed");
 
@@ -589,8 +589,8 @@ class PeriodicMetricReaderTest {
 
     CompletableResultCode flushResult = reader.forceFlush();
 
-    // Verify that all 3 batches WERE exported immediately
-    verify(mockExporter, times(3)).export(any());
+    // All 3 batches are exported.
+    verify(mockExporter, timeout(2000).times(3)).export(any());
 
     assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
 
@@ -626,13 +626,15 @@ class PeriodicMetricReaderTest {
 
     CompletableResultCode flushResult = reader.forceFlush();
 
-    verify(mockExporter, times(1)).export(any());
+    verify(mockExporter, timeout(2000).times(1)).export(any());
+    verify(mockExporter, after(100).times(1)).export(any());
 
     batch1Result.succeed();
-    verify(mockExporter, times(2)).export(any());
+    verify(mockExporter, timeout(2000).times(2)).export(any());
+    verify(mockExporter, after(100).times(2)).export(any());
 
     batch2Result.succeed();
-    verify(mockExporter, times(3)).export(any());
+    verify(mockExporter, timeout(2000).times(3)).export(any());
 
     batch3Result.succeed();
 
@@ -644,10 +646,10 @@ class PeriodicMetricReaderTest {
 
   @Test
   @Timeout(10)
-  @SuppressLogger(PeriodicMetricReader.class)
-  void forceFlush_whileExportInFlight_failsExceptionally() throws Exception {
+  void forceFlush_whileExportInFlight_queuesBehindIt() throws Exception {
     CompletableResultCode inflightExportResult = new CompletableResultCode();
     CountDownLatch exportStarted = new CountDownLatch(1);
+    AtomicInteger exportCount = new AtomicInteger();
 
     MetricExporter blockingExporter =
         new MetricExporter() {
@@ -658,8 +660,11 @@ class PeriodicMetricReaderTest {
 
           @Override
           public CompletableResultCode export(Collection<MetricData> metrics) {
-            exportStarted.countDown();
-            return inflightExportResult;
+            if (exportCount.incrementAndGet() == 1) {
+              exportStarted.countDown();
+              return inflightExportResult;
+            }
+            return CompletableResultCode.ofSuccess();
           }
 
           @Override
@@ -683,19 +688,143 @@ class PeriodicMetricReaderTest {
     CompletableResultCode firstFlush = reader.forceFlush();
     assertThat(exportStarted.await(5, TimeUnit.SECONDS)).isTrue();
 
-    // Second forceFlush while first is in flight — should fail exceptionally
+    // Second forceFlush while first is in flight queues behind it and does not fail.
     CompletableResultCode secondFlush = reader.forceFlush();
-    secondFlush.join(5, TimeUnit.SECONDS);
+    assertThat(secondFlush.isDone()).isFalse();
 
-    assertThat(secondFlush.isSuccess()).isFalse();
-    assertThat(secondFlush.getFailureThrowable())
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Export is already in progress");
-
-    // Release the in-flight export
+    // Release the in-flight export; both flushes complete successfully and both exports ran.
     inflightExportResult.succeed();
     firstFlush.join(5, TimeUnit.SECONDS);
+    secondFlush.join(5, TimeUnit.SECONDS);
     assertThat(firstFlush.isSuccess()).isTrue();
+    assertThat(secondFlush.isSuccess()).isTrue();
+    assertThat(exportCount.get()).isEqualTo(2);
+
+    reader.shutdown();
+  }
+
+  @Test
+  void setExporterTimeout_negativeThrows() {
+    assertThatThrownBy(
+            () ->
+                PeriodicMetricReader.builder(metricExporter)
+                    .setExporterTimeout(Duration.ofSeconds(-1)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+  }
+
+  @Test
+  void setExporterTimeout_nullUnitThrows() {
+    assertThatThrownBy(
+            () -> PeriodicMetricReader.builder(metricExporter).setExporterTimeout(1L, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+  }
+
+  @Test
+  void setExporterTimeout_nullDurationThrows() {
+    assertThatThrownBy(
+            () -> PeriodicMetricReader.builder(metricExporter).setExporterTimeout((Duration) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+  }
+
+  @Test
+  @SuppressLogger(PeriodicMetricReader.class)
+  void exporterTimeout_slowExporterReportedAsFailed() throws Exception {
+    CompletableResultCode neverCompletes = new CompletableResultCode();
+    CountDownLatch exportStarted = new CountDownLatch(1);
+    MetricExporter slowExporter =
+        new MetricExporter() {
+          @Override
+          public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+            return AggregationTemporality.CUMULATIVE;
+          }
+
+          @Override
+          public CompletableResultCode export(Collection<MetricData> metrics) {
+            exportStarted.countDown();
+            return neverCompletes;
+          }
+
+          @Override
+          public CompletableResultCode flush() {
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode shutdown() {
+            return CompletableResultCode.ofSuccess();
+          }
+        };
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(slowExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setExporterTimeout(Duration.ofMillis(50))
+            .build();
+    reader.register(collectionRegistration);
+
+    CompletableResultCode flush = reader.forceFlush();
+    assertThat(exportStarted.await(5, TimeUnit.SECONDS)).isTrue();
+
+    flush.join(5, TimeUnit.SECONDS);
+    assertThat(flush.isSuccess()).isFalse();
+    logCapturer.assertContains("Exporter timed out");
+
+    neverCompletes.succeed();
+    reader.shutdown();
+  }
+
+  @Test
+  @SuppressLogger(PeriodicMetricReader.class)
+  void exporterTimeout_appliesPerBatch() throws Exception {
+    // Each batch's export takes ~40ms; per-batch timeout is 200ms; 3 batches total elapsed ~120ms
+    // which would exceed a cycle-level timeout of 100ms but stays within a per-batch timeout.
+    CountDownLatch allBatchesExported = new CountDownLatch(3);
+    MetricExporter perBatchSlowExporter =
+        new MetricExporter() {
+          @Override
+          public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+            return AggregationTemporality.CUMULATIVE;
+          }
+
+          @Override
+          public CompletableResultCode export(Collection<MetricData> metrics) {
+            try {
+              Thread.sleep(40);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
+            allBatchesExported.countDown();
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode flush() {
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode shutdown() {
+            return CompletableResultCode.ofSuccess();
+          }
+        };
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(perBatchSlowExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(2) // 6 points / 2 = 3 batches
+            .setExporterTimeout(Duration.ofMillis(200))
+            .build();
+    reader.register(collectionRegistration);
+
+    CompletableResultCode flush = reader.forceFlush();
+    flush.join(5, TimeUnit.SECONDS);
+
+    assertThat(allBatchesExported.await(0, TimeUnit.MILLISECONDS)).isTrue();
+    assertThat(flush.isSuccess()).isTrue();
+    logCapturer.assertDoesNotContain("Exporter timed out");
 
     reader.shutdown();
   }
