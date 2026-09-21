@@ -322,6 +322,18 @@ class SdkTracerProviderTest {
   }
 
   @Test
+  void withoutSpanProcessor_notRecording() {
+    Tracer tracer = SdkTracerProvider.builder().build().get("test");
+
+    Span span = tracer.spanBuilder("test-span").startSpan();
+    try {
+      assertThat(span.isRecording()).as("Should not record without a span processor").isFalse();
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
   void explicitNoopSpanProcessor_tracerResolvesToNoop() {
     Tracer tracer =
         SdkTracerProvider.builder()
