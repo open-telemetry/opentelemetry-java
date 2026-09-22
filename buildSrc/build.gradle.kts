@@ -34,12 +34,12 @@ repositories {
 
 dependencies {
   implementation("biz.aQute.bnd:biz.aQute.bnd.gradle:7.4.0")
-  implementation(enforcedPlatform("com.squareup.wire:wire-bom:7.0.1"))
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:7.0.3"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.1")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:8.10.2")
   implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.5.1")
-  implementation("com.fasterxml.jackson.core:jackson-databind:2.22.2")
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.22.3")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")

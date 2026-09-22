@@ -60,7 +60,7 @@ import org.testcontainers.utility.DockerImageName;
 class CollectorIntegrationTest {
 
   private static final String COLLECTOR_IMAGE =
-      "otel/opentelemetry-collector-contrib:0.160.0@sha256:799dc6cf12c96192af37b5bdba804da8c10b3bc563b43cb90c3f3c58d9572ad6";
+      "otel/opentelemetry-collector-contrib:0.161.0@sha256:fd328de2552466ad78385e1b1289c3f2402b1c45f265b252aab1955b42845ac1";
 
   private static final Integer COLLECTOR_HEALTH_CHECK_PORT = 13133;
 
