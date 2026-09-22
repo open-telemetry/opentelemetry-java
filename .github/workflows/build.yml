@@ -32,6 +32,7 @@ jobs:
           - 17
           - 21
           - 25
+          # When this release becomes LTS, keep it and add the next feature release as the marked row.
           - 26 # renovate(java-version)
         # Collect coverage on latest LTS
         include:
@@ -48,7 +49,7 @@ jobs:
         name: Set up Java ${{ matrix.test-java-version }} for tests
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
-          # using zulu for 26 because new releases get published quickly
+          # Zulu publishes new feature releases quickly.
           distribution: zulu
           java-version: ${{ matrix.test-java-version }}
 
@@ -57,7 +58,7 @@ jobs:
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
-          java-version: 26.0.2+10
+          java-version: 25
 
       - name: Set up gradle
         # zizmor: ignore[cache-poisoning] This tests release branches but does not
