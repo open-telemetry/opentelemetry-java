@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
@@ -109,8 +110,9 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
               logger.log(Level.FINE, "Exporter failed");
             }
           });
-    } catch (RuntimeException e) {
-      logger.log(Level.WARNING, "Exporter threw an Exception", e);
+    } catch (Throwable t) {
+      ThrowableUtil.propagateIfFatal(t);
+      logger.log(Level.WARNING, "Exporter threw an Exception", t);
     }
   }
 

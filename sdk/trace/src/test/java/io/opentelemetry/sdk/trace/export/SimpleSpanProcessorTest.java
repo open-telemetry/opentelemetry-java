@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -24,6 +25,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -82,6 +84,22 @@ class SimpleSpanProcessorTest {
     assertThatThrownBy(() -> SimpleSpanProcessor.create(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("exporter");
+  }
+
+  @Test
+  @SuppressLogger(SimpleSpanProcessor.class)
+  void onEndSync_ExporterThrowsCheckedException() {
+    SpanData spanData = TestUtils.makeBasicSpan();
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+    when(spanExporter.export(anyCollection()))
+        .thenAnswer(
+            invocation -> {
+              throw new Exception("No export for you.");
+            });
+
+    assertThatCode(() -> simpleSampledSpansProcessor.onEnd(readableSpan)).doesNotThrowAnyException();
+    verify(spanExporter).export(Collections.singletonList(spanData));
   }
 
   @Test
