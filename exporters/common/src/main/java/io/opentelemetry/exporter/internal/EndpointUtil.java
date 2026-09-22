@@ -32,10 +32,12 @@ public final class EndpointUtil {
       throw new IllegalArgumentException(
           "Invalid endpoint, must start with http:// or https://: " + uri);
     }
+
     if (!hasHost(uri, endpoint)) {
       throw new IllegalArgumentException(
           "Invalid endpoint, must start with http:// or https://: " + uri);
     }
+
     return uri;
   }
 
