@@ -7,10 +7,9 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -27,7 +26,7 @@ public final class ViewBuilder {
   @Nullable private String name;
   @Nullable private String description;
   private Aggregation aggregation = Aggregation.defaultAggregation();
-  private AttributesProcessor processor = AttributesProcessor.noop();
+  private Predicate<String> attributeFilter = StringPredicates.ALL;
   private int cardinalityLimit = MetricStorage.DEFAULT_MAX_CARDINALITY;
 
   ViewBuilder() {}
@@ -105,23 +104,7 @@ public final class ViewBuilder {
    */
   public ViewBuilder setAttributeFilter(Predicate<String> keyFilter) {
     Objects.requireNonNull(keyFilter, "keyFilter");
-    this.processor = AttributesProcessor.filterByKeyName(keyFilter);
-    return this;
-  }
-
-  /**
-   * Add an attribute processor.
-   *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#appendFilteredBaggageAttributes(ViewBuilder, Predicate)}, {@link
-   * SdkMeterProviderUtil#appendAllBaggageAttributes(ViewBuilder)}.
-   *
-   * <p>Note: not currently stable but additional attribute processors can be configured via {@link
-   * SdkMeterProviderUtil#appendAllBaggageAttributes(ViewBuilder)}.
-   */
-  @SuppressWarnings("unused")
-  ViewBuilder addAttributesProcessor(AttributesProcessor attributesProcessor) {
-    this.processor = this.processor.then(attributesProcessor);
+    this.attributeFilter = keyFilter;
     return this;
   }
 
@@ -144,6 +127,6 @@ public final class ViewBuilder {
 
   /** Returns a {@link View} with the configuration of this builder. */
   public View build() {
-    return View.create(name, description, aggregation, processor, cardinalityLimit);
+    return View.create(name, description, aggregation, attributeFilter, cardinalityLimit);
   }
 }
