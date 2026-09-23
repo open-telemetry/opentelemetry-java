@@ -423,8 +423,13 @@ public final class OkHttpGrpcSender implements GrpcSender {
     Response.Builder responseBuilder = response.newBuilder();
     response.close();
     responseBuilder.body(replacementBody);
-    if (trailers.size() > 0) {
-      responseBuilder.trailers(() -> trailers);
+    String grpcStatus = trailers.get(GRPC_STATUS);
+    if (grpcStatus != null) {
+      responseBuilder.header(GRPC_STATUS, grpcStatus);
+    }
+    String grpcMessage = trailers.get(GRPC_MESSAGE);
+    if (grpcMessage != null) {
+      responseBuilder.header(GRPC_MESSAGE, grpcMessage);
     }
     return responseBuilder.build();
   }
