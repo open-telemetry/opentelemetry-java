@@ -16,7 +16,7 @@ jobs:
     name: Benchmark SDK
     runs-on: oracle-bare-metal-64cpu-1024gb-x86-64-ubuntu-24
     container:
-      image: ubuntu:26.04@sha256:513c074113a871b51a8d16ab445c88779d6452d937a164fb5cc479f32668a41d
+      image: ubuntu:26.04@sha256:da6fc2be547864451aa253836dd926da33623312df4a9a243e35dc877c378a78
     timeout-minutes: 120 # since there is only a single bare metal runner across all repos
     steps:
       - name: Install Git
@@ -76,6 +76,6 @@ jobs:
     needs:
       - sdk-benchmark
     if: always()
-    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@68c7b2f0ef9cd9c1e2b71d3018f63127be189578 # v0.14.0
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@ad1959372f2919fcf2556d3a3d12ed5265c54209 # v0.16.0
     with:
       success: ${{ needs.sdk-benchmark.result == 'success' }}
