@@ -366,13 +366,15 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
   /** Whether response is retriable or not. */
   public static boolean isRetryable(Response response) {
-    // We don't check trailers for retry since retryable error codes always come with response
-    // headers, not trailers, in practice.
     String grpcStatus = response.header(GRPC_STATUS);
     if (grpcStatus == null) {
-      return false;
+      try {
+        grpcStatus = response.trailers().get(GRPC_STATUS);
+      } catch (IOException e) {
+        return false;
+      }
     }
-    return RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
+    return grpcStatus != null && RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
   }
 
   // From grpc-java

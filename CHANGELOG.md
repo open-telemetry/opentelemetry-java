@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Exporters
+
+* OTLP gRPC: Retry responses that report a retryable status in trailers.
+
 ## Version 1.66.0 (2026-09-11)
 
 ### API
