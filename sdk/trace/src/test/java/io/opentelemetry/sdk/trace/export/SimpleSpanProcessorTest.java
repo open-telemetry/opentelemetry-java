@@ -98,7 +98,8 @@ class SimpleSpanProcessorTest {
               throw new Exception("No export for you.");
             });
 
-    assertThatCode(() -> simpleSampledSpansProcessor.onEnd(readableSpan)).doesNotThrowAnyException();
+    assertThatCode(() -> simpleSampledSpansProcessor.onEnd(readableSpan))
+        .doesNotThrowAnyException();
     verify(spanExporter).export(Collections.singletonList(spanData));
   }
 
