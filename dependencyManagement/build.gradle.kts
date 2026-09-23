@@ -13,7 +13,7 @@ val errorProneVersion = "2.50.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.19"
+val slf4jVersion = "2.0.20"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.8.0"
 val armeriaVersion = "1.41.1"
@@ -27,9 +27,9 @@ val DEPENDENCY_BOMS = listOf(
   // (which is EPL licensed) or armeria bom (which is Apache licensed but is getting flagged
   // by FOSSA for containing EPL-licensed)
 
-  "com.fasterxml.jackson:jackson-bom:2.22.2",
+  "com.fasterxml.jackson:jackson-bom:2.22.3",
   "com.google.guava:guava-bom:33.7.1-jre",
-  "com.google.protobuf:protobuf-bom:4.36.1",
+  "com.google.protobuf:protobuf-bom:4.36.2",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.18.2", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.84.0",
@@ -93,7 +93,7 @@ val DEPENDENCIES = listOf(
   "io.zipkin.brave:brave:6.3.1",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.19.4",
-  "org.apache.aries.spifly:org.apache.aries.spifly.dynamic.bundle:1.3.7",
+  "org.apache.aries.spifly:org.apache.aries.spifly.dynamic.bundle:1.3.8",
   "org.apache.felix:org.apache.felix.framework:7.0.5",
   "org.awaitility:awaitility:4.3.0",
   "org.codehaus.mojo:animal-sniffer-annotations:1.28",
