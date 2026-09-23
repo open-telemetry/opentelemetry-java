@@ -423,7 +423,9 @@ public final class OkHttpGrpcSender implements GrpcSender {
     Response.Builder responseBuilder = response.newBuilder();
     response.close();
     responseBuilder.body(replacementBody);
-    responseBuilder.trailers(() -> trailers);
+    if (trailers.size() > 0) {
+      responseBuilder.trailers(() -> trailers);
+    }
     return responseBuilder.build();
   }
 
