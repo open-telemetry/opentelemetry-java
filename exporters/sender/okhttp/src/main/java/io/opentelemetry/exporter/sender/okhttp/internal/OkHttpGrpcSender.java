@@ -401,7 +401,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
     }
 
     boolean responseBodyTooLarge = buffer.size() > maxResponseBodySize;
-    Headers trailers = responseBodyTooLarge ? null : response.trailers();
+    Headers trailers = responseBodyTooLarge ? Headers.of() : response.trailers();
     Buffer replacementBuffer = buffer;
     ResponseBody replacementBody =
         new ResponseBody() {
@@ -423,9 +423,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
     Response.Builder responseBuilder = response.newBuilder();
     response.close();
     responseBuilder.body(replacementBody);
-    if (trailers != null) {
-      responseBuilder.trailers(() -> trailers);
-    }
+    responseBuilder.trailers(() -> trailers);
     return responseBuilder.build();
   }
 
