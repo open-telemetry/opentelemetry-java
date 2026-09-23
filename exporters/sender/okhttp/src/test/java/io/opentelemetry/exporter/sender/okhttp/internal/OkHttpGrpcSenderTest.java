@@ -69,18 +69,19 @@ class OkHttpGrpcSenderTest {
   }
 
   @Test
-  void isRetryable_RetryableGrpcStatusInTrailers() {
+  void isRetryable_RetryableGrpcStatusInTrailers() throws IOException {
     Response response =
         new Response.Builder()
             .request(new Request.Builder().url("http://localhost/").build())
             .protocol(Protocol.HTTP_2)
             .code(200)
-            .body(ResponseBody.create("body", TEXT_PLAIN))
+            .body(ResponseBody.create("", TEXT_PLAIN))
             .message("Retryable")
             .trailers(() -> Headers.of(GRPC_STATUS, "14"))
             .build();
 
     assertTrue(OkHttpGrpcSender.isRetryable(response));
+    assertThat(response.body().string()).isEmpty();
   }
 
   @Test

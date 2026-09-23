@@ -38,6 +38,7 @@ public final class RetryInterceptor implements Interceptor {
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
   private final Function<Response, OptionalLong> retryDelayNanosExtractor;
+  private final ResponseTransformer responseTransformer;
   private final Predicate<IOException> retryExceptionPredicate;
   private final Sleeper sleeper;
   private final Supplier<Double> randomJitter;
@@ -55,7 +56,26 @@ public final class RetryInterceptor implements Interceptor {
             ? RetryInterceptor::isRetryableException
             : retryPolicy.getRetryExceptionPredicate(),
         TimeUnit.NANOSECONDS::sleep,
-        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d));
+        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d),
+        response -> response);
+  }
+
+  // Visible for testing
+  RetryInterceptor(
+      RetryPolicy retryPolicy,
+      Function<Response, Boolean> isRetryable,
+      Function<Response, OptionalLong> retryDelayNanosExtractor,
+      ResponseTransformer responseTransformer) {
+    this(
+        retryPolicy,
+        isRetryable,
+        retryDelayNanosExtractor,
+        retryPolicy.getRetryExceptionPredicate() == null
+            ? RetryInterceptor::isRetryableException
+            : retryPolicy.getRetryExceptionPredicate(),
+        TimeUnit.NANOSECONDS::sleep,
+        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d),
+        responseTransformer);
   }
 
   // Visible for testing
@@ -66,12 +86,32 @@ public final class RetryInterceptor implements Interceptor {
       Predicate<IOException> retryExceptionPredicate,
       Sleeper sleeper,
       Supplier<Double> randomJitter) {
+    this(
+        retryPolicy,
+        isRetryable,
+        retryDelayNanosExtractor,
+        retryExceptionPredicate,
+        sleeper,
+        randomJitter,
+        response -> response);
+  }
+
+  // Visible for testing
+  RetryInterceptor(
+      RetryPolicy retryPolicy,
+      Function<Response, Boolean> isRetryable,
+      Function<Response, OptionalLong> retryDelayNanosExtractor,
+      Predicate<IOException> retryExceptionPredicate,
+      Sleeper sleeper,
+      Supplier<Double> randomJitter,
+      ResponseTransformer responseTransformer) {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
     this.retryDelayNanosExtractor = retryDelayNanosExtractor;
     this.retryExceptionPredicate = retryExceptionPredicate;
     this.sleeper = sleeper;
     this.randomJitter = randomJitter;
+    this.responseTransformer = responseTransformer;
   }
 
   @Override
@@ -108,6 +148,7 @@ public final class RetryInterceptor implements Interceptor {
       try {
         response = chain.proceed(chain.request());
         if (response != null) {
+          response = responseTransformer.transform(response);
           boolean retryable = Boolean.TRUE.equals(isRetryable.apply(response));
           if (logger.isLoggable(Level.FINER)) {
             logger.log(
@@ -150,6 +191,11 @@ public final class RetryInterceptor implements Interceptor {
       return response;
     }
     throw exception;
+  }
+
+  @FunctionalInterface
+  interface ResponseTransformer {
+    Response transform(Response response) throws IOException;
   }
 
   private static String responseStringRepresentation(Response response) {
