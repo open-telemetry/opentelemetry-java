@@ -35,12 +35,12 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Java 21
+      - name: Set up Java
         if: matrix.language == 'java'
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
-          java-version: 26.0.2+10
+          java-version: 25
 
       - name: Set up gradle
         # zizmor: ignore[cache-poisoning] This workflow analyzes release branches
