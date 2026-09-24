@@ -47,6 +47,16 @@ class AttributesMapTest {
   }
 
   @Test
+  void put_overwriteDoesNotIncrementTotalAddedValues() {
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(stringKey("k"), "first");
+    map.put(stringKey("k"), "second"); // overwrite — not a drop, must not widen total - size
+
+    assertThat(map.size()).isEqualTo(1);
+    assertThat(map.getTotalAddedValues()).isEqualTo(1);
+  }
+
+  @Test
   void put_ignoresNullValue() {
     AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
     map.put(stringKey("k"), null);
@@ -75,6 +85,7 @@ class AttributesMapTest {
     map.put(longKey("b"), 42L);
 
     assertThat(map.size()).isEqualTo(2);
+    assertThat(map.getTotalAddedValues()).isEqualTo(2);
     assertThat(map.get(booleanKey("a"))).isEqualTo(false);
     assertThat(map.get(longKey("b"))).isEqualTo(42L);
   }
