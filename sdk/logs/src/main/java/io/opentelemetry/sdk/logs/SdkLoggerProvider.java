@@ -88,6 +88,9 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
 
   @Override
   public Logger get(String instrumentationScopeName) {
+    if (isNoopLogRecordProcessor) {
+      return LoggerProvider.noop().get(instrumentationScopeName);
+    }
     return loggerComponentRegistry.get(
         instrumentationNameOrDefault(instrumentationScopeName), null, null, Attributes.empty());
   }
