@@ -8,8 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.spi.internal;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.api.internal.ConfigUtil;
-import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.api.impl.ConfigUtil;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -224,7 +223,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
         .map(
             entry -> {
               String[] split = entry.split("=", 2);
-              if (split.length != 2 || StringUtils.isNullOrEmpty(split[0])) {
+              if (split.length != 2 || split[0].isEmpty()) {
                 throw new ConfigurationException("Invalid map property: " + name);
               }
               return filterBlanksAndNulls(split);

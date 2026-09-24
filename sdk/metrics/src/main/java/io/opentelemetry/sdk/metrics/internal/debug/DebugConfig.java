@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.debug;
 
-import io.opentelemetry.api.internal.ConfigUtil;
+import io.opentelemetry.api.impl.ConfigUtil;
 
 /**
  * Determines if the SDK is in debugging mode (captures stack traces) or not.

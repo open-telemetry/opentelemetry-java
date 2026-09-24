@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api;
 
-import io.opentelemetry.api.internal.ConfigUtil;
+import io.opentelemetry.api.impl.ConfigUtil;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.internal.IncubatingUtil;
 import io.opentelemetry.api.logs.LoggerProvider;

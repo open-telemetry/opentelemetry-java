@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.common.internal;
 import static io.opentelemetry.sdk.common.internal.DefaultExceptionAttributeResolver.ENABLE_JVM_STACKTRACE_PROPERTY;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.internal.ConfigUtil;
+import io.opentelemetry.api.impl.ConfigUtil;
 import javax.annotation.Nullable;
 
 /**

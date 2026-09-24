@@ -3,19 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.internal;
+package io.opentelemetry.api.impl;
 
 import java.util.ConcurrentModificationException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /**
  * Configuration utilities.
  *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * <p>This class is not intended for use by application developers. Its API is stable and will not
+ * be changed or removed in a backwards-incompatible manner.
  */
 public final class ConfigUtil {
 
@@ -27,6 +26,8 @@ public final class ConfigUtil {
    * <p>In java 8 and android environments, iterating through system properties may trigger {@link
    * ConcurrentModificationException}. This method ensures callers can iterate safely without risk
    * of exception. See https://github.com/open-telemetry/opentelemetry-java/issues/6732 for details.
+   *
+   * @return a copy of system properties
    */
   public static Properties safeSystemProperties() {
     return (Properties) System.getProperties().clone();
@@ -41,6 +42,8 @@ public final class ConfigUtil {
    * properties take priority over environment variables.
    *
    * @param key the property key
+   * @param defaultValue the fallback value if neither system property nor environment variable is
+   *     set
    * @return the system property if not null, or the environment variable if not null, or {@code
    *     defaultValue}
    */
@@ -65,18 +68,21 @@ public final class ConfigUtil {
 
   /**
    * Normalize an environment variable key by converting to lower case and replacing "_" with ".".
+   *
+   * @param key the environment variable key
+   * @return the normalized key
    */
   public static String normalizeEnvironmentVariableKey(String key) {
     return key.toLowerCase(Locale.ROOT).replace("_", ".");
   }
 
-  /** Normalize a property key by converting to lower case and replacing "-" with ".". */
+  /**
+   * Normalize a property key by converting to lower case and replacing "-" with ".".
+   *
+   * @param key the property key
+   * @return the normalized key
+   */
   public static String normalizePropertyKey(String key) {
     return key.toLowerCase(Locale.ROOT).replace("-", ".");
-  }
-
-  /** Returns defaultValue if value is null, otherwise value. This is an internal method. */
-  public static <T> T defaultIfNull(@Nullable T value, T defaultValue) {
-    return value == null ? defaultValue : value;
   }
 }
