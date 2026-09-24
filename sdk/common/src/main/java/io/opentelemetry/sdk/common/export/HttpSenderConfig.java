@@ -115,4 +115,17 @@ public interface HttpSenderConfig {
   default List<String> getEnabledProtocols() {
     return null;
   }
+
+  /**
+   * The TLS cipher suites to enable when connecting to an HTTPS endpoint, or {@code null} to defer
+   * to the sender implementation's default.
+   *
+   * <p>Cipher suite names follow the JSSE convention: {@code "TLS_AES_128_GCM_SHA256"}, {@code
+   * "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"}, etc. When set, only the listed cipher suites will be
+   * enabled.
+   */
+  @Nullable
+  default List<String> getEnabledCipherSuites() {
+    return null;
+  }
 }

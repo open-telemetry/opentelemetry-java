@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,7 +22,9 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.security.Security;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -30,13 +33,19 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import okhttp3.CipherSuite;
+import okhttp3.ConnectionSpec;
 import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.TlsVersion;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -85,6 +94,7 @@ class OkHttpGrpcSenderTest {
             null,
             executor,
             Long.MAX_VALUE,
+            null,
             null);
 
     AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
@@ -131,6 +141,7 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             Long.MAX_VALUE,
+            null,
             null);
 
     CompletableResultCode sendResult = new CompletableResultCode();
@@ -176,6 +187,7 @@ class OkHttpGrpcSenderTest {
               null,
               customExecutor, // Pass custom executor -> managedExecutor = false
               Long.MAX_VALUE,
+              null,
               null);
 
       CompletableResultCode shutdownResult = sender.shutdown();
@@ -215,6 +227,7 @@ class OkHttpGrpcSenderTest {
             null,
             null, // null executor = managed
             Long.MAX_VALUE,
+            null,
             null);
 
     // Start multiple requests to ensure threads are busy
@@ -279,6 +292,7 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             Long.MAX_VALUE,
+            null,
             null);
 
     // Trigger some activity
@@ -329,6 +343,7 @@ class OkHttpGrpcSenderTest {
                     null,
                     null,
                     Long.MAX_VALUE,
+                    null,
                     null))
         .doesNotThrowAnyException();
   }
@@ -356,6 +371,7 @@ class OkHttpGrpcSenderTest {
                       null,
                       null,
                       Long.MAX_VALUE,
+                      null,
                       null))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("Unable to initialize default trust manager")
@@ -367,6 +383,74 @@ class OkHttpGrpcSenderTest {
   }
 
   /** Simple test marshaler for testing purposes. */
+  @Test
+  void tlsConfig_cipherSuitesOnly() {
+    OkHttpGrpcSender sender =
+        newTlsSender(null, Collections.singletonList("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"));
+
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .satisfies(
+            client -> {
+              assertThat(client.connectionSpecs()).hasSize(1);
+              ConnectionSpec spec = client.connectionSpecs().get(0);
+              assertThat(spec.cipherSuites())
+                  .extracting(CipherSuite::javaName)
+                  .containsExactly("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
+              // Protocols fall back to the COMPATIBLE_TLS defaults.
+              assertThat(spec.tlsVersions()).isEqualTo(ConnectionSpec.COMPATIBLE_TLS.tlsVersions());
+            });
+  }
+
+  @Test
+  void tlsConfig_protocolsAndCipherSuites() {
+    OkHttpGrpcSender sender =
+        newTlsSender(
+            Collections.singletonList("TLSv1.3"),
+            Arrays.asList("TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384"));
+
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .satisfies(
+            client -> {
+              assertThat(client.connectionSpecs()).hasSize(1);
+              ConnectionSpec spec = client.connectionSpecs().get(0);
+              assertThat(spec.tlsVersions()).containsExactly(TlsVersion.TLS_1_3);
+              assertThat(spec.cipherSuites())
+                  .extracting(CipherSuite::javaName)
+                  .containsExactly("TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384");
+            });
+  }
+
+  @Test
+  void tlsConfig_emptyListsUseDefaults() {
+    OkHttpGrpcSender sender = newTlsSender(Collections.emptyList(), Collections.emptyList());
+
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .satisfies(
+            client ->
+                assertThat(client.connectionSpecs())
+                    .isEqualTo(new OkHttpClient().connectionSpecs()));
+  }
+
+  private static OkHttpGrpcSender newTlsSender(
+      @Nullable List<String> enabledProtocols, @Nullable List<String> enabledCipherSuites) {
+    return new OkHttpGrpcSender(
+        "https://localhost",
+        null,
+        Duration.ofSeconds(10),
+        Duration.ofSeconds(10),
+        Collections::emptyMap,
+        null,
+        null,
+        null,
+        null,
+        Long.MAX_VALUE,
+        enabledProtocols,
+        enabledCipherSuites);
+  }
+
   private static class TestMessageWriter implements MessageWriter {
     @Override
     public void writeMessage(OutputStream output) throws IOException {

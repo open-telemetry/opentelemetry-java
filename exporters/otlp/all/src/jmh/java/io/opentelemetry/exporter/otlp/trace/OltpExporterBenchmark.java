@@ -114,6 +114,7 @@ public class OltpExporterBenchmark {
                 null,
                 null,
                 Long.MAX_VALUE,
+                null,
                 null),
             InternalTelemetryVersion.LATEST,
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),

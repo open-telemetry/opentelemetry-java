@@ -123,9 +123,11 @@ public final class JdkHttpSender implements HttpSender {
       @Nullable SSLContext sslContext,
       @Nullable ExecutorService executorService,
       long maxResponseBodySize,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      @Nullable List<String> enabledCipherSuites) {
     this(
-        configureClient(sslContext, connectTimeout, proxyOptions, enabledProtocols),
+        configureClient(
+            sslContext, connectTimeout, proxyOptions, enabledProtocols, enabledCipherSuites),
         endpoint,
         contentType,
         compressor,
@@ -150,7 +152,8 @@ public final class JdkHttpSender implements HttpSender {
       @Nullable SSLContext sslContext,
       Duration connectTimeout,
       @Nullable ProxyOptions proxyOptions,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      @Nullable List<String> enabledCipherSuites) {
     HttpClient.Builder builder = HttpClient.newBuilder().connectTimeout(connectTimeout);
     if (sslContext != null) {
       builder.sslContext(sslContext);
@@ -158,9 +161,15 @@ public final class JdkHttpSender implements HttpSender {
     if (proxyOptions != null) {
       builder.proxy(proxyOptions.getProxySelector());
     }
-    if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
+    if ((enabledProtocols != null && !enabledProtocols.isEmpty())
+        || (enabledCipherSuites != null && !enabledCipherSuites.isEmpty())) {
       SSLParameters params = new SSLParameters();
-      params.setProtocols(enabledProtocols.toArray(new String[0]));
+      if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
+        params.setProtocols(enabledProtocols.toArray(new String[0]));
+      }
+      if (enabledCipherSuites != null && !enabledCipherSuites.isEmpty()) {
+        params.setCipherSuites(enabledCipherSuites.toArray(new String[0]));
+      }
       builder.sslParameters(params);
     }
     return builder.build();

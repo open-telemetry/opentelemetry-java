@@ -35,7 +35,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpHeaders;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,7 +47,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLParameters;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -235,6 +239,7 @@ class JdkHttpSenderTest {
             null,
             null,
             Long.MAX_VALUE,
+            null,
             null);
 
     try {
@@ -268,6 +273,7 @@ class JdkHttpSenderTest {
             null,
             null,
             Long.MAX_VALUE,
+            null,
             null);
 
     assertThat(sender)
@@ -275,6 +281,85 @@ class JdkHttpSenderTest {
         .satisfies(
             httpClient ->
                 assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
+  }
+
+  @Test
+  void enabledProtocolsAndCipherSuites() {
+    sender =
+        new JdkHttpSender(
+            URI.create("https://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null,
+            Long.MAX_VALUE,
+            Collections.singletonList("TLSv1.3"),
+            Arrays.asList("TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384"));
+
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
+        .satisfies(
+            httpClient -> {
+              SSLParameters params = httpClient.sslParameters();
+              assertThat(Arrays.asList(params.getProtocols()))
+                  .isEqualTo(Collections.singletonList("TLSv1.3"));
+              assertThat(Arrays.asList(params.getCipherSuites()))
+                  .isEqualTo(Arrays.asList("TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384"));
+            });
+  }
+
+  @Test
+  void enabledCipherSuitesOnly() {
+    sender = newTlsSender(null, Collections.singletonList("TLS_AES_128_GCM_SHA256"));
+
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
+        .satisfies(
+            httpClient ->
+                assertThat(Arrays.asList(httpClient.sslParameters().getCipherSuites()))
+                    .isEqualTo(Collections.singletonList("TLS_AES_128_GCM_SHA256")));
+  }
+
+  @Test
+  void enabledProtocolsAndCipherSuites_emptyListsUseDefaults() {
+    HttpClient defaultClient = client(newTlsSender(null, null));
+    HttpClient emptyClient = client(newTlsSender(Collections.emptyList(), Collections.emptyList()));
+
+    assertThat(Arrays.asList(emptyClient.sslParameters().getProtocols()))
+        .isEqualTo(Arrays.asList(defaultClient.sslParameters().getProtocols()));
+    assertThat(Arrays.asList(emptyClient.sslParameters().getCipherSuites()))
+        .isEqualTo(Arrays.asList(defaultClient.sslParameters().getCipherSuites()));
+  }
+
+  private static HttpClient client(JdkHttpSender sender) {
+    AtomicReference<HttpClient> ref = new AtomicReference<>();
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
+        .satisfies(ref::set);
+    return ref.get();
+  }
+
+  private static JdkHttpSender newTlsSender(
+      @Nullable List<String> enabledProtocols, @Nullable List<String> enabledCipherSuites) {
+    return new JdkHttpSender(
+        URI.create("https://localhost"),
+        "text/plain",
+        null,
+        Duration.ofSeconds(10),
+        Duration.ofSeconds(10),
+        Collections::emptyMap,
+        null,
+        null,
+        null,
+        null,
+        Long.MAX_VALUE,
+        enabledProtocols,
+        enabledCipherSuites);
   }
 
   @SuppressWarnings("unchecked")

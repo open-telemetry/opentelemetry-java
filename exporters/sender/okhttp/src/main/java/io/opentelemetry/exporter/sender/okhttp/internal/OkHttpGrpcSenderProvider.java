@@ -33,6 +33,7 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
         grpcSenderConfig.getTrustManager(),
         grpcSenderConfig.getExecutorService(),
         grpcSenderConfig.getMaxResponseBodySize(),
-        grpcSenderConfig.getEnabledProtocols());
+        grpcSenderConfig.getEnabledProtocols(),
+        grpcSenderConfig.getEnabledCipherSuites());
   }
 }

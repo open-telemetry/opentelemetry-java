@@ -224,6 +224,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setEnabledCipherSuites(List<String> enabledCipherSuites) {
+    delegate.setEnabledCipherSuites(enabledCipherSuites);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<T> setMeterProvider(
       Supplier<MeterProvider> meterProviderSupplier) {
     delegate.setMeterProvider(meterProviderSupplier);

@@ -328,6 +328,24 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   }
 
   /**
+   * Sets the TLS cipher suites to enable when connecting to an HTTPS endpoint. By default, OTLP
+   * exporters use the sender implementation's default cipher suites. Omit this call to use that
+   * default.
+   *
+   * <p>Cipher suite names follow the JSSE convention: {@code "TLS_AES_128_GCM_SHA256"}, {@code
+   * "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"}, etc.
+   *
+   * <p>Note: cipher suites must be supported by the JVM and not disabled via the {@code
+   * jdk.tls.disabledAlgorithms} security property.
+   */
+  public OtlpGrpcLogRecordExporterBuilder setEnabledCipherSuites(List<String> enabledCipherSuites) {
+    requireNonNull(enabledCipherSuites, "enabledCipherSuites");
+    checkArgument(!enabledCipherSuites.isEmpty(), "enabledCipherSuites must not be empty");
+    delegate.setEnabledCipherSuites(enabledCipherSuites);
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance

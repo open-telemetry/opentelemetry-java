@@ -1,19 +1,25 @@
 Comparing source compatibility of opentelemetry-exporter-otlp-1.67.0-SNAPSHOT.jar against opentelemetry-exporter-otlp-1.66.0.jar
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder setEnabledCipherSuites(java.util.List<java.lang.String>)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder setMaxRequestBodySize(long)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setEnabledCipherSuites(java.util.List<java.lang.String>)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setMaxRequestBodySize(long)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder setEnabledCipherSuites(java.util.List<java.lang.String>)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder setMaxRequestBodySize(long)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder setEnabledCipherSuites(java.util.List<java.lang.String>)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder setMaxRequestMessageSize(long)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder setEnabledCipherSuites(java.util.List<java.lang.String>)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder setMaxRequestMessageSize(long)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder setEnabledCipherSuites(java.util.List<java.lang.String>)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder setMaxRequestMessageSize(long)

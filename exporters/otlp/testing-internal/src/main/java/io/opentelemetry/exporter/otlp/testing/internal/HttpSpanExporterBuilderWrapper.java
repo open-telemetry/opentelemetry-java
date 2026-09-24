@@ -147,6 +147,13 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   }
 
   @Override
+  public TelemetryExporterBuilder<SpanData> setEnabledCipherSuites(
+      List<String> enabledCipherSuites) {
+    builder.setEnabledCipherSuites(enabledCipherSuites);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<SpanData> setMeterProvider(
       Supplier<MeterProvider> meterProviderSupplier) {
     builder.setMeterProvider(meterProviderSupplier);

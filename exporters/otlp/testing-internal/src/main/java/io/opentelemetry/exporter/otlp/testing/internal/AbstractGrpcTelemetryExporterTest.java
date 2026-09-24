@@ -637,6 +637,45 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void enabledCipherSuites() throws Exception {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri().toString())
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setEnabledCipherSuites(
+                Arrays.asList(
+                    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"))
+            .build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    }
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void enabledCipherSuites_incompatibleCipherSuitesFail() throws Exception {
+    assumeThat(System.getProperty("io.opentelemetry.sdk.common.export.GrpcSenderProvider"))
+        .as("enabledCipherSuites is not supported by UpstreamGrpcSenderProvider")
+        .isNotEqualTo(
+            "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider");
+
+    // The test server uses an RSA certificate, so an ECDSA-only cipher suite cannot be negotiated.
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri().toString())
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setEnabledCipherSuites(
+                Collections.singletonList("TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"))
+            .build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    }
+  }
+
+  @Test
   void enabledProtocols() throws Exception {
     try (TelemetryExporter<T> exporter =
         exporterBuilder()
@@ -1118,6 +1157,14 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
     assertThatCode(() -> exporterBuilder().setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3")))
         .doesNotThrowAnyException();
+    assertThatCode(
+            () ->
+                exporterBuilder()
+                    .setEnabledCipherSuites(
+                        Arrays.asList(
+                            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -1221,6 +1268,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setEnabledProtocols(Collections.emptyList()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("enabledProtocols must not be empty");
+
+    assertThatThrownBy(() -> exporterBuilder().setEnabledCipherSuites(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("enabledCipherSuites");
+    assertThatThrownBy(() -> exporterBuilder().setEnabledCipherSuites(Collections.emptyList()))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("enabledCipherSuites must not be empty");
   }
 
   @Test
@@ -1262,6 +1316,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setBackoffMultiplier(1.3)
                     .build())
             .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
+            .setEnabledCipherSuites(
+                Arrays.asList(
+                    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"))
             .build()) {
       Object unwrapped = exporter.unwrap();
       Field builderField = unwrapped.getClass().getDeclaredField("builder");
@@ -1337,6 +1395,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setBackoffMultiplier(1.3)
                     .build())
             .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
+            .setEnabledCipherSuites(
+                Arrays.asList(
+                    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"))
             .build(); ) {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
@@ -1358,7 +1420,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + GrpcExporterBuilder.DEFAULT_MAX_REQUEST_MESSAGE_SIZE
                   + ".*" // Maybe additional grpcChannel field, signal specific fields
                   + "\\}")
-          .contains("enabledProtocols=[TLSv1.2, TLSv1.3]");
+          .contains("enabledProtocols=[TLSv1.2, TLSv1.3]")
+          .contains(
+              "enabledCipherSuites=[TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384]");
     }
   }
 

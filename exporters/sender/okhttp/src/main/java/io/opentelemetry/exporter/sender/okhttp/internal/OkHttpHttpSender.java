@@ -84,7 +84,8 @@ public final class OkHttpHttpSender implements HttpSender {
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
       long maxResponseBodySize,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      @Nullable List<String> enabledCipherSuites) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -128,14 +129,19 @@ public final class OkHttpHttpSender implements HttpSender {
         }
         builder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
       }
-      if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
-        TlsVersion[] versions =
-            enabledProtocols.stream().map(TlsVersion::forJavaName).toArray(TlsVersion[]::new);
-        builder.connectionSpecs(
-            Collections.singletonList(
-                new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
-                    .tlsVersions(versions)
-                    .build()));
+      if ((enabledProtocols != null && !enabledProtocols.isEmpty())
+          || (enabledCipherSuites != null && !enabledCipherSuites.isEmpty())) {
+        ConnectionSpec.Builder specBuilder =
+            new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS);
+        if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
+          TlsVersion[] versions =
+              enabledProtocols.stream().map(TlsVersion::forJavaName).toArray(TlsVersion[]::new);
+          specBuilder.tlsVersions(versions);
+        }
+        if (enabledCipherSuites != null && !enabledCipherSuites.isEmpty()) {
+          specBuilder.cipherSuites(enabledCipherSuites.toArray(new String[0]));
+        }
+        builder.connectionSpecs(Collections.singletonList(specBuilder.build()));
       }
     }
 

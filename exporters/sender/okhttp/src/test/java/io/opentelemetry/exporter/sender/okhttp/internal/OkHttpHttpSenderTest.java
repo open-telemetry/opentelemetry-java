@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,7 +26,9 @@ import java.security.KeyStore;
 import java.security.Security;
 import java.security.cert.Certificate;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,6 +45,11 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import okhttp3.CipherSuite;
+import okhttp3.ConnectionSpec;
+import okhttp3.OkHttpClient;
+import okhttp3.TlsVersion;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -67,6 +75,7 @@ class OkHttpHttpSenderTest {
             null,
             executor,
             Long.MAX_VALUE,
+            null,
             null);
 
     AtomicReference<HttpResponse> responseRef = new AtomicReference<>();
@@ -290,7 +299,8 @@ class OkHttpHttpSenderTest {
               trustManager,
               null,
               Long.MAX_VALUE,
-              Collections.singletonList("TLSv1.1"));
+              Collections.singletonList("TLSv1.1"),
+              null);
 
       AtomicReference<HttpResponse> responseRef = new AtomicReference<>();
       AtomicReference<Throwable> errorRef = new AtomicReference<>();
@@ -313,6 +323,76 @@ class OkHttpHttpSenderTest {
     }
   }
 
+  @Test
+  void tlsConfig_cipherSuitesOnly() {
+    OkHttpHttpSender sender =
+        newTlsSender(null, Collections.singletonList("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"));
+
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .satisfies(
+            client -> {
+              assertThat(client.connectionSpecs()).hasSize(1);
+              ConnectionSpec spec = client.connectionSpecs().get(0);
+              assertThat(spec.cipherSuites())
+                  .extracting(CipherSuite::javaName)
+                  .containsExactly("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
+              // Protocols fall back to the COMPATIBLE_TLS defaults.
+              assertThat(spec.tlsVersions()).isEqualTo(ConnectionSpec.COMPATIBLE_TLS.tlsVersions());
+            });
+  }
+
+  @Test
+  void tlsConfig_protocolsAndCipherSuites() {
+    OkHttpHttpSender sender =
+        newTlsSender(
+            Collections.singletonList("TLSv1.3"),
+            Arrays.asList("TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384"));
+
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .satisfies(
+            client -> {
+              assertThat(client.connectionSpecs()).hasSize(1);
+              ConnectionSpec spec = client.connectionSpecs().get(0);
+              assertThat(spec.tlsVersions()).containsExactly(TlsVersion.TLS_1_3);
+              assertThat(spec.cipherSuites())
+                  .extracting(CipherSuite::javaName)
+                  .containsExactly("TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384");
+            });
+  }
+
+  @Test
+  void tlsConfig_emptyListsUseDefaults() {
+    OkHttpHttpSender sender = newTlsSender(Collections.emptyList(), Collections.emptyList());
+
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .satisfies(
+            client ->
+                assertThat(client.connectionSpecs())
+                    .isEqualTo(new OkHttpClient().connectionSpecs()));
+  }
+
+  private static OkHttpHttpSender newTlsSender(
+      @Nullable List<String> enabledProtocols, @Nullable List<String> enabledCipherSuites) {
+    return new OkHttpHttpSender(
+        URI.create("https://localhost"),
+        "text/plain",
+        null,
+        Duration.ofSeconds(10),
+        Duration.ofSeconds(10),
+        Collections::emptyMap,
+        null,
+        null,
+        null,
+        null,
+        null,
+        Long.MAX_VALUE,
+        enabledProtocols,
+        enabledCipherSuites);
+  }
+
   private static OkHttpHttpSender newSender(
       String endpoint, @Nullable ExecutorService executorService) {
     return new OkHttpHttpSender(
@@ -328,6 +408,7 @@ class OkHttpHttpSenderTest {
         null,
         executorService,
         Long.MAX_VALUE,
+        null,
         null);
   }
 
@@ -361,6 +442,7 @@ class OkHttpHttpSenderTest {
                     null,
                     null,
                     Long.MAX_VALUE,
+                    null,
                     null))
         .doesNotThrowAnyException();
   }
@@ -390,6 +472,7 @@ class OkHttpHttpSenderTest {
                       null,
                       null,
                       Long.MAX_VALUE,
+                      null,
                       null))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("Unable to initialize default trust manager")

@@ -71,6 +71,7 @@ public class GrpcExporterBuilder {
   @Nullable private ExecutorService executorService;
   private long maxRequestMessageSize = DEFAULT_MAX_REQUEST_MESSAGE_SIZE;
   @Nullable private List<String> enabledProtocols;
+  @Nullable private List<String> enabledCipherSuites;
 
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
@@ -183,6 +184,11 @@ public class GrpcExporterBuilder {
     return this;
   }
 
+  public GrpcExporterBuilder setEnabledCipherSuites(@Nullable List<String> enabledCipherSuites) {
+    this.enabledCipherSuites = enabledCipherSuites;
+    return this;
+  }
+
   @SuppressWarnings("BuilderReturnThis")
   public GrpcExporterBuilder copy() {
     GrpcExporterBuilder copy =
@@ -204,6 +210,7 @@ public class GrpcExporterBuilder {
     copy.componentLoader = componentLoader;
     copy.maxRequestMessageSize = maxRequestMessageSize;
     copy.enabledProtocols = enabledProtocols;
+    copy.enabledCipherSuites = enabledCipherSuites;
     return copy;
   }
 
@@ -248,7 +255,8 @@ public class GrpcExporterBuilder {
                 // 4mb to align with spec guidance - even though we don't do anything with the
                 // response today, we will so better to have future-looking memory profile
                 4 * 1024L * 1024L,
-                enabledProtocols));
+                enabledProtocols,
+                enabledCipherSuites));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter(
@@ -284,6 +292,9 @@ public class GrpcExporterBuilder {
     }
     if (enabledProtocols != null) {
       joiner.add("enabledProtocols=" + enabledProtocols);
+    }
+    if (enabledCipherSuites != null) {
+      joiner.add("enabledCipherSuites=" + enabledCipherSuites);
     }
     if (grpcChannel != null) {
       joiner.add("grpcChannel=" + grpcChannel);

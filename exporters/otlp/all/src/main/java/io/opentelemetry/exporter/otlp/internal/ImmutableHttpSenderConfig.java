@@ -37,7 +37,8 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
       long maxResponseBodySize,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      @Nullable List<String> enabledCipherSuites) {
     return new AutoValue_ImmutableHttpSenderConfig(
         endpoint,
         contentType,
@@ -51,7 +52,8 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
         trustManager,
         executorService,
         maxResponseBodySize,
-        enabledProtocols);
+        enabledProtocols,
+        enabledCipherSuites);
   }
 
   @Override
@@ -60,4 +62,8 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
   @Override
   @Nullable
   public abstract List<String> getEnabledProtocols();
+
+  @Override
+  @Nullable
+  public abstract List<String> getEnabledCipherSuites();
 }

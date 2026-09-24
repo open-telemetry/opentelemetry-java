@@ -40,7 +40,8 @@ public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderCon
       @Nullable ExecutorService executorService,
       @Nullable Object managedChannel,
       long maxResponseBodySize,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      @Nullable List<String> enabledCipherSuites) {
     return new AutoValue_ImmutableGrpcSenderConfig(
         endpoint,
         fullMethodName,
@@ -54,7 +55,8 @@ public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderCon
         executorService,
         managedChannel,
         maxResponseBodySize,
-        enabledProtocols);
+        enabledProtocols,
+        enabledCipherSuites);
   }
 
   @Override
@@ -63,4 +65,8 @@ public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderCon
   @Override
   @Nullable
   public abstract List<String> getEnabledProtocols();
+
+  @Override
+  @Nullable
+  public abstract List<String> getEnabledCipherSuites();
 }

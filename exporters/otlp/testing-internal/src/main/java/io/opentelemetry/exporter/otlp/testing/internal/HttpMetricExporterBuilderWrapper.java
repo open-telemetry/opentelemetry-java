@@ -148,6 +148,13 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
+  public TelemetryExporterBuilder<MetricData> setEnabledCipherSuites(
+      List<String> enabledCipherSuites) {
+    builder.setEnabledCipherSuites(enabledCipherSuites);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<MetricData> setMeterProvider(
       Supplier<MeterProvider> meterProviderSupplier) {
     builder.setMeterProvider(meterProviderSupplier);

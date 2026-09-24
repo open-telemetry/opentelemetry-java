@@ -84,6 +84,8 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setEnabledProtocols(List<String> enabledProtocols);
 
+  TelemetryExporterBuilder<T> setEnabledCipherSuites(List<String> enabledCipherSuites);
+
   TelemetryExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier);
 
   TelemetryExporterBuilder<T> setInternalTelemetryVersion(InternalTelemetryVersion schemaVersion);

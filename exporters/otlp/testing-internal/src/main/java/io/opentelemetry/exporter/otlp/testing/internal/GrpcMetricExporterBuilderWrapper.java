@@ -149,6 +149,13 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
   }
 
   @Override
+  public TelemetryExporterBuilder<MetricData> setEnabledCipherSuites(
+      List<String> enabledCipherSuites) {
+    builder.setEnabledCipherSuites(enabledCipherSuites);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<MetricData> setMeterProvider(
       Supplier<MeterProvider> meterProviderSupplier) {
     builder.setMeterProvider(meterProviderSupplier);
