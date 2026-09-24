@@ -67,6 +67,15 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
    * {@link ManagedChannel}.
    */
   private static ManagedChannel minimalFallbackManagedChannel(URI endpoint) {
+    // grpc-java parses host names with java.net.URI, which returns null for some valid DNS names
+    // (JDK-8188305) that EndpointUtil accepts, so fail with a clear message.
+    if (endpoint.getHost() == null) {
+      throw new IllegalArgumentException(
+          "Invalid endpoint, host not supported by grpc-java: "
+              + endpoint
+              + ". java.net.URI cannot parse host names whose last label starts with a digit."
+              + " Use the OkHttp sender or a fully qualified host name.");
+    }
     ManagedChannelBuilder<?> channelBuilder =
         ManagedChannelBuilder.forAddress(endpoint.getHost(), endpoint.getPort());
     if (!endpoint.getScheme().equals("https")) {
