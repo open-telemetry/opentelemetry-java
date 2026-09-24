@@ -50,15 +50,6 @@
 
     {
       matchPackageNames: [
-        'java-jdk',
-      ],
-      matchFileNames: [
-        '.github/workflows/benchmark-tags.yml',
-      ],
-      allowedVersions: '17',
-    },
-    {
-      matchPackageNames: [
         'io.opentelemetry.contrib:opentelemetry-aws-xray-propagator',
         'io.opentelemetry.proto:opentelemetry-proto',
         'io.opentelemetry.semconv:opentelemetry-semconv-incubating',
