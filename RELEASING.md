@@ -77,8 +77,10 @@ The following credentials are required for building or publishing (and automatic
   * Each maintainer will have their own set of Sonotype credentials with permission to publish to
     the `io.opentelemetry` group prefix.
   * [Register to publish](https://central.sonatype.org/register/central-portal/#publishing)
-    and comment on [OSSRH-63768](https://issues.sonatype.org/browse/OSSRH-63768) with confirmation
-    from another maintainer.
+    and request access to the `io.opentelemetry` namespace by emailing
+    [Central Support](mailto:central-support@sonatype.com) (referencing the original `OSSRH-63768`
+    ticket), with confirmation from another maintainer. Sonatype
+    [decommissioned issues.sonatype.org](https://central.sonatype.org/faq/what-happened-to-issues-sonatype-org/).
   * To obtain `SONATYPE_USER` and `SONATYPE_KEY` for your account, log in
     to [central.sonatype.com](https://central.sonatype.com/) and navigate to Profile -> View User Tokens
     (see [detailed instructions](https://central.sonatype.org/publish/generate-portal-token/)).
