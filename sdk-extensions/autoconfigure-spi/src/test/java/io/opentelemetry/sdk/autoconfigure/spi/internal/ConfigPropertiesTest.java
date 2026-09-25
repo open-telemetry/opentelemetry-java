@@ -307,4 +307,4 @@ class ConfigPropertiesTest {
     properties.put("test.duration", "1s");
     return properties;
   }
-}\n
+}
