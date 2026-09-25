@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
@@ -24,6 +25,33 @@ import java.util.function.Predicate;
 public final class SdkMeterProviderUtil {
 
   private SdkMeterProviderUtil() {}
+
+  /** Reflectively set the {@link SdkResourceProvider} on the {@link SdkMeterProviderBuilder}. */
+  public static void setSdkResourceProvider(
+      SdkMeterProviderBuilder sdkMeterProviderBuilder, SdkResourceProvider resourceProvider) {
+    try {
+      Method method =
+          SdkMeterProviderBuilder.class.getDeclaredMethod(
+              "setSdkResourceProvider", SdkResourceProvider.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProviderBuilder, resourceProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setSdkResourceProvider on SdkMeterProviderBuilder", e);
+    }
+  }
+
+  /** Reflectively get the {@link SdkResourceProvider} from the {@link SdkMeterProvider}. */
+  public static SdkResourceProvider getSdkResourceProvider(SdkMeterProvider sdkMeterProvider) {
+    try {
+      Method method = SdkMeterProvider.class.getDeclaredMethod("getSdkResourceProvider");
+      method.setAccessible(true);
+      return (SdkResourceProvider) method.invoke(sdkMeterProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling getSdkResourceProvider on SdkMeterProvider", e);
+    }
+  }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProvider}. */
   public static void setMeterConfigurator(

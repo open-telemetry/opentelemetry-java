@@ -20,11 +20,13 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 /**
  * Builder class for {@link SdkLoggerProvider} instances.
@@ -35,6 +37,8 @@ public final class SdkLoggerProviderBuilder {
 
   private final List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
   private Resource resource = Resource.getDefault();
+  private boolean resourceExplicitlySet = false;
+  @Nullable private SdkResourceProvider resourceProvider;
   private Supplier<LogLimits> logLimitsSupplier = LogLimits::getDefault;
   private Clock clock = Clock.getDefault();
   private ScopeConfiguratorBuilder<LoggerConfig> loggerConfiguratorBuilder =
@@ -55,6 +59,7 @@ public final class SdkLoggerProviderBuilder {
   public SdkLoggerProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
     this.resource = resource;
+    this.resourceExplicitlySet = true;
     return this;
   }
 
@@ -67,6 +72,23 @@ public final class SdkLoggerProviderBuilder {
   public SdkLoggerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = this.resource.merge(resource);
+    this.resourceExplicitlySet = true;
+    return this;
+  }
+
+  /**
+   * Sets the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to all log
+   * records.
+   *
+   * <p>Mutually exclusive with {@link #setResource(Resource)} and {@link #addResource(Resource)};
+   * {@link #build()} throws {@link IllegalStateException} if both are configured.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setSdkResourceProvider(SdkLoggerProviderBuilder, SdkResourceProvider)}.
+   */
+  SdkLoggerProviderBuilder setSdkResourceProvider(SdkResourceProvider resourceProvider) {
+    requireNonNull(resourceProvider, "resourceProvider");
+    this.resourceProvider = resourceProvider;
     return this;
   }
 
@@ -207,8 +229,14 @@ public final class SdkLoggerProviderBuilder {
    * @return an instance configured with the provided options
    */
   public SdkLoggerProvider build() {
+    if (resourceProvider != null && resourceExplicitlySet) {
+      throw new IllegalStateException(
+          "setSdkResourceProvider is mutually exclusive with setResource / addResource.");
+    }
+    SdkResourceProvider effectiveSdkResourceProvider =
+        resourceProvider != null ? resourceProvider : SdkResourceProvider.create(resource);
     return new SdkLoggerProvider(
-        resource,
+        effectiveSdkResourceProvider,
         logLimitsSupplier,
         logRecordProcessors,
         clock,
