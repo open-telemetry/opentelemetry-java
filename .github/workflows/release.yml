@@ -10,7 +10,7 @@ jobs:
     environment: protected
     permissions:
       contents: write # for creating the release
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       version: ${{ steps.create-github-release.outputs.version }}
       prior-version: ${{ steps.create-github-release.outputs.prior-version }}
