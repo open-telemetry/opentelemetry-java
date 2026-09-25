@@ -165,7 +165,7 @@ class ConfigPropertiesTest {
                         Collections.singletonMap("map", "authorization=Bearer s3cr3t,malformed"))
                     .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid map property: map");
+        .hasMessage("Invalid map property: map=authorization=Bearer s3cr3t,malformed");
     assertThatThrownBy(
             () ->
                 DefaultConfigProperties.createFromMap(Collections.singletonMap("test-map", "a=1,b"))
@@ -177,7 +177,7 @@ class ConfigPropertiesTest {
                 DefaultConfigProperties.createFromMap(Collections.singletonMap("map", "a=1,=b"))
                     .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid map property: map");
+        .hasMessage("Invalid map property: map=a=1,=b");
   }
 
   @Test
