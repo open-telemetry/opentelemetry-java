@@ -141,7 +141,7 @@ public class OtlpPipelineStressTest {
 
   @Test
   @Disabled("we don't want to run this with every build.")
-  void oltpExportWithFlakyCollector() throws IOException, InterruptedException {
+  void otlpExportWithFlakyCollector() throws IOException, InterruptedException {
     ToxicList toxics = collectorProxy.toxics();
     //    Latency latency = toxics.latency("jittery_latency", ToxicDirection.UPSTREAM, 500);
     //    latency.setJitter(1000);
