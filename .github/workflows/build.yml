@@ -33,7 +33,7 @@ jobs:
           - 21
           - 25
           # When this release becomes LTS, keep it and add the next feature release as the marked row.
-          - 26 # renovate(java-version)
+          - 27 # renovate(java-version)
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-latest
