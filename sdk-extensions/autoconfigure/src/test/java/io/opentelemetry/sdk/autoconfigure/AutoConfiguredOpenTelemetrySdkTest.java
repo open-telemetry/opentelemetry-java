@@ -57,6 +57,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -170,7 +171,9 @@ class AutoConfiguredOpenTelemetrySdkTest {
         builder
             .addTracerProviderCustomizer(
                 (tracerProviderBuilder, config) ->
-                    tracerProviderBuilder.setIdGenerator(idGenerator))
+                    tracerProviderBuilder
+                        .setIdGenerator(idGenerator)
+                        .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop())))
             .build()
             .getOpenTelemetrySdk()
             .getTracer("test")

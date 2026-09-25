@@ -117,7 +117,11 @@ class SdkSpanBuilderTest {
   void truncateLink() {
     int maxNumberOfLinks = 8;
     SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfLinks(maxNumberOfLinks).build();
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
+    TracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(mockedSpanProcessor)
+            .setSpanLimits(spanLimits)
+            .build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
@@ -140,7 +144,11 @@ class SdkSpanBuilderTest {
   @Test
   void truncateLinkAttributes() {
     SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfAttributesPerLink(1).build();
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
+    TracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(mockedSpanProcessor)
+            .setSpanLimits(spanLimits)
+            .build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     Attributes attributes =
@@ -165,6 +173,7 @@ class SdkSpanBuilderTest {
     TracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .setSpanLimits(SpanLimits.builder().setMaxAttributeValueLength(maxLength).build())
+            .addSpanProcessor(mockedSpanProcessor)
             .build();
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());
@@ -411,7 +420,11 @@ class SdkSpanBuilderTest {
   void droppingAttributes() {
     int maxNumberOfAttrs = 8;
     SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttrs).build();
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
+    TracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(mockedSpanProcessor)
+            .setSpanLimits(spanLimits)
+            .build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfAttrs; i++) {
@@ -452,7 +465,11 @@ class SdkSpanBuilderTest {
             return "test";
           }
         };
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setSampler(sampler).build();
+    TracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(mockedSpanProcessor)
+            .setSampler(sampler)
+            .build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
@@ -694,6 +711,7 @@ class SdkSpanBuilderTest {
                         return "test sampler";
                       }
                     })
+                .addSpanProcessor(mockedSpanProcessor)
                 .build()
                 .get("test")
                 .spanBuilder(SPAN_NAME)
@@ -956,7 +974,11 @@ class SdkSpanBuilderTest {
                 ArgumentMatchers.anyList()))
         .thenReturn(SamplingResult.recordAndSample());
 
-    SdkTracerProvider provider = SdkTracerProvider.builder().setSampler(mockSampler).build();
+    SdkTracerProvider provider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(mockedSpanProcessor)
+            .setSampler(mockSampler)
+            .build();
     ContextKey<String> propagatorKey = ContextKey.named("propagator-test-key");
     Context parentWithPropagatorData = Context.root().with(propagatorKey, "test-value");
 
@@ -993,7 +1015,11 @@ class SdkSpanBuilderTest {
                 ArgumentMatchers.anyList()))
         .thenReturn(SamplingResult.recordAndSample());
 
-    SdkTracerProvider provider = SdkTracerProvider.builder().setSampler(mockSampler).build();
+    SdkTracerProvider provider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(mockedSpanProcessor)
+            .setSampler(mockSampler)
+            .build();
 
     // setNoParent() explicitly sets parentContext to Context.root(), exercising the singleton path.
     // Start two spans and assert the sampler received the exact same Context instance both times,
