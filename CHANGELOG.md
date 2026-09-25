@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Exporters
+
+* OTLP gRPC: Retry responses that report a retryable status in trailers
+  ([#8854](https://github.com/open-telemetry/opentelemetry-java/pull/8854)).
+
 ## Version 1.66.0 (2026-09-11)
 
 ### API

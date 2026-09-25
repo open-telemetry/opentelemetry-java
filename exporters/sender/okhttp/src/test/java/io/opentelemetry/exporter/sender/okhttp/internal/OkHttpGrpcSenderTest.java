@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -65,6 +66,22 @@ class OkHttpGrpcSenderTest {
     Response response = createResponse(503, nonRetryableGrpcStatus, "Non-retryable");
     boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
     assertFalse(isRetryable);
+  }
+
+  @Test
+  void isRetryable_RetryableGrpcStatusInTrailers() throws IOException {
+    Response response =
+        new Response.Builder()
+            .request(new Request.Builder().url("http://localhost/").build())
+            .protocol(Protocol.HTTP_2)
+            .code(200)
+            .body(ResponseBody.create("", TEXT_PLAIN))
+            .message("Retryable")
+            .trailers(() -> Headers.of(GRPC_STATUS, "14"))
+            .build();
+
+    assertTrue(OkHttpGrpcSender.isRetryable(response));
+    assertThat(response.body().string()).isEmpty();
   }
 
   @Test

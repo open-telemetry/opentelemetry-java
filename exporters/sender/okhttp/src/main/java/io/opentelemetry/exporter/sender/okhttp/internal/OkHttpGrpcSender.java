@@ -57,7 +57,9 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.ConnectionSpec;
 import okhttp3.Dispatcher;
+import okhttp3.Headers;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -66,6 +68,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.TlsVersion;
 import okio.Buffer;
+import okio.BufferedSource;
 import okio.GzipSource;
 
 /**
@@ -122,7 +125,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
           new RetryInterceptor(
-              retryPolicy, OkHttpGrpcSender::isRetryable, response -> OptionalLong.empty()));
+              retryPolicy,
+              OkHttpGrpcSender::isRetryable,
+              response -> OptionalLong.empty(),
+              response -> prepareResponseForRetry(response, maxResponseBodySize)));
     }
 
     boolean isPlainHttp = endpoint.startsWith("http://");
@@ -366,13 +372,66 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
   /** Whether response is retriable or not. */
   public static boolean isRetryable(Response response) {
-    // We don't check trailers for retry since retryable error codes always come with response
-    // headers, not trailers, in practice.
     String grpcStatus = response.header(GRPC_STATUS);
     if (grpcStatus == null) {
-      return false;
+      try {
+        grpcStatus = response.trailers().get(GRPC_STATUS);
+      } catch (IOException | IllegalStateException e) {
+        return false;
+      }
     }
-    return RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
+    return grpcStatus != null && RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
+  }
+
+  private static Response prepareResponseForRetry(Response response, long maxResponseBodySize)
+      throws IOException {
+    if (response.header(GRPC_STATUS) != null) {
+      return response;
+    }
+
+    ResponseBody body = response.body();
+    Buffer buffer = new Buffer();
+    long readUpTo =
+        maxResponseBodySize >= Long.MAX_VALUE - 5 ? Long.MAX_VALUE : maxResponseBodySize + 6;
+    while (buffer.size() < readUpTo) {
+      long read = body.source().read(buffer, readUpTo - buffer.size());
+      if (read == -1L) {
+        break;
+      }
+    }
+
+    boolean responseBodyTooLarge = buffer.size() > maxResponseBodySize;
+    Headers trailers = responseBodyTooLarge ? Headers.of() : response.trailers();
+    Buffer replacementBuffer = buffer;
+    ResponseBody replacementBody =
+        new ResponseBody() {
+          @Override
+          public long contentLength() {
+            return replacementBuffer.size();
+          }
+
+          @Override
+          public MediaType contentType() {
+            return body.contentType();
+          }
+
+          @Override
+          public BufferedSource source() {
+            return replacementBuffer;
+          }
+        };
+    Response.Builder responseBuilder = response.newBuilder();
+    response.close();
+    responseBuilder.body(replacementBody);
+    String grpcStatus = trailers.get(GRPC_STATUS);
+    if (grpcStatus != null) {
+      responseBuilder.header(GRPC_STATUS, grpcStatus);
+    }
+    String grpcMessage = trailers.get(GRPC_MESSAGE);
+    if (grpcMessage != null) {
+      responseBuilder.header(GRPC_MESSAGE, grpcMessage);
+    }
+    return responseBuilder.build();
   }
 
   // From grpc-java
