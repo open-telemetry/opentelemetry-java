@@ -168,8 +168,7 @@ class ConfigPropertiesTest {
         .hasMessage("Invalid map property: map");
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createFromMap(
-                        Collections.singletonMap("test-map", "a=1,b"))
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("test-map", "a=1,b"))
                     .getMap("test-map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: test-map=a=1,b");
