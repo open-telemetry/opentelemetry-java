@@ -348,4 +348,16 @@ class SdkTracerProviderTest {
     TracerBuilder builder = SdkTracerProvider.builder().build().tracerBuilder("test");
     assertThat(builder).isSameAs(TracerProvider.noop().tracerBuilder("test"));
   }
+
+  @Test
+  void get_NoSpanProcessors_UsesNoop() {
+    Tracer tracer = SdkTracerProvider.builder().build().get("test");
+    assertThat(tracer).isSameAs(TracerProvider.noop().get("test"));
+  }
+
+  @Test
+  void getWithVersion_NoSpanProcessors_UsesNoop() {
+    Tracer tracer = SdkTracerProvider.builder().build().get("test", "1.0.0");
+    assertThat(tracer).isSameAs(TracerProvider.noop().get("test", "1.0.0"));
+  }
 }
