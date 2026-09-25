@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.baggage;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -27,6 +28,10 @@ public interface BaggageEntryMetadata {
    * contains other characters are dropped on inject.
    */
   static BaggageEntryMetadata create(String metadata) {
+    if (metadata == null) {
+      ApiUsageLogger.logNullParam(BaggageEntryMetadata.class, "create", "metadata");
+      return BaggageEntryMetadata.empty();
+    }
     return ImmutableEntryMetadata.create(metadata);
   }
 

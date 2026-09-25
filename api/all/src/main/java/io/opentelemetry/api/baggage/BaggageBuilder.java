@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.baggage;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
+
 /**
  * A builder of {@link Baggage}.
  *
@@ -34,6 +36,14 @@ public interface BaggageBuilder {
    * @return this
    */
   default BaggageBuilder put(String key, String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(BaggageBuilder.class, "put", "key");
+      return this;
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(BaggageBuilder.class, "put", "value");
+      return this;
+    }
     return put(key, value, BaggageEntryMetadata.empty());
   }
 
