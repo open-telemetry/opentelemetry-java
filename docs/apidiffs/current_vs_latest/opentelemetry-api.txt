@@ -1,2 +1,8 @@
 Comparing source compatibility of opentelemetry-api-1.67.0-SNAPSHOT.jar against opentelemetry-api-1.66.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.api.impl.ConfigUtil  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.lang.String getString(java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.lang.String normalizeEnvironmentVariableKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.lang.String normalizePropertyKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.Properties safeSystemProperties()

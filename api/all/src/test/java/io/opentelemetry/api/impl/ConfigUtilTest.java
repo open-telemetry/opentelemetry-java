@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.internal;
+package io.opentelemetry.api.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -60,12 +60,6 @@ class ConfigUtilTest {
   }
 
   @Test
-  void defaultIfnull() {
-    assertThat(ConfigUtil.defaultIfNull("val1", "val2")).isEqualTo("val1");
-    assertThat(ConfigUtil.defaultIfNull(null, "val2")).isEqualTo("val2");
-  }
-
-  @Test
   @SuppressWarnings("ReturnValueIgnored")
   void systemPropertiesConcurrentAccess() throws ExecutionException, InterruptedException {
     int threads = 4;
@@ -100,9 +94,8 @@ class ConfigUtilTest {
       for (Future<?> future : futures) {
         future.get();
       }
-
     } finally {
-      executor.shutdownNow();
+      executor.shutdown();
     }
   }
 }

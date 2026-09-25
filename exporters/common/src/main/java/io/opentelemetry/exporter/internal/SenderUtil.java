@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal;
 
-import io.opentelemetry.api.internal.ConfigUtil;
+import io.opentelemetry.api.impl.ConfigUtil;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.common.export.GrpcSenderProvider;
 import io.opentelemetry.sdk.common.export.HttpSenderProvider;
