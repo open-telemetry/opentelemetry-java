@@ -7,6 +7,7 @@ package io.opentelemetry.api.common;
 
 import static io.opentelemetry.api.common.ArrayBackedAttributes.sortAndFilterToAttributes;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -108,7 +109,15 @@ public interface Attributes {
 
   /** Returns a {@link Attributes} instance with a single key-value pair. */
   static <T> Attributes of(AttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key");
+      return empty();
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value");
+      return empty();
+    }
+    if (key.getKey().isEmpty()) {
       return empty();
     }
     return new ArrayBackedAttributes(new Object[] {key, value});
@@ -119,6 +128,18 @@ public interface Attributes {
    * preserved. Duplicate keys will be removed.
    */
   static <T, U> Attributes of(AttributeKey<T> key1, T value1, AttributeKey<U> key2, U value2) {
+    if (key1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key1");
+    }
+    if (value1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value1");
+    }
+    if (key2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key2");
+    }
+    if (value2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value2");
+    }
     if (key1 == null || key1.getKey().isEmpty() || value1 == null) {
       return of(key2, value2);
     }
@@ -146,6 +167,24 @@ public interface Attributes {
       U value2,
       AttributeKey<V> key3,
       V value3) {
+    if (key1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key1");
+    }
+    if (value1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value1");
+    }
+    if (key2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key2");
+    }
+    if (value2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value2");
+    }
+    if (key3 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key3");
+    }
+    if (value3 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value3");
+    }
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3);
   }
 
@@ -162,6 +201,30 @@ public interface Attributes {
       V value3,
       AttributeKey<W> key4,
       W value4) {
+    if (key1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key1");
+    }
+    if (value1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value1");
+    }
+    if (key2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key2");
+    }
+    if (value2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value2");
+    }
+    if (key3 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key3");
+    }
+    if (value3 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value3");
+    }
+    if (key4 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key4");
+    }
+    if (value4 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value4");
+    }
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3, key4, value4);
   }
 
@@ -181,6 +244,36 @@ public interface Attributes {
       W value4,
       AttributeKey<X> key5,
       X value5) {
+    if (key1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key1");
+    }
+    if (value1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value1");
+    }
+    if (key2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key2");
+    }
+    if (value2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value2");
+    }
+    if (key3 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key3");
+    }
+    if (value3 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value3");
+    }
+    if (key4 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key4");
+    }
+    if (value4 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value4");
+    }
+    if (key5 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key5");
+    }
+    if (value5 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value5");
+    }
     return sortAndFilterToAttributes(
         key1, value1,
         key2, value2,
@@ -207,6 +300,42 @@ public interface Attributes {
       X value5,
       AttributeKey<Y> key6,
       Y value6) {
+    if (key1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key1");
+    }
+    if (value1 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value1");
+    }
+    if (key2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key2");
+    }
+    if (value2 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value2");
+    }
+    if (key3 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key3");
+    }
+    if (value3 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value3");
+    }
+    if (key4 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key4");
+    }
+    if (value4 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value4");
+    }
+    if (key5 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key5");
+    }
+    if (value5 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value5");
+    }
+    if (key6 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "key6");
+    }
+    if (value6 == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "of", "value6");
+    }
     return sortAndFilterToAttributes(
         key1, value1,
         key2, value2,
