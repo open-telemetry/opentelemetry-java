@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import org.junit.jupiter.api.Test;
 
 class LoggerSharedStateTest {
@@ -26,7 +27,7 @@ class LoggerSharedStateTest {
     when(logRecordProcessor.shutdown()).thenReturn(code);
     LoggerSharedState state =
         new LoggerSharedState(
-            Resource.empty(),
+            SdkResourceProvider.create(Resource.empty()),
             LogLimits::getDefault,
             logRecordProcessor,
             Clock.getDefault(),
