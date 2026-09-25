@@ -220,12 +220,14 @@ public final class DefaultConfigProperties implements ConfigProperties {
 
   @Override
   public Map<String, String> getMap(String name) {
-    return getList(ConfigUtil.normalizePropertyKey(name)).stream()
+    String normalizedName = ConfigUtil.normalizePropertyKey(name);
+    String value = config.get(normalizedName);
+    return getList(normalizedName).stream()
         .map(
             entry -> {
               String[] split = entry.split("=", 2);
               if (split.length != 2 || StringUtils.isNullOrEmpty(split[0])) {
-                throw new ConfigurationException("Invalid map property: " + name);
+                throw new ConfigurationException("Invalid map property: " + name + "=" + value);
               }
               return filterBlanksAndNulls(split);
             })
