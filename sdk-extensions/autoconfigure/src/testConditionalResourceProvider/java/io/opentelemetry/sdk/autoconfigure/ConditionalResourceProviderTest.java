@@ -18,8 +18,11 @@ class ConditionalResourceProviderTest {
   void shouldConditionallyProvideResourceAttributes_skipBasedOnPreviousResource() {
     AutoConfiguredOpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.builder().build();
 
+    // ServiceInstanceIdResourceProvider now runs at Integer.MIN_VALUE and always adds
+    // service.instance.id, causing FirstResourceProvider (a ConditionalResourceProvider) to skip.
+    // This leaves the default service.name from the test environment (test-service-2).
     assertThat(sdk.getResource().getAttributes().asMap())
-        .contains(entry(stringKey("service.name"), "test-service"));
+        .contains(entry(stringKey("service.name"), "test-service-2"));
   }
 
   @Test

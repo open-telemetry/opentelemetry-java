@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.resources;
+package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,13 +40,12 @@ class ServiceInstanceIdResourceProviderTest {
     String serviceInstanceId =
         resource.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID);
     assertThat(serviceInstanceId).isNotNull();
-    // Verify it's a valid UUID format
     assertThat(UUID.fromString(serviceInstanceId)).isNotNull();
   }
 
   @Test
-  void order_returnsMaxValue() {
+  void order_returnsMinValue() {
     ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
-    assertThat(provider.order()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(provider.order()).isEqualTo(Integer.MIN_VALUE);
   }
 }
