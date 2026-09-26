@@ -141,7 +141,16 @@ class ResourceConfigurationTest {
                     attr.containsEntry("service.name", "unknown_service:java")
                         .doesNotContainKey("cat")
                         .containsEntry("animal", "cat")
-                        .containsEntry("color", "blue"))));
+                        .containsEntry("color", "blue"))),
+        Arguments.argumentSet(
+            "service.instance.id overridden by SPI provider",
+            null,
+            null,
+            attributeConsumer(
+                attr ->
+                    attr.containsEntry("service.instance.id", "override-id")
+                        .containsEntry("service.name", "test")
+                        .containsEntry("cat", "meow"))));
   }
 
   private static Consumer<AttributesAssert> attributeConsumer(
