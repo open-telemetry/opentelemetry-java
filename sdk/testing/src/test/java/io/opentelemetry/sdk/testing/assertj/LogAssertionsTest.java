@@ -214,15 +214,16 @@ public class LogAssertionsTest {
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasEventName("foo"));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasTimestamp(200));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasObservedTimestamp(100));
-    assertThatThrownBy(
-        () ->
-            assertThat(LOG_DATA)
-                .hasSpanContext(
-                    SpanContext.create(
-                        TRACE_ID,
-                        "0000000000000004",
-                        TraceFlags.getDefault(),
-                        TraceState.getDefault())));
+    SpanContext otherSpanContext =
+        SpanContext.create(
+            TRACE_ID, "0000000000000004", TraceFlags.getDefault(), TraceState.getDefault());
+    assertThatThrownBy(() -> assertThat(LOG_DATA).hasSpanContext(otherSpanContext))
+        .hasMessage(
+            "Expected log to have span context <"
+                + otherSpanContext
+                + "> but was <"
+                + LOG_DATA.getSpanContext()
+                + ">");
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasSeverity(Severity.DEBUG));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasSeverityText("warning"));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasBody("bar"));

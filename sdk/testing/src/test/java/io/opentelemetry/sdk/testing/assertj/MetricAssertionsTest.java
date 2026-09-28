@@ -569,7 +569,13 @@ class MetricAssertionsTest {
             () ->
                 assertThat(DOUBLE_GAUGE_METRIC)
                     .hasInstrumentationScope(InstrumentationScopeInfo.empty()))
-        .isInstanceOf(AssertionError.class);
+        .isInstanceOf(AssertionError.class)
+        .hasMessage(
+            "Expected MetricData to have instrumentation scope <"
+                + InstrumentationScopeInfo.empty()
+                + "> but found <"
+                + DOUBLE_GAUGE_METRIC.getInstrumentationScopeInfo()
+                + ">");
     assertThatThrownBy(() -> assertThat(DOUBLE_GAUGE_METRIC).hasName("whoami"))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(DOUBLE_GAUGE_METRIC).hasDescription("whatami"))
@@ -1095,12 +1101,14 @@ class MetricAssertionsTest {
             () ->
                 assertThat(HISTOGRAM_METRIC)
                     .hasHistogramSatisfying(histogram -> histogram.isDelta()))
-        .isInstanceOf(AssertionError.class);
+        .isInstanceOf(AssertionError.class)
+        .hasMessage("Expected Histogram to have delta aggregation but found <CUMULATIVE>");
     assertThatThrownBy(
             () ->
                 assertThat(HISTOGRAM_METRIC_DELTA)
                     .hasHistogramSatisfying(histogram -> histogram.isCumulative()))
-        .isInstanceOf(AssertionError.class);
+        .isInstanceOf(AssertionError.class)
+        .hasMessage("Expected Histogram to have cumulative aggregation but found <DELTA>");
     assertThatThrownBy(
             () ->
                 assertThat(HISTOGRAM_METRIC)
@@ -1203,7 +1211,8 @@ class MetricAssertionsTest {
             () ->
                 assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
                     .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isDelta))
-        .isInstanceOf(AssertionError.class);
+        .isInstanceOf(AssertionError.class)
+        .hasMessage("Expected Histogram to have delta aggregation but found <CUMULATIVE>");
     assertThatThrownBy(
             () ->
                 assertThat(EXPONENTIAL_HISTOGRAM_DELTA_METRIC)
