@@ -15,6 +15,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -169,6 +170,7 @@ public final class GlobalOpenTelemetry {
    * OpenTelemetrySdk.builder().buildAndRegisterGlobal()} instead of calling this method directly.
    */
   public static void set(OpenTelemetry openTelemetry) {
+    Objects.requireNonNull(openTelemetry, "openTelemetry");
     synchronized (mutex) {
       if (globalOpenTelemetry != null) {
         throw new IllegalStateException(
@@ -192,6 +194,7 @@ public final class GlobalOpenTelemetry {
    * @since 1.52.0
    */
   public static void set(Supplier<OpenTelemetry> supplier) {
+    Objects.requireNonNull(supplier, "supplier");
     synchronized (mutex) {
       OpenTelemetry openTelemetry = supplier.get();
       set(openTelemetry);
@@ -213,6 +216,10 @@ public final class GlobalOpenTelemetry {
    * @return a tracer instance.
    */
   public static Tracer getTracer(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "getTracer", "instrumentationScopeName");
+      return OpenTelemetry.noop().getTracer("otel.global.opentelemetry");
+    }
     return get().getTracer(instrumentationScopeName);
   }
 
@@ -230,6 +237,14 @@ public final class GlobalOpenTelemetry {
    */
   public static Tracer getTracer(
       String instrumentationScopeName, String instrumentationScopeVersion) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "getTracer", "instrumentationScopeName");
+      return OpenTelemetry.noop().getTracer("otel.global.opentelemetry");
+    }
+    if (instrumentationScopeVersion == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "getTracer", "instrumentationScopeVersion");
+      return OpenTelemetry.noop().getTracer("otel.global.opentelemetry");
+    }
     return get().getTracer(instrumentationScopeName, instrumentationScopeVersion);
   }
 
@@ -244,6 +259,10 @@ public final class GlobalOpenTelemetry {
    * @since 1.4.0
    */
   public static TracerBuilder tracerBuilder(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "tracerBuilder", "instrumentationScopeName");
+      return TracerProvider.noop().tracerBuilder("otel.global.opentelemetry");
+    }
     return get().tracerBuilder(instrumentationScopeName);
   }
 
@@ -267,6 +286,10 @@ public final class GlobalOpenTelemetry {
    * @since 1.10.0
    */
   public static Meter getMeter(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "getMeter", "instrumentationScopeName");
+      return MeterProvider.noop().get("otel.global.opentelemetry");
+    }
     return get().getMeter(instrumentationScopeName);
   }
 
@@ -281,6 +304,10 @@ public final class GlobalOpenTelemetry {
    * @since 1.10.0
    */
   public static MeterBuilder meterBuilder(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "meterBuilder", "instrumentationScopeName");
+      return MeterProvider.noop().meterBuilder("otel.global.opentelemetry");
+    }
     return get().meterBuilder(instrumentationScopeName);
   }
 
@@ -386,6 +413,11 @@ public final class GlobalOpenTelemetry {
 
     @Override
     public TracerBuilder tracerBuilder(String instrumentationScopeName) {
+      if (instrumentationScopeName == null) {
+        ApiUsageLogger.logNullParam(
+            OpenTelemetry.class, "tracerBuilder", "instrumentationScopeName");
+        return TracerProvider.noop().tracerBuilder("otel.global.opentelemetry");
+      }
       return delegate.tracerBuilder(instrumentationScopeName);
     }
   }
