@@ -268,6 +268,49 @@ class YamlDeclarativeConfigPropertiesTest {
         .isEqualTo(Collections.emptyList());
   }
 
+  @Test
+  void typeIntrospection() {
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+
+    assertThat(otherProps.isString("str_key")).isTrue();
+    assertThat(otherProps.isBoolean("bool_key")).isTrue();
+    assertThat(otherProps.isInt("int_key")).isTrue();
+    assertThat(otherProps.isDouble("float_key")).isTrue();
+
+    // getInt and getLong accept each other's types, so the predicates do too
+    assertThat(otherProps.isLong("int_key")).isTrue();
+
+    assertThat(otherProps.isString("int_key")).isFalse();
+    assertThat(otherProps.isBoolean("str_key")).isFalse();
+    assertThat(otherProps.isInt("str_key")).isFalse();
+    assertThat(otherProps.isLong("str_key")).isFalse();
+    assertThat(otherProps.isDouble("str_key")).isFalse();
+
+    // null-valued, non-scalar, and unconfigured keys are all false
+    assertThat(otherProps.isString("null_key")).isFalse();
+    assertThat(otherProps.isString("str_list_key")).isFalse();
+    assertThat(otherProps.isString("map_key")).isFalse();
+    assertThat(otherProps.isString("foo")).isFalse();
+
+    // the reason these exist: asking never reports a type mismatch
+    assertThat(logs.getEvents()).isEmpty();
+  }
+
+  @Test
+  void typeIntrospectionAgreesWithGetters() {
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+
+    for (String key : Arrays.asList("str_key", "int_key", "float_key", "bool_key", "null_key")) {
+      assertThat(otherProps.isString(key)).isEqualTo(otherProps.getString(key) != null);
+      assertThat(otherProps.isBoolean(key)).isEqualTo(otherProps.getBoolean(key) != null);
+      assertThat(otherProps.isInt(key)).isEqualTo(otherProps.getInt(key) != null);
+      assertThat(otherProps.isLong(key)).isEqualTo(otherProps.getLong(key) != null);
+      assertThat(otherProps.isDouble(key)).isEqualTo(otherProps.getDouble(key) != null);
+    }
+  }
+
   private void assertWarning(String message) {
     logs.assertContains(
         e ->
@@ -296,5 +339,10 @@ class YamlDeclarativeConfigPropertiesTest {
     assertThat(empty().getStructured("foo", empty())).isEqualTo(empty());
     assertThat(empty().getStructuredList("foo", Collections.emptyList()))
         .isEqualTo(Collections.emptyList());
+    assertThat(empty().isString("foo")).isFalse();
+    assertThat(empty().isBoolean("foo")).isFalse();
+    assertThat(empty().isInt("foo")).isFalse();
+    assertThat(empty().isLong("foo")).isFalse();
+    assertThat(empty().isDouble("foo")).isFalse();
   }
 }

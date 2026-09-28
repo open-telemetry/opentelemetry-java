@@ -174,6 +174,58 @@ public interface DeclarativeConfigProperties {
   }
 
   /**
+   * Returns whether the property with {@code name} holds a scalar string.
+   *
+   * <p>This is the introspection counterpart of {@link #getString(String)}: it answers whether that
+   * getter would return a non-null value, without the implementation reporting a type mismatch for
+   * a property which holds some other type.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar string
+   */
+  boolean isString(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a scalar boolean.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar boolean
+   * @see #isString(String)
+   */
+  boolean isBoolean(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a scalar integer.
+   *
+   * <p>Accepts the same values {@link #getInt(String)} accepts, including a {@link Long} which that
+   * getter narrows with {@link Long#intValue()}.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar integer
+   * @see #isString(String)
+   */
+  boolean isInt(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a scalar long.
+   *
+   * <p>Accepts the same values {@link #getLong(String)} accepts, including an {@link Integer} which
+   * that getter widens.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar long
+   * @see #isString(String)
+   */
+  boolean isLong(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a scalar double.
+   *
+   * <p>Accepts the same values {@link #getDouble(String)} accepts, including a {@link Float} which
+   * that getter widens.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar double
+   * @see #isString(String)
+   */
+  boolean isDouble(String name);
+
+  /**
    * Returns a {@link DeclarativeConfigProperties} configuration property.
    *
    * @return a map-valued configuration property, or {@code null} if {@code name} has not been
