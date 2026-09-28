@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
  * Builder for {@link InMemoryMetricReader}.
@@ -35,7 +34,7 @@ public final class InMemoryMetricReaderBuilder {
 
   /**
    * Sets the {@link AggregationTemporalitySelector} used by {@link
-   * MetricExporter#getAggregationTemporality(InstrumentType)}.
+   * InMemoryMetricReader#getAggregationTemporality(InstrumentType)}.
    *
    * @param aggregationTemporalitySelector the {@link AggregationTemporalitySelector} to set
    * @return this {@link InMemoryMetricReaderBuilder}
@@ -48,7 +47,7 @@ public final class InMemoryMetricReaderBuilder {
 
   /**
    * Sets the {@link DefaultAggregationSelector} used by {@link
-   * MetricExporter#getDefaultAggregation(InstrumentType)}.
+   * InMemoryMetricReader#getDefaultAggregation(InstrumentType)}.
    *
    * @param defaultAggregationSelector the {@link DefaultAggregationSelector} to set
    * @return this {@link InMemoryMetricReaderBuilder}
