@@ -83,13 +83,13 @@ final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrume
     }
     meter()
         .upDownCounterBuilder("otel.sdk.processor.span.queue.capacity")
-        .setUnit("span")
+        .setUnit("{span}")
         .setDescription(
             "The maximum number of spans the queue of a given instance of an SDK span processor can hold. ")
         .buildWithCallback(m -> m.record(capacity, standardAttrs));
     meter()
         .upDownCounterBuilder("otel.sdk.processor.span.queue.size")
-        .setUnit("span")
+        .setUnit("{span}")
         .setDescription(
             "The number of spans in the queue of a given instance of an SDK span processor.")
         .buildWithCallback(m -> m.record(getSize.get(), standardAttrs));
@@ -104,7 +104,7 @@ final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrume
           processedSpans =
               meter()
                   .counterBuilder("otel.sdk.processor.span.processed")
-                  .setUnit("span")
+                  .setUnit("{span}")
                   .setDescription(
                       "The number of spans for which the processing has finished, either successful or failed.")
                   .build();

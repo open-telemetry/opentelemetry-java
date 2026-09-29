@@ -104,6 +104,7 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
+                    .hasUnit("{span}")
                     .hasLongSumSatisfying(
                         s ->
                             s.hasPointsSatisfying(
@@ -845,6 +846,7 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.capacity")
+                    .hasUnit("{span}")
                     .hasLongSumSatisfying(
                         s ->
                             s.hasPointsSatisfying(
@@ -859,6 +861,7 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.size")
+                    .hasUnit("{span}")
                     .hasLongSumSatisfying(
                         s ->
                             s.hasPointsSatisfying(
@@ -873,6 +876,7 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
+                    .hasUnit("{span}")
                     .hasLongSumSatisfying(
                         s ->
                             s.hasPointsSatisfying(
