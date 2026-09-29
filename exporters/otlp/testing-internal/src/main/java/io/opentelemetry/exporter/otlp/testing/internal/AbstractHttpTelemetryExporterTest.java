@@ -44,7 +44,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.AttributeAssertion;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -1216,15 +1216,15 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       List<AttributeAssertion> expectedAttributes =
           Arrays.asList(
               satisfies(
-                  SemConvAttributes.OTEL_COMPONENT_TYPE,
+                  SemConvConstants.OTEL_COMPONENT_TYPE,
                   str -> str.matches("otlp_http_(log|metric|span)_exporter")),
               satisfies(
-                  SemConvAttributes.OTEL_COMPONENT_NAME,
+                  SemConvConstants.OTEL_COMPONENT_NAME,
                   str -> str.matches("otlp_http_(log|metric|span)_exporter/\\d+")),
               satisfies(
-                  SemConvAttributes.SERVER_PORT, str -> str.isEqualTo(server.httpUri().getPort())),
+                  SemConvConstants.SERVER_PORT, str -> str.isEqualTo(server.httpUri().getPort())),
               satisfies(
-                  SemConvAttributes.SERVER_ADDRESS,
+                  SemConvConstants.SERVER_ADDRESS,
                   str -> str.isEqualTo(server.httpUri().getHost())));
 
       assertThat(inMemoryMetrics.collectAllMetrics())

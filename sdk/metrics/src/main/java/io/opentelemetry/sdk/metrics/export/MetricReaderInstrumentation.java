@@ -10,7 +10,7 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import java.util.Collections;
 import javax.annotation.Nullable;
 
@@ -24,16 +24,16 @@ final class MetricReaderInstrumentation {
 
     standardAttrs =
         Attributes.of(
-            SemConvAttributes.OTEL_COMPONENT_TYPE,
+            SemConvConstants.OTEL_COMPONENT_TYPE,
             componentId.getTypeName(),
-            SemConvAttributes.OTEL_COMPONENT_NAME,
+            SemConvConstants.OTEL_COMPONENT_NAME,
             componentId.getComponentName());
 
     collectionDuration =
         meter
-            .histogramBuilder("otel.sdk.metric_reader.collection.duration")
-            .setUnit("s")
-            .setDescription("The duration of the collect operation of the metric reader.")
+            .histogramBuilder(SemConvConstants.OTEL_SDK_METRIC_READER_COLLECTION_DURATION_NAME)
+            .setUnit(SemConvConstants.OTEL_SDK_METRIC_READER_COLLECTION_DURATION_UNIT)
+            .setDescription(SemConvConstants.OTEL_SDK_METRIC_READER_COLLECTION_DURATION_DESCRIPTION)
             .setExplicitBucketBoundariesAdvice(Collections.emptyList())
             .build();
   }
@@ -41,7 +41,7 @@ final class MetricReaderInstrumentation {
   void recordCollection(double seconds, @Nullable String error) {
     Attributes attrs = standardAttrs;
     if (error != null) {
-      attrs = attrs.toBuilder().put(SemConvAttributes.ERROR_TYPE, error).build();
+      attrs = attrs.toBuilder().put(SemConvConstants.ERROR_TYPE, error).build();
     }
 
     collectionDuration.record(seconds, attrs);

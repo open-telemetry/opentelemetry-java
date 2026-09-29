@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
@@ -73,10 +73,10 @@ class GrpcExporterTest {
 
       Attributes expectedAttributes =
           Attributes.builder()
-              .put(SemConvAttributes.OTEL_COMPONENT_TYPE, id.getTypeName())
-              .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
-              .put(SemConvAttributes.SERVER_ADDRESS, "testing")
-              .put(SemConvAttributes.SERVER_PORT, 1234)
+              .put(SemConvConstants.OTEL_COMPONENT_TYPE, id.getTypeName())
+              .put(SemConvConstants.OTEL_COMPONENT_NAME, id.getComponentName())
+              .put(SemConvConstants.SERVER_ADDRESS, "testing")
+              .put(SemConvConstants.SERVER_PORT, 1234)
               .build();
 
       GrpcSender mockSender = Mockito.mock(GrpcSender.class);
@@ -175,7 +175,7 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.ERROR_TYPE,
+                                                      SemConvConstants.ERROR_TYPE,
                                                       "" + UNAVAILABLE.getValue())
                                                   .build())
                                           .hasValue(15),
@@ -183,7 +183,7 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.ERROR_TYPE,
+                                                      SemConvConstants.ERROR_TYPE,
                                                       "java.io.IOException")
                                                   .build())
                                           .hasValue(7))))
@@ -199,7 +199,7 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.RPC_RESPONSE_STATUS_CODE,
+                                                      SemConvConstants.RPC_RESPONSE_STATUS_CODE,
                                                       GrpcStatusCode.OK.name())
                                                   .build())
                                           .hasBucketCounts(1),
@@ -207,10 +207,10 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.ERROR_TYPE,
+                                                      SemConvConstants.ERROR_TYPE,
                                                       "" + UNAVAILABLE.getValue())
                                                   .put(
-                                                      SemConvAttributes.RPC_RESPONSE_STATUS_CODE,
+                                                      SemConvConstants.RPC_RESPONSE_STATUS_CODE,
                                                       UNAVAILABLE.name())
                                                   .build())
                                           .hasBucketCounts(1),
@@ -218,7 +218,7 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.ERROR_TYPE,
+                                                      SemConvConstants.ERROR_TYPE,
                                                       "java.io.IOException")
                                                   .build())
                                           .hasBucketCounts(1))));

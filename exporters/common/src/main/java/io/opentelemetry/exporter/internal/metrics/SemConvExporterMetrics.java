@@ -14,7 +14,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.common.internal.Signal;
 import java.util.Collections;
 import java.util.function.Supplier;
@@ -67,8 +67,8 @@ public class SemConvExporterMetrics implements ExporterMetrics {
     Attributes allAttributes = this.allAttributes;
     if (allAttributes == null) {
       AttributesBuilder builder = Attributes.builder();
-      builder.put(SemConvAttributes.OTEL_COMPONENT_TYPE, componentId.getTypeName());
-      builder.put(SemConvAttributes.OTEL_COMPONENT_NAME, componentId.getComponentName());
+      builder.put(SemConvConstants.OTEL_COMPONENT_TYPE, componentId.getTypeName());
+      builder.put(SemConvConstants.OTEL_COMPONENT_NAME, componentId.getComponentName());
       builder.putAll(additionalAttributes);
       allAttributes = builder.build();
       this.allAttributes = allAttributes;
@@ -79,15 +79,11 @@ public class SemConvExporterMetrics implements ExporterMetrics {
   private LongUpDownCounter inflight() {
     LongUpDownCounter inflight = this.inflight;
     if (inflight == null || isNoop(inflight)) {
-      String unit = signal.getMetricUnit();
       inflight =
           meter()
-              .upDownCounterBuilder(signal.getExporterMetricNamespace() + ".inflight")
-              .setUnit("{" + unit + "}")
-              .setDescription(
-                  "The number of "
-                      + unit
-                      + "s which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)")
+              .upDownCounterBuilder(signal.getExporterInflightMetricName())
+              .setUnit(signal.getExporterInflightMetricUnit())
+              .setDescription(signal.getExporterInflightMetricDescription())
               .build();
       this.inflight = inflight;
     }
@@ -97,15 +93,11 @@ public class SemConvExporterMetrics implements ExporterMetrics {
   private LongCounter exported() {
     LongCounter exported = this.exported;
     if (exported == null || isNoop(exported)) {
-      String unit = signal.getMetricUnit();
       exported =
           meter()
-              .counterBuilder(signal.getExporterMetricNamespace() + ".exported")
-              .setUnit("{" + unit + "}")
-              .setDescription(
-                  "The number of "
-                      + unit
-                      + "s for which the export has finished, either successful or failed")
+              .counterBuilder(signal.getExporterExportedMetricName())
+              .setUnit(signal.getExporterExportedMetricUnit())
+              .setDescription(signal.getExporterExportedMetricDescription())
               .build();
       this.exported = exported;
     }
@@ -117,9 +109,9 @@ public class SemConvExporterMetrics implements ExporterMetrics {
     if (duration == null || isNoop(duration)) {
       duration =
           meter()
-              .histogramBuilder("otel.sdk.exporter.operation.duration")
-              .setUnit("s")
-              .setDescription("The duration of exporting a batch of telemetry records")
+              .histogramBuilder(SemConvConstants.OTEL_SDK_EXPORTER_OPERATION_DURATION_NAME)
+              .setUnit(SemConvConstants.OTEL_SDK_EXPORTER_OPERATION_DURATION_UNIT)
+              .setDescription(SemConvConstants.OTEL_SDK_EXPORTER_OPERATION_DURATION_DESCRIPTION)
               .setExplicitBucketBoundariesAdvice(Collections.emptyList())
               .build();
       this.duration = duration;
@@ -152,7 +144,7 @@ public class SemConvExporterMetrics implements ExporterMetrics {
     if (errorPresent || !additionalAttributes.isEmpty()) {
       AttributesBuilder builder = attributes.toBuilder();
       if (errorPresent) {
-        builder.put(SemConvAttributes.ERROR_TYPE, errorType);
+        builder.put(SemConvConstants.ERROR_TYPE, errorType);
       }
       attributes = builder.putAll(additionalAttributes).build();
     }

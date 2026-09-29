@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equal
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -55,10 +55,10 @@ class SdkMeterProviderMetricsTest {
                                     p.hasCount(1)
                                         .hasAttributesSatisfying(
                                             equalTo(
-                                                SemConvAttributes.OTEL_COMPONENT_TYPE,
+                                                SemConvConstants.OTEL_COMPONENT_TYPE,
                                                 "periodic_metric_reader"),
                                             equalTo(
-                                                SemConvAttributes.OTEL_COMPONENT_NAME,
+                                                SemConvConstants.OTEL_COMPONENT_NAME,
                                                 "periodic_metric_reader/0"))));
               });
     }
@@ -100,7 +100,7 @@ class SdkMeterProviderMetricsTest {
                                   p ->
                                       p.hasAttributesSatisfying(
                                           equalTo(
-                                              SemConvAttributes.ERROR_TYPE,
+                                              SemConvConstants.ERROR_TYPE,
                                               "java.lang.IllegalStateException")))));
     }
   }
