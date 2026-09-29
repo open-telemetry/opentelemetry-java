@@ -56,7 +56,7 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
       failWithActualExpectedAndMessage(
           actual,
           "instrumentation scope: " + instrumentationScopeInfo,
-          "Expected MetricData to have resource <%s> but found <%s>",
+          "Expected MetricData to have instrumentation scope <%s> but found <%s>",
           instrumentationScopeInfo,
           actual.getInstrumentationScopeInfo());
     }
