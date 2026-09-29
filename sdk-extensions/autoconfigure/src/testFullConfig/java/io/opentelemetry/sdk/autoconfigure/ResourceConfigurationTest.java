@@ -81,7 +81,10 @@ class ResourceConfigurationTest {
             null,
             null,
             attributeConsumer(
-                attr -> attr.containsEntry("service.name", "test").containsEntry("cat", "meow"))),
+                attr ->
+                    attr.containsEntry("service.name", "test")
+                        .containsEntry("cat", "meow")
+                        .containsEntry("service.instance.id", "override-id"))),
         Arguments.argumentSet(
             "only enabled animal provider",
             "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider",
@@ -130,6 +133,7 @@ class ResourceConfigurationTest {
                 attr ->
                     attr.containsEntry("service.name", "test")
                         .containsEntry("cat", "meow")
+                        .doesNotContainKey("service.instance.id")
                         .doesNotContainKey("animal")
                         .doesNotContainKey("color"))),
         Arguments.argumentSet(
