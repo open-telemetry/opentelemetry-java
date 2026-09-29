@@ -19,16 +19,17 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.ServiceInstanceIdResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.test.junit5.context.BundleContextExtension;
@@ -39,31 +40,25 @@ public class AutoconfigureTest {
 
   @Test
   void autoConfiguredSdkInitializes() {
-    AtomicReference<Resource> autoConfiguredResource = new AtomicReference<>();
     AutoConfiguredOpenTelemetrySdk autoConfigured =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(AutoconfigureTest::config)
-            .addResourceCustomizer(
-                (resource, config) -> {
-                  autoConfiguredResource.set(resource);
-                  return resource;
-                })
             .build();
 
     // The component loader autoconfigure uses: autoconfigure bundle's classloader.
     ComponentLoader autoConfigureLoader =
         ComponentLoader.forClassLoader(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
 
-    Resource resource = autoConfiguredResource.get();
-    assertThat(resource).isNotNull();
-    String serviceInstanceId = resource.getAttribute(AttributeKey.stringKey("service.instance.id"));
-    assertThat(serviceInstanceId).isNotNull().isNotEmpty();
-    assertThat(UUID.fromString(serviceInstanceId)).isNotNull();
-
-    resource =
-        resource.merge(
-            Resource.create(
-                Attributes.of(AttributeKey.stringKey("test.customizer"), "test-osgi-customizer")));
+    // ServiceInstanceIdResourceProvider's UUID is static, so expected and actual match.
+    Resource resource =
+        Resource.getDefault()
+            .merge(
+                new ServiceInstanceIdResourceProvider()
+                    .createResource(DefaultConfigProperties.createFromMap(Collections.emptyMap())))
+            .merge(
+                Resource.create(
+                    Attributes.of(
+                        AttributeKey.stringKey("test.customizer"), "test-osgi-customizer")));
     OpenTelemetrySdk expected =
         OpenTelemetrySdk.builder()
             .setTracerProvider(

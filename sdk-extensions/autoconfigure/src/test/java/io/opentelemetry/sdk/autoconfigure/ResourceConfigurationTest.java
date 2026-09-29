@@ -41,17 +41,16 @@ class ResourceConfigurationTest {
     props.put(
         "otel.resource.attributes", "food=cheesecake,drink=juice,animal=  ,color=,shape=square");
     props.put("otel.resource.disabled-keys", "drink");
-    props.put(
-        "otel.java.disabled.resource.providers",
-        "io.opentelemetry.sdk.autoconfigure.ServiceInstanceIdResourceProvider");
+    ConfigProperties config = DefaultConfigProperties.create(props, componentLoader);
 
     assertThat(
             ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(props, componentLoader),
+                config,
                 SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
                 (r, c) -> r))
         .isEqualTo(
             Resource.getDefault().toBuilder()
+                .putAll(new ServiceInstanceIdResourceProvider().createResource(config))
                 .put(stringKey("service.name"), "test-service")
                 .put("food", "cheesecake")
                 .put("shape", "square")
@@ -76,23 +75,6 @@ class ResourceConfigurationTest {
   }
 
   @Test
-  void serviceInstanceIdDisabled_whenProviderExcluded() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.service.name", "test-service");
-    props.put(
-        "otel.java.enabled.resource.providers",
-        "io.opentelemetry.sdk.autoconfigure.EnvironmentResourceProvider");
-
-    Resource result =
-        ResourceConfiguration.configureResource(
-            DefaultConfigProperties.create(props, componentLoader),
-            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
-            (r, c) -> r);
-
-    assertThat(result.getAttribute(stringKey("service.instance.id"))).isNull();
-  }
-
-  @Test
   void serviceInstanceIdExplicitValuePreserved() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.service.name", "test-service");
@@ -105,21 +87,6 @@ class ResourceConfigurationTest {
             (r, c) -> r);
 
     assertThat(result.getAttribute(stringKey("service.instance.id"))).isEqualTo("my-custom-id-123");
-  }
-
-  @Test
-  void serviceInstanceIdDisabledByDisabledKeys() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.service.name", "test-service");
-    props.put("otel.resource.disabled-keys", "service.instance.id");
-
-    Resource result =
-        ResourceConfiguration.configureResource(
-            DefaultConfigProperties.create(props, componentLoader),
-            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
-            (r, c) -> r);
-
-    assertThat(result.getAttribute(stringKey("service.instance.id"))).isNull();
   }
 
   @ParameterizedTest

@@ -4,7 +4,6 @@ Comparing source compatibility of opentelemetry-sdk-extension-autoconfigure-1.67
 	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.Ordered
 	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.AttributeKey<java.lang.String> SERVICE_INSTANCE_ID
 	+++  NEW CONSTRUCTOR: PUBLIC(+) ServiceInstanceIdResourceProvider()
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource createResource(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
 	+++  NEW METHOD: PUBLIC(+) int order()

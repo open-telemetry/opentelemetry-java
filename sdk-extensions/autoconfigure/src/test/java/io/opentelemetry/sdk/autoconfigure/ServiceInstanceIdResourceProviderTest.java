@@ -5,42 +5,36 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ServiceInstanceIdResourceProviderTest {
 
-  @Test
-  void createResource_generatesStableValue() {
-    ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
-    DefaultConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());
-
-    // Multiple calls should return the same value
-    Resource resource1 = provider.createResource(config);
-    Resource resource2 = provider.createResource(config);
-
-    assertThat(resource1.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID))
-        .isNotNull();
-    assertThat(resource2.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID))
-        .isEqualTo(resource1.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID));
-  }
+  private static final AttributeKey<String> SERVICE_INSTANCE_ID = stringKey("service.instance.id");
 
   @Test
-  void createResource_generatesValidUuid() {
-    ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
+  void createResource() {
     DefaultConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());
-
-    Resource resource = provider.createResource(config);
 
     String serviceInstanceId =
-        resource.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID);
+        new ServiceInstanceIdResourceProvider()
+            .createResource(config)
+            .getAttribute(SERVICE_INSTANCE_ID);
     assertThat(serviceInstanceId).isNotNull();
     assertThat(UUID.fromString(serviceInstanceId)).isNotNull();
+
+    // Stable across calls and instances
+    assertThat(
+            new ServiceInstanceIdResourceProvider()
+                .createResource(config)
+                .getAttribute(SERVICE_INSTANCE_ID))
+        .isEqualTo(serviceInstanceId);
   }
 
   @Test
