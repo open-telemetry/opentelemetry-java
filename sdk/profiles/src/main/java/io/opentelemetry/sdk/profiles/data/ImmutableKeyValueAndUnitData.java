@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.profiles.data;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.common.Value;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -18,6 +19,11 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 abstract class ImmutableKeyValueAndUnitData implements KeyValueAndUnitData {
+
+  static ImmutableKeyValueAndUnitData create(
+      int keyStringIndex, Value<?> value, int unitStringIndex) {
+    return new AutoValue_ImmutableKeyValueAndUnitData(keyStringIndex, value, unitStringIndex);
+  }
 
   ImmutableKeyValueAndUnitData() {}
 }

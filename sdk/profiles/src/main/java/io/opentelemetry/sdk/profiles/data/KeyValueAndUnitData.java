@@ -17,10 +17,8 @@ import io.opentelemetry.api.common.Value;
 public interface KeyValueAndUnitData {
 
   /** Returns a {@link KeyValueAndUnitData} for the given parameters. */
-  @SuppressWarnings("AutoValueSubclassLeaked")
-  static ImmutableKeyValueAndUnitData create(
-      int keyStringIndex, Value<?> value, int unitStringIndex) {
-    return new AutoValue_ImmutableKeyValueAndUnitData(keyStringIndex, value, unitStringIndex);
+  static KeyValueAndUnitData create(int keyStringIndex, Value<?> value, int unitStringIndex) {
+    return ImmutableKeyValueAndUnitData.create(keyStringIndex, value, unitStringIndex);
   }
 
   /** Index into string table. */
