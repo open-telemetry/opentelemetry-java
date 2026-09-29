@@ -11,13 +11,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.ImmutableSet;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -309,6 +312,24 @@ class YamlDeclarativeConfigPropertiesTest {
       assertThat(otherProps.isLong(key)).isEqualTo(otherProps.getLong(key) != null);
       assertThat(otherProps.isDouble(key)).isEqualTo(otherProps.getDouble(key) != null);
     }
+  }
+
+  @Test
+  void typeIntrospectionAcceptsGetterConversions() {
+    // YAML parsing yields Integer and Double, so build the Long and Float cases directly
+    Map<String, Object> properties = new HashMap<>();
+    properties.put("long_key", 5L);
+    properties.put("float_key", 1.5f);
+    DeclarativeConfigProperties props =
+        YamlDeclarativeConfigProperties.create(
+            properties, ComponentLoader.forClassLoader(getClass().getClassLoader()));
+
+    assertThat(props.isInt("long_key")).isTrue();
+    assertThat(props.isLong("long_key")).isTrue();
+    assertThat(props.isDouble("float_key")).isTrue();
+    assertThat(props.isDouble("long_key")).isFalse();
+    assertThat(props.isLong("float_key")).isFalse();
+    assertThat(logs.getEvents()).isEmpty();
   }
 
   private void assertWarning(String message) {
