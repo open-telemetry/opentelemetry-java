@@ -40,7 +40,11 @@ final class AttributeListFactory implements Factory<List<AttributeNameValueModel
   private static void addToBuilder(
       AttributeNameValueModel nameValueModel, AttributesBuilder builder) {
     String name = FileConfigUtil.requireNonNull(nameValueModel.getName(), "attribute name");
-    Object value = FileConfigUtil.requireNonNull(nameValueModel.getValue(), "attribute value");
+    Object value = nameValueModel.getValue();
+    if (value == null) {
+      // Per the configuration schema, an entry with a null value is ignored
+      return;
+    }
     AttributeTypeModel type = nameValueModel.getType();
     if (type == null) {
       type = AttributeTypeModel.STRING;

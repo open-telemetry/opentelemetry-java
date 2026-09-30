@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -38,10 +39,6 @@ class AttributeListFactoryTest {
   private static Stream<Arguments> invalidAttributes() {
     return Stream.of(
         Arguments.argumentSet(
-            "null value",
-            Collections.singletonList(new AttributeNameValueModel().setName("key")),
-            "attribute value is required but is null"),
-        Arguments.argumentSet(
             "wrong type string",
             Collections.singletonList(
                 new AttributeNameValueModel().setName("key").setValue(new Object())),
@@ -62,6 +59,21 @@ class AttributeListFactoryTest {
                     .setType(AttributeTypeModel.INT)
                     .setValue(true)),
             "Error processing attribute with name \"key\": value did not match type INT"));
+  }
+
+  @Test
+  void create_NullValueIgnored() {
+    assertThat(
+            AttributeListFactory.getInstance()
+                .create(
+                    Arrays.asList(
+                        new AttributeNameValueModel().setName("key"),
+                        new AttributeNameValueModel()
+                            .setName("key2")
+                            .setType(AttributeTypeModel.INT),
+                        new AttributeNameValueModel().setName("other").setValue("v")),
+                    mock(DeclarativeConfigContext.class)))
+        .isEqualTo(Attributes.of(stringKey("other"), "v"));
   }
 
   @Test
