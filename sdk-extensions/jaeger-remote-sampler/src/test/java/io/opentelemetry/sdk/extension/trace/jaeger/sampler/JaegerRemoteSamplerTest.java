@@ -409,6 +409,47 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
+  void perOperationSampling_zeroRateLimiting() {
+    // maxTracesPerSecond=0 is omitted on the wire, so the rate limiting message has length 0.
+    Sampling.SamplingStrategyResponse response =
+        Sampling.SamplingStrategyResponse.newBuilder()
+            .setStrategyType(SamplingStrategyType.RATE_LIMITING)
+            .setRateLimitingSampling(
+                RateLimitingSamplingStrategy.newBuilder().setMaxTracesPerSecond(0).build())
+            .setOperationSampling(
+                Sampling.PerOperationSamplingStrategies.newBuilder()
+                    .setDefaultSamplingProbability(0.55)
+                    .addPerOperationStrategies(
+                        Sampling.OperationSamplingStrategy.newBuilder()
+                            .setOperation("foo")
+                            .setProbabilisticSampling(
+                                Sampling.ProbabilisticSamplingStrategy.newBuilder()
+                                    .setSamplingRate(0.90)
+                                    .build())
+                            .build())
+                    .build())
+            .build();
+    responses.add(response);
+
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setServiceName(SERVICE_NAME)
+            // Make sure only polls once.
+            .setPollingInterval(500, TimeUnit.SECONDS)
+            .build()) {
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
+
+      await()
+          .untilAsserted(
+              () ->
+                  assertThat(sampler.getDescription())
+                      .startsWith(
+                          "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}}}"));
+    }
+  }
+
+  @Test
   void internal_error_server_response() {
     addGrpcError(GrpcStatusCode.INTERNAL, "internal error");
 
