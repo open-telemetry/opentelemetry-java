@@ -8,7 +8,13 @@ package io.opentelemetry.sdk.resources;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -20,6 +26,7 @@ import javax.annotation.Nullable;
 public class ResourceBuilder {
 
   private final AttributesBuilder attributesBuilder = Attributes.builder();
+  private final List<Entity> entities = new ArrayList<>();
   @Nullable private String schemaUrl;
 
   /**
@@ -169,7 +176,11 @@ public class ResourceBuilder {
   /** Puts all attributes from {@link Resource} into this. */
   public ResourceBuilder putAll(Resource resource) {
     if (resource != null) {
-      attributesBuilder.putAll(resource.getAttributes());
+      // Preserve entities when merging resources.
+      entities.addAll(resource.getEntities());
+      // Only pull "raw" attributes - we expect entities to carry some of the full
+      // set.
+      attributesBuilder.putAll(resource.getUnassociatedAttributes());
     }
     return this;
   }
@@ -194,6 +205,24 @@ public class ResourceBuilder {
 
   /** Create the {@link Resource} from this. */
   public Resource build() {
-    return Resource.create(attributesBuilder.build(), schemaUrl);
+    // Derive schemaUrl from entity, if able.
+    if (schemaUrl == null) {
+      Set<String> entitySchemas =
+          entities.stream().map(Entity::getSchemaUrl).collect(Collectors.toSet());
+      if (entitySchemas.size() == 1) {
+        // Updated Entities use same schema, we can preserve it.
+        schemaUrl = entitySchemas.iterator().next();
+      }
+    }
+
+    // When adding an entity, we remove any raw attributes it may conflict with.
+    this.attributesBuilder.removeIf(key -> EntityUtil.hasAttributeKey(this.entities, key));
+    return Resource.create(attributesBuilder.build(), schemaUrl, entities);
+  }
+
+  /** Appends a new entity on to the end of the list of entities. */
+  ResourceBuilder addEntity(Entity e) {
+    this.entities.add(e);
+    return this;
   }
 }

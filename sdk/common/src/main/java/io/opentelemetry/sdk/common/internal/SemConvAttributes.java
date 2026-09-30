@@ -19,6 +19,22 @@ public class SemConvAttributes {
 
   private SemConvAttributes() {}
 
+  // Schema url
+
+  // TODO(jack-berg): decide when and why we change schema url
+  public static final String SCHEMA_URL_V1_40_0 = "https://opentelemetry.io/schemas/1.40.0";
+
+  // Entity types
+
+  public static final String SERVICE_TYPE = "service";
+  public static final String SERVICE_INSTANCE_TYPE = "service.instance";
+
+  // Attributes
+
+  public static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
+  public static final AttributeKey<String> SERVICE_INSTANCE_ID =
+      AttributeKey.stringKey("service.instance.id");
+
   public static final AttributeKey<String> OTEL_COMPONENT_TYPE =
       AttributeKey.stringKey("otel.component.type");
   public static final AttributeKey<String> OTEL_COMPONENT_NAME =

@@ -23,6 +23,8 @@ import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -202,6 +204,14 @@ class ResourceTest {
   }
 
   @Test
+  void testToString() {
+    Attributes attribute1 = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
+    Resource resource = Resource.create(attribute1, "http://schema");
+    assertThat(resource.toString())
+        .isEqualTo("Resource{schemaUrl=http://schema, entities=[], attributes={a=\"1\", b=\"2\"}}");
+  }
+
+  @Test
   void testMergeResources() {
     Attributes expectedAttributes =
         Attributes.of(stringKey("a"), "1", stringKey("b"), "3", stringKey("c"), "4");
@@ -225,6 +235,29 @@ class ResourceTest {
     assertThat(schemaTwo.merge(schemaTwoAgain).getSchemaUrl()).isEqualTo(schemaTwo.getSchemaUrl());
     assertThat(schemaOne.merge(schemaTwo).getSchemaUrl()).isNull();
     assertThat(schemaTwo.merge(schemaOne).getSchemaUrl()).isNull();
+  }
+
+  @Test
+  void testMergeResources_entities_separate_types_and_schema() {
+    Resource resource1 =
+        Resource.builder()
+            .addEntity(
+                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
+                    .setSchemaUrl("one")
+                    .build())
+            .build();
+    Resource resource2 =
+        Resource.builder()
+            .addEntity(
+                Entity.builder("b", Attributes.builder().put("b.id", "b").build())
+                    .setSchemaUrl("two")
+                    .build())
+            .build();
+    Resource merged = resource1.merge(resource2);
+    assertThat(merged.getSchemaUrl()).isNull();
+    assertThat(merged.getEntities()).hasSize(2);
+    OpenTelemetryAssertions.assertThat(merged.getAttributes()).containsEntry("a.id", "a");
+    OpenTelemetryAssertions.assertThat(merged.getAttributes()).containsEntry("b.id", "b");
   }
 
   @Test
