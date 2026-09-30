@@ -17,9 +17,9 @@ import javax.annotation.concurrent.Immutable;
 public interface ProfilesDictionaryData {
 
   /**
-   * Returns a new ProfileData representing the given data.
+   * Returns a new ProfilesDictionaryData representing the given data.
    *
-   * @return a new ProfileData representing the given data.
+   * @return a new ProfilesDictionaryData representing the given data.
    */
   @SuppressWarnings({"TooManyParameters", "AutoValueSubclassLeaked"})
   static ProfilesDictionaryData create(
@@ -42,11 +42,12 @@ public interface ProfilesDictionaryData {
 
   /**
    * Mapping from address ranges to the image/binary/library mapped into that address range.
-   * mapping[0] will be the main binary.
+   * mapping_table[0] must always be the zero value (an empty Mapping), since Location.mapping_index
+   * 0 means unknown or not applicable.
    */
   List<MappingData> getMappingTable();
 
-  /** Locations referenced by samples via location_indices. */
+  /** Locations referenced by samples via Stack.location_indices. */
   List<LocationData> getLocationTable();
 
   /** Functions referenced by locations. */
