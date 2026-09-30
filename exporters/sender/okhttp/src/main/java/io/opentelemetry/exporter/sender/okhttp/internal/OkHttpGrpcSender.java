@@ -45,6 +45,7 @@ import java.util.OptionalLong;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -218,9 +219,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
                         public void onResponse(Call call, Response response) {
                           handleResponse(
                               response,
-                              resolvedResponse -> {
+                              (resolvedResponse, canRetry) -> {
                                 if (retryState != null
                                     && retryState.canRetry(attempt)
+                                    && canRetry
                                     && isRetryable(resolvedResponse)
                                     && retryState.backoff(OptionalLong.empty())) {
                                   sendAttempt(
@@ -242,6 +244,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
   }
 
   void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
+    handleResponse(response, (resolvedResponse, ignored) -> onResponse.accept(resolvedResponse));
+  }
+
+  private void handleResponse(Response response, BiConsumer<GrpcResponse, Boolean> onResponse) {
     try (ResponseBody body = response.body()) {
       // A gRPC message frame has a 5-byte header: 1 compression-flag byte + 4 message-length
       // bytes. Read the header first so that the size limit applies to the message payload only,
@@ -253,7 +259,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
       } catch (IOException e) {
         logger.log(Level.FINE, "Invalid gRPC response frame", e);
         onResponse.accept(
-            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]));
+            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]),
+            false);
         return;
       }
 
@@ -278,7 +285,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
       }
 
       if (wireBuffer.size() > maxResponseBodySize) {
-        onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+        onResponse.accept(responseMessageTooLarge(maxResponseBodySize), false);
         return;
       }
 
@@ -290,7 +297,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
         // Compressed: validate the encoding and decompress with a post-decompression size limit
         String encoding = response.header("grpc-encoding");
         if (!"gzip".equalsIgnoreCase(encoding)) {
-          onResponse.accept(responseUnsupportedGrpcEncoding(encoding));
+          onResponse.accept(responseUnsupportedGrpcEncoding(encoding), false);
           return;
         }
         try {
@@ -303,7 +310,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
             }
           }
           if (decompressedBuffer.size() > maxResponseBodySize) {
-            onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+            onResponse.accept(responseMessageTooLarge(maxResponseBodySize), false);
             return;
           }
           bodyBytes = decompressedBuffer.readByteArray();
@@ -312,7 +319,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
         }
       }
       onResponse.accept(
-          ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes));
+          ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes),
+          true);
     }
   }
 
