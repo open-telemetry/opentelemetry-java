@@ -247,7 +247,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
     handleResponse(response, (resolvedResponse, ignored) -> onResponse.accept(resolvedResponse));
   }
 
-  private void handleResponse(Response response, BiConsumer<GrpcResponse, Boolean> onResponse) {
+  // Visible for testing.
+  void handleResponse(Response response, BiConsumer<GrpcResponse, Boolean> onResponse) {
     try (ResponseBody body = response.body()) {
       // A gRPC message frame has a 5-byte header: 1 compression-flag byte + 4 message-length
       // bytes. Read the header first so that the size limit applies to the message payload only,
@@ -258,9 +259,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
         body.source().skip(4); // message length — we bound reads by EOF instead
       } catch (IOException e) {
         logger.log(Level.FINE, "Invalid gRPC response frame", e);
+        GrpcResponse resolvedResponse =
+            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]);
         onResponse.accept(
-            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]),
-            false);
+            resolvedResponse, resolvedResponse.getStatusCode() != GrpcStatusCode.UNKNOWN);
         return;
       }
 
