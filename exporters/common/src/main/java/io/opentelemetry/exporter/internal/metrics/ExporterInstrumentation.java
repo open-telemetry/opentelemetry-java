@@ -10,7 +10,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.common.internal.Signal;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.net.URI;
@@ -56,7 +56,7 @@ public class ExporterInstrumentation {
     AttributesBuilder builder = Attributes.builder();
     String host = httpEndpoint.getHost();
     if (host != null) {
-      builder.put(SemConvAttributes.SERVER_ADDRESS, host);
+      builder.put(SemConvConstants.SERVER_ADDRESS, host);
     }
     int port = httpEndpoint.getPort();
     if (port == -1) {
@@ -68,7 +68,7 @@ public class ExporterInstrumentation {
       }
     }
     if (port != -1) {
-      builder.put(SemConvAttributes.SERVER_PORT, port);
+      builder.put(SemConvConstants.SERVER_PORT, port);
     }
     return builder.build();
   }
@@ -133,10 +133,10 @@ public class ExporterInstrumentation {
 
     private Attributes buildRequestAttributes() {
       if (httpStatusCode != null) {
-        return Attributes.of(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE, httpStatusCode);
+        return Attributes.of(SemConvConstants.HTTP_RESPONSE_STATUS_CODE, httpStatusCode);
       }
       if (grpcStatusCode != null) {
-        return Attributes.of(SemConvAttributes.RPC_RESPONSE_STATUS_CODE, grpcStatusCode.name());
+        return Attributes.of(SemConvConstants.RPC_RESPONSE_STATUS_CODE, grpcStatusCode.name());
       }
       return Attributes.empty();
     }
