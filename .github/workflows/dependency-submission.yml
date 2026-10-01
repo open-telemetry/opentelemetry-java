@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - trask-renovate-update-investigation
   workflow_dispatch:
 
 permissions:
