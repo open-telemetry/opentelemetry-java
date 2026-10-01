@@ -67,7 +67,8 @@ wire {
     "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
     "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
     "opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest",
-    "opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceRequest"
+    "opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceRequest",
+    "opentelemetry.proto.processcontext.v1development.ProcessContext"
   )
 
   custom {
