@@ -29,7 +29,7 @@ val DEPENDENCY_BOMS = listOf(
   // by FOSSA for containing EPL-licensed)
 
   "com.fasterxml.jackson:jackson-bom:2.22.3",
-  "com.google.guava:guava-bom:33.7.1-jre",
+  "com.google.guava:guava-bom:33.7.2-jre",
   "com.google.protobuf:protobuf-bom:4.36.2",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.18.2", // applies to transitive dependencies of okhttp
