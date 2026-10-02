@@ -109,7 +109,16 @@ class ResourceConfigurationTest {
         Arguments.argumentSet("incomplete percent encoding", "key=abc%2", "key", "abc%2"),
         Arguments.argumentSet("percent at end", "key=abc%", "key", "abc%"),
         Arguments.argumentSet("multiple percent encodings", "key=a%20b%2Bc%3Dd", "key", "a b+c=d"),
-        Arguments.argumentSet("no percent encoding", "key=plain-value", "key", "plain-value"));
+        Arguments.argumentSet("no percent encoding", "key=plain-value", "key", "plain-value"),
+        Arguments.argumentSet(
+            "unencoded non-ASCII with percent encoding", "key=café%20bar", "key", "café bar"),
+        Arguments.argumentSet(
+            "encoded and unencoded multi-byte", "key=%C3%A9t%C3%A9 été", "key", "été été"),
+        Arguments.argumentSet(
+            "unencoded supplementary character with percent encoding",
+            "key=😀%20x",
+            "key",
+            "😀 x"));
   }
 
   @Test
