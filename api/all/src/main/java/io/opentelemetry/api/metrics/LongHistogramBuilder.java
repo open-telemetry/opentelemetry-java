@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.List;
 
 /**
@@ -44,6 +45,11 @@ public interface LongHistogramBuilder {
    * @since 1.32.0
    */
   default LongHistogramBuilder setExplicitBucketBoundariesAdvice(List<Long> bucketBoundaries) {
+    if (bucketBoundaries == null) {
+      ApiUsageLogger.logNullParam(
+          List.class, "setExplicitBucketBoundariesAdvice", "bucketBoundaries");
+      return this;
+    }
     return this;
   }
 

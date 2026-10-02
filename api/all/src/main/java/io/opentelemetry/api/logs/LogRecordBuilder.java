@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -84,6 +85,10 @@ public interface LogRecordBuilder {
    * @since 1.42.0
    */
   default LogRecordBuilder setBody(Value<?> body) {
+    if (body == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setBody", "body");
+      return this;
+    }
     setBody(body.asString());
     return this;
   }
@@ -94,7 +99,11 @@ public interface LogRecordBuilder {
    */
   @SuppressWarnings("unchecked")
   default LogRecordBuilder setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAllAttributes", "attributes");
+      return this;
+    }
+    if (attributes.isEmpty()) {
       return this;
     }
     attributes.forEach(
@@ -129,6 +138,10 @@ public interface LogRecordBuilder {
    * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, @Nullable String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(stringKey(key), value);
   }
 
@@ -145,6 +158,10 @@ public interface LogRecordBuilder {
    * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, long value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(longKey(key), value);
   }
 
@@ -161,6 +178,10 @@ public interface LogRecordBuilder {
    * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, double value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(doubleKey(key), value);
   }
 
@@ -177,6 +198,10 @@ public interface LogRecordBuilder {
    * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, boolean value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(booleanKey(key), value);
   }
 
@@ -193,6 +218,10 @@ public interface LogRecordBuilder {
    * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, int value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(key, (long) value);
   }
 
@@ -213,6 +242,14 @@ public interface LogRecordBuilder {
    * @since 1.63.0
    */
   default LogRecordBuilder setAttribute(String key, Value<?> value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAttribute", "key");
+      return this;
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAttribute", "value");
+      return this;
+    }
     return setAttribute(AttributeKey.valueKey(key), value);
   }
 
@@ -225,6 +262,10 @@ public interface LogRecordBuilder {
    * @since 1.50.0
    */
   default LogRecordBuilder setEventName(String eventName) {
+    if (eventName == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setEventName", "eventName");
+      return this;
+    }
     return this;
   }
 
@@ -235,6 +276,10 @@ public interface LogRecordBuilder {
    * @since 1.60.0
    */
   default LogRecordBuilder setException(Throwable throwable) {
+    if (throwable == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setException", "throwable");
+      return this;
+    }
     return this;
   }
 
