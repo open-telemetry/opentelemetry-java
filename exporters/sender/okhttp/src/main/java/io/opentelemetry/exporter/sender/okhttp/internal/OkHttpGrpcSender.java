@@ -45,6 +45,7 @@ import java.util.OptionalLong;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -61,7 +62,6 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.TlsVersion;
@@ -87,6 +87,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
   @Nullable private final Compressor compressor;
   private final Supplier<Map<String, List<String>>> headersSupplier;
   private final long maxResponseBodySize;
+  @Nullable private final RetryPolicy retryPolicy;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
   @SuppressWarnings("TooManyParameters")
@@ -119,12 +120,6 @@ public final class OkHttpGrpcSender implements GrpcSender {
             .dispatcher(dispatcher)
             .callTimeout(Duration.ofMillis(callTimeoutMillis))
             .connectTimeout(Duration.ofMillis(connectTimeoutMillis));
-    if (retryPolicy != null) {
-      clientBuilder.addInterceptor(
-          new RetryInterceptor(
-              retryPolicy, OkHttpGrpcSender::isRetryable, response -> OptionalLong.empty()));
-    }
-
     boolean isPlainHttp = endpoint.startsWith("http://");
     if (isPlainHttp) {
       clientBuilder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
@@ -158,6 +153,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
     this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);
     this.maxResponseBodySize = maxResponseBodySize;
+    this.retryPolicy = retryPolicy;
   }
 
   @Override
@@ -176,8 +172,23 @@ public final class OkHttpGrpcSender implements GrpcSender {
     if (compressor != null) {
       requestBuilder.addHeader("grpc-encoding", compressor.getEncoding());
     }
-    RequestBody requestBody = new GrpcRequestBody(messageWriter, compressor);
-    requestBuilder.post(requestBody);
+    requestBuilder.post(new GrpcRequestBody(messageWriter, compressor));
+
+    sendAttempt(requestBuilder, messageWriter, onResponse, onError, 0, newRetryState());
+  }
+
+  @Nullable
+  private RetryState newRetryState() {
+    return retryPolicy == null ? null : new RetryState(retryPolicy);
+  }
+
+  private void sendAttempt(
+      Request.Builder requestBuilder,
+      MessageWriter messageWriter,
+      Consumer<GrpcResponse> onResponse,
+      Consumer<Throwable> onError,
+      int attempt,
+      @Nullable RetryState retryState) {
 
     try {
       InstrumentationUtil.suppressInstrumentation(
@@ -188,12 +199,43 @@ public final class OkHttpGrpcSender implements GrpcSender {
                       new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
-                          onError.accept(e);
+                          if (retryState != null
+                              && retryState.canRetry(attempt)
+                              && retryState.shouldRetryOnException(e)
+                              && retryState.backoff(OptionalLong.empty())) {
+                            sendAttempt(
+                                requestBuilder,
+                                messageWriter,
+                                onResponse,
+                                onError,
+                                attempt + 1,
+                                retryState);
+                          } else {
+                            onError.accept(e);
+                          }
                         }
 
                         @Override
                         public void onResponse(Call call, Response response) {
-                          handleResponse(response, onResponse);
+                          handleResponse(
+                              response,
+                              (resolvedResponse, canRetry) -> {
+                                if (retryState != null
+                                    && retryState.canRetry(attempt)
+                                    && canRetry
+                                    && isRetryable(resolvedResponse)
+                                    && retryState.backoff(OptionalLong.empty())) {
+                                  sendAttempt(
+                                      requestBuilder,
+                                      messageWriter,
+                                      onResponse,
+                                      onError,
+                                      attempt + 1,
+                                      retryState);
+                                } else {
+                                  onResponse.accept(resolvedResponse);
+                                }
+                              });
                         }
                       }));
     } catch (RejectedExecutionException e) {
@@ -201,7 +243,12 @@ public final class OkHttpGrpcSender implements GrpcSender {
     }
   }
 
-  private void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
+  void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
+    handleResponse(response, (resolvedResponse, ignored) -> onResponse.accept(resolvedResponse));
+  }
+
+  // Visible for testing.
+  void handleResponse(Response response, BiConsumer<GrpcResponse, Boolean> onResponse) {
     try (ResponseBody body = response.body()) {
       // A gRPC message frame has a 5-byte header: 1 compression-flag byte + 4 message-length
       // bytes. Read the header first so that the size limit applies to the message payload only,
@@ -212,8 +259,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
         body.source().skip(4); // message length — we bound reads by EOF instead
       } catch (IOException e) {
         logger.log(Level.FINE, "Invalid gRPC response frame", e);
+        GrpcResponse resolvedResponse =
+            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]);
         onResponse.accept(
-            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]));
+            resolvedResponse, resolvedResponse.getStatusCode() != GrpcStatusCode.UNKNOWN);
         return;
       }
 
@@ -238,7 +287,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
       }
 
       if (wireBuffer.size() > maxResponseBodySize) {
-        onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+        onResponse.accept(responseMessageTooLarge(maxResponseBodySize), false);
         return;
       }
 
@@ -250,7 +299,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
         // Compressed: validate the encoding and decompress with a post-decompression size limit
         String encoding = response.header("grpc-encoding");
         if (!"gzip".equalsIgnoreCase(encoding)) {
-          onResponse.accept(responseUnsupportedGrpcEncoding(encoding));
+          onResponse.accept(responseUnsupportedGrpcEncoding(encoding), false);
           return;
         }
         try {
@@ -263,7 +312,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
             }
           }
           if (decompressedBuffer.size() > maxResponseBodySize) {
-            onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+            onResponse.accept(responseMessageTooLarge(maxResponseBodySize), false);
             return;
           }
           bodyBytes = decompressedBuffer.readByteArray();
@@ -272,7 +321,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
         }
       }
       onResponse.accept(
-          ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes));
+          ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes),
+          true);
     }
   }
 
@@ -364,15 +414,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
     return CompletableResultCode.ofSuccess();
   }
 
-  /** Whether response is retriable or not. */
-  public static boolean isRetryable(Response response) {
-    // We don't check trailers for retry since retryable error codes always come with response
-    // headers, not trailers, in practice.
-    String grpcStatus = response.header(GRPC_STATUS);
-    if (grpcStatus == null) {
-      return false;
-    }
-    return RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
+  /** Whether a resolved response is retriable or not. */
+  static boolean isRetryable(GrpcResponse response) {
+    return RetryUtil.retryableGrpcStatusCodes()
+        .contains(Integer.toString(response.getStatusCode().getValue()));
   }
 
   // From grpc-java

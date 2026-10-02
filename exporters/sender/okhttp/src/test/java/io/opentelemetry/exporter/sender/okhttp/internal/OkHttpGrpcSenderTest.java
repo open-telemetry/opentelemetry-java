@@ -29,9 +29,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -43,8 +45,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class OkHttpGrpcSenderTest {
 
-  private static final String GRPC_STATUS = "grpc-status";
-  private static final MediaType TEXT_PLAIN = MediaType.get("text/plain");
+  private static final MediaType GRPC_MEDIA_TYPE = MediaType.get("application/grpc");
 
   static Set<String> provideRetryableGrpcStatusCodes() {
     return RetryUtil.retryableGrpcStatusCodes();
@@ -53,7 +54,11 @@ class OkHttpGrpcSenderTest {
   @ParameterizedTest(name = "isRetryable should return true for GRPC status code: {0}")
   @MethodSource("provideRetryableGrpcStatusCodes")
   void isRetryable_RetryableGrpcStatus(String retryableGrpcStatus) {
-    Response response = createResponse(503, retryableGrpcStatus, "Retryable");
+    GrpcResponse response =
+        ImmutableGrpcResponse.create(
+            GrpcStatusCode.fromValue(Integer.parseInt(retryableGrpcStatus)),
+            "Retryable",
+            new byte[0]);
     boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
     assertTrue(isRetryable);
   }
@@ -62,9 +67,98 @@ class OkHttpGrpcSenderTest {
   void isRetryable_NonRetryableGrpcStatus() {
     String nonRetryableGrpcStatus =
         Integer.valueOf(GrpcStatusCode.UNKNOWN.getValue()).toString(); // INVALID_ARGUMENT
-    Response response = createResponse(503, nonRetryableGrpcStatus, "Non-retryable");
+    GrpcResponse response =
+        ImmutableGrpcResponse.create(
+            GrpcStatusCode.fromValue(Integer.parseInt(nonRetryableGrpcStatus)),
+            "Non-retryable",
+            new byte[0]);
     boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
     assertFalse(isRetryable);
+  }
+
+  @Test
+  void handleResponse_resolvesTrailerStatusAndMessageAfterConsumingBody() {
+    OkHttpGrpcSender sender = createSender(Long.MAX_VALUE);
+    AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
+    byte[] frame = new byte[] {0, 0, 0, 0, 3, 'o', 'k', '!'};
+    Response response =
+        new Response.Builder()
+            .request(new Request.Builder().url("http://localhost/").build())
+            .protocol(Protocol.HTTP_2)
+            .code(200)
+            .body(ResponseBody.create(frame, GRPC_MEDIA_TYPE))
+            .message("HTTP message")
+            .trailers(() -> Headers.of("grpc-status", "14", "grpc-message", "retry%20me"))
+            .build();
+
+    sender.handleResponse(response, responseRef::set);
+
+    assertThat(responseRef.get().getStatusCode()).isEqualTo(GrpcStatusCode.UNAVAILABLE);
+    assertThat(responseRef.get().getStatusDescription()).isEqualTo("retry me");
+    assertThat(responseRef.get().getResponseMessage())
+        .containsExactly((byte) 'o', (byte) 'k', (byte) '!');
+  }
+
+  @Test
+  void handleResponse_emptyBodyWithTrailerStatusIsRetryable() {
+    OkHttpGrpcSender sender = createSender(Long.MAX_VALUE);
+    AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
+    AtomicBoolean retryableRef = new AtomicBoolean();
+    Response response =
+        new Response.Builder()
+            .request(new Request.Builder().url("http://localhost/").build())
+            .protocol(Protocol.HTTP_2)
+            .code(200)
+            .body(ResponseBody.create(new byte[0], GRPC_MEDIA_TYPE))
+            .message("HTTP message")
+            .trailers(() -> Headers.of("grpc-status", "14"))
+            .build();
+
+    sender.handleResponse(
+        response,
+        (resolvedResponse, canRetry) -> {
+          responseRef.set(resolvedResponse);
+          retryableRef.set(canRetry);
+        });
+
+    assertThat(responseRef.get().getStatusCode()).isEqualTo(GrpcStatusCode.UNAVAILABLE);
+    assertThat(retryableRef.get()).isTrue();
+  }
+
+  @Test
+  void handleResponse_enforcesResponseSizeLimit() {
+    OkHttpGrpcSender sender = createSender(2);
+    AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
+    byte[] frame = new byte[] {0, 0, 0, 0, 3, 'o', 'k', '!'};
+    Response response =
+        new Response.Builder()
+            .request(new Request.Builder().url("http://localhost/").build())
+            .protocol(Protocol.HTTP_2)
+            .code(200)
+            .body(ResponseBody.create(frame, GRPC_MEDIA_TYPE))
+            .message("HTTP message")
+            .header("grpc-status", "0")
+            .build();
+
+    sender.handleResponse(response, responseRef::set);
+
+    assertThat(responseRef.get().getStatusCode()).isEqualTo(GrpcStatusCode.RESOURCE_EXHAUSTED);
+    assertThat(responseRef.get().getResponseMessage()).isEmpty();
+  }
+
+  private static OkHttpGrpcSender createSender(long maxResponseBodySize) {
+    return new OkHttpGrpcSender(
+        "http://localhost",
+        null,
+        Duration.ofSeconds(10),
+        Duration.ofSeconds(10),
+        Collections::emptyMap,
+        null,
+        null,
+        null,
+        null,
+        maxResponseBodySize,
+        null);
   }
 
   @Test
@@ -95,17 +189,6 @@ class OkHttpGrpcSenderTest {
     assertThat(errorRef.get()).isNotNull();
     assertThat(errorRef.get()).hasMessageContaining("executor rejected");
     assertThat(responseRef.get()).isNull();
-  }
-
-  private static Response createResponse(int httpCode, String grpcStatus, String message) {
-    return new Response.Builder()
-        .request(new Request.Builder().url("http://localhost/").build())
-        .protocol(Protocol.HTTP_2)
-        .code(httpCode)
-        .body(ResponseBody.create("body", TEXT_PLAIN))
-        .message(message)
-        .header(GRPC_STATUS, grpcStatus)
-        .build();
   }
 
   @Test

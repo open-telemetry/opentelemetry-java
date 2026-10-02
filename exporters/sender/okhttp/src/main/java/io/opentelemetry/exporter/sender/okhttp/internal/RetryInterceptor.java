@@ -9,14 +9,8 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.OptionalLong;
 import java.util.StringJoiner;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -38,9 +32,7 @@ public final class RetryInterceptor implements Interceptor {
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
   private final Function<Response, OptionalLong> retryDelayNanosExtractor;
-  private final Predicate<IOException> retryExceptionPredicate;
-  private final Sleeper sleeper;
-  private final Supplier<Double> randomJitter;
+  private final RetryState retryState;
 
   /** Constructs a new retrier. */
   public RetryInterceptor(
@@ -52,10 +44,10 @@ public final class RetryInterceptor implements Interceptor {
         isRetryable,
         retryDelayNanosExtractor,
         retryPolicy.getRetryExceptionPredicate() == null
-            ? RetryInterceptor::isRetryableException
+            ? RetryState::isRetryableException
             : retryPolicy.getRetryExceptionPredicate(),
-        TimeUnit.NANOSECONDS::sleep,
-        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d));
+        RetryState::defaultSleeper,
+        RetryState::defaultRandomJitter);
   }
 
   // Visible for testing
@@ -69,9 +61,7 @@ public final class RetryInterceptor implements Interceptor {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
     this.retryDelayNanosExtractor = retryDelayNanosExtractor;
-    this.retryExceptionPredicate = retryExceptionPredicate;
-    this.sleeper = sleeper;
-    this.randomJitter = randomJitter;
+    this.retryState = new RetryState(retryPolicy, retryExceptionPredicate, sleeper, randomJitter);
   }
 
   @Override
@@ -79,26 +69,15 @@ public final class RetryInterceptor implements Interceptor {
     Response response = null;
     IOException exception = null;
     int attempt = 0;
-    long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
     OptionalLong retryDelayNanos = OptionalLong.empty();
     do {
       if (attempt > 0) {
         // Compute and sleep for backoff
         // https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff
-        long currentBackoffNanos =
-            Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-        long backoffNanos =
-            retryDelayNanos.isPresent()
-                ? retryDelayNanos.getAsLong()
-                : (long) (randomJitter.get() * currentBackoffNanos);
-        nextBackoffNanos = (long) (currentBackoffNanos * retryPolicy.getBackoffMultiplier());
-        retryDelayNanos = OptionalLong.empty();
-        try {
-          sleeper.sleep(backoffNanos);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
+        if (!retryState.backoff(retryDelayNanos)) {
           break; // Break out and return response or throw
         }
+        retryDelayNanos = OptionalLong.empty();
         // Close response from previous attempt
         if (response != null) {
           response.close();
@@ -129,7 +108,7 @@ public final class RetryInterceptor implements Interceptor {
       } catch (IOException e) {
         exception = e;
         response = null;
-        boolean retryable = retryExceptionPredicate.test(exception);
+        boolean retryable = retryState.shouldRetryOnException(exception);
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,
@@ -164,31 +143,15 @@ public final class RetryInterceptor implements Interceptor {
   }
 
   // Visible for testing
-  boolean shouldRetryOnException(IOException e) {
-    return retryExceptionPredicate.test(e);
-  }
-
-  // Visible for testing
   static boolean isRetryableException(IOException e) {
-    // Known retryable SocketTimeoutException messages: null, "connect timed out", "timeout"
-    // Known retryable ConnectTimeout messages: "Failed to connect to
-    // localhost/[0:0:0:0:0:0:0:1]:62611"
-    // Known retryable UnknownHostException messages: "xxxxxx.com"
-    // Known retryable SocketException: Socket closed
-    if (e instanceof SocketTimeoutException) {
-      return true;
-    } else if (e instanceof ConnectException) {
-      return true;
-    } else if (e instanceof UnknownHostException) {
-      return true;
-    } else if (e instanceof SocketException) {
-      return true;
-    }
-    return false;
+    return RetryState.isRetryableException(e);
   }
 
   // Visible for testing
-  interface Sleeper {
-    void sleep(long delayNanos) throws InterruptedException;
+  boolean shouldRetryOnException(IOException e) {
+    return retryState.shouldRetryOnException(e);
   }
+
+  // Visible for testing
+  interface Sleeper extends RetryState.Sleeper {}
 }
