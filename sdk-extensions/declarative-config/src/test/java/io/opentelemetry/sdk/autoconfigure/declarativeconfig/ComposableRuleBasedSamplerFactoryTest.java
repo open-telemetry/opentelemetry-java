@@ -42,6 +42,7 @@ import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -264,6 +265,12 @@ class ComposableRuleBasedSamplerFactoryTest {
   private static final AttributeKey<String> HTTP_ROUTE = AttributeKey.stringKey("http.route");
   private static final AttributeKey<String> HTTP_PATH = AttributeKey.stringKey("http.path");
   private static final AttributeKey<Long> SERVER_PORT = AttributeKey.longKey("server.port");
+  private static final AttributeKey<List<String>> HTTP_ROUTE_ARRAY =
+      AttributeKey.stringArrayKey("http.route");
+  private static final AttributeKey<List<String>> HTTP_PATH_ARRAY =
+      AttributeKey.stringArrayKey("http.path");
+  private static final AttributeKey<List<Long>> SERVER_PORT_ARRAY =
+      AttributeKey.longArrayKey("server.port");
 
   @ParameterizedTest
   @MethodSource("declarativeConfigSamplingPredicateArgs")
@@ -490,6 +497,42 @@ class ComposableRuleBasedSamplerFactoryTest {
             sk,
             Attributes.of(SERVER_PORT, 9090L),
             false),
+        Arguments.argumentSet(
+            "valuesMatcher array with matching element",
+            valuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(HTTP_ROUTE_ARRAY, Arrays.asList("/foo", "/healthz")),
+            true),
+        Arguments.argumentSet(
+            "valuesMatcher array without matching element",
+            valuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(HTTP_ROUTE_ARRAY, Arrays.asList("/foo", "/bar")),
+            false),
+        Arguments.argumentSet(
+            "patternsMatcher array with matching element",
+            patternsMatcher,
+            noParent,
+            sk,
+            Attributes.of(HTTP_PATH_ARRAY, Arrays.asList("/users/profile", "/internal/admin")),
+            true),
+        Arguments.argumentSet(
+            "patternsMatcher array excluded element no match",
+            patternsMatcher,
+            noParent,
+            sk,
+            Attributes.of(
+                HTTP_PATH_ARRAY, Arrays.asList("/users/profile", "/internal/special/foo")),
+            false),
+        Arguments.argumentSet(
+            "numberValuesMatcher long array with matching element",
+            numberValuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(SERVER_PORT_ARRAY, Arrays.asList(8080L, 8081L)),
+            true),
         Arguments.argumentSet(
             "multiMatcher all conditions match",
             multiMatcher,
