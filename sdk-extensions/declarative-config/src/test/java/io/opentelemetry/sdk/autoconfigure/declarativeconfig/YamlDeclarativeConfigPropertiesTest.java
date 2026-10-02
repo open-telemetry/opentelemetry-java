@@ -11,13 +11,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.ImmutableSet;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -268,6 +271,67 @@ class YamlDeclarativeConfigPropertiesTest {
         .isEqualTo(Collections.emptyList());
   }
 
+  @Test
+  void typeIntrospection() {
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+
+    assertThat(otherProps.isString("str_key")).isTrue();
+    assertThat(otherProps.isBoolean("bool_key")).isTrue();
+    assertThat(otherProps.isInt("int_key")).isTrue();
+    assertThat(otherProps.isDouble("float_key")).isTrue();
+
+    // getInt and getLong accept each other's types, so the predicates do too
+    assertThat(otherProps.isLong("int_key")).isTrue();
+
+    assertThat(otherProps.isString("int_key")).isFalse();
+    assertThat(otherProps.isBoolean("str_key")).isFalse();
+    assertThat(otherProps.isInt("str_key")).isFalse();
+    assertThat(otherProps.isLong("str_key")).isFalse();
+    assertThat(otherProps.isDouble("str_key")).isFalse();
+
+    // null-valued, non-scalar, and unconfigured keys are all false
+    assertThat(otherProps.isString("null_key")).isFalse();
+    assertThat(otherProps.isString("str_list_key")).isFalse();
+    assertThat(otherProps.isString("map_key")).isFalse();
+    assertThat(otherProps.isString("foo")).isFalse();
+
+    // the reason these exist: asking never reports a type mismatch
+    assertThat(logs.getEvents()).isEmpty();
+  }
+
+  @Test
+  void typeIntrospectionAgreesWithGetters() {
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+
+    for (String key : Arrays.asList("str_key", "int_key", "float_key", "bool_key", "null_key")) {
+      assertThat(otherProps.isString(key)).isEqualTo(otherProps.getString(key) != null);
+      assertThat(otherProps.isBoolean(key)).isEqualTo(otherProps.getBoolean(key) != null);
+      assertThat(otherProps.isInt(key)).isEqualTo(otherProps.getInt(key) != null);
+      assertThat(otherProps.isLong(key)).isEqualTo(otherProps.getLong(key) != null);
+      assertThat(otherProps.isDouble(key)).isEqualTo(otherProps.getDouble(key) != null);
+    }
+  }
+
+  @Test
+  void typeIntrospectionAcceptsGetterConversions() {
+    // YAML parsing yields Integer and Double, so build the Long and Float cases directly
+    Map<String, Object> properties = new HashMap<>();
+    properties.put("long_key", 5L);
+    properties.put("float_key", 1.5f);
+    DeclarativeConfigProperties props =
+        YamlDeclarativeConfigProperties.create(
+            properties, ComponentLoader.forClassLoader(getClass().getClassLoader()));
+
+    assertThat(props.isInt("long_key")).isTrue();
+    assertThat(props.isLong("long_key")).isTrue();
+    assertThat(props.isDouble("float_key")).isTrue();
+    assertThat(props.isDouble("long_key")).isFalse();
+    assertThat(props.isLong("float_key")).isFalse();
+    assertThat(logs.getEvents()).isEmpty();
+  }
+
   private void assertWarning(String message) {
     logs.assertContains(
         e ->
@@ -296,5 +360,10 @@ class YamlDeclarativeConfigPropertiesTest {
     assertThat(empty().getStructured("foo", empty())).isEqualTo(empty());
     assertThat(empty().getStructuredList("foo", Collections.emptyList()))
         .isEqualTo(Collections.emptyList());
+    assertThat(empty().isString("foo")).isFalse();
+    assertThat(empty().isBoolean("foo")).isFalse();
+    assertThat(empty().isInt("foo")).isFalse();
+    assertThat(empty().isLong("foo")).isFalse();
+    assertThat(empty().isDouble("foo")).isFalse();
   }
 }
