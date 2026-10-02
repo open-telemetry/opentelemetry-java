@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 /** Builder of {@link SdkTracerProvider}. */
 public final class SdkTracerProviderBuilder {
@@ -33,6 +35,8 @@ public final class SdkTracerProviderBuilder {
   private Clock clock = Clock.getDefault();
   private IdGenerator idsGenerator = IdGenerator.random();
   private Resource resource = Resource.getDefault();
+  private boolean resourceExplicitlySet = false;
+  @Nullable private SdkResourceProvider resourceProvider;
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
   private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
@@ -82,6 +86,7 @@ public final class SdkTracerProviderBuilder {
   public SdkTracerProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
     this.resource = resource;
+    this.resourceExplicitlySet = true;
     return this;
   }
 
@@ -94,6 +99,23 @@ public final class SdkTracerProviderBuilder {
   public SdkTracerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = this.resource.merge(resource);
+    this.resourceExplicitlySet = true;
+    return this;
+  }
+
+  /**
+   * Sets the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to all
+   * spans.
+   *
+   * <p>Mutually exclusive with {@link #setResource(Resource)} and {@link #addResource(Resource)};
+   * {@link #build()} throws {@link IllegalStateException} if both are configured.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setSdkResourceProvider(SdkTracerProviderBuilder, SdkResourceProvider)}.
+   */
+  SdkTracerProviderBuilder setSdkResourceProvider(SdkResourceProvider resourceProvider) {
+    requireNonNull(resourceProvider, "resourceProvider");
+    this.resourceProvider = resourceProvider;
     return this;
   }
 
@@ -253,10 +275,16 @@ public final class SdkTracerProviderBuilder {
    * @return The instance.
    */
   public SdkTracerProvider build() {
+    if (resourceProvider != null && resourceExplicitlySet) {
+      throw new IllegalStateException(
+          "setSdkResourceProvider is mutually exclusive with setResource / addResource.");
+    }
+    SdkResourceProvider effectiveSdkResourceProvider =
+        resourceProvider != null ? resourceProvider : SdkResourceProvider.create(resource);
     return new SdkTracerProvider(
         clock,
         idsGenerator,
-        resource,
+        effectiveSdkResourceProvider,
         spanLimitsSupplier,
         sampler,
         spanProcessors,

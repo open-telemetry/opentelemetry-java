@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +24,7 @@ final class TracerSharedState {
   private final IdGenerator idGenerator;
   // tracks whether it is safe to skip id validation on ids from the above generator
   private final boolean idGeneratorSafeToSkipIdValidation;
-  private final Resource resource;
+  private final SdkResourceProvider resourceProvider;
 
   private final Supplier<SpanLimits> spanLimitsSupplier;
   private final Sampler sampler;
@@ -37,7 +38,7 @@ final class TracerSharedState {
   TracerSharedState(
       Clock clock,
       IdGenerator idGenerator,
-      Resource resource,
+      SdkResourceProvider resourceProvider,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
@@ -46,7 +47,7 @@ final class TracerSharedState {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
-    this.resource = resource;
+    this.resourceProvider = resourceProvider;
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
@@ -71,7 +72,7 @@ final class TracerSharedState {
   }
 
   Resource getResource() {
-    return resource;
+    return resourceProvider.getResource();
   }
 
   /** Returns the current {@link SpanLimits}. */

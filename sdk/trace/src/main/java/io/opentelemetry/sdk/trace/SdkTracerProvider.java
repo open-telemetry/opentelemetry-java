@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.common.internal.ComponentRegistry;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -32,6 +33,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "";
   private final TracerSharedState sharedState;
+  private final SdkResourceProvider resourceProvider;
   private final ComponentRegistry<SdkTracer> tracerSdkComponentRegistry;
   // deliberately not volatile because of performance concerns
   // - which means its eventually consistent
@@ -50,18 +52,19 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   SdkTracerProvider(
       Clock clock,
       IdGenerator idsGenerator,
-      Resource resource,
+      SdkResourceProvider resourceProvider,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
       ScopeConfigurator<TracerConfig> tracerConfigurator,
       ExceptionAttributeResolver exceptionAttributeResolver,
       Supplier<MeterProvider> meterProvider) {
+    this.resourceProvider = resourceProvider;
     this.sharedState =
         new TracerSharedState(
             clock,
             idsGenerator,
-            resource,
+            resourceProvider,
             spanLimitsSupplier,
             sampler,
             spanProcessors,
@@ -105,6 +108,16 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       return TracerProvider.noop().tracerBuilder(instrumentationScopeName);
     }
     return new SdkTracerBuilder(tracerSdkComponentRegistry, instrumentationScopeName);
+  }
+
+  /**
+   * Returns the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to spans.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#getSdkResourceProvider(SdkTracerProvider)}.
+   */
+  SdkResourceProvider getSdkResourceProvider() {
+    return resourceProvider;
   }
 
   /** Returns the {@link SpanLimits} that are currently applied to created spans. */
