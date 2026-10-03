@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi;
 
-import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
-
 import io.opentelemetry.common.ComponentLoader;
 import java.time.Duration;
 import java.util.List;
@@ -34,7 +32,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default String getString(String name, String defaultValue) {
-    return defaultIfNull(getString(name), defaultValue);
+    String value = getString(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -56,7 +55,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default boolean getBoolean(String name, boolean defaultValue) {
-    return defaultIfNull(getBoolean(name), defaultValue);
+    Boolean value = getBoolean(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -77,7 +77,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default int getInt(String name, int defaultValue) {
-    return defaultIfNull(getInt(name), defaultValue);
+    Integer value = getInt(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -98,7 +99,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default long getLong(String name, long defaultValue) {
-    return defaultIfNull(getLong(name), defaultValue);
+    Long value = getLong(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -119,7 +121,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default double getDouble(String name, double defaultValue) {
-    return defaultIfNull(getDouble(name), defaultValue);
+    Double value = getDouble(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -156,7 +159,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default Duration getDuration(String name, Duration defaultValue) {
-    return defaultIfNull(getDuration(name), defaultValue);
+    Duration value = getDuration(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
