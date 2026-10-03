@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api;
 
-import io.opentelemetry.api.impl.ConfigUtil;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.internal.IncubatingUtil;
 import io.opentelemetry.api.logs.LoggerProvider;
@@ -15,6 +14,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.common.impl.ConfigUtil;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

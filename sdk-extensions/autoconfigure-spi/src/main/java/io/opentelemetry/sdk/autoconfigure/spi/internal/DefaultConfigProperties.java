@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.autoconfigure.spi.internal;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.api.impl.ConfigUtil;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.common.impl.ConfigUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.time.Duration;

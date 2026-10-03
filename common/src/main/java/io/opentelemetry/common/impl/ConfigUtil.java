@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.impl;
+package io.opentelemetry.common.impl;
 
 import java.util.ConcurrentModificationException;
 import java.util.Locale;
@@ -15,6 +15,8 @@ import java.util.Properties;
  *
  * <p>This class is not intended for use by application developers. Its API is stable and will not
  * be changed or removed in a backwards-incompatible manner.
+ *
+ * @since 1.67.0
  */
 public final class ConfigUtil {
 

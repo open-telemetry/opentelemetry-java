@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.impl;
+package io.opentelemetry.common.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
-/** Relies on environment configuration in {@code ./api/all/build.gradle.kts}. */
+/** Relies on environment configuration in {@code ./common/build.gradle.kts}. */
 class ConfigUtilTest {
 
   @Test
