@@ -49,7 +49,7 @@ final class ComposableProbabilitySampler implements ComposableSampler {
               Function.identity());
     }
     this.description =
-        "ComposableTraceIdRatioBasedSampler{threshold=" + thresholdStr + ", ratio=" + ratio + "}";
+        "ComposableProbabilitySampler{threshold=" + thresholdStr + ", ratio=" + ratio + "}";
   }
 
   @Override

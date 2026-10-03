@@ -30,6 +30,7 @@ final class TracerSharedState {
   private final SpanProcessor activeSpanProcessor;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
   private final SdkTracerInstrumentation tracerInstrumentation;
+  private final boolean noSpanProcessor;
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
@@ -51,6 +52,10 @@ final class TracerSharedState {
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.tracerInstrumentation = tracerInstrumentation;
+    // Note: This relies on SpanProcessor.composite(..) returning NoopSpanProcessor unwrapped
+    // when given an empty list. If SpanProcessor.composite(..) behavior changes, this instanceof
+    // check must change too
+    this.noSpanProcessor = activeSpanProcessor instanceof NoopSpanProcessor;
   }
 
   Clock getClock() {
@@ -95,6 +100,10 @@ final class TracerSharedState {
    */
   boolean hasBeenShutdown() {
     return shutdownResult != null;
+  }
+
+  boolean hasNoSpanProcessor() {
+    return noSpanProcessor;
   }
 
   /** Return the {@link ExceptionAttributeResolver}. */

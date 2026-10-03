@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,9 @@ class SdkTracerTest {
   private final SdkTracer tracer =
       (SdkTracer)
           SdkTracerProvider.builder()
+              .addSpanProcessor(
+                  new CountingSpanProcessor()) // configured with a processor so existing tests get
+              // real recording spans
               .build()
               .tracerBuilder(INSTRUMENTATION_SCOPE_NAME)
               .setInstrumentationVersion(INSTRUMENTATION_SCOPE_VERSION)
@@ -121,6 +125,47 @@ class SdkTracerTest {
     stressTestBuilder.build().run();
     assertThat(countingSpanExporter.numberOfSpansExported.get())
         .isGreaterThanOrEqualTo(defaultMaxQueueSize);
+  }
+
+  @Test
+  void withSpanProcessor_recording() {
+    // Verify a configured span processor produces recording spans.
+    CountingSpanProcessor spanProcessor = new CountingSpanProcessor();
+    SdkTracer tracer =
+        (SdkTracer)
+            SdkTracerProvider.builder()
+                .addSpanProcessor(spanProcessor)
+                .build()
+                .get(INSTRUMENTATION_SCOPE_NAME, INSTRUMENTATION_SCOPE_VERSION);
+
+    Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
+    try {
+      assertThat(span.isRecording()).isTrue();
+    } finally {
+      span.end();
+    }
+    assertThat(spanProcessor.numberOfSpansStarted.get()).isEqualTo(1);
+  }
+
+  @Test
+  void alwaysOffSamplerWithProcessor_notShortCircuited() {
+    // Verify AlwaysOff sampling does not trigger the zero-processor noop path.
+    SdkTracer tracer =
+        (SdkTracer)
+            SdkTracerProvider.builder()
+                .addSpanProcessor(new CountingSpanProcessor())
+                .setSampler(Sampler.alwaysOff())
+                .build()
+                .get(INSTRUMENTATION_SCOPE_NAME, INSTRUMENTATION_SCOPE_VERSION);
+
+    assertThat(tracer.spanBuilder(SPAN_NAME)).isInstanceOf(SdkSpanBuilder.class);
+
+    Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
+    try {
+      assertThat(span.isRecording()).isFalse(); // false due to sampling, not the noop path
+    } finally {
+      span.end();
+    }
   }
 
   private static class CountingSpanProcessor implements SpanProcessor {

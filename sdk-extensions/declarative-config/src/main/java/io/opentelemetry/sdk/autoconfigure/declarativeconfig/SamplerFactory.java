@@ -5,12 +5,15 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysRecordSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TraceIdRatioBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalProbabilitySamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.SamplerModelAccessor;
+import io.opentelemetry.sdk.extension.incubator.trace.samplers.AlwaysRecordSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.CompositeSampler;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
@@ -44,6 +47,9 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
     }
     if (model.getParentBased() != null) {
       return createParedBasedSampler(model.getParentBased(), context);
+    }
+    if (model.getAlwaysRecord() != null) {
+      return createAlwaysRecordSampler(model.getAlwaysRecord(), context);
     }
     ExperimentalProbabilitySamplerModel probabilityDevelopment =
         SamplerModelAccessor.getProbability(model);
@@ -92,6 +98,15 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
       builder.setLocalParentNotSampled(sampler);
     }
     return builder.build();
+  }
+
+  private static Sampler createAlwaysRecordSampler(
+      AlwaysRecordSamplerModel alwaysRecordModel, DeclarativeConfigContext context) {
+    SamplerModel rootModel = alwaysRecordModel.getRoot();
+    if (rootModel == null) {
+      throw new DeclarativeConfigException("always_record sampler .root is required");
+    }
+    return AlwaysRecordSampler.create(INSTANCE.create(rootModel, context));
   }
 
   private static Sampler createProbabilitySampler(

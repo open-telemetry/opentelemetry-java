@@ -33,15 +33,15 @@ class ComponentIdTest {
     assertThat(StandardComponentId.ExporterType.OTLP_HTTP_JSON_LOG_EXPORTER.value)
         .isEqualTo(
             OtelIncubatingAttributes.OtelComponentTypeIncubatingValues.OTLP_HTTP_JSON_LOG_EXPORTER);
-    // TODO: uncomment as soon as available in semconv release
-    // assertThat(ComponentId.StandardType.OTLP_GRPC_METRIC_EXPORTER.value)
-    //
-    // .isEqualTo(OtelIncubatingAttributes.OtelComponentTypeIncubatingValues.OTLP_GRPC_METRIC_EXPORTER);
-    // assertThat(ComponentId.StandardType.OTLP_HTTP_METRIC_EXPORTER.value)
-    //
-    // .isEqualTo(OtelIncubatingAttributes.OtelComponentTypeIncubatingValues.OTLP_HTTP_METRIC_EXPORTER);
-    // assertThat(ComponentId.StandardType.OTLP_HTTP_JSON_METRIC_EXPORTER.value)
-    //
-    // .isEqualTo(OtelIncubatingAttributes.OtelComponentTypeIncubatingValues.OTLP_HTTP_JSON_METRIC_EXPORTER);
+    assertThat(StandardComponentId.ExporterType.OTLP_GRPC_METRIC_EXPORTER.value)
+        .isEqualTo(
+            OtelIncubatingAttributes.OtelComponentTypeIncubatingValues.OTLP_GRPC_METRIC_EXPORTER);
+    assertThat(StandardComponentId.ExporterType.OTLP_HTTP_METRIC_EXPORTER.value)
+        .isEqualTo(
+            OtelIncubatingAttributes.OtelComponentTypeIncubatingValues.OTLP_HTTP_METRIC_EXPORTER);
+    assertThat(StandardComponentId.ExporterType.OTLP_HTTP_JSON_METRIC_EXPORTER.value)
+        .isEqualTo(
+            OtelIncubatingAttributes.OtelComponentTypeIncubatingValues
+                .OTLP_HTTP_JSON_METRIC_EXPORTER);
   }
 }

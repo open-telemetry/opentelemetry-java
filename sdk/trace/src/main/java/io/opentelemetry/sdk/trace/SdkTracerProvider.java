@@ -101,6 +101,9 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       logger.fine("Tracer requested without instrumentation scope name.");
       instrumentationScopeName = DEFAULT_TRACER_NAME;
     }
+    if (sharedState.hasNoSpanProcessor()) {
+      return TracerProvider.noop().tracerBuilder(instrumentationScopeName);
+    }
     return new SdkTracerBuilder(tracerSdkComponentRegistry, instrumentationScopeName);
   }
 

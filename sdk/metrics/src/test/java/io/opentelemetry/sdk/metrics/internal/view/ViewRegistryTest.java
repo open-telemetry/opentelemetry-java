@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -44,7 +46,7 @@ class ViewRegistryTest {
     return RegisteredView.create(
         instrumentSelector,
         view,
-        AttributesProcessor.noop(),
+        AttributesFilters.ALLOW_ALL,
         MetricStorage.DEFAULT_MAX_CARDINALITY,
         SourceInfo.fromCurrentStack());
   }
@@ -483,22 +485,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .satisfies(
-            view -> {
-              assertThat(view)
-                  .as("is the same as the default view, except the attributes processor")
-                  .usingRecursiveComparison()
-                  .withStrictTypeChecking()
-                  .ignoringFields("viewAttributesProcessor")
-                  .isEqualTo(DEFAULT_REGISTERED_VIEW);
-              assertThat(view)
-                  .as("has the advice attributes processor")
-                  .extracting("viewAttributesProcessor")
-                  .isInstanceOf(AdviceAttributesProcessor.class)
-                  .extracting(
-                      "attributeKeys", InstanceOfAssertFactories.collection(AttributeKey.class))
-                  .containsExactlyInAnyOrder(stringKey("key1"), stringKey("key2"));
-            });
+        .satisfies(view -> assertAdviceFilter(view, stringKey("key1"), stringKey("key2")));
 
     // If there is no matching view and attributes advice was defined, use it - incompatible
     // aggregation case
@@ -516,22 +503,7 @@ class ViewRegistryTest {
                 INSTRUMENTATION_SCOPE_INFO))
         .hasSize(1)
         .element(0)
-        .satisfies(
-            view -> {
-              assertThat(view)
-                  .as("is the same as the default view, except the attributes processor")
-                  .usingRecursiveComparison()
-                  .withStrictTypeChecking()
-                  .ignoringFields("viewAttributesProcessor")
-                  .isEqualTo(DEFAULT_REGISTERED_VIEW);
-              assertThat(view)
-                  .as("has the advice attributes processor")
-                  .extracting("viewAttributesProcessor")
-                  .isInstanceOf(AdviceAttributesProcessor.class)
-                  .extracting(
-                      "attributeKeys", InstanceOfAssertFactories.collection(AttributeKey.class))
-                  .containsExactlyInAnyOrder(stringKey("key1"), stringKey("key2"));
-            });
+        .satisfies(view -> assertAdviceFilter(view, stringKey("key1"), stringKey("key2")));
 
     // if advice is not defined, use the default view
     assertThat(
@@ -545,5 +517,25 @@ class ViewRegistryTest {
                     Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
+  }
+
+  private static void assertAdviceFilter(RegisteredView view, AttributeKey<?>... expectedKeys) {
+    assertThat(view)
+        .as("is the same as the default view, except the attributes filter")
+        .usingRecursiveComparison()
+        .withStrictTypeChecking()
+        .ignoringFields("attributesFilter")
+        .isEqualTo(DEFAULT_REGISTERED_VIEW);
+    // The advice filter uses FilteredAttributes.create under the hood; verify by applying it to a
+    // superset of attributes and checking the retained keys.
+    AttributesBuilder builder = Attributes.builder();
+    for (AttributeKey<?> key : expectedKeys) {
+      builder.put(key.getKey(), "v");
+    }
+    builder.put("extra", "drop");
+    Attributes filtered = view.getAttributesFilter().apply(builder.build());
+    assertThat(filtered.asMap().keySet())
+        .asInstanceOf(InstanceOfAssertFactories.collection(AttributeKey.class))
+        .containsExactlyInAnyOrder(expectedKeys);
   }
 }

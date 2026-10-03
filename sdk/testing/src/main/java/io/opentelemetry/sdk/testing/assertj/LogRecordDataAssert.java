@@ -144,7 +144,7 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
       failWithActualExpectedAndMessage(
           actual.getSpanContext(),
           spanContext,
-          "Expected log to have span context <%s> nanos but was <%s>",
+          "Expected log to have span context <%s> but was <%s>",
           spanContext,
           actual.getSpanContext());
     }

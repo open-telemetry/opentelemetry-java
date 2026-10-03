@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +34,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       Logger.getLogger(DefaultSynchronousMetricStorage.class.getName());
 
   final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
-  final AttributesProcessor attributesProcessor;
+  final UnaryOperator<Attributes> attributesFilter;
   protected final Clock clock;
   protected final MetricDescriptor metricDescriptor;
   protected final Aggregator<T> aggregator;
@@ -50,13 +50,13 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
   DefaultSynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
-      AttributesProcessor attributesProcessor,
+      UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
       boolean enabled) {
     this.metricDescriptor = metricDescriptor;
     this.aggregator = aggregator;
-    this.attributesProcessor = attributesProcessor;
+    this.attributesFilter = attributesFilter;
     this.clock = clock;
     this.maxCardinality = maxCardinality - 1;
     this.enabled = enabled;
@@ -66,7 +66,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       RegisteredReader reader,
       MetricDescriptor descriptor,
       Aggregator<T> aggregator,
-      AttributesProcessor processor,
+      UnaryOperator<Attributes> attributesFilter,
       int maxCardinality,
       Clock clock,
       boolean enabled) {
@@ -76,18 +76,13 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         ? new CumulativeSynchronousMetricStorage<>(
             descriptor,
             aggregator,
-            processor,
+            attributesFilter,
             clock,
             maxCardinality,
             enabled,
             reader.getReader().getMemoryMode())
         : new DeltaSynchronousMetricStorage<>(
-            reader, descriptor, aggregator, processor, clock, maxCardinality, enabled);
-  }
-
-  @Override
-  public boolean usesContext() {
-    return attributesProcessor.usesContext();
+            reader, descriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
   }
 
   @Override

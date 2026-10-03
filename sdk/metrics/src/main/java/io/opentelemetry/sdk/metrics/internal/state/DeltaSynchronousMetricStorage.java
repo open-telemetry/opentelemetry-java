@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
 
@@ -51,11 +51,11 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
-      AttributesProcessor attributesProcessor,
+      UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
       boolean enabled) {
-    super(metricDescriptor, aggregator, attributesProcessor, clock, maxCardinality, enabled);
+    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
     this.instrumentCreationEpochNanos = clock.now();
     this.registeredReader = registeredReader;
     this.memoryMode = registeredReader.getReader().getMemoryMode();
@@ -63,7 +63,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   @Override
   void doRecordLong(long value, Attributes attributes, Context context) {
-    DeltaAggregatorHandle<T> handle = acquireHandleForRecord(attributes, context);
+    DeltaAggregatorHandle<T> handle = acquireHandleForRecord(attributes);
     try {
       handle.handle.recordLong(value, attributes, context);
     } finally {
@@ -73,7 +73,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   @Override
   void doRecordDouble(double value, Attributes attributes, Context context) {
-    DeltaAggregatorHandle<T> handle = acquireHandleForRecord(attributes, context);
+    DeltaAggregatorHandle<T> handle = acquireHandleForRecord(attributes);
     try {
       handle.handle.recordDouble(value, attributes, context);
     } finally {
@@ -82,10 +82,10 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   }
 
   @SuppressWarnings("ThreadPriorityCheck")
-  private DeltaAggregatorHandle<T> acquireHandleForRecord(Attributes attributes, Context context) {
+  private DeltaAggregatorHandle<T> acquireHandleForRecord(Attributes attributes) {
     while (true) {
       DeltaAggregatorHandle<T> handle =
-          tryAcquireHandleForRecord(this.aggregatorHolder, attributes, context);
+          tryAcquireHandleForRecord(this.aggregatorHolder, attributes);
       if (handle != null) {
         return handle;
       }
@@ -96,9 +96,9 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   @Nullable
   private DeltaAggregatorHandle<T> tryAcquireHandleForRecord(
-      AggregatorHolder<T> holder, Attributes attributes, Context context) {
+      AggregatorHolder<T> holder, Attributes attributes) {
     Objects.requireNonNull(attributes, "attributes");
-    attributes = attributesProcessor.process(attributes, context);
+    attributes = attributesFilter.apply(attributes);
     ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles =
         holder.aggregatorHandles;
     DeltaAggregatorHandle<T> handle = aggregatorHandles.get(attributes);
@@ -163,7 +163,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   @Override
   public BoundStorageHandle bind(Attributes attributes) {
-    Attributes processed = attributesProcessor.process(attributes, Context.current());
+    Attributes processed = attributesFilter.apply(attributes);
     return new DeltaBoundHandle<>(bindHandle(processed), attributes);
   }
 

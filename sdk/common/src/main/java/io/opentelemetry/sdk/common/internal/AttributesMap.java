@@ -120,14 +120,16 @@ public final class AttributesMap implements Attributes {
     if (value == null) {
       return null;
     }
-    totalAddedValues++;
     String name = key.getKey();
     int slot = findSlot(name);
     int stored = hashTable[slot];
-    if (stored == EMPTY && size >= capacity) {
-      // Drop new entry per spec. totalAddedValues++ above captures the drop for
-      // getTotalAddedValues() / downstream drop-count metrics.
-      return null;
+    if (stored == EMPTY) {
+      totalAddedValues++;
+      if (size >= capacity) {
+        // Drop new entry per spec. totalAddedValues++ above captures the drop for
+        // getTotalAddedValues() / downstream drop-count metrics.
+        return null;
+      }
     }
     Object limitedValue = AttributeUtil.applyAttributeLengthLimit(value, lengthLimit);
     int idx;

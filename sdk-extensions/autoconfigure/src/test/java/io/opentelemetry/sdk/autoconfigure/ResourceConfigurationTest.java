@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,18 +41,52 @@ class ResourceConfigurationTest {
     props.put(
         "otel.resource.attributes", "food=cheesecake,drink=juice,animal=  ,color=,shape=square");
     props.put("otel.resource.disabled-keys", "drink");
+    ConfigProperties config = DefaultConfigProperties.create(props, componentLoader);
 
     assertThat(
             ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(props, componentLoader),
+                config,
                 SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
                 (r, c) -> r))
         .isEqualTo(
             Resource.getDefault().toBuilder()
+                .putAll(new ServiceInstanceIdResourceProvider().createResource(config))
                 .put(stringKey("service.name"), "test-service")
                 .put("food", "cheesecake")
                 .put("shape", "square")
                 .build());
+  }
+
+  @Test
+  void serviceInstanceIdFallback_defaultBehavior() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "test-service");
+
+    Resource result =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.create(props, componentLoader),
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    String serviceInstanceId = result.getAttribute(stringKey("service.instance.id"));
+    assertThat(serviceInstanceId).isNotNull();
+    assertThat(UUID.fromString(serviceInstanceId)).isNotNull();
+    assertThat(result.getAttribute(stringKey("service.name"))).isEqualTo("test-service");
+  }
+
+  @Test
+  void serviceInstanceIdExplicitValuePreserved() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "test-service");
+    props.put("otel.resource.attributes", "service.instance.id=my-custom-id-123");
+
+    Resource result =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.create(props, componentLoader),
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    assertThat(result.getAttribute(stringKey("service.instance.id"))).isEqualTo("my-custom-id-123");
   }
 
   @ParameterizedTest
@@ -74,7 +109,16 @@ class ResourceConfigurationTest {
         Arguments.argumentSet("incomplete percent encoding", "key=abc%2", "key", "abc%2"),
         Arguments.argumentSet("percent at end", "key=abc%", "key", "abc%"),
         Arguments.argumentSet("multiple percent encodings", "key=a%20b%2Bc%3Dd", "key", "a b+c=d"),
-        Arguments.argumentSet("no percent encoding", "key=plain-value", "key", "plain-value"));
+        Arguments.argumentSet("no percent encoding", "key=plain-value", "key", "plain-value"),
+        Arguments.argumentSet(
+            "unencoded non-ASCII with percent encoding", "key=café%20bar", "key", "café bar"),
+        Arguments.argumentSet(
+            "encoded and unencoded multi-byte", "key=%C3%A9t%C3%A9 été", "key", "été été"),
+        Arguments.argumentSet(
+            "unencoded supplementary character with percent encoding",
+            "key=😀%20x",
+            "key",
+            "😀 x"));
   }
 
   @Test

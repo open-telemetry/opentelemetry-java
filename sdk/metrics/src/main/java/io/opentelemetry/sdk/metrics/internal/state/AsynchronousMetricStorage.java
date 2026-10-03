@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -36,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -54,7 +54,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
   protected final Aggregator<T> aggregator;
-  private final AttributesProcessor attributesProcessor;
+  private final UnaryOperator<Attributes> attributesFilter;
   protected final long instrumentCreationEpochNanos;
 
   protected final MemoryMode memoryMode;
@@ -77,7 +77,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
       MetricDescriptor metricDescriptor,
       AggregationTemporality aggregationTemporality,
       Aggregator<T> aggregator,
-      AttributesProcessor attributesProcessor,
+      UnaryOperator<Attributes> attributesFilter,
       int maxCardinality,
       Clock clock,
       boolean enabled) {
@@ -86,7 +86,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
     this.aggregationTemporality = aggregationTemporality;
     this.memoryMode = registeredReader.getReader().getMemoryMode();
     this.aggregator = aggregator;
-    this.attributesProcessor = attributesProcessor;
+    this.attributesFilter = attributesFilter;
     this.instrumentCreationEpochNanos = clock.now();
     this.maxCardinality = maxCardinality - 1;
     this.enabled = enabled;
@@ -118,14 +118,14 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(
                 instrumentDescriptor, exemplarFilter, registeredReader.getReader().getMemoryMode());
-    AttributesProcessor attributesProcessor = registeredView.getViewAttributesProcessor();
+    UnaryOperator<Attributes> attributesFilter = registeredView.getAttributesFilter();
     int cardinalityLimit = registeredView.getCardinalityLimit();
     return aggregationTemporality == AggregationTemporality.DELTA
         ? new DeltaAsynchronousMetricStorage<>(
             registeredReader,
             metricDescriptor,
             aggregator,
-            attributesProcessor,
+            attributesFilter,
             cardinalityLimit,
             clock,
             enabled)
@@ -133,7 +133,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
             registeredReader,
             metricDescriptor,
             aggregator,
-            attributesProcessor,
+            attributesFilter,
             cardinalityLimit,
             clock,
             enabled);
@@ -152,8 +152,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
   }
 
   private AggregatorHandle<T> getAggregatorHandle(Attributes attributes) {
-    Context context = Context.current();
-    attributes = attributesProcessor.process(attributes, context);
+    attributes = attributesFilter.apply(attributes);
     AggregatorHandle<T> handle = aggregatorHandles.get(attributes);
     if (handle != null) {
       return handle;
@@ -235,7 +234,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
         RegisteredReader registeredReader,
         MetricDescriptor metricDescriptor,
         Aggregator<T> aggregator,
-        AttributesProcessor attributesProcessor,
+        UnaryOperator<Attributes> attributesFilter,
         int maxCardinality,
         Clock clock,
         boolean enabled) {
@@ -244,7 +243,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
           metricDescriptor,
           AggregationTemporality.DELTA,
           aggregator,
-          attributesProcessor,
+          attributesFilter,
           maxCardinality,
           clock,
           enabled);
@@ -353,7 +352,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
         RegisteredReader registeredReader,
         MetricDescriptor metricDescriptor,
         Aggregator<T> aggregator,
-        AttributesProcessor attributesProcessor,
+        UnaryOperator<Attributes> attributesFilter,
         int maxCardinality,
         Clock clock,
         boolean enabled) {
@@ -362,7 +361,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
           metricDescriptor,
           AggregationTemporality.CUMULATIVE,
           aggregator,
-          attributesProcessor,
+          attributesFilter,
           maxCardinality,
           clock,
           enabled);

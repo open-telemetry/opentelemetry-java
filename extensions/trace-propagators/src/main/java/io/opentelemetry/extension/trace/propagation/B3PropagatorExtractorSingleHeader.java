@@ -41,7 +41,9 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
     // must have between 2 and 4 hyphen delimited parts:
     //   traceId-spanId-sampled-parentSpanId (last two are optional)
     // NOTE: we do not use parentSpanId
-    String[] parts = value.split(B3Propagator.COMBINED_HEADER_DELIMITER);
+    // Bound the split so a header full of delimiters cannot force allocation of an arbitrarily
+    // large token array before the length check below.
+    String[] parts = value.split(B3Propagator.COMBINED_HEADER_DELIMITER, 5);
     if (parts.length < 2 || parts.length > 4) {
       logger.fine(
           "Invalid combined header '"

@@ -36,6 +36,10 @@ dependencies {
   }
 
   testImplementation("com.tngtech.archunit:archunit-junit5")
+  // NullGuardsTest uses ASM for method-body bytecode scanning. Once the Gradle build toolchain
+  // bumps to JDK 24+, we can migrate to the built-in java.lang.classfile API and drop these deps.
+  testImplementation("org.ow2.asm:asm")
+  testImplementation("org.ow2.asm:asm-tree")
 }
 
 // Custom task type for writing artifacts and jars - configuration cache compatible

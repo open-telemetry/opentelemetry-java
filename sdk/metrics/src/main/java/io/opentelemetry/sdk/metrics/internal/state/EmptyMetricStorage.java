@@ -57,11 +57,6 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
   }
 
   @Override
-  public boolean usesContext() {
-    return false;
-  }
-
-  @Override
   public void setEnabled(boolean enabled) {
     // do nothing
   }

@@ -23,7 +23,7 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
 
   SdkDoubleUpDownCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor, sdkMeter, storage);
+    super(descriptor, sdkMeter);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }

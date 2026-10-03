@@ -115,6 +115,7 @@ class MetricExporterFactoryTest {
                                 new NameStringValuePairModel().setName("key2").setValue("value2")))
                         .setCompression("gzip")
                         .setTimeout(15_000)
+                        .setMaxRequestSize(1234)
                         .setTls(
                             new HttpTlsModel()
                                 .setCaFile(certificatePath)
@@ -130,6 +131,7 @@ class MetricExporterFactoryTest {
                 .addHeader("key2", "value2")
                 .setTimeout(Duration.ofSeconds(15))
                 .setCompression("gzip")
+                .setMaxRequestBodySize(1234)
                 .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
                 .setDefaultAggregationSelector(
                     DefaultAggregationSelector.getDefault()
@@ -154,6 +156,7 @@ class MetricExporterFactoryTest {
                                 new NameStringValuePairModel().setName("key2").setValue("value2")))
                         .setCompression("gzip")
                         .setTimeout(15_000)
+                        .setMaxRequestSize(1234)
                         .setTls(
                             new GrpcTlsModel()
                                 .setCaFile(certificatePath)
@@ -169,6 +172,7 @@ class MetricExporterFactoryTest {
                 .addHeader("key2", "value2")
                 .setTimeout(Duration.ofSeconds(15))
                 .setCompression("gzip")
+                .setMaxRequestMessageSize(1234)
                 .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
                 .setDefaultAggregationSelector(
                     DefaultAggregationSelector.getDefault()
