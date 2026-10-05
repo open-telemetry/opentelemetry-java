@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.EntityExperimentConstants;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
@@ -51,10 +50,8 @@ final class EnvironmentResource {
   static Resource createEnvironmentResource(ConfigProperties config) {
     ResourceBuilder resourceBuilder = Resource.builder();
 
-    boolean entitiesEnabled =
-        config.getBoolean(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, false);
     String entitiesStr = config.getString(ENTITIES_PROPERTY);
-    if (entitiesEnabled && entitiesStr != null && !entitiesStr.isEmpty()) {
+    if (entitiesStr != null && !entitiesStr.isEmpty()) {
       List<Entity> parsedEntities = new EntityParser(entitiesStr).parse();
       for (Entity entity : parsedEntities) {
         EntityUtil.addEntity(resourceBuilder, entity);

@@ -98,7 +98,7 @@ public class AutoconfigureDeclarativeConfigTest {
         new ServiceResourceDetector().create(DeclarativeConfigProperties.empty());
     Resource resource =
         Resource.getDefault().toBuilder()
-            .putAll(detectedResource.getAttributes())
+            .putAll(detectedResource)
             .put(AttributeKey.stringKey("service.name"), "test-osgi-declarative")
             .build();
 

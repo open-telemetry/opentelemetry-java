@@ -189,9 +189,7 @@ class ResourceConfigurationTest {
     return Stream.of(
         Arguments.argumentSet(
             "otel.entities happy path",
-            ImmutableMap.of(
-                "otel.experimental.entities.enabled",
-                "true",
+            singletonMap(
                 "otel.entities",
                 "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
             Arrays.asList(
@@ -202,9 +200,7 @@ class ResourceConfigurationTest {
                 Entity.builder("host", Attributes.of(stringKey("host.id"), "myhost")).build())),
         Arguments.argumentSet(
             "percent decoding",
-            ImmutableMap.of(
-                "otel.experimental.entities.enabled",
-                "true",
+            singletonMap(
                 "otel.entities",
                 "service{service.name=my+app,space=hello%20world,utf8=%C3%A9,invalid=%2G,incomplete=%2,end=%}"),
             Collections.singletonList(
@@ -221,25 +217,13 @@ class ResourceConfigurationTest {
                     .build())),
         Arguments.argumentSet(
             "malformed",
-            ImmutableMap.of(
-                "otel.experimental.entities.enabled",
-                "true",
+            singletonMap(
                 "otel.entities",
                 "{empty.type=val};process{};process{=val};process{key;=val};host{host.id=valid}"),
             Collections.singletonList(
                 Entity.builder("host", Attributes.builder().put("host.id", "valid").build())
                     .build())),
-        Arguments.argumentSet(
-            "empty",
-            ImmutableMap.of("otel.experimental.entities.enabled", "true", "otel.entities", ""),
-            Collections.emptyList()),
-        Arguments.argumentSet(
-            "otel.experimental.entities.enabled=false",
-            ImmutableMap.of(
-                "otel.experimental.entities.enabled",
-                "false",
-                "otel.entities",
-                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
-            Collections.emptyList()));
+        Arguments.argumentSet("empty", singletonMap("otel.entities", ""), Collections.emptyList()),
+        Arguments.argumentSet("absent", Collections.emptyMap(), Collections.emptyList()));
   }
 }

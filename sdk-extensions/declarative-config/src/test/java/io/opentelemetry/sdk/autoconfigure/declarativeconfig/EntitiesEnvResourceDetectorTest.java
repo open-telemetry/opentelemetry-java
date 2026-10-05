@@ -68,6 +68,7 @@ class EntitiesEnvResourceDetectorTest {
                     .build(),
                 Entity.builder("host", Attributes.of(stringKey("host.id"), "myhost")).build())),
         Arguments.argumentSet(
-            "empty", ImmutableMap.of("otel.entities", ""), Collections.emptyList()));
+            "empty", ImmutableMap.of("otel.entities", ""), Collections.emptyList()),
+        Arguments.argumentSet("absent", Collections.emptyMap(), Collections.emptyList()));
   }
 }
