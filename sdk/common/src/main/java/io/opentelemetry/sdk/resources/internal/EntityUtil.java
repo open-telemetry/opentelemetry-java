@@ -14,9 +14,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -191,66 +193,81 @@ public final class EntityUtil {
   }
 
   /**
-   * Merges entities according to specification rules.
+   * Merges incoming entities in iteration order according to the resource data model.
+   *
+   * <ul>
+   *   <li>Entities with equal type, identifying attributes, and schema URL merge their
+   *       descriptions, with incoming values taking precedence. Two absent schema URLs are equal.
+   *   <li>An incoming entity with the same type but different identifying attributes or schema URL
+   *       replaces the old entity, discarding all of the old entity's attributes.
+   *   <li>If an incoming entity overwrites an attribute of an entity with a different type, remove
+   *       that old entity's association and retain its non-conflicting attributes as unassociated.
+   * </ul>
+   *
+   * <p>For cross-type conflicts, this method first copies all attributes of the removed entity into
+   * {@code unassociatedAttributes}. The caller must then use {@link #mergeRawAttributes} to exclude
+   * keys owned by the surviving entities, ensuring their values take precedence.
    *
    * @param base the initial set of entities.
    * @param additional Additional entities to merge with base set.
+   * @param unassociatedAttributes Receives attributes from invalidated entity associations.
    * @return A new set of entities with no duplicate types.
    */
-  static Collection<Entity> mergeEntities(Collection<Entity> base, Collection<Entity> additional) {
-    if (base.isEmpty()) {
-      return additional;
-    }
-    if (additional.isEmpty()) {
-      return base;
-    }
-    Map<String, Entity> entities = new HashMap<>();
+  static Collection<Entity> mergeEntities(
+      Collection<Entity> base,
+      Collection<Entity> additional,
+      AttributesBuilder unassociatedAttributes) {
+    Map<String, Entity> entities = new LinkedHashMap<>();
     base.forEach(e -> entities.put(e.getType(), e));
-    for (Entity e : additional) {
-      if (!entities.containsKey(e.getType())) {
-        entities.put(e.getType(), e);
-      } else {
-        Entity old = entities.get(e.getType());
-        // If the entity identity is the same, but schema_url is different: drop the new entity d'
-        // Note: We could offer configuration in this case
-        if (old.getSchemaUrl() == null || !old.getSchemaUrl().equals(e.getSchemaUrl())) {
-          logger.info(
-              "Discovered conflicting entities. Entity ["
-                  + old.getType()
-                  + "] has different schema url ["
-                  + old.getSchemaUrl()
-                  + "], new entity  with schema url["
-                  + e.getSchemaUrl()
-                  + "] is dropped.");
-        } else if (!old.getId().equals(e.getId())) {
-          // If the entity identity is different: drop the new entity d'.
-          logger.info(
-              "Discovered conflicting entities. Entity ["
-                  + old.getType()
-                  + "] has identity ["
-                  + old.getId()
-                  + "], new entity ["
-                  + e.getId()
-                  + "] is dropped.");
-        } else {
-          // If the entity identity and schema_url are the same, merge the descriptive attributes
-          // of d' into e':
-          //   For each descriptive attribute da' in d'
-          //     If da'.key does not exist in e', then add da' to ei
-          //     otherwise, ignore.
-          Entity next =
-              old.toBuilder()
-                  .setDescription(
-                      Attributes.builder()
-                          .putAll(e.getDescription())
-                          .putAll(old.getDescription())
-                          .build())
-                  .build();
-          entities.put(next.getType(), next);
+    for (Entity incoming : additional) {
+      Entity old = entities.remove(incoming.getType());
+      Entity next = incoming;
+      // Compatible entities merge descriptions, with incoming values winning.
+      // Otherwise, replace the old entity and all its attributes.
+      if (old != null
+          && old.getId().equals(incoming.getId())
+          && Objects.equals(old.getSchemaUrl(), incoming.getSchemaUrl())) {
+        next =
+            incoming.toBuilder()
+                .setDescription(
+                    Attributes.builder()
+                        .putAll(old.getDescription())
+                        .putAll(incoming.getDescription())
+                        .build())
+                .build();
+      } else if (old != null) {
+        logger.fine(
+            "Replacing entity ["
+                + old.getType()
+                + "] because "
+                + (old.getId().equals(incoming.getId())
+                    ? "schema URLs differ."
+                    : "identifying attributes differ."));
+      }
+      Attributes incomingAttributes =
+          Attributes.builder().putAll(next.getId()).putAll(next.getDescription()).build();
+      Iterator<Entity> iterator = entities.values().iterator();
+      while (iterator.hasNext()) {
+        Entity existing = iterator.next();
+        if (existing.getId().asMap().keySet().stream()
+                .anyMatch(incomingAttributes.asMap()::containsKey)
+            || existing.getDescription().asMap().keySet().stream()
+                .anyMatch(incomingAttributes.asMap()::containsKey)) {
+          logger.fine(
+              "Removing entity association ["
+                  + existing.getType()
+                  + "] because incoming entity ["
+                  + next.getType()
+                  + "] overwrites its attributes. Non-conflicting attributes are retained as unassociated.");
+          // Preserve the removed entity's non-conflicting values as ordinary resource attributes.
+          // mergeRawAttributes later discards copied values for keys still supplied by entities.
+          unassociatedAttributes.putAll(existing.getId()).putAll(existing.getDescription());
+          iterator.remove();
         }
       }
+      entities.put(next.getType(), next);
     }
-    return entities.values();
+    return new ArrayList<>(entities.values());
   }
 
   /**
@@ -266,12 +283,12 @@ public final class EntityUtil {
     if (next == null || next.equals(Resource.empty())) {
       return base;
     }
-    // Merge Algorithm from
-    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/entities/0264-resource-and-entities.md#entity-merging-and-resource
-    Collection<Entity> entities = EntityUtil.mergeEntities(getEntities(base), getEntities(next));
+    AttributesBuilder unassociatedAttributes = getUnassociatedAttributes(base).toBuilder();
+    Collection<Entity> entities =
+        EntityUtil.mergeEntities(getEntities(base), getEntities(next), unassociatedAttributes);
     RawAttributeMergeResult attributeResult =
         EntityUtil.mergeRawAttributes(
-            getUnassociatedAttributes(base), getUnassociatedAttributes(next), entities);
+            unassociatedAttributes.build(), getUnassociatedAttributes(next), entities);
     // Remove entities that are conflicting with raw attributes, and therefore in an unknown state.
     entities.removeAll(attributeResult.getConflicts());
     // Now figure out schema url for overall resource.

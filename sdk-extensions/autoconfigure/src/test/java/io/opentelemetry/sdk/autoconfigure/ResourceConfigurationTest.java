@@ -9,12 +9,15 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.autoconfigure.ResourceConfiguration.DISABLED_ATTRIBUTE_KEYS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonMap;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.Entity;
@@ -57,6 +60,48 @@ class ResourceConfigurationTest {
                 .put("food", "cheesecake")
                 .put("shape", "square")
                 .build());
+  }
+
+  @ParameterizedTest
+  @MethodSource("entityResourceProviderOrderTestCases")
+  void entityResourceProviderOrder(int firstOrder, int secondOrder, String expectedId) {
+    ResourceProvider first = resourceProvider("H1", firstOrder);
+    ResourceProvider second = resourceProvider("H2", secondOrder);
+    ComponentLoader loader = mock(ComponentLoader.class);
+    when(loader.load(ResourceProvider.class)).thenReturn(Arrays.asList(first, second));
+
+    Resource resource =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.createFromMap(Collections.emptyMap()),
+            SpiHelper.create(loader),
+            (r, c) -> r);
+
+    assertThat(EntityUtil.getEntities(resource))
+        .containsExactly(
+            Entity.builder("host", Attributes.of(stringKey("host.id"), expectedId)).build());
+    assertThat(resource.getAttributes()).containsEntry("host.id", expectedId);
+  }
+
+  static Stream<Arguments> entityResourceProviderOrderTestCases() {
+    return Stream.of(
+        Arguments.argumentSet("second detector runs last", 1, 2, "H2"),
+        Arguments.argumentSet("first detector runs last", 2, 1, "H1"));
+  }
+
+  private static ResourceProvider resourceProvider(String hostId, int order) {
+    return new ResourceProvider() {
+      @Override
+      public Resource createResource(ConfigProperties config) {
+        return EntityUtil.createResource(
+            Collections.singletonList(
+                Entity.builder("host", Attributes.of(stringKey("host.id"), hostId)).build()));
+      }
+
+      @Override
+      public int order() {
+        return order;
+      }
+    };
   }
 
   @ParameterizedTest
