@@ -21,14 +21,12 @@ final class KeyValueList implements Value<List<KeyValue>> {
   }
 
   static Value<List<KeyValue>> create(KeyValue... value) {
-    Objects.requireNonNull(value, "value must not be null");
     List<KeyValue> list = new ArrayList<>(value.length);
     list.addAll(Arrays.asList(value));
     return new KeyValueList(Collections.unmodifiableList(list));
   }
 
   static Value<List<KeyValue>> createFromMap(Map<String, Value<?>> value) {
-    Objects.requireNonNull(value, "value must not be null");
     KeyValue[] array =
         value.entrySet().stream()
             .map(entry -> KeyValue.of(entry.getKey(), entry.getValue()))

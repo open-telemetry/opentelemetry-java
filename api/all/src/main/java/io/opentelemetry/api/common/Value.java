@@ -5,10 +5,10 @@
 
 package io.opentelemetry.api.common;
 
-import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Value mirrors the proto <a
@@ -39,12 +39,8 @@ import java.util.Map;
 public interface Value<T> {
 
   /** Returns an {@link Value} for the {@link String} value. */
-  @SuppressWarnings("unchecked")
   static Value<String> of(String value) {
-    if (value == null) {
-      ApiUsageLogger.logNullParam(Value.class, "of", "value");
-      return (Value<String>) (Value<?>) Value.empty();
-    }
+    Objects.requireNonNull(value, "value must not be null");
     return ValueString.create(value);
   }
 
@@ -64,32 +60,20 @@ public interface Value<T> {
   }
 
   /** Returns an {@link Value} for the {@code byte[]} value. */
-  @SuppressWarnings("unchecked")
   static Value<ByteBuffer> of(byte[] value) {
-    if (value == null) {
-      ApiUsageLogger.logNullParam(Value.class, "of", "value");
-      return (Value<ByteBuffer>) (Value<?>) Value.empty();
-    }
+    Objects.requireNonNull(value, "value must not be null");
     return ValueBytes.create(value);
   }
 
   /** Returns an {@link Value} for the array of {@link Value} values. */
-  @SuppressWarnings("unchecked")
   static Value<List<Value<?>>> of(Value<?>... value) {
-    if (value == null) {
-      ApiUsageLogger.logNullParam(Value.class, "of", "value");
-      return (Value<List<Value<?>>>) (Value<?>) Value.empty();
-    }
+    Objects.requireNonNull(value, "value must not be null");
     return ValueArray.create(value);
   }
 
   /** Returns an {@link Value} for the list of {@link Value} values. */
-  @SuppressWarnings("unchecked")
   static Value<List<Value<?>>> of(List<Value<?>> value) {
-    if (value == null) {
-      ApiUsageLogger.logNullParam(Value.class, "of", "value");
-      return (Value<List<Value<?>>>) (Value<?>) Value.empty();
-    }
+    Objects.requireNonNull(value, "value must not be null");
     return ValueArray.create(value);
   }
 
@@ -97,22 +81,14 @@ public interface Value<T> {
    * Returns an {@link Value} for the array of {@link KeyValue} values. {@link KeyValue#getKey()}
    * values should not repeat - duplicates may be dropped.
    */
-  @SuppressWarnings("unchecked")
   static Value<List<KeyValue>> of(KeyValue... value) {
-    if (value == null) {
-      ApiUsageLogger.logNullParam(Value.class, "of", "value");
-      return (Value<List<KeyValue>>) (Value<?>) Value.empty();
-    }
+    Objects.requireNonNull(value, "value must not be null");
     return KeyValueList.create(value);
   }
 
   /** Returns an {@link Value} for the {@link Map} of key, {@link Value}. */
-  @SuppressWarnings("unchecked")
   static Value<List<KeyValue>> of(Map<String, Value<?>> value) {
-    if (value == null) {
-      ApiUsageLogger.logNullParam(Value.class, "of", "value");
-      return (Value<List<KeyValue>>) (Value<?>) Value.empty();
-    }
+    Objects.requireNonNull(value, "value must not be null");
     return KeyValueList.createFromMap(value);
   }
 

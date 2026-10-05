@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -146,11 +147,24 @@ class ValueTest {
 
   @Test
   void value_NullsNotAllowed() {
-    assertThat(Value.of((String) null)).isEqualTo(Value.empty());
-    assertThat(Value.of((byte[]) null)).isEqualTo(Value.empty());
-    assertThat(Value.of((Value<?>[]) null)).isEqualTo(Value.empty());
-    assertThat(Value.of((KeyValue[]) null)).isEqualTo(Value.empty());
-    assertThat(Value.of((Map<String, Value<?>>) null)).isEqualTo(Value.empty());
+    assertThatThrownBy(() -> Value.of((String) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> Value.of((byte[]) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> Value.of((Value<?>[]) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> Value.of((List<Value<?>>) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> Value.of((KeyValue[]) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> Value.of((Map<String, Value<?>>) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
   }
 
   @ParameterizedTest

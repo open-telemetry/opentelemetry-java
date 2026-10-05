@@ -7,6 +7,8 @@ package io.opentelemetry.all;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -63,8 +65,8 @@ import org.objectweb.asm.tree.VarInsnNode;
  *       supertype whose package starts with {@code io.opentelemetry.api.} or {@code
  *       io.opentelemetry.context.} is classified {@code RUNTIME}. This picks up SDK implementations
  *       of runtime API types ({@code SdkSpan}, {@code SdkLongCounter}, ...) without an enumeration.
- *   <li>Explicit per-method overrides in {@link #METHOD_STYLE_OVERRIDES} handle the small set of
- *       config-time methods on runtime-artifact classes (e.g. {@code GlobalOpenTelemetry.set}).
+ *   <li>Explicit per-method overrides in {@link #METHOD_STYLE_OVERRIDES} handle config-time methods
+ *       and runtime methods without type-safe fallbacks.
  * </ol>
  *
  * <p>Detection is intentionally lenient: it looks for the guard pattern anywhere in the method
@@ -98,8 +100,8 @@ class NullGuardsTest {
           "opentelemetry-context", "io.opentelemetry.context");
 
   /**
-   * Per-method style overrides for the small set of config-time methods that live on classes in
-   * runtime-defaulted artifacts.
+   * Per-method style overrides for config-time methods and runtime methods without type-safe
+   * fallbacks in runtime-defaulted artifacts.
    */
   private static final Map<String, GuardStyle> METHOD_STYLE_OVERRIDES =
       Map.of(
@@ -112,7 +114,14 @@ class NullGuardsTest {
                   "propagating",
                   OpenTelemetry.class,
                   ContextPropagators.class),
-              GuardStyle.FAIL_FAST);
+              GuardStyle.FAIL_FAST,
+          // Value.empty() cannot preserve these generic return types. We may reevaluate in future.
+          overrideKey(Value.class, "of", Value.class, String.class), GuardStyle.FAIL_FAST,
+          overrideKey(Value.class, "of", Value.class, byte[].class), GuardStyle.FAIL_FAST,
+          overrideKey(Value.class, "of", Value.class, Value[].class), GuardStyle.FAIL_FAST,
+          overrideKey(Value.class, "of", Value.class, List.class), GuardStyle.FAIL_FAST,
+          overrideKey(Value.class, "of", Value.class, KeyValue[].class), GuardStyle.FAIL_FAST,
+          overrideKey(Value.class, "of", Value.class, Map.class), GuardStyle.FAIL_FAST);
 
   private static String overrideKey(
       Class<?> owner, String name, Class<?> returnType, Class<?>... paramTypes) {
