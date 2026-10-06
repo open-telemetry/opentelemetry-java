@@ -200,33 +200,33 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
 
   @Override
   public boolean isString(String name) {
-    Objects.requireNonNull(name, "Null configuration property name");
+    Objects.requireNonNull(name, "name");
     return simpleEntries.get(name) instanceof String;
   }
 
   @Override
   public boolean isBoolean(String name) {
-    Objects.requireNonNull(name, "Null configuration property name");
+    Objects.requireNonNull(name, "name");
     return simpleEntries.get(name) instanceof Boolean;
   }
 
   @Override
   public boolean isInt(String name) {
-    Objects.requireNonNull(name, "Null configuration property name");
+    Objects.requireNonNull(name, "name");
     Object value = simpleEntries.get(name);
     return value instanceof Integer || value instanceof Long;
   }
 
   @Override
   public boolean isLong(String name) {
-    Objects.requireNonNull(name, "Null configuration property name");
+    Objects.requireNonNull(name, "name");
     Object value = simpleEntries.get(name);
     return value instanceof Integer || value instanceof Long;
   }
 
   @Override
   public boolean isDouble(String name) {
-    Objects.requireNonNull(name, "Null configuration property name");
+    Objects.requireNonNull(name, "name");
     Object value = simpleEntries.get(name);
     return value instanceof Float || value instanceof Double;
   }

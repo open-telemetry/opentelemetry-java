@@ -174,54 +174,47 @@ public interface DeclarativeConfigProperties {
   }
 
   /**
-   * Returns whether the property with {@code name} holds a scalar string.
+   * Returns whether the property with {@code name} holds a value which {@link #getString(String)}
+   * accepts.
    *
-   * <p>This is the introspection counterpart of {@link #getString(String)}: it answers whether that
-   * getter would return a non-null value, without the implementation reporting a type mismatch for
-   * a property which holds some other type.
-   *
-   * @return true if a property with {@code name} has been configured and is a valid scalar string
+   * @return true if a property with {@code name} has been configured and is a valid scalar string,
+   *     false otherwise, including when the property is null
    */
   boolean isString(String name);
 
   /**
-   * Returns whether the property with {@code name} holds a scalar boolean.
+   * Returns whether the property with {@code name} holds a value which {@link #getBoolean(String)}
+   * accepts.
    *
-   * @return true if a property with {@code name} has been configured and is a valid scalar boolean
-   * @see #isString(String)
+   * @return true if a property with {@code name} has been configured and is a valid scalar boolean,
+   *     false otherwise, including when the property is null
    */
   boolean isBoolean(String name);
 
   /**
-   * Returns whether the property with {@code name} holds a scalar integer.
+   * Returns whether the property with {@code name} holds a value which {@link #getInt(String)}
+   * accepts.
    *
-   * <p>Accepts the same values {@link #getInt(String)} accepts, including a {@link Long} which that
-   * getter narrows with {@link Long#intValue()}.
-   *
-   * @return true if a property with {@code name} has been configured and is a valid scalar integer
-   * @see #isString(String)
+   * @return true if a property with {@code name} has been configured and is a valid scalar integer,
+   *     false otherwise, including when the property is null
    */
   boolean isInt(String name);
 
   /**
-   * Returns whether the property with {@code name} holds a scalar long.
+   * Returns whether the property with {@code name} holds a value which {@link #getLong(String)}
+   * accepts.
    *
-   * <p>Accepts the same values {@link #getLong(String)} accepts, including an {@link Integer} which
-   * that getter widens.
-   *
-   * @return true if a property with {@code name} has been configured and is a valid scalar long
-   * @see #isString(String)
+   * @return true if a property with {@code name} has been configured and is a valid scalar long,
+   *     false otherwise, including when the property is null
    */
   boolean isLong(String name);
 
   /**
-   * Returns whether the property with {@code name} holds a scalar double.
+   * Returns whether the property with {@code name} holds a value which {@link #getDouble(String)}
+   * accepts.
    *
-   * <p>Accepts the same values {@link #getDouble(String)} accepts, including a {@link Float} which
-   * that getter widens.
-   *
-   * @return true if a property with {@code name} has been configured and is a valid scalar double
-   * @see #isString(String)
+   * @return true if a property with {@code name} has been configured and is a valid scalar double,
+   *     false otherwise, including when the property is null
    */
   boolean isDouble(String name);
 
