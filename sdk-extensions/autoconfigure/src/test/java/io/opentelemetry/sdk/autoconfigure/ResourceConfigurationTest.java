@@ -11,8 +11,10 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static java.util.Collections.singletonMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.slf4j.event.Level.INFO;
 
 import com.google.common.collect.ImmutableMap;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -20,6 +22,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.Arrays;
@@ -30,6 +33,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -37,6 +41,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceConfigurationTest {
+
+  @RegisterExtension
+  LogCapturer logs =
+      LogCapturer.create().captureForType(ResourceBuilder.class).captureForType(EntityUtil.class);
 
   private static final ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(ResourceConfigurationTest.class.getClassLoader());
@@ -215,6 +223,66 @@ class ResourceConfigurationTest {
               assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
               assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
             });
+  }
+
+  @Test
+  void disabledKeysFilterEntityAttributes() {
+    Entity service =
+        Entity.builder("service", Attributes.of(stringKey("service.name"), "original"))
+            .setDescription(Attributes.of(stringKey("service.version"), "1.0"))
+            .build();
+    Resource resource = EntityUtil.createResource(Collections.singletonList(service));
+    Resource filtered =
+        ResourceConfiguration.filterAttributes(
+            resource,
+            DefaultConfigProperties.createFromMap(
+                singletonMap(DISABLED_ATTRIBUTE_KEYS, "service.name,service.version")));
+
+    assertThat(filtered.getAttributes()).isEmpty();
+    assertThat(EntityUtil.getEntities(filtered)).isEmpty();
+    assertThat(EntityUtil.getEntities(resource)).containsExactly(service);
+    logs.assertContains(
+        event -> event.getLevel().equals(INFO), "Removing entity association [service]");
+  }
+
+  @ParameterizedTest
+  @MethodSource("legacyEntityOverrides")
+  void legacyEntityOverride(Map<String, String> overrides, String expectedName) {
+    Map<String, String> properties = new HashMap<>(overrides);
+    properties.put(
+        "otel.entities", "service{service.name=detected}[service.version=1.0];host{host.id=H1}");
+    Resource resource =
+        ResourceConfiguration.createEnvironmentResource(
+            DefaultConfigProperties.createFromMap(properties));
+
+    assertThat(EntityUtil.getEntities(resource))
+        .containsExactly(Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build());
+    assertThat(EntityUtil.getUnassociatedAttributes(resource))
+        .isEqualTo(
+            Attributes.builder()
+                .put("service.name", expectedName)
+                .put("service.version", "1.0")
+                .build());
+    logs.assertContains(
+        event -> event.getLevel().equals(INFO), "Removing entity association [service]");
+  }
+
+  static Stream<Arguments> legacyEntityOverrides() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "resource attributes",
+            singletonMap("otel.resource.attributes", "service.name=resource"),
+            "resource"),
+        Arguments.argumentSet(
+            "service name", singletonMap("otel.service.name", "configured"), "configured"),
+        Arguments.argumentSet(
+            "service name beats resource attributes",
+            ImmutableMap.of(
+                "otel.resource.attributes",
+                "service.name=resource",
+                "otel.service.name",
+                "configured"),
+            "configured"));
   }
 
   @ParameterizedTest

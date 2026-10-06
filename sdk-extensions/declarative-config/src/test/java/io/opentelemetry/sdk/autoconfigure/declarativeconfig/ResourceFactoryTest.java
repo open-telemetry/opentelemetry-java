@@ -7,7 +7,12 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
@@ -15,7 +20,10 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExclude
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectorModel;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -165,6 +173,145 @@ class ResourceFactoryTest {
             null,
             Collections.singletonList("order"),
             Resource.getDefault().toBuilder().put("color", "red").put("shape", "square").build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("entityFilteringCases")
+  void entityFiltering(
+      @Nullable List<String> included,
+      @Nullable List<String> excluded,
+      Attributes expectedId,
+      Attributes expectedDescription) {
+    Entity host =
+        Entity.builder(
+                "host",
+                Attributes.builder().put("host.id", "H1").put("host.region", "west").build())
+            .setDescription(
+                Attributes.builder().put("host.name", "machine").put("host.type", "vm").build())
+            .build();
+    ResourceModel model = entityDetectorModel();
+    model
+        .getDetectionDevelopment()
+        .withAttributes(new IncludeExcludeModel().withIncluded(included).withExcluded(excluded));
+    Resource resource =
+        ResourceFactory.getInstance()
+            .create(
+                model,
+                entityDetectorContext(EntityUtil.createResource(Collections.singletonList(host))));
+
+    if (!expectedId.equals(host.getId())) {
+      assertThat(EntityUtil.getEntities(resource)).isEmpty();
+    } else {
+      assertThat(EntityUtil.getEntities(resource))
+          .singleElement()
+          .satisfies(
+              filtered -> {
+                assertThat(filtered.getId()).isEqualTo(expectedId);
+                assertThat(filtered.getDescription()).isEqualTo(expectedDescription);
+              });
+    }
+    assertThat(resource.getAttributes())
+        .isEqualTo(
+            Resource.getDefault().getAttributes().toBuilder()
+                .putAll(expectedId)
+                .putAll(expectedDescription)
+                .build());
+  }
+
+  static Stream<Arguments> entityFilteringCases() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "exclude description",
+            null,
+            Collections.singletonList("host.name"),
+            Attributes.builder().put("host.id", "H1").put("host.region", "west").build(),
+            Attributes.of(AttributeKey.stringKey("host.type"), "vm")),
+        Arguments.argumentSet(
+            "exclude identity",
+            null,
+            Arrays.asList("host.id", "host.region"),
+            Attributes.empty(),
+            Attributes.builder().put("host.name", "machine").put("host.type", "vm").build()),
+        Arguments.argumentSet(
+            "include identity",
+            Arrays.asList("host.id", "host.region"),
+            null,
+            Attributes.builder().put("host.id", "H1").put("host.region", "west").build(),
+            Attributes.empty()),
+        Arguments.argumentSet(
+            "exclude one identifying attribute key",
+            null,
+            Collections.singletonList("host.id"),
+            Attributes.of(AttributeKey.stringKey("host.region"), "west"),
+            Attributes.builder().put("host.name", "machine").put("host.type", "vm").build()),
+        Arguments.argumentSet(
+            "include one identifying attribute key",
+            Collections.singletonList("host.id"),
+            null,
+            Attributes.of(AttributeKey.stringKey("host.id"), "H1"),
+            Attributes.empty()),
+        Arguments.argumentSet(
+            "include description",
+            Collections.singletonList("host.name"),
+            null,
+            Attributes.empty(),
+            Attributes.of(AttributeKey.stringKey("host.name"), "machine")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("explicitEntityOverrideCases")
+  void explicitAttributesOverrideEntities(boolean useAttributeList) {
+    Entity service =
+        Entity.builder("service", Attributes.of(AttributeKey.stringKey("service.name"), "detected"))
+            .setDescription(Attributes.of(AttributeKey.stringKey("service.version"), "1.0"))
+            .build();
+    ResourceModel model = entityDetectorModel();
+    if (useAttributeList) {
+      model.withAttributesList("service.name=configured");
+    } else {
+      model.withAttributes(
+          Collections.singletonList(
+              new AttributeNameValueModel().withName("service.name").withValue("configured")));
+    }
+    Resource resource =
+        ResourceFactory.getInstance()
+            .create(
+                model,
+                entityDetectorContext(
+                    EntityUtil.createResource(Collections.singletonList(service))));
+    assertThat(EntityUtil.getEntities(resource)).isEmpty();
+    assertThat(resource)
+        .isEqualTo(
+            Resource.getDefault().toBuilder()
+                .put("service.name", "configured")
+                .put("service.version", "1.0")
+                .build());
+  }
+
+  static Stream<Arguments> explicitEntityOverrideCases() {
+    return Stream.of(
+        Arguments.argumentSet("explicit attribute list", true),
+        Arguments.argumentSet("explicit attributes", false));
+  }
+
+  private static ResourceModel entityDetectorModel() {
+    return new ResourceModel()
+        .withDetectionDevelopment(
+            new ExperimentalResourceDetectionModel()
+                .withDetectors(
+                    Collections.singletonList(
+                        new ExperimentalResourceDetectorModel()
+                            .withAdditionalProperty("entity", null))));
+  }
+
+  private static DeclarativeConfigContext entityDetectorContext(Resource resource) {
+    ComponentProvider provider = mock(ComponentProvider.class);
+    when(provider.getType()).thenAnswer(unused -> Resource.class);
+    when(provider.getName()).thenReturn("entity");
+    when(provider.create(any())).thenReturn(resource);
+    ComponentLoader loader = mock(ComponentLoader.class);
+    when(loader.load(ComponentProvider.class)).thenReturn(Collections.singletonList(provider));
+    return new DeclarativeConfigContext(loader);
   }
 
   @ParameterizedTest

@@ -7,9 +7,15 @@ package io.opentelemetry.sdk.resources.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 /**
  * Helpers to check resource entity attributes.
@@ -39,6 +45,30 @@ public final class AttributeCheckUtil {
               isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
           Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
         });
+  }
+
+  /** Copies and freezes array values without changing attribute key types. */
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public static Attributes immutableCopy(Attributes attributes) {
+    @Nullable AttributesBuilder copy = null;
+    for (Map.Entry<AttributeKey<?>, Object> entry : attributes.asMap().entrySet()) {
+      switch (entry.getKey().getType()) {
+        case STRING_ARRAY:
+        case LONG_ARRAY:
+        case DOUBLE_ARRAY:
+        case BOOLEAN_ARRAY:
+          if (copy == null) {
+            copy = attributes.toBuilder();
+          }
+          copy.put(
+              (AttributeKey) entry.getKey(),
+              Collections.unmodifiableList(new ArrayList<>((List<?>) entry.getValue())));
+          break;
+        default:
+          break;
+      }
+    }
+    return copy == null ? attributes : copy.build();
   }
 
   /**

@@ -13,9 +13,12 @@ import io.opentelemetry.sdk.common.internal.OtelVersion;
 import io.opentelemetry.sdk.resources.internal.AttributeCheckUtil;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -82,8 +85,8 @@ public abstract class Resource {
    * @param attributes a map of attributes that describe the resource.
    * @return a {@code Resource}.
    * @throws NullPointerException if {@code attributes} is null.
-   * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
-   *     ASCII string or exceed {@link AttributeCheckUtil#MAX_LENGTH} characters.
+   * @throws IllegalArgumentException if an attribute key is empty, is not printable ASCII, or
+   *     exceeds 255 characters.
    */
   public static Resource create(Attributes attributes) {
     return create(attributes, null);
@@ -96,37 +99,62 @@ public abstract class Resource {
    * @param schemaUrl The URL of the OpenTelemetry schema used to create this Resource.
    * @return a {@code Resource}.
    * @throws NullPointerException if {@code attributes} is null.
-   * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
-   *     ASCII string or exceed {@link AttributeCheckUtil#MAX_LENGTH} characters.
+   * @throws IllegalArgumentException if an attribute key is empty, is not printable ASCII, or
+   *     exceeds 255 characters.
    */
   public static Resource create(Attributes attributes, @Nullable String schemaUrl) {
     return create(attributes, schemaUrl, Collections.emptyList());
   }
 
   /**
-   * Returns a {@link Resource}.
+   * Builds a resource after conflicts have been resolved. Entity types and attribute key owners
+   * must be unique, and ordinary attribute keys must not also belong to entities. This method
+   * rejects conflicting input rather than choosing which value wins; callers must merge ordinary
+   * attributes first and entities second before calling it.
    *
-   * @param attributes a map of {@link Attributes} that describe the resource.
+   * @param attributes unassociated attributes that describe the resource.
    * @param schemaUrl The URL of the OpenTelemetry schema used to create this Resource.
-   * @param entities The set of detected {@link Entity}s that participate in this resource.
+   * @param entities The normalized set of valid entities that participate in this resource.
    * @return a {@code Resource}.
    * @throws NullPointerException if {@code attributes} is null.
-   * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
-   *     ASCII string or exceed {@link AttributeCheckUtil#MAX_LENGTH} characters.
+   * @throws IllegalArgumentException if attribute keys are invalid or the state is not normalized.
    */
   static Resource create(
       Attributes attributes, @Nullable String schemaUrl, Collection<Entity> entities) {
     AttributeCheckUtil.checkAttributes(Objects.requireNonNull(attributes, "attributes"));
-    // Memoize the full set of attributes
+    Collection<Entity> immutableEntities = Collections.unmodifiableList(new ArrayList<>(entities));
+    Set<String> entityTypes = new HashSet<>();
+    Set<String> entityKeys = new HashSet<>();
     AttributesBuilder fullAttributes = Attributes.builder();
-    entities.forEach(
-        e -> {
-          fullAttributes.putAll(e.getId());
-          fullAttributes.putAll(e.getDescription());
+    for (Entity entity : immutableEntities) {
+      if (!entityTypes.add(entity.getType())) {
+        throw new IllegalArgumentException("Entity types must be unique in normalized resources.");
+      }
+      putEntityAttributes(entity.getId(), entityKeys, fullAttributes);
+      putEntityAttributes(entity.getDescription(), entityKeys, fullAttributes);
+    }
+    attributes.forEach(
+        (key, value) -> {
+          if (entityKeys.contains(key.getKey())) {
+            throw new IllegalArgumentException(
+                "Unassociated attributes must not overlap entity attributes.");
+          }
         });
-    // In merge rules, raw comes last, so we return these last.
     fullAttributes.putAll(attributes);
-    return new AutoValue_Resource(schemaUrl, entities, fullAttributes.build());
+    return new AutoValue_Resource(
+        schemaUrl, immutableEntities, AttributeCheckUtil.immutableCopy(fullAttributes.build()));
+  }
+
+  private static void putEntityAttributes(
+      Attributes attributes, Set<String> entityKeys, AttributesBuilder fullAttributes) {
+    attributes.forEach(
+        (key, value) -> {
+          if (!entityKeys.add(key.getKey())) {
+            throw new IllegalArgumentException(
+                "Entity attribute keys must have a single owner and classification.");
+          }
+        });
+    fullAttributes.putAll(attributes);
   }
 
   /**
@@ -145,13 +173,7 @@ public abstract class Resource {
    */
   final Attributes getUnassociatedAttributes() {
     AttributesBuilder unassociatedAttributes = getAttributes().toBuilder();
-    unassociatedAttributes.removeIf(
-        key ->
-            getEntities().stream()
-                .anyMatch(
-                    entity ->
-                        entity.getId().get(key) != null
-                            || entity.getDescription().get(key) != null));
+    unassociatedAttributes.removeIf(key -> EntityUtil.hasAttributeKey(getEntities(), key));
     return unassociatedAttributes.build();
   }
 
@@ -183,6 +205,10 @@ public abstract class Resource {
    * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code
    * other} {@code Resource}. In case of a collision, the "other" {@code Resource} takes precedence.
    *
+   * <p>Incoming entities are processed before incoming unassociated attributes. Merging is not
+   * associative: regrouping merges can change entity associations even if flattened attributes are
+   * unchanged.
+   *
    * @param other the {@code Resource} that will be merged with {@code this}.
    * @return the newly merged {@code Resource}.
    */
@@ -202,6 +228,9 @@ public abstract class Resource {
   /**
    * Returns a new {@link ResourceBuilder} instance populated with the data of this {@link
    * Resource}.
+   *
+   * <p>A non-null schema URL is copied as explicit builder configuration, even if originally
+   * derived from entities. Subsequent entity changes do not cause this URL to be re-derived.
    *
    * @since 1.1.0
    */

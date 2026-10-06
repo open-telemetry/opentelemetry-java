@@ -14,12 +14,15 @@ import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityBuilder;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 /**
@@ -162,13 +165,16 @@ final class EnvironmentResource {
   // State machine parser
   private static final class EntityParser {
     private static final Logger logger = Logger.getLogger(EntityParser.class.getName());
+    private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9._-]*");
 
     private enum State {
       TYPE,
       ID_KEY,
       ID_VAL,
+      AFTER_ID,
       DESC_KEY,
       DESC_VAL,
+      AFTER_DESC,
       SCHEMA_URL,
       SKIP_TO_NEXT
     }
@@ -202,25 +208,34 @@ final class EnvironmentResource {
           }
           continue;
         }
+        if (state == State.SCHEMA_URL && c != ';') {
+          continue;
+        }
 
         switch (c) {
           case '{':
             if (state == State.TYPE) {
               currentSegment.markEnd(i);
               currentType = currentSegment.getValue();
-              if (currentType == null || currentType.isEmpty()) {
-                logger.log(Level.WARNING, "Malformed entity definition (empty type): " + input);
-                state = State.SKIP_TO_NEXT;
+              if (!NAME_PATTERN.matcher(currentType).matches()) {
+                malformed("invalid type");
               } else {
                 state = State.ID_KEY;
                 currentSegment.reset(i + 1);
                 currentBuilder = Attributes.builder();
               }
+            } else {
+              malformed("unexpected '{'");
             }
             break;
           case '}':
             if (state == State.ID_VAL || state == State.ID_KEY) {
               currentSegment.markEnd(i);
+              if (state == State.ID_KEY
+                  && (!currentSegment.getValue().isEmpty() || currentKey != null)) {
+                malformed("missing identifying attribute value");
+                break;
+              }
               if (state == State.ID_VAL) {
                 putAttr();
               }
@@ -228,47 +243,57 @@ final class EnvironmentResource {
                 currentIdAttrs = currentBuilder.build();
               }
               if (currentIdAttrs.isEmpty()) {
-                logger.log(
-                    Level.WARNING,
-                    "Malformed entity definition (missing identifying attributes): " + input);
-                state = State.SKIP_TO_NEXT;
+                malformed("missing identifying attributes");
               } else {
-                state = State.TYPE;
+                state = State.AFTER_ID;
                 currentSegment.reset(i + 1);
               }
+            } else {
+              malformed("unexpected '}'");
             }
             break;
           case '[':
-            if (state == State.TYPE) {
+            if (state == State.AFTER_ID) {
               state = State.DESC_KEY;
               currentSegment.reset(i + 1);
               currentBuilder = Attributes.builder();
+              currentKey = null;
+            } else {
+              malformed("unexpected '['");
             }
             break;
           case ']':
             if (state == State.DESC_VAL || state == State.DESC_KEY) {
               currentSegment.markEnd(i);
+              if (state == State.DESC_KEY
+                  && (!currentSegment.getValue().isEmpty() || currentKey != null)) {
+                malformed("missing descriptive attribute value");
+                break;
+              }
               if (state == State.DESC_VAL) {
                 putAttr();
               }
               if (currentBuilder != null) {
                 currentDescAttrs = currentBuilder.build();
               }
-              state = State.TYPE;
+              state = State.AFTER_DESC;
               currentSegment.reset(i + 1);
+            } else {
+              malformed("unexpected ']'");
             }
             break;
           case '=':
             if (state == State.ID_KEY || state == State.DESC_KEY) {
               currentSegment.markEnd(i);
               currentKey = currentSegment.getValue();
-              if (currentKey == null || currentKey.isEmpty()) {
-                logger.log(Level.WARNING, "Malformed key-value pair (empty key): " + input);
-                state = State.SKIP_TO_NEXT;
+              if (!NAME_PATTERN.matcher(currentKey).matches()) {
+                malformed("invalid attribute key");
               } else {
                 state = (state == State.ID_KEY) ? State.ID_VAL : State.DESC_VAL;
                 currentSegment.reset(i + 1);
               }
+            } else {
+              malformed("unexpected '='");
             }
             break;
           case ',':
@@ -277,46 +302,61 @@ final class EnvironmentResource {
               putAttr();
               state = (state == State.ID_VAL) ? State.ID_KEY : State.DESC_KEY;
               currentSegment.reset(i + 1);
+            } else {
+              malformed("unexpected ','");
             }
             break;
           case '@':
-            if (state == State.TYPE) {
+            if (state == State.AFTER_ID || state == State.AFTER_DESC) {
               state = State.SCHEMA_URL;
               currentSegment.reset(i + 1);
+            } else {
+              malformed("unexpected '@'");
             }
             break;
           case ';':
-            if (state == State.TYPE || state == State.SCHEMA_URL) {
+            if (state == State.AFTER_ID || state == State.AFTER_DESC || state == State.SCHEMA_URL) {
               if (state == State.SCHEMA_URL) {
                 currentSegment.markEnd(i);
                 currentSchemaUrl = currentSegment.getValue();
               }
               buildAndAddEntity();
-              resetEntityState(i + 1);
-              state = State.TYPE;
-            } else if (state == State.ID_KEY
-                || state == State.ID_VAL
-                || state == State.DESC_KEY
-                || state == State.DESC_VAL) {
-              logger.log(Level.WARNING, "Malformed entity definition (unexpected ';'): " + input);
-              resetEntityState(i + 1);
-              state = State.TYPE;
+            } else {
+              currentSegment.markEnd(i);
+              if (state != State.TYPE || !currentSegment.getValue().isEmpty()) {
+                malformed("unexpected ';'");
+              }
             }
+            resetEntityState(i + 1);
+            state = State.TYPE;
             break;
           case '%':
-            currentSegment.markNeedsDecoding();
+            if (state == State.ID_VAL || state == State.DESC_VAL) {
+              currentSegment.markNeedsDecoding();
+            } else {
+              malformed("unexpected '%'");
+            }
             break;
           default:
+            if ((state == State.AFTER_ID || state == State.AFTER_DESC)
+                && !Character.isWhitespace(c)) {
+              malformed("unexpected trailing characters");
+            }
             break;
         }
       }
 
-      if (state == State.TYPE || state == State.SCHEMA_URL) {
+      if (state == State.AFTER_ID || state == State.AFTER_DESC || state == State.SCHEMA_URL) {
         if (state == State.SCHEMA_URL) {
           currentSegment.markEnd(input.length());
           currentSchemaUrl = currentSegment.getValue();
         }
         buildAndAddEntity();
+      } else if (state != State.SKIP_TO_NEXT) {
+        currentSegment.markEnd(input.length());
+        if (state != State.TYPE || !currentSegment.getValue().isEmpty()) {
+          malformed("incomplete definition");
+        }
       }
 
       return entities;
@@ -331,14 +371,55 @@ final class EnvironmentResource {
 
     private void buildAndAddEntity() {
       if (currentType != null && !currentType.isEmpty() && !currentIdAttrs.isEmpty()) {
-        EntityBuilder builder = Entity.builder(currentType, currentIdAttrs);
-        if (!currentDescAttrs.isEmpty()) {
-          builder.setDescription(currentDescAttrs);
+        try {
+          EntityBuilder builder = Entity.builder(currentType, currentIdAttrs);
+          if (!currentDescAttrs.isEmpty()) {
+            builder.setDescription(currentDescAttrs);
+          }
+          String schemaUrl = validateSchemaUrl(currentSchemaUrl);
+          if (schemaUrl != null) {
+            builder.setSchemaUrl(schemaUrl);
+          }
+          Entity entity = builder.build();
+          if (entities.removeIf(previous -> previous.getType().equals(entity.getType()))) {
+            logger.warning(
+                "Duplicate entity type [" + entity.getType() + "]; using the last definition.");
+          }
+          if (entity.getId().asMap().keySet().stream()
+                  .anyMatch(key -> EntityUtil.hasAttributeKey(entities, key))
+              || entity.getDescription().asMap().keySet().stream()
+                  .anyMatch(key -> EntityUtil.hasAttributeKey(entities, key))) {
+            logger.warning(
+                "Entity ["
+                    + entity.getType()
+                    + "] overwrites attributes of previously defined entities.");
+          }
+          entities.add(entity);
+        } catch (IllegalArgumentException e) {
+          logger.log(Level.WARNING, "Malformed entity definition: " + input, e);
         }
-        if (currentSchemaUrl != null && !currentSchemaUrl.isEmpty()) {
-          builder.setSchemaUrl(currentSchemaUrl);
+      }
+    }
+
+    private void malformed(String reason) {
+      logger.warning("Malformed entity definition (" + reason + "): " + input);
+      state = State.SKIP_TO_NEXT;
+    }
+
+    @Nullable
+    private static String validateSchemaUrl(@Nullable String schemaUrl) {
+      if (schemaUrl == null) {
+        return null;
+      }
+      try {
+        if (!new URI(schemaUrl).isAbsolute()) {
+          logger.warning("Ignoring invalid entity schema URL: " + schemaUrl);
+          return null;
         }
-        entities.add(builder.build());
+        return schemaUrl;
+      } catch (URISyntaxException e) {
+        logger.log(Level.WARNING, "Ignoring invalid entity schema URL: " + schemaUrl, e);
+        return null;
       }
     }
 

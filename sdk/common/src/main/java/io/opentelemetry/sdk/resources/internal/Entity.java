@@ -50,8 +50,8 @@ public interface Entity {
   Attributes getDescription();
 
   /**
-   * Returns the URL of the OpenTelemetry schema used by this resource. May be null if this entity
-   * does not abide by schema conventions (i.e. is custom).
+   * Returns this entity's optional OpenTelemetry schema URL. Null and empty URLs both represent
+   * absence; SDK-created entities use null.
    *
    * @return An OpenTelemetry schema URL.
    */

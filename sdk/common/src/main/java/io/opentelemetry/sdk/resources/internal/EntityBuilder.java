@@ -16,7 +16,7 @@ import io.opentelemetry.api.common.Attributes;
  */
 public interface EntityBuilder {
   /**
-   * Assign an OpenTelemetry schema URL to the resulting Entity.
+   * Assign an OpenTelemetry schema URL to the resulting Entity. An empty URL represents absence.
    *
    * @param schemaUrl The URL of the OpenTelemetry schema being used to create this Entity.
    * @return this
@@ -28,6 +28,7 @@ public interface EntityBuilder {
    *
    * @param description The attributes that describe the Entity.
    * @return this
+   * @throws IllegalArgumentException if an attribute key also occurs in identifying attributes.
    */
   EntityBuilder setDescription(Attributes description);
 
