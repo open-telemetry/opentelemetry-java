@@ -32,7 +32,9 @@ public final class RetryInterceptor implements Interceptor {
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
   private final Function<Response, OptionalLong> retryDelayNanosExtractor;
-  private final RetryState retryState;
+  private final Predicate<IOException> retryExceptionPredicate;
+  private final Sleeper sleeper;
+  private final Supplier<Double> randomJitter;
 
   /** Constructs a new retrier. */
   public RetryInterceptor(
@@ -61,11 +63,20 @@ public final class RetryInterceptor implements Interceptor {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
     this.retryDelayNanosExtractor = retryDelayNanosExtractor;
-    this.retryState = new RetryState(retryPolicy, retryExceptionPredicate, sleeper, randomJitter);
+    this.retryExceptionPredicate = retryExceptionPredicate;
+    this.sleeper = sleeper;
+    this.randomJitter = randomJitter;
   }
 
   @Override
   public Response intercept(Chain chain) throws IOException {
+    RetryState retryState =
+        new RetryState(
+            retryPolicy,
+            retryExceptionPredicate,
+            sleeper,
+            randomJitter,
+            chain.call().timeout().timeoutNanos());
     Response response = null;
     IOException exception = null;
     int attempt = 0;
@@ -149,7 +160,7 @@ public final class RetryInterceptor implements Interceptor {
 
   // Visible for testing
   boolean shouldRetryOnException(IOException e) {
-    return retryState.shouldRetryOnException(e);
+    return retryExceptionPredicate.test(e);
   }
 
   // Visible for testing

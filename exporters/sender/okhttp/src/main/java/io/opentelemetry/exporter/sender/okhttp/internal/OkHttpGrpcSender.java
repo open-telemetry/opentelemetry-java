@@ -34,6 +34,7 @@ import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -88,6 +89,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
   private final Supplier<Map<String, List<String>>> headersSupplier;
   private final long maxResponseBodySize;
   @Nullable private final RetryPolicy retryPolicy;
+  private final long timeoutNanos;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
   @SuppressWarnings("TooManyParameters")
@@ -105,6 +107,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable List<String> enabledProtocols) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
+    this.timeoutNanos = TimeUnit.MILLISECONDS.toNanos(callTimeoutMillis);
 
     Dispatcher dispatcher;
     if (executorService == null) {
@@ -159,6 +162,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
   @Override
   public void send(
       MessageWriter messageWriter, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
+    RetryState retryState = newRetryState();
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
     Map<String, List<String>> headers = headersSupplier.get();
@@ -174,12 +178,12 @@ public final class OkHttpGrpcSender implements GrpcSender {
     }
     requestBuilder.post(new GrpcRequestBody(messageWriter, compressor));
 
-    sendAttempt(requestBuilder, messageWriter, onResponse, onError, 0, newRetryState());
+    sendAttempt(requestBuilder, messageWriter, onResponse, onError, 0, retryState);
   }
 
   @Nullable
   private RetryState newRetryState() {
-    return retryPolicy == null ? null : new RetryState(retryPolicy);
+    return retryPolicy == null ? null : new RetryState(retryPolicy, timeoutNanos);
   }
 
   private void sendAttempt(
@@ -192,16 +196,41 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
     try {
       InstrumentationUtil.suppressInstrumentation(
-          () ->
-              client
-                  .newCall(requestBuilder.build())
-                  .enqueue(
-                      new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
+          () -> {
+            Call call = client.newCall(requestBuilder.build());
+            if (retryState != null && !retryState.configureCallTimeout(call)) {
+              onError.accept(new SocketTimeoutException("Call timed out"));
+              return;
+            }
+            call.enqueue(
+                new Callback() {
+                  @Override
+                  public void onFailure(Call call, IOException e) {
+                    if (retryState != null
+                        && retryState.canRetry(attempt)
+                        && retryState.shouldRetryOnException(e)
+                        && retryState.backoff(OptionalLong.empty())) {
+                      sendAttempt(
+                          requestBuilder,
+                          messageWriter,
+                          onResponse,
+                          onError,
+                          attempt + 1,
+                          retryState);
+                    } else {
+                      onError.accept(e);
+                    }
+                  }
+
+                  @Override
+                  public void onResponse(Call call, Response response) {
+                    handleResponse(
+                        response,
+                        (resolvedResponse, canRetry) -> {
                           if (retryState != null
                               && retryState.canRetry(attempt)
-                              && retryState.shouldRetryOnException(e)
+                              && canRetry
+                              && isRetryable(resolvedResponse)
                               && retryState.backoff(OptionalLong.empty())) {
                             sendAttempt(
                                 requestBuilder,
@@ -211,33 +240,12 @@ public final class OkHttpGrpcSender implements GrpcSender {
                                 attempt + 1,
                                 retryState);
                           } else {
-                            onError.accept(e);
+                            onResponse.accept(resolvedResponse);
                           }
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) {
-                          handleResponse(
-                              response,
-                              (resolvedResponse, canRetry) -> {
-                                if (retryState != null
-                                    && retryState.canRetry(attempt)
-                                    && canRetry
-                                    && isRetryable(resolvedResponse)
-                                    && retryState.backoff(OptionalLong.empty())) {
-                                  sendAttempt(
-                                      requestBuilder,
-                                      messageWriter,
-                                      onResponse,
-                                      onError,
-                                      attempt + 1,
-                                      retryState);
-                                } else {
-                                  onResponse.accept(resolvedResponse);
-                                }
-                              });
-                        }
-                      }));
+                        });
+                  }
+                });
+          });
     } catch (RejectedExecutionException e) {
       onError.accept(e);
     }
