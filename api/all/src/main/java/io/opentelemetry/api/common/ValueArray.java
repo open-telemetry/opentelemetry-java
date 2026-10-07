@@ -20,7 +20,6 @@ final class ValueArray implements Value<List<Value<?>>> {
   }
 
   static Value<List<Value<?>>> create(Value<?>... value) {
-    Objects.requireNonNull(value, "value must not be null");
     List<Value<?>> list = new ArrayList<>(value.length);
     list.addAll(Arrays.asList(value));
     return new ValueArray(Collections.unmodifiableList(list));

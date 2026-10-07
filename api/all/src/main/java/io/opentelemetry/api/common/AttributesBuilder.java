@@ -16,6 +16,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -87,6 +88,10 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, @Nullable String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
     return put(stringKey(key), value);
   }
 
@@ -99,6 +104,10 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, long value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
     return put(longKey(key), value);
   }
 
@@ -111,6 +120,10 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, double value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
     return put(doubleKey(key), value);
   }
 
@@ -123,6 +136,10 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, boolean value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
     return put(booleanKey(key), value);
   }
 
@@ -135,7 +152,12 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, String... value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
     if (value == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "value");
       return this;
     }
     return put(stringArrayKey(key), Arrays.asList(value));
@@ -148,7 +170,12 @@ public interface AttributesBuilder {
    */
   @SuppressWarnings("unchecked")
   default <T> AttributesBuilder put(AttributeKey<List<T>> key, T... value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
     if (value == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "value");
       return this;
     }
     return put(key, Arrays.asList(value));
@@ -163,7 +190,12 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, long... value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
     if (value == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "value");
       return this;
     }
     return put(longArrayKey(key), toList(value));
@@ -178,7 +210,12 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, double... value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
     if (value == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "value");
       return this;
     }
     return put(doubleArrayKey(key), toList(value));
@@ -193,7 +230,12 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, boolean... value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
     if (value == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "value");
       return this;
     }
     return put(booleanArrayKey(key), toList(value));
@@ -211,6 +253,14 @@ public interface AttributesBuilder {
    * @since 1.59.0
    */
   default AttributesBuilder put(String key, Value<?> value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "value");
+      return this;
+    }
     return put(valueKey(key), value);
   }
 
@@ -228,6 +278,10 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default <T> AttributesBuilder remove(AttributeKey<T> key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "remove", "key");
+      return this;
+    }
     // default implementation is no-op
     return this;
   }
@@ -239,6 +293,10 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder removeIf(Predicate<AttributeKey<?>> filter) {
+    if (filter == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "removeIf", "filter");
+      return this;
+    }
     // default implementation is no-op
     return this;
   }

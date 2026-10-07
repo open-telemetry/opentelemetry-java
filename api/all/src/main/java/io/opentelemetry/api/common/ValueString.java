@@ -16,7 +16,6 @@ final class ValueString implements Value<String> {
   }
 
   static Value<String> create(String value) {
-    Objects.requireNonNull(value, "value must not be null");
     return new ValueString(value);
   }
 

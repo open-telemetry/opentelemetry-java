@@ -8,6 +8,7 @@ package io.opentelemetry.api.common;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Value mirrors the proto <a
@@ -39,6 +40,7 @@ public interface Value<T> {
 
   /** Returns an {@link Value} for the {@link String} value. */
   static Value<String> of(String value) {
+    Objects.requireNonNull(value, "value must not be null");
     return ValueString.create(value);
   }
 
@@ -59,16 +61,19 @@ public interface Value<T> {
 
   /** Returns an {@link Value} for the {@code byte[]} value. */
   static Value<ByteBuffer> of(byte[] value) {
+    Objects.requireNonNull(value, "value must not be null");
     return ValueBytes.create(value);
   }
 
   /** Returns an {@link Value} for the array of {@link Value} values. */
   static Value<List<Value<?>>> of(Value<?>... value) {
+    Objects.requireNonNull(value, "value must not be null");
     return ValueArray.create(value);
   }
 
   /** Returns an {@link Value} for the list of {@link Value} values. */
   static Value<List<Value<?>>> of(List<Value<?>> value) {
+    Objects.requireNonNull(value, "value must not be null");
     return ValueArray.create(value);
   }
 
@@ -77,11 +82,13 @@ public interface Value<T> {
    * values should not repeat - duplicates may be dropped.
    */
   static Value<List<KeyValue>> of(KeyValue... value) {
+    Objects.requireNonNull(value, "value must not be null");
     return KeyValueList.create(value);
   }
 
   /** Returns an {@link Value} for the {@link Map} of key, {@link Value}. */
   static Value<List<KeyValue>> of(Map<String, Value<?>> value) {
+    Objects.requireNonNull(value, "value must not be null");
     return KeyValueList.createFromMap(value);
   }
 

@@ -6,6 +6,7 @@
 package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.internal.IncubatingUtil;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -30,6 +31,10 @@ public interface LoggerProvider {
    * @return a Logger instance.
    */
   default Logger get(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(LoggerProvider.class, "get", "instrumentationScopeName");
+      return DefaultLogger.getInstance();
+    }
     return loggerBuilder(instrumentationScopeName).build();
   }
 
