@@ -14,6 +14,7 @@ import static org.slf4j.event.Level.WARN;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.Arrays;
@@ -28,6 +29,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /** Unit tests for {@link EntityUtil}. */
+@SuppressLogger(Resource.class)
+@SuppressLogger(ResourceBuilder.class)
 class EntityUtilTest {
 
   @RegisterExtension

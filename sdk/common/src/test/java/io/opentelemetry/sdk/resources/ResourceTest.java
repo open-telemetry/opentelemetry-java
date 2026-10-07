@@ -26,6 +26,7 @@ import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.ArrayList;
@@ -42,6 +43,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /** Unit tests for {@link Resource}. */
+@SuppressLogger(Resource.class)
+@SuppressLogger(ResourceBuilder.class)
 class ResourceTest {
   @RegisterExtension
   LogCapturer logs =
@@ -423,55 +426,6 @@ class ResourceTest {
     Resource fromCollection = Resource.create(Attributes.empty(), null, input);
     input.clear();
     assertThat(fromCollection).isEqualTo(snapshot);
-  }
-
-  @Test
-  void arraySnapshotsAreImmutable() {
-    AttributeKey<List<String>> key = stringArrayKey("array");
-    List<String> initial = Arrays.asList("one", "two");
-    List<String> mutable = new ArrayList<>(initial);
-    Resource resource = Resource.create(Attributes.of(key, mutable));
-    int hashCode = resource.hashCode();
-    mutable.set(0, "changed");
-
-    assertThat(resource.getAttribute(key)).isEqualTo(initial);
-    assertThat(resource.hashCode()).isEqualTo(hashCode);
-    assertThatThrownBy(() -> resource.getAttribute(key).set(0, "changed"))
-        .isInstanceOf(UnsupportedOperationException.class);
-
-    for (boolean identifying : new boolean[] {true, false}) {
-      List<String> entityValues = new ArrayList<>(initial);
-      Entity entity =
-          Entity.builder(
-                  "test",
-                  identifying
-                      ? Attributes.of(key, entityValues)
-                      : Attributes.of(stringKey("id"), "E1"))
-              .setDescription(identifying ? Attributes.empty() : Attributes.of(key, entityValues))
-              .build();
-      Resource snapshot = Resource.builder().addEntity(entity).build();
-      int entityHash = entity.hashCode();
-      int snapshotHash = snapshot.hashCode();
-      entityValues.set(0, "changed");
-
-      assertThat(snapshot.getAttribute(key)).isEqualTo(initial);
-      assertThat(snapshot.hashCode()).isEqualTo(snapshotHash);
-      assertThat(entity.hashCode()).isEqualTo(entityHash);
-      Attributes attributes = identifying ? entity.getId() : entity.getDescription();
-      assertThatThrownBy(() -> attributes.get(key).set(0, "changed"))
-          .isInstanceOf(UnsupportedOperationException.class);
-    }
-  }
-
-  @Test
-  void stringArrayInputsAreCopiedAtBuild() {
-    String[] values = {"one", "two"};
-    ResourceBuilder builder = Resource.builder().put("array", values);
-    Resource snapshot = builder.build();
-    values[0] = "changed";
-    assertThat(snapshot.getAttribute(stringArrayKey("array"))).containsExactly("one", "two");
-    assertThat(builder.build().getAttribute(stringArrayKey("array")))
-        .containsExactly("changed", "two");
   }
 
   @Test

@@ -11,11 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.Value;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -70,22 +66,6 @@ class SdkEntityBuilderTest {
         Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).setSchemaUrl("").build();
     assertThat(entity.getSchemaUrl()).isNull();
     assertThat(entity.toBuilder().build()).isEqualTo(entity);
-  }
-
-  @Test
-  void freezingArraysPreservesValueAttributeKeyTypes() {
-    List<String> values = new ArrayList<>(Arrays.asList("one", "two"));
-    Attributes id =
-        Attributes.of(
-            AttributeKey.valueKey("id"),
-            Value.of("H1"),
-            AttributeKey.stringArrayKey("array"),
-            values);
-    Entity entity = Entity.builder("host", id).build();
-    values.set(0, "changed");
-    assertThat(entity.getId().asMap()).containsKey(AttributeKey.valueKey("id"));
-    assertThat(entity.getId().get(AttributeKey.stringArrayKey("array")))
-        .containsExactly("one", "two");
   }
 
   @Test

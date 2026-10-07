@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -177,6 +178,7 @@ class ResourceConfigurationTest {
 
   @ParameterizedTest
   @MethodSource("legacyEntityOverrides")
+  @SuppressLogger(ResourceBuilder.class)
   void legacyEntityOverride(Map<String, String> overrides, String expectedName) {
     Map<String, String> properties = new HashMap<>(overrides);
     properties.put(

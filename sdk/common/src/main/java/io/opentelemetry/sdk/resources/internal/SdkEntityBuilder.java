@@ -5,8 +5,9 @@
 
 package io.opentelemetry.sdk.resources.internal;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.Utils;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -26,10 +27,10 @@ final class SdkEntityBuilder implements EntityBuilder {
   SdkEntityBuilder(String entityType, Attributes id) {
     Objects.requireNonNull(entityType, "entityType");
     Objects.requireNonNull(id, "id");
-    Utils.checkArgument(
+    checkArgument(
         !entityType.isEmpty() && AttributeCheckUtil.isValid(entityType),
         "Entity type must be a valid non-empty printable ASCII string.");
-    Utils.checkArgument(!id.isEmpty(), "Entity must have at least one identifying attribute.");
+    checkArgument(!id.isEmpty(), "Entity must have at least one identifying attribute.");
     AttributeCheckUtil.checkAttributes(id);
     this.entityType = entityType;
     this.id = id;
@@ -52,7 +53,7 @@ final class SdkEntityBuilder implements EntityBuilder {
   @Override
   public EntityBuilder setDescription(Attributes description) {
     AttributeCheckUtil.checkAttributes(Objects.requireNonNull(description, "description"));
-    Utils.checkArgument(
+    checkArgument(
         !EntityUtil.sharesAttributeKey(id, description),
         "Identifying and descriptive attribute keys must be disjoint.");
     this.description = description;

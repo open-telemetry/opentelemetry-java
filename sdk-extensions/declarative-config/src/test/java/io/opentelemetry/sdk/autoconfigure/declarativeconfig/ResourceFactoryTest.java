@@ -15,6 +15,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.Exper
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.Arrays;
@@ -177,6 +179,7 @@ class ResourceFactoryTest {
 
   @ParameterizedTest
   @MethodSource("entityFilteringCases")
+  @SuppressLogger(ResourceBuilder.class)
   void entityFiltering(
       @Nullable List<String> included,
       @Nullable List<String> excluded,
@@ -236,6 +239,7 @@ class ResourceFactoryTest {
 
   @ParameterizedTest
   @MethodSource("explicitEntityOverrideCases")
+  @SuppressLogger(ResourceBuilder.class)
   void explicitAttributesOverrideEntities(boolean useAttributeList) {
     Entity service =
         Entity.builder("service", Attributes.of(AttributeKey.stringKey("service.name"), "detected"))

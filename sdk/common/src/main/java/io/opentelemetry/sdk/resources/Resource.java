@@ -144,8 +144,7 @@ public abstract class Resource {
           }
         });
     fullAttributes.putAll(attributes);
-    return new AutoValue_Resource(
-        schemaUrl, immutableEntities, AttributeCheckUtil.immutableCopy(fullAttributes.build()));
+    return new AutoValue_Resource(schemaUrl, immutableEntities, fullAttributes.build());
   }
 
   private static void putEntityAttributes(

@@ -30,10 +30,7 @@ abstract class SdkEntity implements Entity {
   static Entity create(
       String entityType, Attributes id, Attributes description, @Nullable String schemaUrl) {
     return new AutoValue_SdkEntity(
-        entityType,
-        AttributeCheckUtil.immutableCopy(id),
-        AttributeCheckUtil.immutableCopy(description),
-        EntityUtil.normalizeSchemaUrl(schemaUrl));
+        entityType, id, description, EntityUtil.normalizeSchemaUrl(schemaUrl));
   }
 
   @Override
