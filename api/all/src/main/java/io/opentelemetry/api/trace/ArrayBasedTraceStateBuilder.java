@@ -6,6 +6,7 @@
 package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +67,12 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
    */
   @Override
   public TraceStateBuilder put(String key, String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(TraceStateBuilder.class, "put", "key");
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(TraceStateBuilder.class, "put", "value");
+    }
     if (!isKeyValid(key) || !isValueValid(value) || numEntries >= MAX_ENTRIES) {
       return this;
     }
@@ -88,7 +95,7 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   @Override
   public TraceStateBuilder remove(String key) {
     if (key == null) {
-      return this;
+      ApiUsageLogger.logNullParam(TraceStateBuilder.class, "remove", "key");
     }
     for (int i = 0; i < reversedEntries.size(); i += 2) {
       if (reversedEntries.get(i).equals(key)) {
