@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,6 +30,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class Resource {
+  private static final Logger logger = Logger.getLogger(Resource.class.getName());
+
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
   private static final AttributeKey<String> TELEMETRY_SDK_LANGUAGE =
       AttributeKey.stringKey("telemetry.sdk.language");
@@ -209,11 +212,37 @@ public abstract class Resource {
    * associative: regrouping merges can change entity associations even if flattened attributes are
    * unchanged.
    *
+   * <p>The merged schema URL is computed from the two resources' schema URLs, not from their
+   * entities. If either is null, the other is used. If they differ, the merged resource has no
+   * schema URL.
+   *
    * @param other the {@code Resource} that will be merged with {@code this}.
    * @return the newly merged {@code Resource}.
    */
   public Resource merge(@Nullable Resource other) {
-    return EntityUtil.merge(this, other);
+    if (other == null || other.equals(EMPTY)) {
+      return this;
+    }
+    return builder()
+        .putAll(this)
+        .putAll(other)
+        .buildWithSchemaUrl(mergeSchemaUrl(getSchemaUrl(), other.getSchemaUrl()));
+  }
+
+  @Nullable
+  private static String mergeSchemaUrl(@Nullable String base, @Nullable String next) {
+    if (base == null || next == null || base.equals(next)) {
+      return base == null ? next : base;
+    }
+    logger.info(
+        "Attempting to merge Resources with different schemaUrls. "
+            + "The resulting Resource will have no schemaUrl assigned. Schema 1: "
+            + base
+            + " Schema 2: "
+            + next);
+    // currently, behavior is undefined if schema URLs don't match. In the future, we may
+    // apply schema transformations if possible.
+    return null;
   }
 
   /**

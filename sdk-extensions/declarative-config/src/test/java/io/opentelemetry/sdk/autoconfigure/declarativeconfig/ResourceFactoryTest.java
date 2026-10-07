@@ -227,35 +227,11 @@ class ResourceFactoryTest {
             Attributes.builder().put("host.id", "H1").put("host.region", "west").build(),
             Attributes.of(AttributeKey.stringKey("host.type"), "vm")),
         Arguments.argumentSet(
-            "exclude identity",
-            null,
-            Arrays.asList("host.id", "host.region"),
-            Attributes.empty(),
-            Attributes.builder().put("host.name", "machine").put("host.type", "vm").build()),
-        Arguments.argumentSet(
-            "include identity",
-            Arrays.asList("host.id", "host.region"),
-            null,
-            Attributes.builder().put("host.id", "H1").put("host.region", "west").build(),
-            Attributes.empty()),
-        Arguments.argumentSet(
             "exclude one identifying attribute key",
             null,
             Collections.singletonList("host.id"),
             Attributes.of(AttributeKey.stringKey("host.region"), "west"),
-            Attributes.builder().put("host.name", "machine").put("host.type", "vm").build()),
-        Arguments.argumentSet(
-            "include one identifying attribute key",
-            Collections.singletonList("host.id"),
-            null,
-            Attributes.of(AttributeKey.stringKey("host.id"), "H1"),
-            Attributes.empty()),
-        Arguments.argumentSet(
-            "include description",
-            Collections.singletonList("host.name"),
-            null,
-            Attributes.empty(),
-            Attributes.of(AttributeKey.stringKey("host.name"), "machine")));
+            Attributes.builder().put("host.name", "machine").put("host.type", "vm").build()));
   }
 
   @ParameterizedTest

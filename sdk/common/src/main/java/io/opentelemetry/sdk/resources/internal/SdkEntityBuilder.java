@@ -53,11 +53,7 @@ final class SdkEntityBuilder implements EntityBuilder {
   public EntityBuilder setDescription(Attributes description) {
     AttributeCheckUtil.checkAttributes(Objects.requireNonNull(description, "description"));
     Utils.checkArgument(
-        description.asMap().keySet().stream()
-            .noneMatch(
-                key ->
-                    id.asMap().keySet().stream()
-                        .anyMatch(idKey -> idKey.getKey().equals(key.getKey()))),
+        !EntityUtil.sharesAttributeKey(id, description),
         "Identifying and descriptive attribute keys must be disjoint.");
     this.description = description;
     return this;

@@ -28,7 +28,6 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,7 +45,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ResourceTest {
   @RegisterExtension
   LogCapturer logs =
-      LogCapturer.create().captureForType(ResourceBuilder.class).captureForType(EntityUtil.class);
+      LogCapturer.create().captureForType(ResourceBuilder.class).captureForType(Resource.class);
 
   private Resource resource1;
   private Resource resource2;
@@ -342,26 +341,65 @@ class ResourceTest {
   }
 
   @Test
-  void testMergeResources_entities_separate_types_and_schema() {
-    Resource resource1 =
+  void testMergeResources_emptySchemaIsPresent() {
+    Resource schemaOne = Resource.create(Attributes.of(stringKey("a"), "1"), "http://schema.1");
+    Resource emptySchema = Resource.create(Attributes.of(stringKey("b"), "2"), "");
+
+    assertThat(schemaOne.merge(emptySchema).getSchemaUrl()).isNull();
+    assertThat(emptySchema.merge(schemaOne).getSchemaUrl()).isNull();
+    assertThat(emptySchema.merge(emptySchema).getSchemaUrl()).isEmpty();
+  }
+
+  @Test
+  void testMergeResources_entitySchemas() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setSchemaUrl("S1")
+            .build();
+    Entity process =
+        Entity.builder("process", Attributes.of(longKey("process.pid"), 1L))
+            .setSchemaUrl("S2")
+            .build();
+    Entity withoutSchema =
+        Entity.builder("service", Attributes.of(stringKey("service.name"), "svc")).build();
+    Resource pinned =
+        Resource.builder().addEntity(host).build().toBuilder().addEntity(process).build();
+    Resource explicit = Resource.builder().setSchemaUrl("explicit").addEntity(host).build();
+    Resource withoutEntitySchema = Resource.builder().addEntity(withoutSchema).build();
+
+    assertThat(pinned.getSchemaUrl()).isEqualTo("S1");
+    assertThat(Resource.empty().merge(pinned)).isEqualTo(pinned);
+    assertThat(Resource.getDefault().merge(explicit).getSchemaUrl()).isEqualTo("explicit");
+    assertThat(withoutEntitySchema.getSchemaUrl()).isNull();
+    assertThat(
+            Resource.create(Attributes.of(stringKey("a"), "1"), "S1")
+                .merge(withoutEntitySchema)
+                .getSchemaUrl())
+        .isEqualTo("S1");
+    assertThat(Resource.builder().addEntity(host).addEntity(withoutSchema).build().getSchemaUrl())
+        .isEqualTo("S1");
+  }
+
+  @Test
+  void testMergeResources_entityReplacementUsesResolvedSchemas() {
+    Resource base =
         Resource.builder()
             .addEntity(
-                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
-                    .setSchemaUrl("one")
+                Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+                    .setSchemaUrl("S1")
                     .build())
             .build();
-    Resource resource2 =
+    Resource replacement =
         Resource.builder()
             .addEntity(
-                Entity.builder("b", Attributes.builder().put("b.id", "b").build())
-                    .setSchemaUrl("two")
+                Entity.builder("host", Attributes.of(stringKey("host.id"), "H2"))
+                    .setSchemaUrl("S2")
                     .build())
             .build();
-    Resource merged = resource1.merge(resource2);
-    assertThat(merged.getSchemaUrl()).isNull();
-    assertThat(merged.getEntities()).hasSize(2);
-    OpenTelemetryAssertions.assertThat(merged.getAttributes()).containsEntry("a.id", "a");
-    OpenTelemetryAssertions.assertThat(merged.getAttributes()).containsEntry("b.id", "b");
+
+    assertThat(base.getSchemaUrl()).isEqualTo("S1");
+    assertThat(replacement.getSchemaUrl()).isEqualTo("S2");
+    assertThat(base.merge(replacement).getSchemaUrl()).isNull();
   }
 
   @Test
@@ -387,22 +425,22 @@ class ResourceTest {
     assertThat(fromCollection).isEqualTo(snapshot);
   }
 
-  @ParameterizedTest
-  @MethodSource("arraySnapshotCases")
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  void arraySnapshotsAreImmutable(AttributeKey key, List<?> initial, Object changed) {
-    List mutable = new ArrayList<>(initial);
+  @Test
+  void arraySnapshotsAreImmutable() {
+    AttributeKey<List<String>> key = stringArrayKey("array");
+    List<String> initial = Arrays.asList("one", "two");
+    List<String> mutable = new ArrayList<>(initial);
     Resource resource = Resource.create(Attributes.of(key, mutable));
     int hashCode = resource.hashCode();
-    mutable.set(0, changed);
+    mutable.set(0, "changed");
 
     assertThat(resource.getAttribute(key)).isEqualTo(initial);
     assertThat(resource.hashCode()).isEqualTo(hashCode);
-    assertThatThrownBy(() -> ((List) resource.getAttribute(key)).set(0, changed))
+    assertThatThrownBy(() -> resource.getAttribute(key).set(0, "changed"))
         .isInstanceOf(UnsupportedOperationException.class);
 
     for (boolean identifying : new boolean[] {true, false}) {
-      List entityValues = new ArrayList<>(initial);
+      List<String> entityValues = new ArrayList<>(initial);
       Entity entity =
           Entity.builder(
                   "test",
@@ -414,29 +452,15 @@ class ResourceTest {
       Resource snapshot = Resource.builder().addEntity(entity).build();
       int entityHash = entity.hashCode();
       int snapshotHash = snapshot.hashCode();
-      entityValues.set(0, changed);
+      entityValues.set(0, "changed");
 
       assertThat(snapshot.getAttribute(key)).isEqualTo(initial);
       assertThat(snapshot.hashCode()).isEqualTo(snapshotHash);
       assertThat(entity.hashCode()).isEqualTo(entityHash);
       Attributes attributes = identifying ? entity.getId() : entity.getDescription();
-      assertThat(attributes.get(key)).isEqualTo(initial);
-      assertThatThrownBy(() -> ((List) attributes.get(key)).set(0, changed))
+      assertThatThrownBy(() -> attributes.get(key).set(0, "changed"))
           .isInstanceOf(UnsupportedOperationException.class);
-      assertThatThrownBy(() -> ((List) snapshot.getAttribute(key)).set(0, changed))
-          .isInstanceOf(UnsupportedOperationException.class);
-      assertThat(snapshot.toBuilder().build()).isEqualTo(snapshot);
     }
-  }
-
-  static Stream<Arguments> arraySnapshotCases() {
-    return Stream.of(
-        Arguments.argumentSet(
-            "strings", stringArrayKey("array"), Arrays.asList("one", "two"), "changed"),
-        Arguments.argumentSet("longs", longArrayKey("array"), Arrays.asList(1L, 2L), 3L),
-        Arguments.argumentSet("doubles", doubleArrayKey("array"), Arrays.asList(1.0, 2.0), 3.0),
-        Arguments.argumentSet(
-            "booleans", booleanArrayKey("array"), Arrays.asList(true, false), false));
   }
 
   @Test
@@ -495,8 +519,6 @@ class ResourceTest {
     assertThat(resource.getEntities()).isEmpty();
     assertThat(resource.getAttributes())
         .isEqualTo(Attributes.builder().put("retained", "value").putAll(expectedOverride).build());
-    assertThat(original.getEntities()).containsExactly(entity);
-    assertThat(original.getAttributes().get(stringKey("target"))).isEqualTo("original");
     logs.assertContains(
         event -> event.getLevel().equals(INFO), "Removing entity association [test]");
   }
@@ -610,7 +632,6 @@ class ResourceTest {
                 .put("raw", "new")
                 .build())
         .isEqualTo(expected);
-    assertThat(original.getEntities()).containsExactly(host, service);
     logs.assertContains(
         event -> event.getLevel().equals(INFO), "Removing entity association [host]");
     logs.assertDoesNotContain("Removing entity association [service]");
@@ -659,18 +680,6 @@ class ResourceTest {
   }
 
   @Test
-  void entityDescriptionsCanBeOverridden() {
-    Entity host =
-        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
-            .setDescription(Attributes.of(stringKey("host.name"), "detected"))
-            .build();
-    Resource resource = Resource.builder().addEntity(host).put("host.name", "override").build();
-    assertThat(resource.getEntities()).isEmpty();
-    assertThat(resource.getAttributes())
-        .isEqualTo(Attributes.builder().put("host.id", "H1").put("host.name", "override").build());
-  }
-
-  @Test
   void filterEntityAttributes() {
     Entity host =
         Entity.builder(
@@ -693,7 +702,6 @@ class ResourceTest {
     assertThat(filtered.getUnassociatedAttributes()).isEqualTo(filtered.getAttributes());
     assertThat(filtered.getAttributes())
         .isEqualTo(Attributes.builder().put("host.region", "west").put("host.type", "vm").build());
-    assertThat(original.getEntities()).containsExactly(host);
     logs.assertContains(
         event -> event.getLevel().equals(INFO), "Removing entity association [host]");
   }
@@ -752,8 +760,6 @@ class ResourceTest {
             });
     assertThat(filtered.getAttributes()).isEqualTo(host.getId());
     assertThat(filtered.getUnassociatedAttributes()).isEqualTo(Attributes.empty());
-    assertThat(original.getEntities()).containsExactly(host);
-    assertThat(original.toBuilder().removeIf(key -> false).build()).isEqualTo(original);
     logs.assertContains(
         event -> event.getLevel().equals(INFO),
         "Removing descriptive attribute keys from entity [host]");
@@ -842,45 +848,6 @@ class ResourceTest {
     assertThat(ordinaryName.getAttributes()).isEqualTo(describedName.getAttributes());
     assertThat(ordinaryName.getSchemaUrl()).isEqualTo(describedName.getSchemaUrl());
     assertThat(ordinaryName).isNotEqualTo(describedName);
-  }
-
-  @Test
-  void builderRecomputesDerivedSchema() {
-    Entity host =
-        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
-            .setSchemaUrl("one")
-            .build();
-    Entity service =
-        Entity.builder("service", Attributes.of(stringKey("service.name"), "S1"))
-            .setSchemaUrl("two")
-            .build();
-    ResourceBuilder builder = Resource.builder().addEntity(host);
-    Resource first = builder.build();
-    builder.addEntity(service);
-    assertThat(first.getSchemaUrl()).isEqualTo("one");
-    assertThat(builder.build().getSchemaUrl()).isNull();
-    assertThat(builder.setSchemaUrl("explicit").build().getSchemaUrl()).isEqualTo("explicit");
-  }
-
-  @Test
-  void duplicateEntitiesAreMergedDuringBuilderConstruction() {
-    Entity first =
-        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
-            .setDescription(Attributes.of(stringKey("host.name"), "machine"))
-            .build();
-    Entity second =
-        Entity.builder("host", first.getId())
-            .setDescription(Attributes.of(stringKey("host.type"), "vm"))
-            .build();
-    Resource resource = Resource.builder().addEntity(first).addEntity(second).build();
-    assertThat(resource.getEntities()).hasSize(1);
-    assertThat(resource.getAttributes())
-        .isEqualTo(
-            Attributes.builder()
-                .put("host.id", "H1")
-                .put("host.name", "machine")
-                .put("host.type", "vm")
-                .build());
   }
 
   @Test

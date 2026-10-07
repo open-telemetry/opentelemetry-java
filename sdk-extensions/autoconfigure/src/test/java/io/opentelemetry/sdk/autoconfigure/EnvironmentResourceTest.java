@@ -7,12 +7,14 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.slf4j.event.Level.INFO;
 import static org.slf4j.event.Level.WARN;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.Arrays;
@@ -29,7 +31,9 @@ class EnvironmentResourceTest {
 
   @RegisterExtension
   LogCapturer logs =
-      LogCapturer.create().captureForLogger(EnvironmentResource.class.getName() + "$EntityParser");
+      LogCapturer.create()
+          .captureForLogger(EnvironmentResource.class.getName() + "$EntityParser")
+          .captureForType(ResourceBuilder.class);
 
   private static Resource parse(String entities) {
     return EnvironmentResource.createEnvironmentResource(
@@ -44,6 +48,26 @@ class EnvironmentResourceTest {
             .setDescription(Attributes.builder().put("config", "{}[]@;,=").put("empty", "").build())
             .build();
     assertThat(EntityUtil.getEntities(resource)).containsExactly(expected);
+  }
+
+  @Test
+  void percentDecodingFollowsBaggageRules() {
+    Resource resource =
+        parse(
+            "service{service.name=my+app,space=hello%20world,utf8=%C3%A9,invalid=%2G,incomplete=%2,end=%}");
+    assertThat(EntityUtil.getEntities(resource))
+        .containsExactly(
+            Entity.builder(
+                    "service",
+                    Attributes.builder()
+                        .put("service.name", "my+app")
+                        .put("space", "hello world")
+                        .put("utf8", "é")
+                        .put("invalid", "%2G")
+                        .put("incomplete", "%2")
+                        .put("end", "%")
+                        .build())
+                .build());
   }
 
   @Test
@@ -71,10 +95,20 @@ class EnvironmentResourceTest {
   }
 
   @ParameterizedTest
-  @MethodSource("malformedDefinitions")
-  void malformedDefinitionAtEndOfInput(String malformed) {
-    assertThat(parse(malformed)).isEqualTo(Resource.empty());
-    logs.assertContains(event -> event.getLevel().equals(WARN), "Malformed entity definition");
+  @MethodSource("incompleteDefinitions")
+  void incompleteDefinitionAtEndOfInput(String incomplete) {
+    assertThat(parse(incomplete)).isEqualTo(Resource.empty());
+    logs.assertContains(
+        event -> event.getLevel().equals(WARN),
+        "Malformed entity definition (incomplete definition)");
+  }
+
+  static Stream<Arguments> incompleteDefinitions() {
+    return Stream.of(
+        Arguments.argumentSet("type only", "test"),
+        Arguments.argumentSet("dangling identity key", "test{id"),
+        Arguments.argumentSet("missing closing brace", "test{id=1"),
+        Arguments.argumentSet("unclosed description", "test{id=1}[name=broken"));
   }
 
   static Stream<Arguments> malformedDefinitions() {
@@ -181,8 +215,7 @@ class EnvironmentResourceTest {
     assertThat(EntityUtil.getUnassociatedAttributes(resource))
         .isEqualTo(Attributes.of(stringKey("process.pid"), "1"));
     logs.assertContains(
-        event -> event.getLevel().equals(WARN),
-        "overwrites attributes of previously defined entities");
+        event -> event.getLevel().equals(INFO), "Removing entity association [process]");
   }
 
   @Test

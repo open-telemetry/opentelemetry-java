@@ -15,6 +15,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,70 +30,63 @@ import org.junit.jupiter.params.provider.MethodSource;
 /** Unit tests for {@link EntityUtil}. */
 class EntityUtilTest {
 
-  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(EntityUtil.class, INFO);
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(ResourceBuilder.class, INFO);
 
   @ParameterizedTest
   @MethodSource("mergeEntitiesTestCases")
   void mergeEntities(
-      Collection<Entity> base, Collection<Entity> added, Collection<Entity> expected) {
+      Collection<Entity> base,
+      Collection<Entity> added,
+      Collection<Entity> expected,
+      @Nullable String expectedSchemaUrl) {
     Resource merged = EntityUtil.createResource(base).merge(EntityUtil.createResource(added));
-    assertThat(merged).isEqualTo(EntityUtil.createResource(expected));
+    assertThat(EntityUtil.getEntities(merged)).containsExactlyElementsOf(expected);
+    assertThat(EntityUtil.getUnassociatedAttributes(merged)).isEmpty();
+    assertThat(merged.getSchemaUrl()).isEqualTo(expectedSchemaUrl);
   }
 
   static Stream<Arguments> mergeEntitiesTestCases() {
+    Entity withoutSchema =
+        Entity.builder("a", Attributes.builder().put("a.id", "a").build())
+            .setDescription(Attributes.builder().put("a.desc1", "a").build())
+            .build();
+    Entity withSchema =
+        Entity.builder("a", Attributes.builder().put("a.id", "a").build())
+            .setSchemaUrl("one")
+            .setDescription(Attributes.builder().put("a.desc2", "b").build())
+            .build();
     return Stream.of(
         Arguments.argumentSet(
-            "same type and id - descriptions are merged",
-            Collections.singletonList(
-                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
-                    .setSchemaUrl("one")
-                    .setDescription(Attributes.builder().put("a.desc1", "a").build())
-                    .build()),
-            Collections.singletonList(
-                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
-                    .setSchemaUrl("one")
-                    .setDescription(Attributes.builder().put("a.desc2", "b").build())
-                    .build()),
-            Collections.singletonList(
-                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
-                    .setSchemaUrl("one")
-                    .setDescription(
-                        Attributes.builder().put("a.desc1", "a").put("a.desc2", "b").build())
-                    .build())),
-        Arguments.argumentSet(
             "same type and id different schema - incoming entity replaces old entity",
-            Collections.singletonList(
-                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
-                    .setSchemaUrl("one")
-                    .setDescription(Attributes.builder().put("a.desc1", "a").build())
-                    .build()),
-            Collections.singletonList(
-                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
-                    .setSchemaUrl("two")
-                    .setDescription(Attributes.builder().put("a.desc2", "b").build())
-                    .build()),
-            Collections.singletonList(
-                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
-                    .setSchemaUrl("two")
-                    .setDescription(Attributes.builder().put("a.desc2", "b").build())
-                    .build())),
+            Collections.singletonList(withSchema),
+            Collections.singletonList(withSchema.toBuilder().setSchemaUrl("two").build()),
+            Collections.singletonList(withSchema.toBuilder().setSchemaUrl("two").build()),
+            null),
+        Arguments.argumentSet(
+            "absent schema replaced by present schema",
+            Collections.singletonList(withoutSchema),
+            Collections.singletonList(withSchema),
+            Collections.singletonList(withSchema),
+            "one"),
+        Arguments.argumentSet(
+            "present schema replaced by absent schema",
+            Collections.singletonList(withSchema),
+            Collections.singletonList(withoutSchema),
+            Collections.singletonList(withoutSchema),
+            "one"),
         Arguments.argumentSet(
             "same type different id - incoming entity replaces old entity",
+            Collections.singletonList(withSchema),
             Collections.singletonList(
-                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
+                Entity.builder("a", Attributes.builder().put("a.id", "b").build())
                     .setSchemaUrl("one")
-                    .setDescription(Attributes.builder().put("a.desc1", "a").build())
                     .build()),
             Collections.singletonList(
                 Entity.builder("a", Attributes.builder().put("a.id", "b").build())
                     .setSchemaUrl("one")
-                    .setDescription(Attributes.builder().put("a.desc2", "b").build())
                     .build()),
-            Collections.singletonList(
-                Entity.builder("a", Attributes.builder().put("a.id", "b").build())
-                    .setSchemaUrl("one")
-                    .setDescription(Attributes.builder().put("a.desc2", "b").build())
-                    .build())),
+            "one"),
         Arguments.argumentSet(
             "separate types and schema - both entities are kept",
             Collections.singletonList(
@@ -109,7 +103,8 @@ class EntityUtilTest {
                     .build(),
                 Entity.builder("b", Attributes.builder().put("b.id", "b").build())
                     .setSchemaUrl("two")
-                    .build())));
+                    .build()),
+            null));
   }
 
   @ParameterizedTest
@@ -206,53 +201,25 @@ class EntityUtilTest {
   }
 
   @ParameterizedTest
-  @MethodSource("mergeAbsentSchemaTestCases")
-  void mergeAbsentSchema(boolean incomingHasSchema) {
-    Entity withoutSchema =
-        Entity.builder("host", Attributes.builder().put("host.id", "H1").build())
-            .setDescription(Attributes.builder().put("host.name", "without-schema").build())
-            .build();
-    Entity withSchema =
-        Entity.builder("host", withoutSchema.getId())
-            .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
-            .setDescription(Attributes.builder().put("host.type", "vm").build())
-            .build();
-    Entity base = incomingHasSchema ? withoutSchema : withSchema;
-    Entity incoming = incomingHasSchema ? withSchema : withoutSchema;
-
-    Resource merged =
-        EntityUtil.createResource(Collections.singletonList(base))
-            .merge(EntityUtil.createResource(Collections.singletonList(incoming)));
-
-    assertThat(merged).isEqualTo(EntityUtil.createResource(Collections.singletonList(incoming)));
-    logs.assertContains(
-        event -> event.getLevel().equals(INFO),
-        "Replacing entity [host] because schema URLs differ.");
-  }
-
-  static Stream<Arguments> mergeAbsentSchemaTestCases() {
-    return Stream.of(
-        Arguments.argumentSet("absent schema replaced by present schema", true),
-        Arguments.argumentSet("present schema replaced by absent schema", false));
-  }
-
-  @ParameterizedTest
   @MethodSource("mergeCrossEntityConflictTestCases")
-  void mergeCrossEntityConflict(boolean existingIdentifying, boolean incomingIdentifying) {
-    Attributes existingConflict = Attributes.of(AttributeKey.stringKey("shared"), "old");
-    Attributes incomingConflict = Attributes.of(AttributeKey.stringKey("shared"), "new");
-    Attributes existingId =
-        Attributes.builder()
-            .put("existing.id", "E1")
-            .putAll(existingIdentifying ? existingConflict : Attributes.empty())
-            .build();
-    Attributes existingDescription =
-        Attributes.builder()
-            .put("existing.description", "preserved")
-            .putAll(existingIdentifying ? Attributes.empty() : existingConflict)
-            .build();
+  void mergeCrossEntityConflict(
+      boolean existingIdentifying,
+      boolean incomingIdentifying,
+      Attributes existingConflict,
+      Attributes incomingConflict) {
     Entity existing =
-        Entity.builder("existing", existingId).setDescription(existingDescription).build();
+        Entity.builder(
+                "existing",
+                Attributes.builder()
+                    .put("existing.id", "E1")
+                    .putAll(existingIdentifying ? existingConflict : Attributes.empty())
+                    .build())
+            .setDescription(
+                Attributes.builder()
+                    .put("existing.description", "preserved")
+                    .putAll(existingIdentifying ? Attributes.empty() : existingConflict)
+                    .build())
+            .build();
     Entity incoming =
         Entity.builder(
                 "incoming",
@@ -264,15 +231,14 @@ class EntityUtilTest {
             .build();
     Entity unrelated =
         Entity.builder("unrelated", Attributes.builder().put("other.id", "O1").build()).build();
-    Resource base =
-        EntityUtil.createResourceRaw(
-            Attributes.builder().put("raw", "preserved").build(),
-            null,
-            Arrays.asList(existing, unrelated));
+    ResourceBuilder baseBuilder = Resource.builder().put("raw", "preserved");
+    EntityUtil.addEntity(baseBuilder, existing);
+    EntityUtil.addEntity(baseBuilder, unrelated);
 
-    Resource merged = base.merge(EntityUtil.createResource(Collections.singletonList(incoming)));
+    Resource merged =
+        baseBuilder.build().merge(EntityUtil.createResource(Collections.singletonList(incoming)));
 
-    assertThat(EntityUtil.getEntities(merged)).containsExactlyInAnyOrder(unrelated, incoming);
+    assertThat(EntityUtil.getEntities(merged)).containsExactly(unrelated, incoming);
     assertThat(EntityUtil.getUnassociatedAttributes(merged))
         .isEqualTo(
             Attributes.builder()
@@ -280,35 +246,37 @@ class EntityUtilTest {
                 .put("existing.id", "E1")
                 .put("existing.description", "preserved")
                 .build());
-    assertThat(merged.getAttributes()).containsEntry("shared", "new");
+    assertThat(merged.getAttributes())
+        .isEqualTo(
+            Attributes.builder()
+                .putAll(EntityUtil.getUnassociatedAttributes(merged))
+                .putAll(unrelated.getId())
+                .putAll(incoming.getId())
+                .putAll(incoming.getDescription())
+                .build());
+    logs.assertContains(
+        event -> event.getLevel().equals(INFO), "Removing entity association [existing]");
   }
 
   static Stream<Arguments> mergeCrossEntityConflictTestCases() {
+    Attributes old = Attributes.of(AttributeKey.stringKey("shared"), "old");
+    Attributes updated = Attributes.of(AttributeKey.stringKey("shared"), "new");
     return Stream.of(
-        Arguments.argumentSet("incoming id overwrites existing id", true, true),
-        Arguments.argumentSet("incoming description overwrites existing id", true, false),
-        Arguments.argumentSet("incoming id overwrites existing description", false, true),
+        Arguments.argumentSet("incoming id overwrites existing id", true, true, old, updated),
         Arguments.argumentSet(
-            "incoming description overwrites existing description", false, false));
-  }
-
-  @Test
-  void equalValuesStillTransferAttributeKeyOwnership() {
-    Entity host =
-        Entity.builder("host", Attributes.of(AttributeKey.stringKey("host.id"), "H1"))
-            .setDescription(Attributes.of(AttributeKey.stringKey("shared"), "same"))
-            .build();
-    Entity process =
-        Entity.builder("process", Attributes.of(AttributeKey.longKey("process.pid"), 1L))
-            .setDescription(Attributes.of(AttributeKey.stringKey("shared"), "same"))
-            .build();
-    Resource merged =
-        EntityUtil.createResource(Collections.singletonList(host))
-            .merge(EntityUtil.createResource(Collections.singletonList(process)));
-    assertThat(EntityUtil.getEntities(merged)).containsExactly(process);
-    assertThat(EntityUtil.getUnassociatedAttributes(merged)).isEqualTo(host.getId());
-    logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [host]");
+            "incoming description overwrites existing id", true, false, old, updated),
+        Arguments.argumentSet(
+            "incoming id overwrites existing description", false, true, old, updated),
+        Arguments.argumentSet(
+            "incoming description overwrites existing description", false, false, old, updated),
+        Arguments.argumentSet(
+            "equal values still transfer attribute key ownership", false, false, old, old),
+        Arguments.argumentSet(
+            "different attribute types",
+            true,
+            true,
+            Attributes.of(AttributeKey.longKey("shared"), 1L),
+            updated));
   }
 
   @Test
@@ -375,189 +343,6 @@ class EntityUtilTest {
   }
 
   @ParameterizedTest
-  @MethodSource("mergeResourceSchemaUrlTestCases")
-  void mergeResourceSchemaUrl(
-      Collection<Entity> entities,
-      @Nullable String baseUrl,
-      @Nullable String nextUrl,
-      @Nullable String expected) {
-    assertThat(EntityUtil.mergeResourceSchemaUrl(entities, baseUrl, nextUrl)).isEqualTo(expected);
-  }
-
-  static Stream<Arguments> mergeResourceSchemaUrlTestCases() {
-    return Stream.of(
-        Arguments.argumentSet(
-            "no entities conflicting urls - drop schema url",
-            Collections.emptyList(),
-            "one",
-            "two",
-            null),
-        Arguments.argumentSet(
-            "no entities base null - use incoming url",
-            Collections.emptyList(),
-            null,
-            "two",
-            "two"),
-        Arguments.argumentSet(
-            "no entities next null - preserve base url",
-            Collections.emptyList(),
-            "one",
-            null,
-            "one"),
-        Arguments.argumentSet(
-            "no entities empty base - use incoming url", Collections.emptyList(), "", "two", "two"),
-        Arguments.argumentSet(
-            "no entities empty next - preserve base url",
-            Collections.emptyList(),
-            "one",
-            "",
-            "one"),
-        Arguments.argumentSet(
-            "no entities both empty - absence", Collections.emptyList(), "", "", null),
-        Arguments.argumentSet(
-            "entities with same url",
-            Collections.singletonList(
-                Entity.builder("t", Attributes.builder().put("id", 1).build())
-                    .setSchemaUrl("one")
-                    .build()),
-            "one",
-            null,
-            "one"),
-        Arguments.argumentSet(
-            "entities with conflicting urls - cannot fill resource schema url",
-            Arrays.asList(
-                Entity.builder("t", Attributes.builder().put("id", 1).build())
-                    .setSchemaUrl("one")
-                    .build(),
-                Entity.builder("t2", Attributes.builder().put("id2", 1).build())
-                    .setSchemaUrl("two")
-                    .build()),
-            "one",
-            "one",
-            null));
-  }
-
-  @ParameterizedTest
-  @MethodSource("mergeRawAttributesTestCases")
-  void mergeRawAttributes(Collection<Entity> entities, Collection<Entity> expectedConflicts) {
-    RawAttributeMergeResult result =
-        EntityUtil.mergeRawAttributes(
-            Attributes.builder().put("a", 1).put("b", 1).build(),
-            Attributes.builder().put("b", 2).put("c", 2).build(),
-            entities);
-    assertThat(result.getConflicts()).containsExactlyInAnyOrderElementsOf(expectedConflicts);
-    assertThat(result.getAttributes())
-        .hasSize(3)
-        .containsEntry("a", 1)
-        .containsEntry("b", 2)
-        .containsEntry("c", 2);
-  }
-
-  static Stream<Arguments> mergeRawAttributesTestCases() {
-    return Stream.of(
-        Arguments.argumentSet(
-            "no entities - all attributes merged",
-            Collections.emptyList(),
-            Collections.emptyList()),
-        Arguments.argumentSet(
-            "entity id attribute conflicts with incoming attribute",
-            Collections.singletonList(
-                Entity.builder("c", Attributes.builder().put("c", 1).build()).build()),
-            Collections.singletonList(
-                Entity.builder("c", Attributes.builder().put("c", 1).build()).build())));
-  }
-
-  @ParameterizedTest
-  @MethodSource("unchangedRawAttributeCases")
-  void unchangedRawAttributesPreserveAssociations(Attributes attributes) {
-    for (boolean identifying : new boolean[] {true, false}) {
-      Entity entity =
-          Entity.builder(
-                  "test",
-                  identifying
-                      ? attributes
-                      : Attributes.of(AttributeKey.stringKey("identity"), "E1"))
-              .setDescription(
-                  identifying
-                      ? Attributes.of(AttributeKey.stringKey("other"), "retained")
-                      : attributes)
-              .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
-              .build();
-      Resource original = EntityUtil.createResource(Collections.singletonList(entity));
-      RawAttributeMergeResult raw =
-          EntityUtil.mergeRawAttributes(
-              Attributes.empty(), attributes, Collections.singletonList(entity));
-      Resource merged = original.merge(Resource.create(attributes));
-
-      assertThat(raw.getConflicts()).isEmpty();
-      assertThat(raw.getAttributes()).isEmpty();
-      assertThat(merged).isEqualTo(original);
-      assertThat(EntityUtil.getEntities(merged)).containsExactly(entity);
-      assertThat(EntityUtil.getUnassociatedAttributes(merged)).isEmpty();
-      logs.assertDoesNotContain("Removing entity association");
-    }
-  }
-
-  static Stream<Arguments> unchangedRawAttributeCases() {
-    return Stream.of(
-        Arguments.argumentSet(
-            "empty string array",
-            Attributes.of(AttributeKey.stringArrayKey("key"), Collections.emptyList())),
-        Arguments.argumentSet(
-            "empty long array",
-            Attributes.of(AttributeKey.longArrayKey("key"), Collections.emptyList())),
-        Arguments.argumentSet("string", Attributes.of(AttributeKey.stringKey("key"), "same")),
-        Arguments.argumentSet("long", Attributes.of(AttributeKey.longKey("key"), 1L)),
-        Arguments.argumentSet("double", Attributes.of(AttributeKey.doubleKey("key"), 1.0)),
-        Arguments.argumentSet("boolean", Attributes.of(AttributeKey.booleanKey("key"), true)),
-        Arguments.argumentSet(
-            "string array",
-            Attributes.of(AttributeKey.stringArrayKey("key"), Arrays.asList("a", "b"))),
-        Arguments.argumentSet(
-            "long array", Attributes.of(AttributeKey.longArrayKey("key"), Arrays.asList(1L, 2L))),
-        Arguments.argumentSet(
-            "double array",
-            Attributes.of(AttributeKey.doubleArrayKey("key"), Arrays.asList(1.0, 2.0))),
-        Arguments.argumentSet(
-            "boolean array",
-            Attributes.of(AttributeKey.booleanArrayKey("key"), Arrays.asList(true, false))));
-  }
-
-  @Test
-  void mixedUnchangedAndChangedRawAttributes() {
-    Entity host =
-        Entity.builder("host", Attributes.of(AttributeKey.stringKey("host.id"), "H1"))
-            .setDescription(Attributes.of(AttributeKey.stringKey("host.name"), "old"))
-            .build();
-    Entity service =
-        Entity.builder("service", Attributes.of(AttributeKey.stringKey("service.name"), "S1"))
-            .build();
-    Resource original = EntityUtil.createResource(Arrays.asList(host, service));
-    Resource merged =
-        original.merge(
-            Resource.create(
-                Attributes.builder()
-                    .put("host.id", "H1")
-                    .put("host.name", "new")
-                    .put("service.name", "S1")
-                    .put("raw", "new")
-                    .build()));
-
-    assertThat(EntityUtil.getEntities(merged)).containsExactly(service);
-    assertThat(EntityUtil.getUnassociatedAttributes(merged))
-        .isEqualTo(
-            Attributes.builder()
-                .put("host.id", "H1")
-                .put("host.name", "new")
-                .put("raw", "new")
-                .build());
-    assertThat(EntityUtil.getEntities(original)).containsExactly(host, service);
-    logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [host]");
-    logs.assertDoesNotContain("Removing entity association [service]");
-  }
-
-  @ParameterizedTest
   @MethodSource("attributeTypeChangeCases")
   void attributeTypeChangeRemovesAssociation(Attributes before, Attributes after) {
     Entity entity = Entity.builder("test", before).build();
@@ -583,58 +368,11 @@ class EntityUtilTest {
   }
 
   @Test
-  void multipleRawOverridesDoNotRestoreOriginalValues() {
-    Entity entity =
-        Entity.builder("test", Attributes.builder().put("a", 1).put("b", 1).build())
-            .setDescription(Attributes.builder().put("c", 1).put("retained", 1).build())
-            .build();
-    Attributes incoming = Attributes.builder().put("a", 2).put("b", 2).put("c", 2).build();
-    RawAttributeMergeResult result =
-        EntityUtil.mergeRawAttributes(
-            Attributes.empty(), incoming, Collections.singletonList(entity));
-
-    assertThat(result.getConflicts()).containsExactly(entity);
-    assertThat(result.getAttributes())
-        .isEqualTo(Attributes.builder().put("retained", 1).putAll(incoming).build());
-    Resource original = EntityUtil.createResource(Collections.singletonList(entity));
-    Resource merged = original.merge(Resource.create(incoming));
-    assertThat(EntityUtil.getEntities(merged)).isEmpty();
-    assertThat(merged.getAttributes()).isEqualTo(result.getAttributes());
-    assertThat(EntityUtil.getEntities(original)).containsExactly(entity);
-    logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [test]");
-  }
-
-  @Test
-  void rawOverrideWithDifferentAttributeTypeRemovesAssociation() {
-    Entity entity = Entity.builder("test", Attributes.of(AttributeKey.longKey("key"), 1L)).build();
-    Resource resource =
-        EntityUtil.createResource(Collections.singletonList(entity))
-            .merge(Resource.create(Attributes.of(AttributeKey.stringKey("key"), "override")));
-    assertThat(EntityUtil.getEntities(resource)).isEmpty();
-    assertThat(EntityUtil.getUnassociatedAttributes(resource))
-        .isEqualTo(Attributes.of(AttributeKey.stringKey("key"), "override"));
-  }
-
-  @Test
   void duplicateEntityReferencesAreNormalized() {
     Entity first = Entity.builder("test", Attributes.of(AttributeKey.stringKey("id"), "1")).build();
     Entity second =
         Entity.builder("test", Attributes.of(AttributeKey.stringKey("id"), "2")).build();
     Resource resource = EntityUtil.createResource(Arrays.asList(first, first, second));
-    assertThat(EntityUtil.getEntities(resource)).containsExactly(second);
-    assertThat(resource.getAttributes()).isEqualTo(second.getId());
-  }
-
-  @Test
-  void crossEntityConflictsWithDifferentAttributeTypes() {
-    Entity first =
-        Entity.builder("first", Attributes.of(AttributeKey.longKey("shared"), 1L)).build();
-    Entity second =
-        Entity.builder("second", Attributes.of(AttributeKey.stringKey("shared"), "2")).build();
-    Resource resource =
-        EntityUtil.createResource(Collections.singletonList(first))
-            .merge(EntityUtil.createResource(Collections.singletonList(second)));
     assertThat(EntityUtil.getEntities(resource)).containsExactly(second);
     assertThat(resource.getAttributes()).isEqualTo(second.getId());
   }

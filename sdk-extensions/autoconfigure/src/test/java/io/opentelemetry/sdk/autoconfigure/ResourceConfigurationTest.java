@@ -9,8 +9,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.autoconfigure.ResourceConfiguration.DISABLED_ATTRIBUTE_KEYS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonMap;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.slf4j.event.Level.INFO;
 
 import com.google.common.collect.ImmutableMap;
@@ -19,15 +17,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -42,9 +36,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ResourceConfigurationTest {
 
-  @RegisterExtension
-  LogCapturer logs =
-      LogCapturer.create().captureForType(ResourceBuilder.class).captureForType(EntityUtil.class);
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(ResourceBuilder.class);
 
   private static final ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(ResourceConfigurationTest.class.getClassLoader());
@@ -68,48 +60,6 @@ class ResourceConfigurationTest {
                 .put("food", "cheesecake")
                 .put("shape", "square")
                 .build());
-  }
-
-  @ParameterizedTest
-  @MethodSource("entityResourceProviderOrderTestCases")
-  void entityResourceProviderOrder(int firstOrder, int secondOrder, String expectedId) {
-    ResourceProvider first = resourceProvider("H1", firstOrder);
-    ResourceProvider second = resourceProvider("H2", secondOrder);
-    ComponentLoader loader = mock(ComponentLoader.class);
-    when(loader.load(ResourceProvider.class)).thenReturn(Arrays.asList(first, second));
-
-    Resource resource =
-        ResourceConfiguration.configureResource(
-            DefaultConfigProperties.createFromMap(Collections.emptyMap()),
-            SpiHelper.create(loader),
-            (r, c) -> r);
-
-    assertThat(EntityUtil.getEntities(resource))
-        .containsExactly(
-            Entity.builder("host", Attributes.of(stringKey("host.id"), expectedId)).build());
-    assertThat(resource.getAttributes()).containsEntry("host.id", expectedId);
-  }
-
-  static Stream<Arguments> entityResourceProviderOrderTestCases() {
-    return Stream.of(
-        Arguments.argumentSet("second detector runs last", 1, 2, "H2"),
-        Arguments.argumentSet("first detector runs last", 2, 1, "H1"));
-  }
-
-  private static ResourceProvider resourceProvider(String hostId, int order) {
-    return new ResourceProvider() {
-      @Override
-      public Resource createResource(ConfigProperties config) {
-        return EntityUtil.createResource(
-            Collections.singletonList(
-                Entity.builder("host", Attributes.of(stringKey("host.id"), hostId)).build()));
-      }
-
-      @Override
-      public int order() {
-        return order;
-      }
-    };
   }
 
   @ParameterizedTest
@@ -225,26 +175,6 @@ class ResourceConfigurationTest {
             });
   }
 
-  @Test
-  void disabledKeysFilterEntityAttributes() {
-    Entity service =
-        Entity.builder("service", Attributes.of(stringKey("service.name"), "original"))
-            .setDescription(Attributes.of(stringKey("service.version"), "1.0"))
-            .build();
-    Resource resource = EntityUtil.createResource(Collections.singletonList(service));
-    Resource filtered =
-        ResourceConfiguration.filterAttributes(
-            resource,
-            DefaultConfigProperties.createFromMap(
-                singletonMap(DISABLED_ATTRIBUTE_KEYS, "service.name,service.version")));
-
-    assertThat(filtered.getAttributes()).isEmpty();
-    assertThat(EntityUtil.getEntities(filtered)).isEmpty();
-    assertThat(EntityUtil.getEntities(resource)).containsExactly(service);
-    logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [service]");
-  }
-
   @ParameterizedTest
   @MethodSource("legacyEntityOverrides")
   void legacyEntityOverride(Map<String, String> overrides, String expectedName) {
@@ -283,60 +213,5 @@ class ResourceConfigurationTest {
                 "otel.service.name",
                 "configured"),
             "configured"));
-  }
-
-  @ParameterizedTest
-  @MethodSource("createEnvironmentResourceEntitiesTestCases")
-  void createEnvironmentResource_WithEntities(
-      Map<String, String> properties, Collection<Entity> expectedEntities) {
-    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
-
-    Resource resource = ResourceConfiguration.createEnvironmentResource(configProperties);
-
-    Collection<Entity> entities = EntityUtil.getEntities(resource);
-    assertThat(entities).hasSize(expectedEntities.size());
-    assertThat(entities).containsAll(expectedEntities);
-  }
-
-  static Stream<Arguments> createEnvironmentResourceEntitiesTestCases() {
-    return Stream.of(
-        Arguments.argumentSet(
-            "otel.entities happy path",
-            singletonMap(
-                "otel.entities",
-                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
-            Arrays.asList(
-                Entity.builder("process", Attributes.of(stringKey("process.pid"), "1234"))
-                    .setSchemaUrl("http://schema")
-                    .setDescription(Attributes.of(stringKey("process.executable.name"), "java"))
-                    .build(),
-                Entity.builder("host", Attributes.of(stringKey("host.id"), "myhost")).build())),
-        Arguments.argumentSet(
-            "percent decoding",
-            singletonMap(
-                "otel.entities",
-                "service{service.name=my+app,space=hello%20world,utf8=%C3%A9,invalid=%2G,incomplete=%2,end=%}"),
-            Collections.singletonList(
-                Entity.builder(
-                        "service",
-                        Attributes.builder()
-                            .put("service.name", "my+app")
-                            .put("space", "hello world")
-                            .put("utf8", "é")
-                            .put("invalid", "%2G")
-                            .put("incomplete", "%2")
-                            .put("end", "%")
-                            .build())
-                    .build())),
-        Arguments.argumentSet(
-            "malformed",
-            singletonMap(
-                "otel.entities",
-                "{empty.type=val};process{};process{=val};process{key;=val};host{host.id=valid}"),
-            Collections.singletonList(
-                Entity.builder("host", Attributes.builder().put("host.id", "valid").build())
-                    .build())),
-        Arguments.argumentSet("empty", singletonMap("otel.entities", ""), Collections.emptyList()),
-        Arguments.argumentSet("absent", Collections.emptyMap(), Collections.emptyList()));
   }
 }

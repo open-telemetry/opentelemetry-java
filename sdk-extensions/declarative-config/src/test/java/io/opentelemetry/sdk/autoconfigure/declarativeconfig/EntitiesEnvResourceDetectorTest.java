@@ -8,67 +8,45 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectionModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectorModel;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.stream.Stream;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ClearSystemProperty;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 class EntitiesEnvResourceDetectorTest {
 
-  private static final DeclarativeConfigContext context =
-      new DeclarativeConfigContext(
-          ComponentLoader.forClassLoader(SpanProcessorFactoryTest.class.getClassLoader()));
+  @Test
+  void getTypeAndName() {
+    EntitiesEnvResourceDetector detector = new EntitiesEnvResourceDetector();
 
-  @ParameterizedTest
-  @MethodSource("createArgs")
-  void create(Map<String, String> systemProperties, Collection<Entity> expectedEntities) {
-    systemProperties.forEach(System::setProperty);
-    try {
-      ResourceModel resourceModel =
-          new ResourceModel()
-              .withDetectionDevelopment(
-                  new ExperimentalResourceDetectionModel()
-                      .withDetectors(
-                          Collections.singletonList(
-                              new ExperimentalResourceDetectorModel()
-                                  .withAdditionalProperty("env", null))));
-      Resource resource = ResourceFactory.getInstance().create(resourceModel, context);
-      Collection<Entity> entities = EntityUtil.getEntities(resource);
-      assertThat(entities).hasSize(expectedEntities.size());
-      assertThat(entities).containsAll(expectedEntities);
-    } finally {
-      systemProperties.forEach((key, unused) -> System.clearProperty(key));
-    }
+    assertThat(detector.getType()).isEqualTo(Resource.class);
+    assertThat(detector.getName()).isEqualTo("env");
   }
 
-  static Stream<Arguments> createArgs() {
-    return Stream.of(
-        Arguments.argumentSet(
-            "happy path",
-            ImmutableMap.of(
-                "otel.entities",
-                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
-            Arrays.asList(
-                Entity.builder("process", Attributes.of(stringKey("process.pid"), "1234"))
-                    .setSchemaUrl("http://schema")
-                    .setDescription(Attributes.of(stringKey("process.executable.name"), "java"))
-                    .build(),
-                Entity.builder("host", Attributes.of(stringKey("host.id"), "myhost")).build())),
-        Arguments.argumentSet(
-            "empty", ImmutableMap.of("otel.entities", ""), Collections.emptyList()),
-        Arguments.argumentSet("absent", Collections.emptyMap(), Collections.emptyList()));
+  @Test
+  @SetSystemProperty(
+      key = "otel.entities",
+      value = "process{process.pid=1234}[process.executable.name=java]@http://schema")
+  void create_SystemPropertySet() {
+    Resource resource =
+        new EntitiesEnvResourceDetector().create(DeclarativeConfigProperties.empty());
+
+    assertThat(EntityUtil.getEntities(resource))
+        .containsExactly(
+            Entity.builder("process", Attributes.of(stringKey("process.pid"), "1234"))
+                .setSchemaUrl("http://schema")
+                .setDescription(Attributes.of(stringKey("process.executable.name"), "java"))
+                .build());
+  }
+
+  @Test
+  @ClearSystemProperty(key = "otel.entities")
+  void create_NoSystemProperty() {
+    assertThat(new EntitiesEnvResourceDetector().create(DeclarativeConfigProperties.empty()))
+        .isEqualTo(Resource.empty());
   }
 }

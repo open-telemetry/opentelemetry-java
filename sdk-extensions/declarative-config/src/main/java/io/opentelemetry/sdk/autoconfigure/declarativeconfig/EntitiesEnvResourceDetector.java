@@ -28,15 +28,8 @@ public class EntitiesEnvResourceDetector implements ComponentProvider {
 
   @Override
   public Resource create(DeclarativeConfigProperties config) {
-    ConfigProperties envConfigProperties =
+    ConfigProperties properties =
         DefaultConfigProperties.create(Collections.emptyMap(), config.getComponentLoader());
-
-    String entities = envConfigProperties.getString(ENTITIES_PROPERTY);
-    if (entities == null) {
-      return Resource.empty();
-    }
-    return EnvironmentResource.createEnvironmentResource(
-        DefaultConfigProperties.createFromMap(
-            Collections.singletonMap(ENTITIES_PROPERTY, entities)));
+    return EnvironmentResource.createEntitiesResource(properties.getString(ENTITIES_PROPERTY));
   }
 }

@@ -36,21 +36,27 @@ class ResourceMarshalerTest {
     ResourceBuilder builder =
         io.opentelemetry.sdk.resources.Resource.builder().put("service.name", "my-service");
     EntityUtil.addEntity(builder, entity);
+    EntityUtil.addEntity(
+        builder, Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build());
     io.opentelemetry.sdk.resources.Resource resourceWithEntity = builder.build();
 
     Resource proto =
         parse(Resource.getDefaultInstance(), ResourceMarshaler.create(resourceWithEntity));
 
-    assertThat(proto.getAttributesList()).hasSize(3);
     assertThat(proto.getAttributesList().stream().map(a -> a.getKey()))
-        .containsExactlyInAnyOrder("service.name", "process.pid", "process.executable.name");
+        .containsExactlyInAnyOrder(
+            "service.name", "process.pid", "process.executable.name", "host.id");
 
-    assertThat(proto.getEntityRefsList()).hasSize(1);
+    assertThat(proto.getEntityRefsList()).hasSize(2);
     assertThat(proto.getEntityRefs(0).getType()).isEqualTo("process");
     assertThat(proto.getEntityRefs(0).getSchemaUrl()).isEqualTo("http://process.schema");
     assertThat(proto.getEntityRefs(0).getIdKeysList()).containsExactly("process.pid");
     assertThat(proto.getEntityRefs(0).getDescriptionKeysList())
         .containsExactly("process.executable.name");
+    assertThat(proto.getEntityRefs(1).getType()).isEqualTo("host");
+    assertThat(proto.getEntityRefs(1).getSchemaUrl()).isEmpty();
+    assertThat(proto.getEntityRefs(1).getIdKeysList()).containsExactly("host.id");
+    assertThat(proto.getEntityRefs(1).getDescriptionKeysList()).isEmpty();
   }
 
   @SuppressWarnings("unchecked")

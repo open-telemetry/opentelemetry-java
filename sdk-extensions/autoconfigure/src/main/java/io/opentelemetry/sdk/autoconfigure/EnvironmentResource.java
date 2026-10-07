@@ -51,16 +51,8 @@ final class EnvironmentResource {
    */
   @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   static Resource createEnvironmentResource(ConfigProperties config) {
-    ResourceBuilder resourceBuilder = Resource.builder();
-
-    String entitiesStr = config.getString(ENTITIES_PROPERTY);
-    if (entitiesStr != null && !entitiesStr.isEmpty()) {
-      List<Entity> parsedEntities = new EntityParser(entitiesStr).parse();
-      for (Entity entity : parsedEntities) {
-        EntityUtil.addEntity(resourceBuilder, entity);
-      }
-    }
-
+    ResourceBuilder resourceBuilder =
+        addEntities(Resource.builder(), config.getString(ENTITIES_PROPERTY));
     for (Map.Entry<String, String> entry : config.getMap(ATTRIBUTE_PROPERTY).entrySet()) {
       resourceBuilder.put(
           entry.getKey(),
@@ -75,6 +67,26 @@ final class EnvironmentResource {
     }
 
     return resourceBuilder.build();
+  }
+
+  /**
+   * Create a {@link Resource} containing only the entities parsed from {@code otel.entities}.
+   *
+   * @param entities the {@code otel.entities} value, or null if unset
+   * @return the resource.
+   */
+  static Resource createEntitiesResource(@Nullable String entities) {
+    return addEntities(Resource.builder(), entities).build();
+  }
+
+  private static ResourceBuilder addEntities(
+      ResourceBuilder resourceBuilder, @Nullable String entities) {
+    if (entities != null && !entities.isEmpty()) {
+      for (Entity entity : new EntityParser(entities).parse()) {
+        EntityUtil.addEntity(resourceBuilder, entity);
+      }
+    }
+    return resourceBuilder;
   }
 
   /**
@@ -188,7 +200,7 @@ final class EnvironmentResource {
     private Attributes currentIdAttrs = Attributes.empty();
     private Attributes currentDescAttrs = Attributes.empty();
     @Nullable private String currentSchemaUrl;
-    @Nullable private AttributesBuilder currentBuilder;
+    private AttributesBuilder currentBuilder = Attributes.builder();
     @Nullable private String currentKey;
 
     EntityParser(String input) {
@@ -239,9 +251,7 @@ final class EnvironmentResource {
               if (state == State.ID_VAL) {
                 putAttr();
               }
-              if (currentBuilder != null) {
-                currentIdAttrs = currentBuilder.build();
-              }
+              currentIdAttrs = currentBuilder.build();
               if (currentIdAttrs.isEmpty()) {
                 malformed("missing identifying attributes");
               } else {
@@ -273,9 +283,7 @@ final class EnvironmentResource {
               if (state == State.DESC_VAL) {
                 putAttr();
               }
-              if (currentBuilder != null) {
-                currentDescAttrs = currentBuilder.build();
-              }
+              currentDescAttrs = currentBuilder.build();
               state = State.AFTER_DESC;
               currentSegment.reset(i + 1);
             } else {
@@ -363,41 +371,31 @@ final class EnvironmentResource {
     }
 
     private void putAttr() {
-      String val = currentSegment.getValue();
-      if (currentKey != null && !currentKey.isEmpty() && currentBuilder != null) {
-        currentBuilder.put(currentKey, val);
+      if (currentKey != null) {
+        currentBuilder.put(currentKey, currentSegment.getValue());
       }
     }
 
+    // Only reached after a valid type and nonempty identifying attributes were parsed.
     private void buildAndAddEntity() {
-      if (currentType != null && !currentType.isEmpty() && !currentIdAttrs.isEmpty()) {
-        try {
-          EntityBuilder builder = Entity.builder(currentType, currentIdAttrs);
-          if (!currentDescAttrs.isEmpty()) {
-            builder.setDescription(currentDescAttrs);
-          }
-          String schemaUrl = validateSchemaUrl(currentSchemaUrl);
-          if (schemaUrl != null) {
-            builder.setSchemaUrl(schemaUrl);
-          }
-          Entity entity = builder.build();
-          if (entities.removeIf(previous -> previous.getType().equals(entity.getType()))) {
-            logger.warning(
-                "Duplicate entity type [" + entity.getType() + "]; using the last definition.");
-          }
-          if (entity.getId().asMap().keySet().stream()
-                  .anyMatch(key -> EntityUtil.hasAttributeKey(entities, key))
-              || entity.getDescription().asMap().keySet().stream()
-                  .anyMatch(key -> EntityUtil.hasAttributeKey(entities, key))) {
-            logger.warning(
-                "Entity ["
-                    + entity.getType()
-                    + "] overwrites attributes of previously defined entities.");
-          }
-          entities.add(entity);
-        } catch (IllegalArgumentException e) {
-          logger.log(Level.WARNING, "Malformed entity definition: " + input, e);
+      if (currentType == null) {
+        return;
+      }
+      try {
+        EntityBuilder builder =
+            Entity.builder(currentType, currentIdAttrs).setDescription(currentDescAttrs);
+        String schemaUrl = validateSchemaUrl(currentSchemaUrl);
+        if (schemaUrl != null) {
+          builder.setSchemaUrl(schemaUrl);
         }
+        Entity entity = builder.build();
+        if (entities.removeIf(previous -> previous.getType().equals(entity.getType()))) {
+          logger.warning(
+              "Duplicate entity type [" + entity.getType() + "]; using the last definition.");
+        }
+        entities.add(entity);
+      } catch (IllegalArgumentException e) {
+        logger.log(Level.WARNING, "Malformed entity definition: " + input, e);
       }
     }
 
@@ -428,7 +426,7 @@ final class EnvironmentResource {
       currentIdAttrs = Attributes.empty();
       currentDescAttrs = Attributes.empty();
       currentSchemaUrl = null;
-      currentBuilder = null;
+      currentBuilder = Attributes.builder();
       currentKey = null;
       currentSegment.reset(nextStart);
     }
