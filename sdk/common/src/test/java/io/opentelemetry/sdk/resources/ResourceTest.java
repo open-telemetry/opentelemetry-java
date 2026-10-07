@@ -17,7 +17,7 @@ import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.slf4j.event.Level.INFO;
+import static org.slf4j.event.Level.WARN;
 
 import com.google.common.testing.EqualsTester;
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -520,7 +520,7 @@ class ResourceTest {
     assertThat(resource.getAttributes())
         .isEqualTo(Attributes.builder().put("retained", "value").putAll(expectedOverride).build());
     logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [test]");
+        event -> event.getLevel().equals(WARN), "Removing entity association [test]");
   }
 
   static Stream<Arguments> entityAttributeOverrideCases() {
@@ -633,7 +633,7 @@ class ResourceTest {
                 .build())
         .isEqualTo(expected);
     logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [host]");
+        event -> event.getLevel().equals(WARN), "Removing entity association [host]");
     logs.assertDoesNotContain("Removing entity association [service]");
   }
 
@@ -703,7 +703,7 @@ class ResourceTest {
     assertThat(filtered.getAttributes())
         .isEqualTo(Attributes.builder().put("host.region", "west").put("host.type", "vm").build());
     logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [host]");
+        event -> event.getLevel().equals(WARN), "Removing entity association [host]");
   }
 
   @Test
@@ -761,7 +761,7 @@ class ResourceTest {
     assertThat(filtered.getAttributes()).isEqualTo(host.getId());
     assertThat(filtered.getUnassociatedAttributes()).isEqualTo(Attributes.empty());
     logs.assertContains(
-        event -> event.getLevel().equals(INFO),
+        event -> event.getLevel().equals(WARN),
         "Removing descriptive attribute keys from entity [host]");
   }
 

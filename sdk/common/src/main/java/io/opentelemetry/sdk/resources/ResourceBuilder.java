@@ -56,7 +56,7 @@ import javax.annotation.Nullable;
  * Object#equals(Object)} is structural equality, not semantic resource identity; descriptions and
  * entity order affect resource equality.
  *
- * <p>Entity changes and association removals are logged at {@code INFO}. Unchanged operations do
+ * <p>Entity changes and association removals are logged at {@code WARNING}. Unchanged operations do
  * not produce entity-change diagnostics.
  *
  * @since 1.1.0
@@ -298,10 +298,10 @@ public class ResourceBuilder {
                         .build())
                 .build();
         if (!next.getDescription().equals(old.getDescription())) {
-          logger.info("Updating descriptive attributes of entity [" + next.getType() + "].");
+          logger.warning("Updating descriptive attributes of entity [" + next.getType() + "].");
         }
       } else {
-        logger.info(
+        logger.warning(
             "Replacing entity ["
                 + old.getType()
                 + "] because "
@@ -314,7 +314,7 @@ public class ResourceBuilder {
     while (iterator.hasNext()) {
       Entity existing = iterator.next();
       if (EntityUtil.sharesAttributeKey(existing, next)) {
-        logger.info(
+        logger.warning(
             "Removing entity association ["
                 + existing.getType()
                 + "] because incoming entity ["
@@ -353,7 +353,7 @@ public class ResourceBuilder {
     Attributes id = entity.getId().toBuilder().removeIf(filter).build();
     Attributes description = entity.getDescription().toBuilder().removeIf(filter).build();
     if (!id.equals(entity.getId())) {
-      logger.info(
+      logger.warning(
           "Removing entity association ["
               + entity.getType()
               + "] because identifying attribute keys were filtered. Remaining attributes are retained as unassociated.");
@@ -363,7 +363,7 @@ public class ResourceBuilder {
     if (description.equals(entity.getDescription())) {
       return entity;
     }
-    logger.info("Removing descriptive attribute keys from entity [" + entity.getType() + "].");
+    logger.warning("Removing descriptive attribute keys from entity [" + entity.getType() + "].");
     return entity.toBuilder().setDescription(description).build();
   }
 
@@ -384,7 +384,7 @@ public class ResourceBuilder {
       Entity entity = iterator.next();
       if (hasAttributeOverride(entity.getId(), overrides)
           || hasAttributeOverride(entity.getDescription(), overrides)) {
-        logger.info(
+        logger.warning(
             "Removing entity association ["
                 + entity.getType()
                 + "] because resource attributes change the value or type of its attributes. Other attributes are retained as unassociated.");

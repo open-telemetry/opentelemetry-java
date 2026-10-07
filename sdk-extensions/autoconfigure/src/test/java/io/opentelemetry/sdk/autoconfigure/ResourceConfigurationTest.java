@@ -9,7 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.autoconfigure.ResourceConfiguration.DISABLED_ATTRIBUTE_KEYS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonMap;
-import static org.slf4j.event.Level.INFO;
+import static org.slf4j.event.Level.WARN;
 
 import com.google.common.collect.ImmutableMap;
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -194,7 +194,7 @@ class ResourceConfigurationTest {
                 .put("service.version", "1.0")
                 .build());
     logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [service]");
+        event -> event.getLevel().equals(WARN), "Removing entity association [service]");
   }
 
   static Stream<Arguments> legacyEntityOverrides() {

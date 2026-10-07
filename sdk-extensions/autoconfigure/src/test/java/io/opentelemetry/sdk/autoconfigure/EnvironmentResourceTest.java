@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.slf4j.event.Level.INFO;
 import static org.slf4j.event.Level.WARN;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -215,7 +214,7 @@ class EnvironmentResourceTest {
     assertThat(EntityUtil.getUnassociatedAttributes(resource))
         .isEqualTo(Attributes.of(stringKey("process.pid"), "1"));
     logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [process]");
+        event -> event.getLevel().equals(WARN), "Removing entity association [process]");
   }
 
   @Test

@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
-import static org.slf4j.event.Level.INFO;
+import static org.slf4j.event.Level.WARN;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
@@ -31,7 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class EntityUtilTest {
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(ResourceBuilder.class, INFO);
+  LogCapturer logs = LogCapturer.create().captureForType(ResourceBuilder.class, WARN);
 
   @ParameterizedTest
   @MethodSource("mergeEntitiesTestCases")
@@ -140,7 +140,7 @@ class EntityUtilTest {
 
     assertThat(merged).isEqualTo(EntityUtil.createResource(Collections.singletonList(expected)));
     logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Updating descriptive attributes of entity [host]");
+        event -> event.getLevel().equals(WARN), "Updating descriptive attributes of entity [host]");
   }
 
   static Stream<Arguments> mergeDescriptionTestCases() {
@@ -255,7 +255,7 @@ class EntityUtilTest {
                 .putAll(incoming.getDescription())
                 .build());
     logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [existing]");
+        event -> event.getLevel().equals(WARN), "Removing entity association [existing]");
   }
 
   static Stream<Arguments> mergeCrossEntityConflictTestCases() {
@@ -309,10 +309,10 @@ class EntityUtilTest {
     assertThat(EntityUtil.getUnassociatedAttributes(merged))
         .isEqualTo(Attributes.of(AttributeKey.stringKey("service.name"), "S1"));
     logs.assertContains(
-        event -> event.getLevel().equals(INFO),
+        event -> event.getLevel().equals(WARN),
         "Replacing entity [host] because identifying attributes differ.");
     logs.assertContains(
-        event -> event.getLevel().equals(INFO),
+        event -> event.getLevel().equals(WARN),
         "Removing entity association [service] because incoming entity [host] overwrites its attributes. Non-conflicting attributes are retained as unassociated.");
   }
 
@@ -352,7 +352,7 @@ class EntityUtilTest {
     assertThat(merged.getAttributes()).isEqualTo(after);
     assertThat(original.toBuilder().putAll(after).build()).isEqualTo(merged);
     logs.assertContains(
-        event -> event.getLevel().equals(INFO), "Removing entity association [test]");
+        event -> event.getLevel().equals(WARN), "Removing entity association [test]");
   }
 
   static Stream<Arguments> attributeTypeChangeCases() {
