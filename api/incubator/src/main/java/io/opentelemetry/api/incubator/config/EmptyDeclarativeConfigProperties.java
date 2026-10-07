@@ -61,6 +61,31 @@ final class EmptyDeclarativeConfigProperties implements DeclarativeConfigPropert
     return null;
   }
 
+  @Override
+  public boolean isString(String name) {
+    return false;
+  }
+
+  @Override
+  public boolean isBoolean(String name) {
+    return false;
+  }
+
+  @Override
+  public boolean isInt(String name) {
+    return false;
+  }
+
+  @Override
+  public boolean isLong(String name) {
+    return false;
+  }
+
+  @Override
+  public boolean isDouble(String name) {
+    return false;
+  }
+
   @Nullable
   @Override
   public DeclarativeConfigProperties getStructured(String name) {

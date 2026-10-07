@@ -174,6 +174,51 @@ public interface DeclarativeConfigProperties {
   }
 
   /**
+   * Returns whether the property with {@code name} holds a value which {@link #getString(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar string,
+   *     false otherwise, including when the property is null
+   */
+  boolean isString(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getBoolean(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar boolean,
+   *     false otherwise, including when the property is null
+   */
+  boolean isBoolean(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getInt(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar integer,
+   *     false otherwise, including when the property is null
+   */
+  boolean isInt(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getLong(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar long,
+   *     false otherwise, including when the property is null
+   */
+  boolean isLong(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getDouble(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar double,
+   *     false otherwise, including when the property is null
+   */
+  boolean isDouble(String name);
+
+  /**
    * Returns a {@link DeclarativeConfigProperties} configuration property.
    *
    * @return a map-valued configuration property, or {@code null} if {@code name} has not been
