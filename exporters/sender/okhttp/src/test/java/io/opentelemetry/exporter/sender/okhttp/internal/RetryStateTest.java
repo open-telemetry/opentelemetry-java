@@ -43,6 +43,24 @@ class RetryStateTest {
   }
 
   @Test
+  void backoffDoesNotSleepAfterTimeoutExpires() {
+    AtomicLong clock = new AtomicLong();
+    AtomicLong sleepCalls = new AtomicLong();
+    RetryState retryState =
+        new RetryState(
+            retryPolicy(),
+            (IOException e) -> true,
+            delay -> sleepCalls.incrementAndGet(),
+            () -> 1.0d,
+            TimeUnit.MILLISECONDS.toNanos(100),
+            clock::get);
+    clock.set(TimeUnit.MILLISECONDS.toNanos(100));
+
+    assertThat(retryState.backoff(OptionalLong.empty())).isFalse();
+    assertThat(sleepCalls).hasValue(0);
+  }
+
+  @Test
   void callTimeoutUsesRemainingExportBudget() {
     AtomicLong clock = new AtomicLong();
     RetryState retryState =
@@ -58,6 +76,49 @@ class RetryStateTest {
 
     assertThat(retryState.configureCallTimeout(call)).isTrue();
     assertThat(call.timeout().timeoutNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(600));
+  }
+
+  @Test
+  void callTimeoutIsUnchangedWithoutExportTimeout() {
+    RetryState retryState =
+        new RetryState(retryPolicy(), (IOException e) -> true, delay -> {}, () -> 1.0d, 0);
+    Call call = new OkHttpClient().newCall(new Request.Builder().url("http://localhost/").build());
+
+    assertThat(retryState.configureCallTimeout(call)).isTrue();
+    assertThat(call.timeout().timeoutNanos()).isZero();
+  }
+
+  @Test
+  void callTimeoutIsRejectedAfterExportBudgetExpires() {
+    AtomicLong clock = new AtomicLong();
+    RetryState retryState =
+        new RetryState(
+            retryPolicy(),
+            (IOException e) -> true,
+            delay -> {},
+            () -> 1.0d,
+            TimeUnit.SECONDS.toNanos(1),
+            clock::get);
+    clock.set(TimeUnit.SECONDS.toNanos(1));
+    Call call = new OkHttpClient().newCall(new Request.Builder().url("http://localhost/").build());
+
+    assertThat(retryState.configureCallTimeout(call)).isFalse();
+  }
+
+  @Test
+  void retryPredicateAndAttemptLimitAreRespected() {
+    RetryState retryState =
+        new RetryState(
+            retryPolicy(),
+            exception -> exception.getMessage().startsWith("retry"),
+            delay -> {},
+            () -> 1.0d);
+
+    assertThat(retryState.canRetry(0)).isTrue();
+    assertThat(retryState.canRetry(1)).isTrue();
+    assertThat(retryState.canRetry(2)).isFalse();
+    assertThat(retryState.shouldRetryOnException(new IOException("retry this"))).isTrue();
+    assertThat(retryState.shouldRetryOnException(new IOException("stop"))).isFalse();
   }
 
   private static RetryPolicy retryPolicy() {
