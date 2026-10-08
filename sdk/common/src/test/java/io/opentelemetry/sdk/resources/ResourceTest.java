@@ -16,22 +16,40 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.slf4j.event.Level.WARN;
 
 import com.google.common.testing.EqualsTester;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.resources.internal.Entity;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /** Unit tests for {@link Resource}. */
+@SuppressLogger(Resource.class)
+@SuppressLogger(ResourceBuilder.class)
 class ResourceTest {
+  @RegisterExtension
+  LogCapturer logs =
+      LogCapturer.create().captureForType(ResourceBuilder.class).captureForType(Resource.class);
+
   private Resource resource1;
   private Resource resource2;
 
@@ -55,6 +73,94 @@ class ResourceTest {
     Resource resource1 = Resource.create(Attributes.empty());
     assertThat(resource1.getAttributes()).isNotNull();
     assertThat(resource1.getAttributes().isEmpty()).isTrue();
+  }
+
+  @ParameterizedTest
+  @MethodSource("entityInsertionOperations")
+  void entityInsertionDefersPendingAttributeValidation(Consumer<ResourceBuilder> insert) {
+    ResourceBuilder builder = Resource.builder().put("invalid-é", "pending");
+    insert.accept(builder);
+
+    assertThatThrownBy(builder::build).isInstanceOf(IllegalArgumentException.class);
+    Resource filtered = builder.removeIf(key -> key.getKey().equals("invalid-é")).build();
+    assertThat(filtered.getEntities()).hasSize(1);
+    assertThat(filtered.getAttributes()).isEqualTo(Attributes.of(stringKey("host.id"), "H1"));
+  }
+
+  static Stream<Arguments> entityInsertionOperations() {
+    Entity host = Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build();
+    return Stream.of(
+        Arguments.argumentSet(
+            "direct insertion", (Consumer<ResourceBuilder>) builder -> builder.addEntity(host)),
+        Arguments.argumentSet(
+            "resource copy",
+            (Consumer<ResourceBuilder>)
+                builder -> builder.putAll(EntityUtil.createResource(singletonList(host)))));
+  }
+
+  @Test
+  void jointCreationAppliesAttributesBeforeEntities() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setDescription(Attributes.of(stringKey("host.name"), "machine"))
+            .build();
+    Attributes attributes =
+        Attributes.builder()
+            .put("host.id", 2L)
+            .put("host.name", "earlier")
+            .put("env", "prod")
+            .build();
+    Resource resource = Resource.builder().putAll(attributes).addEntity(host).build();
+
+    assertThat(resource.getEntities()).containsExactly(host);
+    assertThat(resource.getAttributes())
+        .isEqualTo(
+            Attributes.builder()
+                .put("host.id", "H1")
+                .put("host.name", "machine")
+                .put("env", "prod")
+                .build());
+    assertThat(resource)
+        .isEqualTo(
+            Resource.create(attributes).merge(EntityUtil.createResource(singletonList(host))));
+  }
+
+  @ParameterizedTest
+  @MethodSource("overlappingRawAttributes")
+  void normalizedAssemblerRejectsOverlappingAttributes(Attributes attributes) {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setDescription(Attributes.of(stringKey("host.name"), "machine"))
+            .build();
+    assertThatThrownBy(() -> Resource.create(attributes, null, singletonList(host)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Unassociated attributes must not overlap entity attributes.");
+  }
+
+  static Stream<Arguments> overlappingRawAttributes() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "unchanged identifying value", Attributes.of(stringKey("host.id"), "H1")),
+        Arguments.argumentSet(
+            "changed identifying value", Attributes.of(stringKey("host.id"), "H2")),
+        Arguments.argumentSet("changed identifying type", Attributes.of(longKey("host.id"), 1L)),
+        Arguments.argumentSet(
+            "descriptive attribute key", Attributes.of(stringKey("host.name"), "other")));
+  }
+
+  @Test
+  void normalizedAssemblerRejectsDuplicateTypesAndAttributeOwners() {
+    Entity host = Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build();
+    Entity otherHost = Entity.builder("host", Attributes.of(stringKey("other.id"), "H2")).build();
+    Entity process = Entity.builder("process", Attributes.of(stringKey("host.id"), "P1")).build();
+    assertThatThrownBy(
+            () -> Resource.create(Attributes.empty(), null, Arrays.asList(host, otherHost)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Entity types must be unique in normalized resources.");
+    assertThatThrownBy(
+            () -> Resource.create(Attributes.empty(), null, Arrays.asList(host, process)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Entity attribute keys must have a single owner and classification.");
   }
 
   @Test
@@ -238,26 +344,464 @@ class ResourceTest {
   }
 
   @Test
-  void testMergeResources_entities_separate_types_and_schema() {
-    Resource resource1 =
+  void testMergeResources_emptySchemaIsPresent() {
+    Resource schemaOne = Resource.create(Attributes.of(stringKey("a"), "1"), "http://schema.1");
+    Resource emptySchema = Resource.create(Attributes.of(stringKey("b"), "2"), "");
+
+    assertThat(schemaOne.merge(emptySchema).getSchemaUrl()).isNull();
+    assertThat(emptySchema.merge(schemaOne).getSchemaUrl()).isNull();
+    assertThat(emptySchema.merge(emptySchema).getSchemaUrl()).isEmpty();
+  }
+
+  @Test
+  void testMergeResources_entitySchemas() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setSchemaUrl("S1")
+            .build();
+    Entity process =
+        Entity.builder("process", Attributes.of(longKey("process.pid"), 1L))
+            .setSchemaUrl("S2")
+            .build();
+    Entity withoutSchema =
+        Entity.builder("service", Attributes.of(stringKey("service.name"), "svc")).build();
+    Resource pinned =
+        Resource.builder().addEntity(host).build().toBuilder().addEntity(process).build();
+    Resource explicit = Resource.builder().setSchemaUrl("explicit").addEntity(host).build();
+    Resource withoutEntitySchema = Resource.builder().addEntity(withoutSchema).build();
+
+    assertThat(pinned.getSchemaUrl()).isEqualTo("S1");
+    assertThat(Resource.empty().merge(pinned)).isEqualTo(pinned);
+    assertThat(Resource.getDefault().merge(explicit).getSchemaUrl()).isEqualTo("explicit");
+    assertThat(withoutEntitySchema.getSchemaUrl()).isNull();
+    assertThat(
+            Resource.create(Attributes.of(stringKey("a"), "1"), "S1")
+                .merge(withoutEntitySchema)
+                .getSchemaUrl())
+        .isEqualTo("S1");
+    assertThat(Resource.builder().addEntity(host).addEntity(withoutSchema).build().getSchemaUrl())
+        .isEqualTo("S1");
+  }
+
+  @Test
+  void testMergeResources_entityReplacementUsesResolvedSchemas() {
+    Resource base =
         Resource.builder()
             .addEntity(
-                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
-                    .setSchemaUrl("one")
+                Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+                    .setSchemaUrl("S1")
                     .build())
             .build();
-    Resource resource2 =
+    Resource replacement =
         Resource.builder()
             .addEntity(
-                Entity.builder("b", Attributes.builder().put("b.id", "b").build())
-                    .setSchemaUrl("two")
+                Entity.builder("host", Attributes.of(stringKey("host.id"), "H2"))
+                    .setSchemaUrl("S2")
                     .build())
             .build();
-    Resource merged = resource1.merge(resource2);
-    assertThat(merged.getSchemaUrl()).isNull();
-    assertThat(merged.getEntities()).hasSize(2);
-    OpenTelemetryAssertions.assertThat(merged.getAttributes()).containsEntry("a.id", "a");
-    OpenTelemetryAssertions.assertThat(merged.getAttributes()).containsEntry("b.id", "b");
+
+    assertThat(base.getSchemaUrl()).isEqualTo("S1");
+    assertThat(replacement.getSchemaUrl()).isEqualTo("S2");
+    assertThat(base.merge(replacement).getSchemaUrl()).isNull();
+  }
+
+  @Test
+  void entitySnapshotsAreImmutable() {
+    Entity host = Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build();
+    Entity service =
+        Entity.builder("service", Attributes.of(stringKey("service.name"), "S1")).build();
+    ResourceBuilder builder = Resource.builder().addEntity(host);
+    Resource snapshot = builder.build();
+    int hashCode = snapshot.hashCode();
+
+    builder.addEntity(service).put("raw", "later").build();
+
+    assertThat(snapshot.getEntities()).containsExactly(host);
+    assertThat(snapshot.getAttributes()).isEqualTo(host.getId());
+    assertThat(snapshot.hashCode()).isEqualTo(hashCode);
+    assertThatThrownBy(() -> snapshot.getEntities().clear())
+        .isInstanceOf(UnsupportedOperationException.class);
+
+    List<Entity> input = new ArrayList<>(singletonList(host));
+    Resource fromCollection = Resource.create(Attributes.empty(), null, input);
+    input.clear();
+    assertThat(fromCollection).isEqualTo(snapshot);
+  }
+
+  @Test
+  void nullFilteringIsANoopWithAndWithoutEntities() {
+    Entity host = Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build();
+    for (Resource original :
+        Arrays.asList(
+            Resource.create(Attributes.of(stringKey("ordinary"), "value")),
+            EntityUtil.createResource(singletonList(host)))) {
+      assertThat(original.toBuilder().removeIf(null).build()).isEqualTo(original);
+    }
+    logs.assertDoesNotContain("Removing entity association");
+  }
+
+  @Test
+  void mergeDoesNotMutateInputs() {
+    Entity host = Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build();
+    Resource base = Resource.create(Attributes.empty(), null, singletonList(host));
+    Resource updating = Resource.create(Attributes.of(stringKey("host.id"), "H2"));
+
+    Resource merged = base.merge(updating);
+
+    assertThat(merged.getEntities()).isEmpty();
+    assertThat(merged.getAttributes()).isEqualTo(updating.getAttributes());
+    assertThat(base.getEntities()).containsExactly(host);
+    assertThat(base.getAttributes()).isEqualTo(host.getId());
+    assertThat(updating.getEntities()).isEmpty();
+    assertThat(updating.getAttributes()).isEqualTo(Attributes.of(stringKey("host.id"), "H2"));
+    assertThat(Resource.empty().merge(base)).isEqualTo(base);
+  }
+
+  @ParameterizedTest
+  @MethodSource("entityAttributeOverrideCases")
+  void entityAttributeOverride(Consumer<ResourceBuilder> override, Attributes expectedOverride) {
+    Entity entity =
+        Entity.builder("test", Attributes.of(stringKey("target"), "original"))
+            .setDescription(Attributes.of(stringKey("retained"), "value"))
+            .build();
+    Resource original = Resource.builder().addEntity(entity).build();
+    ResourceBuilder builder = original.toBuilder();
+
+    override.accept(builder);
+    Resource resource = builder.build();
+
+    assertThat(resource.getEntities()).isEmpty();
+    assertThat(resource.getAttributes())
+        .isEqualTo(Attributes.builder().put("retained", "value").putAll(expectedOverride).build());
+    logs.assertContains(
+        event -> event.getLevel().equals(WARN), "Removing entity association [test]");
+  }
+
+  static Stream<Arguments> entityAttributeOverrideCases() {
+    return Stream.of(
+        overrideCase(
+            "string",
+            b -> b.put("target", "updated"),
+            Attributes.of(stringKey("target"), "updated")),
+        overrideCase("long", b -> b.put("target", 2L), Attributes.of(longKey("target"), 2L)),
+        overrideCase("double", b -> b.put("target", 2.0), Attributes.of(doubleKey("target"), 2.0)),
+        overrideCase(
+            "boolean", b -> b.put("target", true), Attributes.of(booleanKey("target"), true)),
+        overrideCase(
+            "string array",
+            b -> b.put("target", "updated", "next"),
+            Attributes.of(stringArrayKey("target"), Arrays.asList("updated", "next"))),
+        overrideCase(
+            "long array",
+            b -> b.put("target", 2L, 3L),
+            Attributes.of(longArrayKey("target"), Arrays.asList(2L, 3L))),
+        overrideCase(
+            "double array",
+            b -> b.put("target", 2.0, 3.0),
+            Attributes.of(doubleArrayKey("target"), Arrays.asList(2.0, 3.0))),
+        overrideCase(
+            "boolean array",
+            b -> b.put("target", true, false),
+            Attributes.of(booleanArrayKey("target"), Arrays.asList(true, false))),
+        overrideCase(
+            "typed key",
+            b -> b.put(stringKey("target"), "updated"),
+            Attributes.of(stringKey("target"), "updated")),
+        overrideCase(
+            "typed int", b -> b.put(longKey("target"), 2), Attributes.of(longKey("target"), 2L)),
+        overrideCase(
+            "attributes",
+            b -> b.putAll(Attributes.of(stringKey("target"), "updated")),
+            Attributes.of(stringKey("target"), "updated")),
+        overrideCase(
+            "resource",
+            b -> b.putAll(Resource.create(Attributes.of(stringKey("target"), "updated"))),
+            Attributes.of(stringKey("target"), "updated")),
+        overrideCase(
+            "multiple attributes",
+            b ->
+                b.putAll(
+                    Attributes.builder().put("target", "updated").put("retained", "new").build()),
+            Attributes.builder().put("target", "updated").put("retained", "new").build()),
+        overrideCase(
+            "multiple puts",
+            b -> b.put("target", "updated").put("retained", "new"),
+            Attributes.builder().put("target", "updated").put("retained", "new").build()));
+  }
+
+  private static Arguments overrideCase(
+      String name, Consumer<ResourceBuilder> override, Attributes expected) {
+    return Arguments.argumentSet(name, override, expected);
+  }
+
+  @ParameterizedTest
+  @MethodSource("entityAttributeOverrideCases")
+  void unchangedEntityAttributesPreserveAssociations(
+      Consumer<ResourceBuilder> write, Attributes attributes) {
+    for (boolean identifying : new boolean[] {true, false}) {
+      Entity entity =
+          Entity.builder(
+                  "test", identifying ? attributes : Attributes.of(stringKey("identity"), "E1"))
+              .setDescription(
+                  identifying ? Attributes.of(stringKey("other"), "retained") : attributes)
+              .build();
+      Resource original = Resource.builder().addEntity(entity).build();
+      ResourceBuilder builder = original.toBuilder();
+
+      write.accept(builder);
+
+      assertThat(builder.build()).isEqualTo(original);
+      assertThat(builder.build().getEntities()).containsExactly(entity);
+      logs.assertDoesNotContain("Removing entity association");
+    }
+  }
+
+  @Test
+  void mixedUnchangedAndChangedAttributes() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setDescription(Attributes.of(stringKey("host.name"), "old"))
+            .build();
+    Entity service =
+        Entity.builder("service", Attributes.of(stringKey("service.name"), "S1")).build();
+    Resource original = Resource.builder().addEntity(host).addEntity(service).build();
+    Attributes incoming =
+        Attributes.builder()
+            .put("host.id", "H1")
+            .put("host.name", "new")
+            .put("service.name", "S1")
+            .put("raw", "new")
+            .build();
+    Resource expected = original.merge(Resource.create(incoming));
+
+    assertThat(expected.getEntities()).containsExactly(service);
+    assertThat(expected.getAttributes()).isEqualTo(incoming);
+    assertThat(original.toBuilder().putAll(incoming).build()).isEqualTo(expected);
+    assertThat(original.toBuilder().putAll(Resource.create(incoming)).build()).isEqualTo(expected);
+    assertThat(
+            original.toBuilder()
+                .put("host.id", "H1")
+                .put("host.name", "new")
+                .put("service.name", "S1")
+                .put("raw", "new")
+                .build())
+        .isEqualTo(expected);
+    logs.assertContains(
+        event -> event.getLevel().equals(WARN), "Removing entity association [host]");
+    logs.assertDoesNotContain("Removing entity association [service]");
+  }
+
+  @Test
+  void unchangedCoercedValuePreservesAssociation() {
+    Entity entity = Entity.builder("test", Attributes.of(stringKey("target"), "same")).build();
+    Resource original = Resource.builder().addEntity(entity).build();
+    Resource resource =
+        original.toBuilder()
+            .put(valueKey("target"), Value.of("same"))
+            .putAll(Attributes.of(valueKey("target"), Value.of("same")))
+            .build();
+    assertThat(resource).isEqualTo(original);
+    logs.assertDoesNotContain("Removing entity association");
+  }
+
+  @Test
+  void ignoredNullOverridesDoNotRemoveAssociations() {
+    Entity entity = Entity.builder("test", Attributes.of(stringKey("target"), "original")).build();
+    Resource original = Resource.builder().addEntity(entity).build();
+    Resource resource =
+        original.toBuilder()
+            .put("target", (String) null)
+            .put(stringKey("target"), null)
+            .put("target", (long[]) null)
+            .putAll((Attributes) null)
+            .build();
+    assertThat(resource).isEqualTo(original);
+  }
+
+  @Test
+  void entityOperationOrdering() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setDescription(Attributes.of(stringKey("host.name"), "detected"))
+            .build();
+    ResourceBuilder builder = Resource.builder().put("host.name", "earlier").addEntity(host);
+    assertThat(builder.build().getAttribute(stringKey("host.name"))).isEqualTo("detected");
+    builder.put("host.name", "override");
+    assertThat(builder.build().getEntities()).isEmpty();
+    builder.addEntity(host);
+    assertThat(builder.build().getEntities()).containsExactly(host);
+    assertThat(builder.build().getAttribute(stringKey("host.name"))).isEqualTo("detected");
+  }
+
+  @Test
+  void filterEntityAttributes() {
+    Entity host =
+        Entity.builder(
+                "host",
+                Attributes.builder().put("host.id", "H1").put("host.region", "west").build())
+            .setDescription(
+                Attributes.builder().put("host.name", "machine").put("host.type", "vm").build())
+            .build();
+    Resource original = Resource.builder().addEntity(host).put("raw", "remove").build();
+    Resource filtered =
+        original.toBuilder()
+            .removeIf(
+                key ->
+                    key.getKey().equals("host.id")
+                        || key.getKey().equals("host.name")
+                        || key.getKey().equals("raw"))
+            .build();
+
+    assertThat(filtered.getEntities()).isEmpty();
+    assertThat(filtered.getUnassociatedAttributes()).isEqualTo(filtered.getAttributes());
+    assertThat(filtered.getAttributes())
+        .isEqualTo(Attributes.builder().put("host.region", "west").put("host.type", "vm").build());
+    logs.assertContains(
+        event -> event.getLevel().equals(WARN), "Removing entity association [host]");
+  }
+
+  @Test
+  void filterLastIdentifyingAttribute() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setDescription(Attributes.of(stringKey("host.name"), "machine"))
+            .build();
+    Resource filtered =
+        Resource.builder().addEntity(host).removeIf(key -> key.getKey().equals("host.id")).build();
+    assertThat(filtered.getEntities()).isEmpty();
+    assertThat(filtered.getUnassociatedAttributes()).isEqualTo(host.getDescription());
+    assertThat(filtered.getAttributes()).isEqualTo(host.getDescription());
+    assertThat(filtered.toBuilder().build()).isEqualTo(filtered);
+  }
+
+  @Test
+  void noOpEntityOperationsDoNotLogChanges() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setDescription(Attributes.of(stringKey("host.name"), "machine"))
+            .build();
+    Resource original = EntityUtil.createResource(singletonList(host));
+    assertThat(original.merge(original)).isEqualTo(original);
+    assertThat(
+            original.toBuilder()
+                .removeIf(key -> false)
+                .put("host.id", "H1")
+                .put("host.name", "machine")
+                .build())
+        .isEqualTo(original);
+    logs.assertDoesNotContain("Updating descriptive attributes");
+    logs.assertDoesNotContain("Removing descriptive attribute keys");
+    logs.assertDoesNotContain("Removing entity association");
+    logs.assertDoesNotContain("Replacing entity");
+  }
+
+  @Test
+  void filterDescriptionPreservesAssociation() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setDescription(Attributes.of(stringKey("host.name"), "machine"))
+            .build();
+    Resource original = Resource.builder().addEntity(host).build();
+    Resource filtered =
+        original.toBuilder().removeIf(key -> key.getKey().equals("host.name")).build();
+
+    assertThat(filtered.getEntities())
+        .singleElement()
+        .satisfies(
+            entity -> {
+              assertThat(entity.getId()).isEqualTo(host.getId());
+              assertThat(entity.getDescription()).isEqualTo(Attributes.empty());
+            });
+    assertThat(filtered.getAttributes()).isEqualTo(host.getId());
+    assertThat(filtered.getUnassociatedAttributes()).isEqualTo(Attributes.empty());
+    logs.assertContains(
+        event -> event.getLevel().equals(WARN),
+        "Removing descriptive attribute keys from entity [host]");
+  }
+
+  @Test
+  void schemaCopyingDiffersFromDerivationAndMerging() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setSchemaUrl("S1")
+            .build();
+    Entity process =
+        Entity.builder("process", Attributes.of(longKey("process.pid"), 1L))
+            .setSchemaUrl("S2")
+            .build();
+    ResourceBuilder builder = Resource.builder().addEntity(host);
+    Resource hostResource = builder.build();
+    Resource processResource = EntityUtil.createResource(singletonList(process));
+
+    assertThat(builder.addEntity(process).build().getSchemaUrl()).isNull();
+    assertThat(hostResource.toBuilder().addEntity(process).build().getSchemaUrl()).isEqualTo("S1");
+    assertThat(hostResource.merge(processResource).getSchemaUrl()).isNull();
+    assertThat(
+            Resource.builder().putAll(hostResource).putAll(processResource).build().getSchemaUrl())
+        .isNull();
+    assertThat(
+            Resource.builder()
+                .setSchemaUrl("configured")
+                .putAll(hostResource)
+                .putAll(processResource)
+                .build()
+                .getSchemaUrl())
+        .isEqualTo("configured");
+  }
+
+  @Test
+  void mergeGroupingCanChangeAssociations() {
+    Entity host =
+        Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"))
+            .setDescription(Attributes.of(stringKey("host.name"), "old"))
+            .build();
+    Resource a = EntityUtil.createResource(singletonList(host));
+    Resource b = Resource.create(Attributes.of(stringKey("host.name"), "new"));
+    Resource c =
+        EntityUtil.createResource(singletonList(Entity.builder("host", host.getId()).build()));
+    Resource left = a.merge(b).merge(c);
+    Resource right = a.merge(b.merge(c));
+
+    assertThat(left.getAttributes()).isEqualTo(right.getAttributes());
+    assertThat(left.getEntities()).hasSize(1);
+    assertThat(right.getEntities()).isEmpty();
+  }
+
+  @Test
+  void valueEqualityIncludesEntityOrderAndDescriptions() {
+    Entity host = Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build();
+    Entity process = Entity.builder("process", Attributes.of(longKey("process.pid"), 1L)).build();
+    Resource original = EntityUtil.createResource(Arrays.asList(host, process));
+    Resource reordered = original.merge(EntityUtil.createResource(singletonList(host)));
+    Resource described =
+        original.merge(
+            EntityUtil.createResource(
+                singletonList(
+                    host.toBuilder()
+                        .setDescription(Attributes.of(stringKey("host.name"), "machine"))
+                        .build())));
+
+    assertThat(reordered.getAttributes()).isEqualTo(original.getAttributes());
+    assertThat(reordered.getEntities()).containsExactlyInAnyOrderElementsOf(original.getEntities());
+    assertThat(reordered).isNotEqualTo(original);
+    assertThat(described).isNotEqualTo(original);
+    assertThat(described.getAttribute(stringKey("host.id"))).isEqualTo("H1");
+  }
+
+  @Test
+  void equalityIncludesDescriptionClassification() {
+    Entity host = Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build();
+    Resource ordinaryName = Resource.builder().addEntity(host).put("host.name", "machine").build();
+    Resource describedName =
+        Resource.builder()
+            .addEntity(
+                host.toBuilder()
+                    .setDescription(Attributes.of(stringKey("host.name"), "machine"))
+                    .build())
+            .build();
+    assertThat(ordinaryName.getAttributes()).isEqualTo(describedName.getAttributes());
+    assertThat(ordinaryName.getSchemaUrl()).isEqualTo(describedName.getSchemaUrl());
+    assertThat(ordinaryName).isNotEqualTo(describedName);
   }
 
   @Test

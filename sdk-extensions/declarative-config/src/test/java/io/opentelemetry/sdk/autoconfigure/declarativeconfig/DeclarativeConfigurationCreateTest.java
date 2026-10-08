@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryC
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -68,6 +69,7 @@ class DeclarativeConfigurationCreateTest {
   @ParameterizedTest
   @MethodSource("exampleFiles")
   @SuppressLogger(ParentBasedSamplerBuilder.class)
+  @SuppressLogger(ResourceBuilder.class)
   void parseAndCreate_Examples(File example, @TempDir Path tempDir)
       throws IOException, CertificateEncodingException {
     // Write certificates to temp files

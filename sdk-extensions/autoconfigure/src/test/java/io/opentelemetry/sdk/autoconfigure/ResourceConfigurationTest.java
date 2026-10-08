@@ -9,24 +9,26 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.autoconfigure.ResourceConfiguration.DISABLED_ATTRIBUTE_KEYS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonMap;
+import static org.slf4j.event.Level.WARN;
 
 import com.google.common.collect.ImmutableMap;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -34,6 +36,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceConfigurationTest {
+
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(ResourceBuilder.class);
 
   private static final ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(ResourceConfigurationTest.class.getClassLoader());
@@ -173,73 +177,43 @@ class ResourceConfigurationTest {
   }
 
   @ParameterizedTest
-  @MethodSource("createEnvironmentResourceEntitiesTestCases")
-  void createEnvironmentResource_WithEntities(
-      Map<String, String> properties, Collection<Entity> expectedEntities) {
-    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
+  @MethodSource("legacyEntityOverrides")
+  @SuppressLogger(ResourceBuilder.class)
+  void legacyEntityOverride(Map<String, String> overrides, String expectedName) {
+    Map<String, String> properties = new HashMap<>(overrides);
+    properties.put(
+        "otel.entities", "service{service.name=detected}[service.version=1.0];host{host.id=H1}");
+    Resource resource =
+        ResourceConfiguration.createEnvironmentResource(
+            DefaultConfigProperties.createFromMap(properties));
 
-    Resource resource = ResourceConfiguration.createEnvironmentResource(configProperties);
-
-    Collection<Entity> entities = EntityUtil.getEntities(resource);
-    assertThat(entities).hasSize(expectedEntities.size());
-    assertThat(entities).containsAll(expectedEntities);
+    assertThat(EntityUtil.getEntities(resource))
+        .containsExactly(Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build());
+    assertThat(EntityUtil.getUnassociatedAttributes(resource))
+        .isEqualTo(
+            Attributes.builder()
+                .put("service.name", expectedName)
+                .put("service.version", "1.0")
+                .build());
+    logs.assertContains(
+        event -> event.getLevel().equals(WARN), "Removing entity association [service]");
   }
 
-  static Stream<Arguments> createEnvironmentResourceEntitiesTestCases() {
+  static Stream<Arguments> legacyEntityOverrides() {
     return Stream.of(
         Arguments.argumentSet(
-            "otel.entities happy path",
-            ImmutableMap.of(
-                "otel.experimental.entities.enabled",
-                "true",
-                "otel.entities",
-                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
-            Arrays.asList(
-                Entity.builder("process", Attributes.of(stringKey("process.pid"), "1234"))
-                    .setSchemaUrl("http://schema")
-                    .setDescription(Attributes.of(stringKey("process.executable.name"), "java"))
-                    .build(),
-                Entity.builder("host", Attributes.of(stringKey("host.id"), "myhost")).build())),
+            "resource attributes",
+            singletonMap("otel.resource.attributes", "service.name=resource"),
+            "resource"),
         Arguments.argumentSet(
-            "percent decoding",
-            ImmutableMap.of(
-                "otel.experimental.entities.enabled",
-                "true",
-                "otel.entities",
-                "service{service.name=my+app,space=hello%20world,utf8=%C3%A9,invalid=%2G,incomplete=%2,end=%}"),
-            Collections.singletonList(
-                Entity.builder(
-                        "service",
-                        Attributes.builder()
-                            .put("service.name", "my+app")
-                            .put("space", "hello world")
-                            .put("utf8", "é")
-                            .put("invalid", "%2G")
-                            .put("incomplete", "%2")
-                            .put("end", "%")
-                            .build())
-                    .build())),
+            "service name", singletonMap("otel.service.name", "configured"), "configured"),
         Arguments.argumentSet(
-            "malformed",
+            "service name beats resource attributes",
             ImmutableMap.of(
-                "otel.experimental.entities.enabled",
-                "true",
-                "otel.entities",
-                "{empty.type=val};process{};process{=val};process{key;=val};host{host.id=valid}"),
-            Collections.singletonList(
-                Entity.builder("host", Attributes.builder().put("host.id", "valid").build())
-                    .build())),
-        Arguments.argumentSet(
-            "empty",
-            ImmutableMap.of("otel.experimental.entities.enabled", "true", "otel.entities", ""),
-            Collections.emptyList()),
-        Arguments.argumentSet(
-            "otel.experimental.entities.enabled=false",
-            ImmutableMap.of(
-                "otel.experimental.entities.enabled",
-                "false",
-                "otel.entities",
-                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
-            Collections.emptyList()));
+                "otel.resource.attributes",
+                "service.name=resource",
+                "otel.service.name",
+                "configured"),
+            "configured"));
   }
 }
