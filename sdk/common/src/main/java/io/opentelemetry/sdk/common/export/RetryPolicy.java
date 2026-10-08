@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.common.export;
 
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-
 import com.google.auto.value.AutoValue;
 import java.io.IOException;
 import java.time.Duration;
@@ -132,6 +130,12 @@ public abstract class RetryPolicy {
           retryPolicy.getBackoffMultiplier() > 0, "backoffMultiplier must be greater than 0");
 
       return retryPolicy;
+    }
+
+    private static void checkArgument(boolean isValid, String errorMessage) {
+      if (!isValid) {
+        throw new IllegalArgumentException(errorMessage);
+      }
     }
   }
 }
