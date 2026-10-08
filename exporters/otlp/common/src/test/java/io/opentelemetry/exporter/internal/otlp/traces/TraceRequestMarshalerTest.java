@@ -505,6 +505,37 @@ class TraceRequestMarshalerTest {
                 .build());
   }
 
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoSpanLink_WithInvalidContext(MarshalerSource marshalerSource) {
+    SpanContext context =
+        SpanContext.createFromRemoteParent(
+            TraceId.getInvalid(),
+            SpanId.getInvalid(),
+            TraceFlags.getSampled(),
+            TraceState.builder().put("vendor", "value").build());
+    assertThat(context.isValid()).isFalse();
+    assertThat(
+            parse(
+                Span.Link.getDefaultInstance(),
+                marshalerSource.create(
+                    LinkData.create(context, Attributes.of(stringKey("message.id"), "123"), 2))))
+        .isEqualTo(
+            Span.Link.newBuilder()
+                .setTraceId(ByteString.copyFrom(new byte[16]))
+                .setSpanId(ByteString.copyFrom(new byte[8]))
+                .setFlags(
+                    (TraceFlags.getSampled().asByte() & 0xff) | SpanFlags.getParentIsRemoteMask())
+                .setTraceState("vendor=value")
+                .addAttributes(
+                    KeyValue.newBuilder()
+                        .setKey("message.id")
+                        .setValue(AnyValue.newBuilder().setStringValue("123").build())
+                        .build())
+                .setDroppedAttributesCount(1)
+                .build());
+  }
+
   @SuppressWarnings("unchecked")
   private static <T extends Message> T parse(T prototype, Marshaler marshaler) {
     byte[] serialized = toByteArray(marshaler);
