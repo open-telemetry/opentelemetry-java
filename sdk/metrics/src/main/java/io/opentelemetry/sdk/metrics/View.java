@@ -59,6 +59,8 @@ public abstract class View {
   /**
    * Returns the attribute key filter for this view. Attribute keys for which the predicate returns
    * {@code false} are dropped from recorded measurements.
+   *
+   * @since 1.67.0
    */
   public abstract Predicate<String> getAttributeFilter();
 
