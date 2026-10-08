@@ -82,6 +82,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
+  private final Object shutdownLock = new Object();
+  private boolean isShutdown;
   private final boolean managedExecutor;
   private final OkHttpClient client;
   private final HttpUrl url;
@@ -183,7 +185,17 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
   @Nullable
   private RetryState newRetryState() {
-    return retryPolicy == null ? null : new RetryState(retryPolicy, timeoutNanos);
+    return retryPolicy == null
+        ? null
+        : new RetryState(
+            retryPolicy,
+            retryPolicy.getRetryExceptionPredicate() == null
+                ? RetryState::isRetryableException
+                : retryPolicy.getRetryExceptionPredicate(),
+            RetryState::defaultSleeper,
+            RetryState::defaultRandomJitter,
+            timeoutNanos,
+            System::nanoTime);
   }
 
   private void sendAttempt(
@@ -202,11 +214,13 @@ public final class OkHttpGrpcSender implements GrpcSender {
               onError.accept(new SocketTimeoutException("Call timed out"));
               return;
             }
-            call.enqueue(
+            enqueue(
+                call,
                 new Callback() {
                   @Override
                   public void onFailure(Call call, IOException e) {
-                    if (retryState != null
+                    if (!call.isCanceled()
+                        && retryState != null
                         && retryState.canRetry(attempt)
                         && retryState.shouldRetryOnException(e)
                         && retryState.backoff(OptionalLong.empty())) {
@@ -251,12 +265,22 @@ public final class OkHttpGrpcSender implements GrpcSender {
     }
   }
 
+  private void enqueue(Call call, Callback callback) {
+    synchronized (shutdownLock) {
+      if (!isShutdown) {
+        call.enqueue(callback);
+        return;
+      }
+    }
+    call.cancel();
+    callback.onFailure(call, new IOException("Canceled"));
+  }
+
   void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
     handleResponse(response, (resolvedResponse, ignored) -> onResponse.accept(resolvedResponse));
   }
 
-  // Visible for testing.
-  void handleResponse(Response response, BiConsumer<GrpcResponse, Boolean> onResponse) {
+  private void handleResponse(Response response, BiConsumer<GrpcResponse, Boolean> onResponse) {
     try (ResponseBody body = response.body()) {
       // A gRPC message frame has a 5-byte header: 1 compression-flag byte + 4 message-length
       // bytes. Read the header first so that the size limit applies to the message payload only,
@@ -385,6 +409,9 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
   @Override
   public CompletableResultCode shutdown() {
+    synchronized (shutdownLock) {
+      isShutdown = true;
+    }
     client.dispatcher().cancelAll();
     client.connectionPool().evictAll();
 

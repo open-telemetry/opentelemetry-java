@@ -31,54 +31,6 @@ final class RetryState {
   private final long startTimeNanos;
   private long nextBackoffNanos;
 
-  RetryState(RetryPolicy retryPolicy) {
-    this(
-        retryPolicy,
-        retryPolicy.getRetryExceptionPredicate() == null
-            ? RetryState::isRetryableException
-            : retryPolicy.getRetryExceptionPredicate(),
-        TimeUnit.NANOSECONDS::sleep,
-        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d),
-        0);
-  }
-
-  RetryState(RetryPolicy retryPolicy, long timeoutNanos) {
-    this(
-        retryPolicy,
-        retryPolicy.getRetryExceptionPredicate() == null
-            ? RetryState::isRetryableException
-            : retryPolicy.getRetryExceptionPredicate(),
-        TimeUnit.NANOSECONDS::sleep,
-        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d),
-        timeoutNanos);
-  }
-
-  // Visible for testing.
-  RetryState(
-      RetryPolicy retryPolicy,
-      Predicate<IOException> retryExceptionPredicate,
-      Sleeper sleeper,
-      Supplier<Double> randomJitter) {
-    this(retryPolicy, retryExceptionPredicate, sleeper, randomJitter, 0);
-  }
-
-  // Visible for testing.
-  RetryState(
-      RetryPolicy retryPolicy,
-      Predicate<IOException> retryExceptionPredicate,
-      Sleeper sleeper,
-      Supplier<Double> randomJitter,
-      long timeoutNanos) {
-    this(
-        retryPolicy,
-        retryExceptionPredicate,
-        sleeper,
-        randomJitter,
-        timeoutNanos,
-        System::nanoTime);
-  }
-
-  // Visible for testing.
   RetryState(
       RetryPolicy retryPolicy,
       Predicate<IOException> retryExceptionPredicate,
@@ -138,7 +90,9 @@ final class RetryState {
       return false;
     }
     if (timeoutNanos > 0) {
-      call.timeout().timeout(remainingNanos, TimeUnit.NANOSECONDS);
+      call.timeout()
+          .timeout(remainingNanos, TimeUnit.NANOSECONDS)
+          .deadlineNanoTime(startTimeNanos + timeoutNanos);
     }
     return true;
   }

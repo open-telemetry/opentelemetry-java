@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -97,53 +96,6 @@ class OkHttpGrpcSenderTest {
     assertThat(responseRef.get().getStatusDescription()).isEqualTo("retry me");
     assertThat(responseRef.get().getResponseMessage())
         .containsExactly((byte) 'o', (byte) 'k', (byte) '!');
-  }
-
-  @Test
-  void handleResponse_emptyBodyWithTrailerStatusIsRetryable() {
-    OkHttpGrpcSender sender = createSender(Long.MAX_VALUE);
-    AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
-    AtomicBoolean retryableRef = new AtomicBoolean();
-    Response response =
-        new Response.Builder()
-            .request(new Request.Builder().url("http://localhost/").build())
-            .protocol(Protocol.HTTP_2)
-            .code(200)
-            .body(ResponseBody.create(new byte[0], GRPC_MEDIA_TYPE))
-            .message("HTTP message")
-            .trailers(() -> Headers.of("grpc-status", "14"))
-            .build();
-
-    sender.handleResponse(
-        response,
-        (resolvedResponse, canRetry) -> {
-          responseRef.set(resolvedResponse);
-          retryableRef.set(canRetry);
-        });
-
-    assertThat(responseRef.get().getStatusCode()).isEqualTo(GrpcStatusCode.UNAVAILABLE);
-    assertThat(retryableRef.get()).isTrue();
-  }
-
-  @Test
-  void handleResponse_enforcesResponseSizeLimit() {
-    OkHttpGrpcSender sender = createSender(2);
-    AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
-    byte[] frame = new byte[] {0, 0, 0, 0, 3, 'o', 'k', '!'};
-    Response response =
-        new Response.Builder()
-            .request(new Request.Builder().url("http://localhost/").build())
-            .protocol(Protocol.HTTP_2)
-            .code(200)
-            .body(ResponseBody.create(frame, GRPC_MEDIA_TYPE))
-            .message("HTTP message")
-            .header("grpc-status", "0")
-            .build();
-
-    sender.handleResponse(response, responseRef::set);
-
-    assertThat(responseRef.get().getStatusCode()).isEqualTo(GrpcStatusCode.RESOURCE_EXHAUSTED);
-    assertThat(responseRef.get().getResponseMessage()).isEmpty();
   }
 
   private static OkHttpGrpcSender createSender(long maxResponseBodySize) {

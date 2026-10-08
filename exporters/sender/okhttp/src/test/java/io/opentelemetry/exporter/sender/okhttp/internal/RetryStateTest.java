@@ -76,16 +76,27 @@ class RetryStateTest {
 
     assertThat(retryState.configureCallTimeout(call)).isTrue();
     assertThat(call.timeout().timeoutNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(600));
+    assertThat(call.timeout().hasDeadline()).isTrue();
+    assertThat(call.timeout().deadlineNanoTime()).isEqualTo(TimeUnit.SECONDS.toNanos(1));
+
+    clock.set(TimeUnit.MILLISECONDS.toNanos(700));
+    Call retry = new OkHttpClient().newCall(new Request.Builder().url("http://localhost/").build());
+
+    assertThat(retryState.configureCallTimeout(retry)).isTrue();
+    assertThat(retry.timeout().timeoutNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(300));
+    assertThat(retry.timeout().deadlineNanoTime()).isEqualTo(call.timeout().deadlineNanoTime());
   }
 
   @Test
   void callTimeoutIsUnchangedWithoutExportTimeout() {
     RetryState retryState =
-        new RetryState(retryPolicy(), (IOException e) -> true, delay -> {}, () -> 1.0d, 0);
+        new RetryState(
+            retryPolicy(), (IOException e) -> true, delay -> {}, () -> 1.0d, 0, System::nanoTime);
     Call call = new OkHttpClient().newCall(new Request.Builder().url("http://localhost/").build());
 
     assertThat(retryState.configureCallTimeout(call)).isTrue();
     assertThat(call.timeout().timeoutNanos()).isZero();
+    assertThat(call.timeout().hasDeadline()).isFalse();
   }
 
   @Test
@@ -112,7 +123,9 @@ class RetryStateTest {
             retryPolicy(),
             exception -> exception.getMessage().startsWith("retry"),
             delay -> {},
-            () -> 1.0d);
+            () -> 1.0d,
+            0,
+            System::nanoTime);
 
     assertThat(retryState.canRetry(0)).isTrue();
     assertThat(retryState.canRetry(1)).isTrue();

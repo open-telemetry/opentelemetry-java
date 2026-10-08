@@ -76,7 +76,8 @@ public final class RetryInterceptor implements Interceptor {
             retryExceptionPredicate,
             sleeper,
             randomJitter,
-            chain.call().timeout().timeoutNanos());
+            chain.call().timeout().timeoutNanos(),
+            System::nanoTime);
     Response response = null;
     IOException exception = null;
     int attempt = 0;
