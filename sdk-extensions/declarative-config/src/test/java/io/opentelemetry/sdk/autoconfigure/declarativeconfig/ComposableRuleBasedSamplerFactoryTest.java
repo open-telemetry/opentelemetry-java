@@ -265,12 +265,10 @@ class ComposableRuleBasedSamplerFactoryTest {
   private static final AttributeKey<String> HTTP_ROUTE = AttributeKey.stringKey("http.route");
   private static final AttributeKey<String> HTTP_PATH = AttributeKey.stringKey("http.path");
   private static final AttributeKey<Long> SERVER_PORT = AttributeKey.longKey("server.port");
-  private static final AttributeKey<List<String>> HTTP_ROUTE_ARRAY =
-      AttributeKey.stringArrayKey("http.route");
-  private static final AttributeKey<List<String>> HTTP_PATH_ARRAY =
-      AttributeKey.stringArrayKey("http.path");
-  private static final AttributeKey<List<Long>> SERVER_PORT_ARRAY =
-      AttributeKey.longArrayKey("server.port");
+  private static final AttributeKey<List<String>> STRING_ARRAY =
+      AttributeKey.stringArrayKey("test.string_array");
+  private static final AttributeKey<List<Long>> LONG_ARRAY =
+      AttributeKey.longArrayKey("test.long_array");
 
   @ParameterizedTest
   @MethodSource("declarativeConfigSamplingPredicateArgs")
@@ -343,6 +341,34 @@ class ComposableRuleBasedSamplerFactoryTest {
                     Collections.singletonList("/internal/special/*"))),
             Collections.singleton(ExperimentalSpanParentModel.NONE),
             Collections.singleton(CLIENT));
+    DeclarativeConfigSamplingPredicate arrayValuesMatcher =
+        new DeclarativeConfigSamplingPredicate(
+            new AttributeMatcher(
+                "test.string_array",
+                IncludeExcludePredicate.createExactMatching(
+                    Arrays.asList("/healthz", "/livez"), null)),
+            null,
+            null,
+            null);
+    DeclarativeConfigSamplingPredicate arrayPatternsMatcher =
+        new DeclarativeConfigSamplingPredicate(
+            null,
+            new AttributeMatcher(
+                "test.string_array",
+                IncludeExcludePredicate.createPatternMatching(
+                    Collections.singletonList("/internal/*"),
+                    Collections.singletonList("/internal/special/*"))),
+            null,
+            null);
+    DeclarativeConfigSamplingPredicate arrayNumberValuesMatcher =
+        new DeclarativeConfigSamplingPredicate(
+            new AttributeMatcher(
+                "test.long_array",
+                IncludeExcludePredicate.createExactMatching(
+                    Collections.singletonList("8081"), null)),
+            null,
+            null,
+            null);
 
     return Stream.of(
         Arguments.argumentSet(
@@ -498,40 +524,39 @@ class ComposableRuleBasedSamplerFactoryTest {
             Attributes.of(SERVER_PORT, 9090L),
             false),
         Arguments.argumentSet(
-            "valuesMatcher array with matching element",
-            valuesMatcher,
+            "arrayValuesMatcher with matching element",
+            arrayValuesMatcher,
             noParent,
             sk,
-            Attributes.of(HTTP_ROUTE_ARRAY, Arrays.asList("/foo", "/healthz")),
+            Attributes.of(STRING_ARRAY, Arrays.asList("/foo", "/healthz")),
             true),
         Arguments.argumentSet(
-            "valuesMatcher array without matching element",
-            valuesMatcher,
+            "arrayValuesMatcher without matching element",
+            arrayValuesMatcher,
             noParent,
             sk,
-            Attributes.of(HTTP_ROUTE_ARRAY, Arrays.asList("/foo", "/bar")),
+            Attributes.of(STRING_ARRAY, Arrays.asList("/foo", "/bar")),
             false),
         Arguments.argumentSet(
-            "patternsMatcher array with matching element",
-            patternsMatcher,
+            "arrayPatternsMatcher with matching element",
+            arrayPatternsMatcher,
             noParent,
             sk,
-            Attributes.of(HTTP_PATH_ARRAY, Arrays.asList("/users/profile", "/internal/admin")),
+            Attributes.of(STRING_ARRAY, Arrays.asList("/users/profile", "/internal/admin")),
             true),
         Arguments.argumentSet(
-            "patternsMatcher array excluded element no match",
-            patternsMatcher,
+            "arrayPatternsMatcher excluded element no match",
+            arrayPatternsMatcher,
             noParent,
             sk,
-            Attributes.of(
-                HTTP_PATH_ARRAY, Arrays.asList("/users/profile", "/internal/special/foo")),
+            Attributes.of(STRING_ARRAY, Arrays.asList("/users/profile", "/internal/special/foo")),
             false),
         Arguments.argumentSet(
-            "numberValuesMatcher long array with matching element",
-            numberValuesMatcher,
+            "arrayNumberValuesMatcher with matching element",
+            arrayNumberValuesMatcher,
             noParent,
             sk,
-            Attributes.of(SERVER_PORT_ARRAY, Arrays.asList(8080L, 8081L)),
+            Attributes.of(LONG_ARRAY, Arrays.asList(8080L, 8081L)),
             true),
         Arguments.argumentSet(
             "multiMatcher all conditions match",
