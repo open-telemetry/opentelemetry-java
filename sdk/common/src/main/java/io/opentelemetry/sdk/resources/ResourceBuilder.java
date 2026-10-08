@@ -26,16 +26,24 @@ import javax.annotation.Nullable;
  * A builder for {@link Resource} that allows adding key-value pairs and copying attributes from
  * other {@link Attributes} or {@link Resource} instances.
  *
- * <p>Resources may carry experimental entity associations. Merge compatibility requires matching
- * entity types, identifying attributes, and schema URLs. Null and empty schema URLs both mean
- * absence. Identifying and descriptive attribute keys must be disjoint. Builder operations follow
- * these rules:
+ * <p>Resources may carry experimental entity associations. Within an entity, identifying and
+ * descriptive attribute keys must be disjoint.
+ *
+ * <p>Resource-level {@code schemaUrl} handling is best effort: conflicts do not prevent attribute
+ * merging, but leave the merged resource without a {@code schemaUrl}. Entity merge compatibility
+ * requires matching types, identifying attributes, and entity {@code schemaUrl} values. For
+ * entities, null and empty {@code schemaUrl} values both represent absence and match each other,
+ * but not a nonempty value. Conflicting entity {@code schemaUrl} values may indicate a
+ * configuration or version mismatch.
+ *
+ * <p>Builder operations follow these rules:
  *
  * <ul>
- *   <li>Later writes win, whether attributes are ordinary or entity-owned. Writing an unchanged
- *       stored type and value preserves association.
- *   <li>Compatible incoming entities merge descriptions. Different identifying attributes or
- *       schemas with the same type replace the whole old entity, including all its attributes.
+ *   <li>Later writes win, whether attributes are ordinary or entity-owned. Writing the same value
+ *       with the same attribute type does not remove the entity association.
+ *   <li>Compatible incoming entities merge descriptions. Different identifying attributes or {@code
+ *       schemaUrl} values with the same type replace the whole old entity, including all its
+ *       attributes.
  *   <li>An ordinary write that changes any entity-owned attribute, or an incoming entity that
  *       claims attributes from a different entity type, removes the affected association. All
  *       non-conflicting attributes remain as ordinary attributes, including identifying and
@@ -45,12 +53,19 @@ import javax.annotation.Nullable;
  *       attributes. Removing only descriptive attributes preserves association.
  * </ul>
  *
- * <p>Resource copying processes incoming entities before incoming ordinary attributes; regrouping
- * resource merges can change associations. Copying with {@link #putAll(Resource)} does not merge
- * resource schema URLs. {@link Resource#toBuilder()} copies a non-null source schema URL as
- * explicit configuration, even if it was derived. Without explicit configuration, each build
- * derives the URL shared by all current entities that declare one. Pending ordinary attributes are
- * validated at {@link #build()}, not entity insertion.
+ * <p>Both {@link #putAll(Resource)} and {@link Resource#merge(Resource)} apply incoming entities
+ * before incoming ordinary attributes. Merging the same resources in the same order can produce
+ * different entity associations depending on which pair is merged first: {@code
+ * a.merge(b).merge(c)} can differ from {@code a.merge(b.merge(c))}.
+ *
+ * <p>{@link #putAll(Resource)} does not copy {@code schemaUrl}. {@link Resource#toBuilder()} copies
+ * a non-null source {@code schemaUrl} as explicit configuration, even if it was derived. Without
+ * explicit configuration, each build derives the {@code schemaUrl} shared by all current entities
+ * that declare one, or null if none declare one or their values differ.
+ *
+ * <p>{@link #build()} rejects ordinary attributes whose key names are empty, contain characters
+ * outside printable ASCII, or exceed 255 characters. Adding an entity does not check existing
+ * ordinary attributes for these errors.
  *
  * <p>These rules describe resource APIs, not environment parsing. Java {@link
  * Object#equals(Object)} is structural equality, not semantic resource identity; descriptions and
@@ -224,7 +239,10 @@ public class ResourceBuilder {
     return this;
   }
 
-  /** Puts all attributes from {@link Resource} into this. */
+  /**
+   * Copies entity associations and attributes from {@link Resource}, following the class-level
+   * rules. Does not copy {@code schemaUrl}.
+   */
   public ResourceBuilder putAll(Resource resource) {
     if (resource != null) {
       resource.getEntities().forEach(this::addEntity);

@@ -36,7 +36,9 @@ public final class EntityUtil {
     return builder.build();
   }
 
-  /** Merges an entity into the builder, resolving identity and attribute key conflicts. */
+  /**
+   * Merges an entity into the builder, following the rules documented in {@link ResourceBuilder}.
+   */
   public static ResourceBuilder addEntity(ResourceBuilder rb, Entity e) {
     try {
       Method method = ResourceBuilder.class.getDeclaredMethod("addEntity", Entity.class);

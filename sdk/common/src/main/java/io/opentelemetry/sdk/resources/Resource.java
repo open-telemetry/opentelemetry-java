@@ -207,13 +207,15 @@ public abstract class Resource {
    * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code
    * other} {@code Resource}. In case of a collision, the "other" {@code Resource} takes precedence.
    *
-   * <p>Incoming entities are processed before incoming unassociated attributes. Merging is not
-   * associative: regrouping merges can change entity associations even if flattened attributes are
-   * unchanged.
+   * <p>Entity associations follow the rules documented in {@link ResourceBuilder}. Incoming
+   * entities are processed before incoming unassociated attributes. Merging the same resources in
+   * the same order can produce different entity associations depending on which pair is merged
+   * first: {@code a.merge(b).merge(c)} can differ from {@code a.merge(b.merge(c))}, even if both
+   * results have the same attribute keys and values.
    *
-   * <p>The merged schema URL is computed from the two resources' schema URLs, not from their
-   * entities. If either is null, the other is used. If they differ, the merged resource has no
-   * schema URL.
+   * <p>The merged {@code schemaUrl} is computed from the two resources' {@code schemaUrl} values,
+   * not from their entities. If either is null, the other is used. If both are non-null and differ,
+   * the merged resource has no {@code schemaUrl}.
    *
    * @param other the {@code Resource} that will be merged with {@code this}.
    * @return the newly merged {@code Resource}.
