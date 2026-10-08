@@ -27,14 +27,13 @@ import javax.annotation.Nullable;
  * other {@link Attributes} or {@link Resource} instances.
  *
  * <p>Resources may carry experimental entity associations. Within an entity, identifying and
- * descriptive attribute keys must be disjoint.
+ * descriptive attribute keys must not overlap.
  *
  * <p>Resource-level {@code schemaUrl} handling is best effort: conflicts do not prevent attribute
  * merging, but leave the merged resource without a {@code schemaUrl}. Entity merge compatibility
  * requires matching types, identifying attributes, and entity {@code schemaUrl} values. For
- * entities, null and empty {@code schemaUrl} values both represent absence and match each other,
- * but not a nonempty value. Conflicting entity {@code schemaUrl} values may indicate a
- * configuration or version mismatch.
+ * entities, null and empty {@code schemaUrl} values both represent absence and match each other.
+ * Conflicting entity {@code schemaUrl} values may indicate a configuration or version mismatch.
  *
  * <p>Builder operations follow these rules:
  *
@@ -45,12 +44,11 @@ import javax.annotation.Nullable;
  *       schemaUrl} values with the same type replace the whole old entity, including all its
  *       attributes.
  *   <li>An ordinary write that changes any entity-owned attribute, or an incoming entity that
- *       claims attributes from a different entity type, removes the affected association. All
- *       non-conflicting attributes remain as ordinary attributes, including identifying and
- *       descriptive attributes.
- *   <li>Filtering applies to all attributes and removes only selected attribute keys. Removing any
- *       identifying attribute key removes association and retains surviving attributes as ordinary
- *       attributes. Removing only descriptive attributes preserves association.
+ *       claims attributes from a different entity type, removes the affected entity association.
+ *       All non-conflicting attributes remain as ordinary attributes.
+ *   <li>Filtering applies to ordinary and entity-owned attributes. Removing any entity identifying
+ *       attribute key removes the entity association and retains surviving attributes as ordinary
+ *       attributes. Removing only descriptive attributes preserves entity association.
  * </ul>
  *
  * <p>Both {@link #putAll(Resource)} and {@link Resource#merge(Resource)} apply incoming entities
@@ -58,21 +56,21 @@ import javax.annotation.Nullable;
  * different entity associations depending on which pair is merged first: {@code
  * a.merge(b).merge(c)} can differ from {@code a.merge(b.merge(c))}.
  *
- * <p>{@link #putAll(Resource)} does not copy {@code schemaUrl}. {@link Resource#toBuilder()} copies
- * a non-null source {@code schemaUrl} as explicit configuration, even if it was derived. Without
- * explicit configuration, each build derives the {@code schemaUrl} shared by all current entities
- * that declare one, or null if none declare one or their values differ.
+ * <p>Without explicit configuration, each {@link #build()} call derives the {@code schemaUrl}
+ * shared by all current entities that declare one, or null if none declare one or their values
+ * differ. {@link #putAll(Resource)} does not copy {@code schemaUrl}. {@link Resource#toBuilder()}
+ * copies a non-null source {@code schemaUrl} as explicit configuration, even if it was derived from
+ * entities.
  *
  * <p>{@link #build()} rejects ordinary attributes whose key names are empty, contain characters
- * outside printable ASCII, or exceed 255 characters. Adding an entity does not check existing
- * ordinary attributes for these errors.
+ * outside printable ASCII, or exceed 255 characters.
  *
  * <p>These rules describe resource APIs, not environment parsing. Java {@link
- * Object#equals(Object)} is structural equality, not semantic resource identity; descriptions and
+ * Object#equals(Object)} is structural equality, not semantic resource identity. Descriptions and
  * entity order affect resource equality.
  *
- * <p>Entity changes and association removals are logged at {@code WARNING}. Unchanged operations do
- * not produce entity-change diagnostics.
+ * <p>Entity replacements, description changes, and association removals are logged at {@code
+ * WARNING}.
  *
  * @since 1.1.0
  */

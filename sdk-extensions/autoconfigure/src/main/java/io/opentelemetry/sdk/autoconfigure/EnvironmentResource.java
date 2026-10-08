@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
@@ -33,8 +33,6 @@ import javax.annotation.Nullable;
  * additional dependencies. Do not add dependencies on non-API, non-SPI classes.
  */
 final class EnvironmentResource {
-
-  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
@@ -63,7 +61,13 @@ final class EnvironmentResource {
     }
     String serviceName = config.getString(SERVICE_NAME_PROPERTY);
     if (serviceName != null) {
-      resourceBuilder.put(SERVICE_NAME, serviceName);
+      EntityUtil.addEntity(
+          resourceBuilder,
+          Entity.builder(
+                  SemConvConstants.SERVICE_TYPE,
+                  Attributes.of(SemConvConstants.SERVICE_NAME, serviceName))
+              .setSchemaUrl(SemConvConstants.SCHEMA_URL_V1_40_0)
+              .build());
     }
 
     return resourceBuilder.build();

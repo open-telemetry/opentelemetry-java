@@ -55,7 +55,7 @@ final class SdkEntityBuilder implements EntityBuilder {
     AttributeCheckUtil.checkAttributes(Objects.requireNonNull(description, "description"));
     checkArgument(
         !EntityUtil.sharesAttributeKey(id, description),
-        "Identifying and descriptive attribute keys must be disjoint.");
+        "Identifying and descriptive attribute keys must not overlap.");
     this.description = description;
     return this;
   }
