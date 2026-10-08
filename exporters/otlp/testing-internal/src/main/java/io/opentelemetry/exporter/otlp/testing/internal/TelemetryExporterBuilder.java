@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.profiles.data.ProfileData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +56,8 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setConnectTimeout(Duration timeout);
 
+  TelemetryExporterBuilder<T> setMaxRequestSize(long maxRequestSize);
+
   TelemetryExporterBuilder<T> setCompression(String compression);
 
   TelemetryExporterBuilder<T> addHeader(String key, String value);
@@ -78,6 +81,8 @@ public interface TelemetryExporterBuilder<T> {
   TelemetryExporterBuilder<T> setComponentLoader(ComponentLoader componentLoader);
 
   TelemetryExporterBuilder<T> setExecutorService(ExecutorService executorService);
+
+  TelemetryExporterBuilder<T> setEnabledProtocols(List<String> enabledProtocols);
 
   TelemetryExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier);
 

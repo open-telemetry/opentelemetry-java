@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.InstrumentTypeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -33,12 +34,12 @@ class InstrumentSelectorFactoryTest {
             InstrumentSelectorFactory.getInstance()
                 .create(
                     new ViewSelectorModel()
-                        .withInstrumentName("instrument-name")
-                        .withInstrumentType(ViewSelectorModel.InstrumentType.COUNTER)
-                        .withUnit("ms")
-                        .withMeterName("meter-name")
-                        .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
-                        .withMeterVersion("1.0.0"),
+                        .setInstrumentName("instrument-name")
+                        .setInstrumentType(InstrumentTypeModel.COUNTER)
+                        .setUnit("ms")
+                        .setMeterName("meter-name")
+                        .setMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
+                        .setMeterVersion("1.0.0"),
                     mock(DeclarativeConfigContext.class)))
         .isEqualTo(
             InstrumentSelector.builder()

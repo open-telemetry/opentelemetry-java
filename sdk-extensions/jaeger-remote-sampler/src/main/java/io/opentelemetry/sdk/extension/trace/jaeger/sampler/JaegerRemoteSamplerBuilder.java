@@ -181,7 +181,8 @@ public final class JaegerRemoteSamplerBuilder {
    */
   public JaegerRemoteSampler build() {
     GrpcSender grpcSender = resolveGrpcSender();
-    return new JaegerRemoteSampler(grpcSender, serviceName, pollingIntervalMillis, initialSampler);
+    return new JaegerRemoteSampler(
+        grpcSender, endpoint, serviceName, pollingIntervalMillis, initialSampler);
   }
 
   private GrpcSender resolveGrpcSender() {

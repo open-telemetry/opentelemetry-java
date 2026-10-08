@@ -9,24 +9,31 @@ import static io.opentelemetry.sdk.common.export.GrpcStatusCode.UNAVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
@@ -66,14 +73,25 @@ class GrpcExporterTest {
 
       Attributes expectedAttributes =
           Attributes.builder()
-              .put(SemConvAttributes.OTEL_COMPONENT_TYPE, id.getTypeName())
-              .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
-              .put(SemConvAttributes.SERVER_ADDRESS, "testing")
-              .put(SemConvAttributes.SERVER_PORT, 1234)
+              .put(SemConvConstants.OTEL_COMPONENT_TYPE, id.getTypeName())
+              .put(SemConvConstants.OTEL_COMPONENT_NAME, id.getComponentName())
+              .put(SemConvConstants.SERVER_ADDRESS, "testing")
+              .put(SemConvConstants.SERVER_PORT, 1234)
               .build();
 
       GrpcSender mockSender = Mockito.mock(GrpcSender.class);
       Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+      MessageWriter emptyMessageWriter =
+          new MessageWriter() {
+            @Override
+            public void writeMessage(OutputStream output) {}
+
+            @Override
+            public int getContentLength() {
+              return 0;
+            }
+          };
+      Mockito.when(mockMarshaller.toBinaryMessageWriter()).thenReturn(emptyMessageWriter);
 
       GrpcExporter exporter =
           new GrpcExporter(
@@ -81,7 +99,8 @@ class GrpcExporterTest {
               InternalTelemetryVersion.LATEST,
               id,
               () -> meterProvider,
-              URI.create("http://testing:1234"));
+              URI.create("http://testing:1234"),
+              GrpcExporterBuilder.DEFAULT_MAX_REQUEST_MESSAGE_SIZE);
 
       doAnswer(
               invoc -> {
@@ -156,7 +175,7 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.ERROR_TYPE,
+                                                      SemConvConstants.ERROR_TYPE,
                                                       "" + UNAVAILABLE.getValue())
                                                   .build())
                                           .hasValue(15),
@@ -164,7 +183,7 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.ERROR_TYPE,
+                                                      SemConvConstants.ERROR_TYPE,
                                                       "java.io.IOException")
                                                   .build())
                                           .hasValue(7))))
@@ -180,7 +199,7 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.RPC_RESPONSE_STATUS_CODE,
+                                                      SemConvConstants.RPC_RESPONSE_STATUS_CODE,
                                                       GrpcStatusCode.OK.name())
                                                   .build())
                                           .hasBucketCounts(1),
@@ -188,10 +207,10 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.ERROR_TYPE,
+                                                      SemConvConstants.ERROR_TYPE,
                                                       "" + UNAVAILABLE.getValue())
                                                   .put(
-                                                      SemConvAttributes.RPC_RESPONSE_STATUS_CODE,
+                                                      SemConvConstants.RPC_RESPONSE_STATUS_CODE,
                                                       UNAVAILABLE.name())
                                                   .build())
                                           .hasBucketCounts(1),
@@ -199,11 +218,36 @@ class GrpcExporterTest {
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
-                                                      SemConvAttributes.ERROR_TYPE,
+                                                      SemConvConstants.ERROR_TYPE,
                                                       "java.io.IOException")
                                                   .build())
                                           .hasBucketCounts(1))));
     }
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void export_requestMessageTooLargeFailsBeforeSend() {
+    GrpcSender mockSender = Mockito.mock(GrpcSender.class);
+    GrpcExporter exporter =
+        new GrpcExporter(
+            mockSender,
+            InternalTelemetryVersion.LATEST,
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
+            MeterProvider::noop,
+            URI.create("http://testing:1234"),
+            1);
+
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    Mockito.when(mockMarshaller.getBinarySerializedSize()).thenReturn(2);
+
+    CompletableResultCode result = exporter.export(mockMarshaller, 1);
+
+    assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable())
+        .hasMessageContaining(
+            "Failed to export spans. Request message size 2 exceeded limit of 1 bytes");
+    verifyNoInteractions(mockSender);
   }
 
   private static GrpcResponse grpcResponse(GrpcStatusCode statusCode) {

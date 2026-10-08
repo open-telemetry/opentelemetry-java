@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class GrpcJavaOtlpIntegrationTest extends OtlpExporterIntegrationTest {
 
   @Test
-  void noGrpcFound() {
+  void grpcFound() {
     assertThatCode(() -> Class.forName("io.grpc.ManagedChannel")).doesNotThrowAnyException();
   }
 }

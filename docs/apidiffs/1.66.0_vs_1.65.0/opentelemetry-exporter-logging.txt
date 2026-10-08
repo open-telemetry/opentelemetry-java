@@ -1,0 +1,2 @@
+Comparing source compatibility of opentelemetry-exporter-logging-1.66.0.jar against opentelemetry-exporter-logging-1.65.0.jar
+No changes.

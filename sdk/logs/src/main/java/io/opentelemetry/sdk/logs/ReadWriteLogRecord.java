@@ -59,7 +59,7 @@ public interface ReadWriteLogRecord {
    */
   @Nullable
   default String getEventName() {
-    return null;
+    return toLogRecordData().getEventName();
   }
 
   /**

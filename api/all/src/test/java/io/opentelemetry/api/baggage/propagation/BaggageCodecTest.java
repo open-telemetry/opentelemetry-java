@@ -6,6 +6,7 @@
 package io.opentelemetry.api.baggage.propagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
@@ -37,5 +38,13 @@ class BaggageCodecTest {
   void shouldIgnoreIfMalformedData() {
     assertThat(BaggageCodec.decode("%", StandardCharsets.UTF_8)).isEqualTo("");
     assertThat(BaggageCodec.decode("%1", StandardCharsets.UTF_8)).isEqualTo("");
+  }
+
+  @Test
+  void shouldThrowNumberFormatExceptionForInvalidHexDigit() {
+    assertThatThrownBy(() -> BaggageCodec.decode("%G0", StandardCharsets.UTF_8))
+        .isInstanceOf(NumberFormatException.class)
+        .hasMessageContaining("byte=71")
+        .hasMessageContaining("char='G'");
   }
 }

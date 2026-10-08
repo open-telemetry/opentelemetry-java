@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"url"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalSanitizationModel {
 
   @Nullable private ExperimentalUrlSanitizationModel url;
@@ -30,7 +30,7 @@ public class ExperimentalSanitizationModel {
   }
 
   @JsonProperty("url")
-  public ExperimentalSanitizationModel withUrl(ExperimentalUrlSanitizationModel url) {
+  public ExperimentalSanitizationModel setUrl(ExperimentalUrlSanitizationModel url) {
     this.url = url;
     return this;
   }

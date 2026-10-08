@@ -17,5 +17,5 @@ import javax.annotation.Nullable;
 public interface ExtendedGrpcSenderConfig extends GrpcSenderConfig {
 
   @Nullable
-  Object getMangedChannel();
+  Object getManagedChannel();
 }

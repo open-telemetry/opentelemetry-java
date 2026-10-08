@@ -104,6 +104,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setMaxRequestSize(long maxRequestSize) {
+    delegate.setMaxRequestSize(maxRequestSize);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<T> setCompression(String compression) {
     delegate.setCompression(compression);
     return this;
@@ -208,6 +214,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setExecutorService(ExecutorService executorService) {
     delegate.setExecutorService(executorService);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setEnabledProtocols(List<String> enabledProtocols) {
+    delegate.setEnabledProtocols(enabledProtocols);
     return this;
   }
 

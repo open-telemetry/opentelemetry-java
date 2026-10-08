@@ -47,7 +47,6 @@ class NoSharedInternalCodeTest {
           "opentelemetry-sdk-testing",
           "opentelemetry-sdk-trace",
           "opentelemetry-sdk-extension-autoconfigure",
-          "opentelemetry-sdk-extension-autoconfigure-spi",
           "opentelemetry-sdk-extension-declarative-config",
           "opentelemetry-sdk-extension-incubator",
           "opentelemetry-sdk-extension-jaeger-remote-sampler",

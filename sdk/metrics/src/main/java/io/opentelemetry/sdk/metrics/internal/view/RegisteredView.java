@@ -6,9 +6,11 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import java.util.function.UnaryOperator;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -24,11 +26,11 @@ public abstract class RegisteredView {
   public static RegisteredView create(
       InstrumentSelector selector,
       View view,
-      AttributesProcessor viewAttributesProcessor,
+      UnaryOperator<Attributes> attributesFilter,
       int cardinalityLimit,
       SourceInfo viewSourceInfo) {
     return new AutoValue_RegisteredView(
-        selector, view, viewAttributesProcessor, cardinalityLimit, viewSourceInfo);
+        selector, view, attributesFilter, cardinalityLimit, viewSourceInfo);
   }
 
   RegisteredView() {}
@@ -39,8 +41,12 @@ public abstract class RegisteredView {
   /** The view to apply. */
   public abstract View getView();
 
-  /** The view's {@link AttributesProcessor}. */
-  public abstract AttributesProcessor getViewAttributesProcessor();
+  /**
+   * The attributes filter applied to recorded measurements. Built from the view's {@link
+   * View#getAttributeFilter()} or, for the instrument-default view with attribute advice, from the
+   * advice's attribute keys.
+   */
+  public abstract UnaryOperator<Attributes> getAttributesFilter();
 
   /** The view's cardinality limit. */
   public abstract int getCardinalityLimit();

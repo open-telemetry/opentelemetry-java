@@ -5,6 +5,7 @@ plugins {
 
 description = "OpenTelemetry Prometheus Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.prometheus")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator", "io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider",

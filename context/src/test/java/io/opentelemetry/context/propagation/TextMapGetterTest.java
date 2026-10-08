@@ -5,7 +5,7 @@
 
 package io.opentelemetry.context.propagation;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.context.propagation.internal.ExtendedTextMapGetter;
@@ -16,6 +16,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation")
 class TextMapGetterTest {
 
   final TextMapGetter<Void> nullGet =
@@ -44,6 +45,18 @@ class TextMapGetterTest {
           return "123";
         }
       };
+
+  @Test
+  void keysDefault_returnsEmpty() {
+    TextMapGetter<Void> getter = (carrier, key) -> "value";
+
+    assertThat(getter.keys(null)).isEmpty();
+  }
+
+  @Test
+  void keysOverrideIsPreserved() {
+    assertThat(nullGet.keys(null)).containsExactly("key");
+  }
 
   @Test
   void extendedTextMapGetterdefaultMethod_returnsEmpty() {

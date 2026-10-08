@@ -25,6 +25,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.impl.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
@@ -40,6 +41,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -49,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -61,6 +64,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.TlsVersion;
 import okio.Buffer;
 import okio.GzipSource;
 
@@ -96,7 +100,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
-      long maxResponseBodySize) {
+      long maxResponseBodySize,
+      @Nullable List<String> enabledProtocols) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -116,7 +121,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
             .connectTimeout(Duration.ofMillis(connectTimeoutMillis));
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
-          new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));
+          new RetryInterceptor(
+              retryPolicy, OkHttpGrpcSender::isRetryable, response -> OptionalLong.empty()));
     }
 
     boolean isPlainHttp = endpoint.startsWith("http://");
@@ -125,8 +131,25 @@ public final class OkHttpGrpcSender implements GrpcSender {
       clientBuilder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
     } else {
       clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
-      if (sslContext != null && trustManager != null) {
-        clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+      if (sslContext != null) {
+        X509TrustManager effectiveTrustManager = trustManager;
+        if (effectiveTrustManager == null) {
+          try {
+            effectiveTrustManager = TlsUtil.defaultTrustManager();
+          } catch (SSLException e) {
+            throw new IllegalStateException("Unable to initialize default trust manager", e);
+          }
+        }
+        clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
+      }
+      if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
+        TlsVersion[] versions =
+            enabledProtocols.stream().map(TlsVersion::forJavaName).toArray(TlsVersion[]::new);
+        clientBuilder.connectionSpecs(
+            Collections.singletonList(
+                new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
+                    .tlsVersions(versions)
+                    .build()));
       }
     }
 
@@ -188,7 +211,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
         compressed = body.source().readByte() != 0;
         body.source().skip(4); // message length — we bound reads by EOF instead
       } catch (IOException e) {
-        logger.log(Level.FINE, "Invalid gRPC response frame");
+        logger.log(Level.FINE, "Invalid gRPC response frame", e);
         onResponse.accept(
             ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]));
         return;

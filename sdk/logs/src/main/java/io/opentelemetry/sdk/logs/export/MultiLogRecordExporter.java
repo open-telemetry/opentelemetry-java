@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,9 +47,10 @@ final class MultiLogRecordExporter implements LogRecordExporter {
       CompletableResultCode exportResult;
       try {
         exportResult = logRecordExporter.export(logs);
-      } catch (RuntimeException e) {
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
         // If an exception was thrown by the exporter
-        logger.log(Level.WARNING, "Exception thrown by the export.", e);
+        logger.log(Level.WARNING, "Exception thrown by the export.", t);
         results.add(CompletableResultCode.ofFailure());
         continue;
       }
@@ -69,9 +71,10 @@ final class MultiLogRecordExporter implements LogRecordExporter {
       CompletableResultCode flushResult;
       try {
         flushResult = logRecordExporter.flush();
-      } catch (RuntimeException e) {
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
         // If an exception was thrown by the exporter
-        logger.log(Level.WARNING, "Exception thrown by the flush.", e);
+        logger.log(Level.WARNING, "Exception thrown by the flush.", t);
         results.add(CompletableResultCode.ofFailure());
         continue;
       }
@@ -87,9 +90,10 @@ final class MultiLogRecordExporter implements LogRecordExporter {
       CompletableResultCode shutdownResult;
       try {
         shutdownResult = logRecordExporter.shutdown();
-      } catch (RuntimeException e) {
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
         // If an exception was thrown by the exporter
-        logger.log(Level.WARNING, "Exception thrown by the shutdown.", e);
+        logger.log(Level.WARNING, "Exception thrown by the shutdown.", t);
         results.add(CompletableResultCode.ofFailure());
         continue;
       }

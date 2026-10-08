@@ -30,7 +30,7 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
     ExtendedGrpcSenderConfig extendedSenderConfig = (ExtendedGrpcSenderConfig) grpcSenderConfig;
 
     boolean shutdownChannel = false;
-    Object configManagedChannel = extendedSenderConfig.getMangedChannel();
+    Object configManagedChannel = extendedSenderConfig.getManagedChannel();
     ManagedChannel managedChannel;
     if (configManagedChannel != null) {
       if (!(configManagedChannel instanceof ManagedChannel)) {
@@ -39,7 +39,7 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
       }
       managedChannel = (ManagedChannel) configManagedChannel;
     } else {
-      // Shutdown the channel as part of the exporter shutdown sequence if
+      // Shutdown the channel as part of the exporter shutdown sequence if we created it.
       shutdownChannel = true;
       managedChannel = minimalFallbackManagedChannel(grpcSenderConfig.getEndpoint());
     }

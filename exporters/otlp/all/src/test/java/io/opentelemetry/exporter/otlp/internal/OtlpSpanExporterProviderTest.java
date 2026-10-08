@@ -303,9 +303,10 @@ class OtlpSpanExporterProviderTest {
             () -> {
               provider.createExporter(
                   DefaultConfigProperties.createFromMap(
-                      Collections.singletonMap("otel.exporter.otlp.headers", "header-key=%-1")));
+                      Collections.singletonMap(
+                          "otel.exporter.otlp.headers", "header-key=Bearer%20s3cr3t%-1")));
             })
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Cannot decode header value: %-1");
+        .hasMessage("Cannot decode header value for header: header-key");
   }
 }

@@ -18,6 +18,8 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerBuilder;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -317,5 +319,45 @@ class SdkTracerProviderTest {
     builder.build().get("tracer").spanBuilder("span").startSpan().recordException(exception).end();
 
     verify(exceptionAttributeResolver).setExceptionAttributes(any(), any(), eq(maxAttributeLength));
+  }
+
+  @Test
+  void withoutSpanProcessor_notRecording() {
+    Tracer tracer = SdkTracerProvider.builder().build().get("test");
+
+    Span span = tracer.spanBuilder("test-span").startSpan();
+    try {
+      assertThat(span.isRecording()).as("Should not record without a span processor").isFalse();
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void explicitNoopSpanProcessor_tracerResolvesToNoop() {
+    Tracer tracer =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(NoopSpanProcessor.getInstance())
+            .build()
+            .get("test");
+    assertThat(tracer).isNotInstanceOf(SdkTracer.class);
+  }
+
+  @Test
+  void noSpanProcessors_tracerBuilderSameAsNoop() {
+    TracerBuilder builder = SdkTracerProvider.builder().build().tracerBuilder("test");
+    assertThat(builder).isSameAs(TracerProvider.noop().tracerBuilder("test"));
+  }
+
+  @Test
+  void get_NoSpanProcessors_UsesNoop() {
+    Tracer tracer = SdkTracerProvider.builder().build().get("test");
+    assertThat(tracer).isSameAs(TracerProvider.noop().get("test"));
+  }
+
+  @Test
+  void getWithVersion_NoSpanProcessors_UsesNoop() {
+    Tracer tracer = SdkTracerProvider.builder().build().get("test", "1.0.0");
+    assertThat(tracer).isSameAs(TracerProvider.noop().get("test", "1.0.0"));
   }
 }

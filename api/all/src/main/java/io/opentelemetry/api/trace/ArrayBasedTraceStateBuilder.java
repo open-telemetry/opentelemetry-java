@@ -92,8 +92,10 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
     }
     for (int i = 0; i < reversedEntries.size(); i += 2) {
       if (reversedEntries.get(i).equals(key)) {
-        reversedEntries.set(i + 1, null);
-        numEntries--;
+        if (reversedEntries.get(i + 1) != null) {
+          reversedEntries.set(i + 1, null);
+          numEntries--;
+        }
         return this;
       }
     }

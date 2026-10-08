@@ -51,7 +51,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void parse_nullValuesParsedToEmptyObjects() {
     String objectPlaceholderString =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -69,7 +69,7 @@ class DeclarativeConfigurationParseTest {
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -128,12 +128,12 @@ class DeclarativeConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .withAttributeLimits(new AttributeLimitsModel())
-                .withTracerProvider(
+                .setAttributeLimits(new AttributeLimitsModel())
+                .setTracerProvider(
                     new TracerProviderModel()
-                        .withSampler(
+                        .setSampler(
                             new SamplerModel()
-                                .withTraceIdRatioBased(new TraceIdRatioBasedSamplerModel()))));
+                                .setTraceIdRatioBased(new TraceIdRatioBasedSamplerModel()))));
   }
 
   @Test
@@ -153,8 +153,8 @@ class DeclarativeConfigurationParseTest {
     Assertions.assertNotNull(model.getResource());
     assertThat(model.getResource().getAttributes())
         .containsExactly(
-            new AttributeNameValueModel().withName("single_quote").withValue("\"single\""),
-            new AttributeNameValueModel().withName("double_quote").withValue("\"double\""));
+            new AttributeNameValueModel().setName("single_quote").setValue("\"single\""),
+            new AttributeNameValueModel().setName("double_quote").setValue("\"double\""));
   }
 
   @ParameterizedTest
@@ -451,7 +451,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void read_WithEnvironmentVariables() {
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -472,33 +472,32 @@ class DeclarativeConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .withFileFormat("1.0")
-                .withTracerProvider(
+                .setFileFormat("1.2")
+                .setTracerProvider(
                     new TracerProviderModel()
-                        .withProcessors(
+                        .setProcessors(
                             Arrays.asList(
                                 new SpanProcessorModel()
-                                    .withBatch(
+                                    .setBatch(
                                         new BatchSpanProcessorModel()
-                                            .withExporter(
+                                            .setExporter(
                                                 new SpanExporterModel()
-                                                    .withOtlpHttp(
+                                                    .setOtlpHttp(
                                                         new OtlpHttpExporterModel()
-                                                            .withEndpoint(
+                                                            .setEndpoint(
                                                                 "http://collector:4317")))),
                                 new SpanProcessorModel()
-                                    .withBatch(
+                                    .setBatch(
                                         new BatchSpanProcessorModel()
-                                            .withExporter(
+                                            .setExporter(
                                                 new SpanExporterModel()
-                                                    .withOtlpHttp(
-                                                        new OtlpHttpExporterModel())))))));
+                                                    .setOtlpHttp(new OtlpHttpExporterModel())))))));
   }
 
   @Test
   void read_WithSystemProperties() {
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -519,33 +518,32 @@ class DeclarativeConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .withFileFormat("1.0")
-                .withTracerProvider(
+                .setFileFormat("1.2")
+                .setTracerProvider(
                     new TracerProviderModel()
-                        .withProcessors(
+                        .setProcessors(
                             Arrays.asList(
                                 new SpanProcessorModel()
-                                    .withBatch(
+                                    .setBatch(
                                         new BatchSpanProcessorModel()
-                                            .withExporter(
+                                            .setExporter(
                                                 new SpanExporterModel()
-                                                    .withOtlpHttp(
+                                                    .setOtlpHttp(
                                                         new OtlpHttpExporterModel()
-                                                            .withEndpoint(
+                                                            .setEndpoint(
                                                                 "http://collector:4318")))),
                                 new SpanProcessorModel()
-                                    .withBatch(
+                                    .setBatch(
                                         new BatchSpanProcessorModel()
-                                            .withExporter(
+                                            .setExporter(
                                                 new SpanExporterModel()
-                                                    .withOtlpHttp(
-                                                        new OtlpHttpExporterModel())))))));
+                                                    .setOtlpHttp(new OtlpHttpExporterModel())))))));
   }
 
   @Test
   void read_WithMixedEnvVarsAndSystemProperties() {
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
@@ -564,19 +562,19 @@ class DeclarativeConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .withFileFormat("1.0")
-                .withResource(
+                .setFileFormat("1.2")
+                .setResource(
                     new ResourceModel()
-                        .withAttributes(
+                        .setAttributes(
                             Arrays.asList(
                                 new AttributeNameValueModel()
-                                    .withName("service.name")
-                                    .withValue("my-service"),
+                                    .setName("service.name")
+                                    .setValue("my-service"),
                                 new AttributeNameValueModel()
-                                    .withName("service.version")
-                                    .withValue("1.2.3"),
+                                    .setName("service.version")
+                                    .setValue("1.2.3"),
                                 new AttributeNameValueModel()
-                                    .withName("deployment.environment")
-                                    .withValue("production")))));
+                                    .setName("deployment.environment")
+                                    .setValue("production")))));
   }
 }

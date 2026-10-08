@@ -16,12 +16,8 @@ class ViewTest {
   @Test
   void stringRepresentation() {
     assertThat(View.builder().build().toString())
-        .isEqualTo(
-            "View{"
-                + "aggregation=DefaultAggregation, "
-                + "attributesProcessor=NoopAttributesProcessor{}, "
-                + "cardinalityLimit=2000"
-                + "}");
+        .startsWith("View{aggregation=DefaultAggregation, attributeFilter=")
+        .endsWith(", cardinalityLimit=2000}");
     assertThat(
             View.builder()
                 .setName("name")
@@ -36,7 +32,7 @@ class ViewTest {
                 + "name=name, "
                 + "description=description, "
                 + "aggregation=SumAggregation, "
-                + "attributesProcessor=AttributeKeyFilteringProcessor{nameFilter=IncludeExcludePredicate{globMatchingEnabled=false, included=[key1, key2]}}, "
+                + "attributeFilter=IncludeExcludePredicate{globMatchingEnabled=false, included=[key1, key2]}, "
                 + "cardinalityLimit=10"
                 + "}");
   }

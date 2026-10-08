@@ -110,7 +110,8 @@ final class EnvironmentResource {
     }
 
     int n = value.length();
-    // Use byte array to properly handle multi-byte UTF-8 sequences
+    StringBuilder result = new StringBuilder(n);
+    // Collect consecutive percent-encoded bytes so multi-byte UTF-8 sequences decode together
     byte[] bytes = new byte[n];
     int pos = 0;
 
@@ -129,11 +130,19 @@ final class EnvironmentResource {
           continue;
         }
       }
-      // Keep '+' as '+' (unlike URLDecoder) and preserve invalid percent sequences which will be
-      // treated as literals
-      bytes[pos++] = (byte) c;
+      if (pos > 0) {
+        result.append(new String(bytes, 0, pos, StandardCharsets.UTF_8));
+        pos = 0;
+      }
+      // Keep '+' as '+' (unlike URLDecoder), preserve invalid percent sequences which will be
+      // treated as literals, and keep characters that are not percent-encoded (including
+      // non-ASCII) as is
+      result.append(c);
     }
-    return new String(bytes, 0, pos, StandardCharsets.UTF_8);
+    if (pos > 0) {
+      result.append(new String(bytes, 0, pos, StandardCharsets.UTF_8));
+    }
+    return result.toString();
   }
 
   private static final class Segment {

@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"request_captured_headers", "response_captured_headers", "known_methods"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalHttpServerInstrumentationModel {
 
   @Nullable private List<String> requestCapturedHeaders;
@@ -33,7 +33,7 @@ public class ExperimentalHttpServerInstrumentationModel {
   }
 
   @JsonProperty("request_captured_headers")
-  public ExperimentalHttpServerInstrumentationModel withRequestCapturedHeaders(
+  public ExperimentalHttpServerInstrumentationModel setRequestCapturedHeaders(
       List<String> requestCapturedHeaders) {
     this.requestCapturedHeaders = requestCapturedHeaders;
     return this;
@@ -51,7 +51,7 @@ public class ExperimentalHttpServerInstrumentationModel {
   }
 
   @JsonProperty("response_captured_headers")
-  public ExperimentalHttpServerInstrumentationModel withResponseCapturedHeaders(
+  public ExperimentalHttpServerInstrumentationModel setResponseCapturedHeaders(
       List<String> responseCapturedHeaders) {
     this.responseCapturedHeaders = responseCapturedHeaders;
     return this;
@@ -75,7 +75,7 @@ public class ExperimentalHttpServerInstrumentationModel {
   }
 
   @JsonProperty("known_methods")
-  public ExperimentalHttpServerInstrumentationModel withKnownMethods(List<String> knownMethods) {
+  public ExperimentalHttpServerInstrumentationModel setKnownMethods(List<String> knownMethods) {
     this.knownMethods = knownMethods;
     return this;
   }

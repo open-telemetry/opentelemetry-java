@@ -12,7 +12,9 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import java.util.Objects;
 
 /**
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
@@ -37,6 +39,7 @@ public interface OpenTelemetry {
    * otherwise.
    */
   static OpenTelemetry propagating(ContextPropagators propagators) {
+    Objects.requireNonNull(propagators, "propagators");
     return DefaultOpenTelemetry.getPropagating(propagators);
   }
 
@@ -52,6 +55,10 @@ public interface OpenTelemetry {
    * @return a tracer instance.
    */
   default Tracer getTracer(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "getTracer", "instrumentationScopeName");
+      return OpenTelemetry.noop().getTracer("otel.global.opentelemetry");
+    }
     return getTracerProvider().get(instrumentationScopeName);
   }
 
@@ -65,6 +72,14 @@ public interface OpenTelemetry {
    * @return a tracer instance.
    */
   default Tracer getTracer(String instrumentationScopeName, String instrumentationScopeVersion) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "getTracer", "instrumentationScopeName");
+      return OpenTelemetry.noop().getTracer("otel.global.opentelemetry");
+    }
+    if (instrumentationScopeVersion == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "getTracer", "instrumentationScopeVersion");
+      return OpenTelemetry.noop().getTracer("otel.global.opentelemetry");
+    }
     return getTracerProvider().get(instrumentationScopeName, instrumentationScopeVersion);
   }
 
@@ -77,6 +92,10 @@ public interface OpenTelemetry {
    * @since 1.4.0
    */
   default TracerBuilder tracerBuilder(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "tracerBuilder", "instrumentationScopeName");
+      return OpenTelemetry.noop().tracerBuilder("otel.global.opentelemetry");
+    }
     return getTracerProvider().tracerBuilder(instrumentationScopeName);
   }
 
@@ -99,6 +118,10 @@ public interface OpenTelemetry {
    * @since 1.10.0
    */
   default Meter getMeter(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "getMeter", "instrumentationScopeName");
+      return OpenTelemetry.noop().getMeter("otel.global.opentelemetry");
+    }
     return getMeterProvider().get(instrumentationScopeName);
   }
 
@@ -111,6 +134,10 @@ public interface OpenTelemetry {
    * @since 1.10.0
    */
   default MeterBuilder meterBuilder(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetry.class, "meterBuilder", "instrumentationScopeName");
+      return OpenTelemetry.noop().meterBuilder("otel.global.opentelemetry");
+    }
     return getMeterProvider().meterBuilder(instrumentationScopeName);
   }
 

@@ -41,6 +41,10 @@ abstract class OtelJavaExtension {
 
     abstract val minJavaVersionSupported: Property<JavaVersion>
 
+    // TODO(#7874): Remove this property and enable the check unconditionally once all modules
+    // migrate.
+    abstract val requireSuppressWarningsExplanation: Property<Boolean>
+
     init {
         minJavaVersionSupported.convention(JavaVersion.VERSION_1_8)
         osgiEnabled.convention(true)
@@ -49,5 +53,6 @@ abstract class OtelJavaExtension {
         osgiServiceLoaderProvides.convention(emptyList())
         osgiServiceLoaderRequires.convention(emptyList())
         osgiServiceLoaderProcessor.convention(false)
+        requireSuppressWarningsExplanation.convention(true)
     }
 }

@@ -214,7 +214,7 @@ class ScopeConfiguratorTest {
         Meter scopeCMeter = openTelemetry.getMeter(scopeC.getName());
         Logger scopeCLogger = openTelemetry.getLogsBridge().get(scopeC.getName());
         Span spanC = scopeCTracer.spanBuilder("spanC").startSpan();
-        try (Scope spanCScope = spanB.makeCurrent()) {
+        try (Scope spanCScope = spanC.makeCurrent()) {
           scopeCLogger.logRecordBuilder().setBody("scopeC log message").emit();
         } finally {
           spanC.end();

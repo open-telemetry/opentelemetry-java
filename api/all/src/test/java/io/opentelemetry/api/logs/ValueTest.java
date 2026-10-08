@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -153,6 +154,9 @@ class ValueTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("value must not be null");
     assertThatThrownBy(() -> Value.of((Value<?>[]) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> Value.of((List<Value<?>>) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("value must not be null");
     assertThatThrownBy(() -> Value.of((KeyValue[]) null))

@@ -9,6 +9,7 @@ dependencies {
 }
 
 otelJava.moduleName.set("io.opentelemetry.gradle.customchecks")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 // We cannot use "--release" javac option here because that will forbid exporting com.sun.tools package.
 // We also can't seem to use the toolchain without the "--release" option. So disable everything.

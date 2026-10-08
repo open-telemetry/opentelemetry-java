@@ -10,7 +10,7 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
@@ -43,17 +43,17 @@ public class ServiceResourceDetector implements ComponentProvider {
     if (serviceName != null) {
       Entity serviceEntity =
           Entity.builder(
-                  SemConvAttributes.SERVICE_TYPE,
-                  Attributes.of(SemConvAttributes.SERVICE_NAME, serviceName))
-              .setSchemaUrl(SemConvAttributes.SCHEMA_URL_V1_40_0)
+                  SemConvConstants.SERVICE_TYPE,
+                  Attributes.of(SemConvConstants.SERVICE_NAME, serviceName))
+              .setSchemaUrl(SemConvConstants.SCHEMA_URL_V1_40_0)
               .build();
       EntityUtil.addEntity(builder, serviceEntity);
     }
     Entity serviceInstanceEntity =
         Entity.builder(
-                SemConvAttributes.SERVICE_INSTANCE_TYPE,
-                Attributes.of(SemConvAttributes.SERVICE_INSTANCE_ID, RANDOM_SERVICE_INSTANCE_ID))
-            .setSchemaUrl(SemConvAttributes.SCHEMA_URL_V1_40_0)
+                SemConvConstants.SERVICE_INSTANCE_TYPE,
+                Attributes.of(SemConvConstants.SERVICE_INSTANCE_ID, RANDOM_SERVICE_INSTANCE_ID))
+            .setSchemaUrl(SemConvConstants.SCHEMA_URL_V1_40_0)
             .build();
     EntityUtil.addEntity(builder, serviceInstanceEntity);
 

@@ -11,13 +11,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.ImmutableSet;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -29,7 +32,7 @@ class YamlDeclarativeConfigPropertiesTest {
   LogCapturer logs = LogCapturer.create().captureForType(YamlDeclarativeConfigProperties.class);
 
   private static final String extendedSchema =
-      "file_format: \"1.0\"\n"
+      "file_format: \"1.2\"\n"
           + "disabled: false\n"
           + "\n"
           + "resource:\n"
@@ -76,7 +79,7 @@ class YamlDeclarativeConfigPropertiesTest {
   @Test
   void configurationSchema() {
     // Validate can read declarative configuration schema properties
-    assertThat(structuredConfigProps.getString("file_format")).isEqualTo("1.0");
+    assertThat(structuredConfigProps.getString("file_format")).isEqualTo("1.2");
     DeclarativeConfigProperties resourceProps = structuredConfigProps.getStructured("resource");
     assertThat(resourceProps).isNotNull();
     List<DeclarativeConfigProperties> resourceAttributesList =
@@ -206,6 +209,21 @@ class YamlDeclarativeConfigPropertiesTest {
     assertThat(structuredConfigProps.getStructured("foo", empty())).isEqualTo(empty());
     assertThat(structuredConfigProps.getStructuredList("foo", Collections.emptyList()))
         .isEqualTo(Collections.emptyList());
+
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+    assertThat(otherProps.getString("str_key", "defaultStr")).isEqualTo("str_value");
+    assertThat(otherProps.getInt("int_key", 99)).isEqualTo(1);
+    assertThat(otherProps.getLong("int_key", 99L)).isEqualTo(1L);
+    assertThat(otherProps.getDouble("float_key", 9.99)).isEqualTo(1.1);
+    assertThat(otherProps.getBoolean("bool_key", false)).isTrue();
+    assertThat(otherProps.getScalarList("str_list_key", String.class, Collections.emptyList()))
+        .isEqualTo(Arrays.asList("val1", "val2"));
+    assertThat(otherProps.getStructured("map_key", empty()))
+        .isEqualTo(otherProps.getStructured("map_key"));
+    assertThat(otherProps.get("map_key")).isEqualTo(otherProps.getStructured("map_key"));
+    assertThat(otherProps.getStructuredList("list_key", Collections.emptyList()))
+        .isEqualTo(otherProps.getStructuredList("list_key"));
   }
 
   @Test
@@ -268,6 +286,67 @@ class YamlDeclarativeConfigPropertiesTest {
         .isEqualTo(Collections.emptyList());
   }
 
+  @Test
+  void typeIntrospection() {
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+
+    assertThat(otherProps.isString("str_key")).isTrue();
+    assertThat(otherProps.isBoolean("bool_key")).isTrue();
+    assertThat(otherProps.isInt("int_key")).isTrue();
+    assertThat(otherProps.isDouble("float_key")).isTrue();
+
+    // getInt and getLong accept each other's types, so the predicates do too
+    assertThat(otherProps.isLong("int_key")).isTrue();
+
+    assertThat(otherProps.isString("int_key")).isFalse();
+    assertThat(otherProps.isBoolean("str_key")).isFalse();
+    assertThat(otherProps.isInt("str_key")).isFalse();
+    assertThat(otherProps.isLong("str_key")).isFalse();
+    assertThat(otherProps.isDouble("str_key")).isFalse();
+
+    // null-valued, non-scalar, and unconfigured keys are all false
+    assertThat(otherProps.isString("null_key")).isFalse();
+    assertThat(otherProps.isString("str_list_key")).isFalse();
+    assertThat(otherProps.isString("map_key")).isFalse();
+    assertThat(otherProps.isString("foo")).isFalse();
+
+    // the reason these exist: asking never reports a type mismatch
+    assertThat(logs.getEvents()).isEmpty();
+  }
+
+  @Test
+  void typeIntrospectionAgreesWithGetters() {
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+
+    for (String key : Arrays.asList("str_key", "int_key", "float_key", "bool_key", "null_key")) {
+      assertThat(otherProps.isString(key)).isEqualTo(otherProps.getString(key) != null);
+      assertThat(otherProps.isBoolean(key)).isEqualTo(otherProps.getBoolean(key) != null);
+      assertThat(otherProps.isInt(key)).isEqualTo(otherProps.getInt(key) != null);
+      assertThat(otherProps.isLong(key)).isEqualTo(otherProps.getLong(key) != null);
+      assertThat(otherProps.isDouble(key)).isEqualTo(otherProps.getDouble(key) != null);
+    }
+  }
+
+  @Test
+  void typeIntrospectionAcceptsGetterConversions() {
+    // YAML parsing yields Integer and Double, so build the Long and Float cases directly
+    Map<String, Object> properties = new HashMap<>();
+    properties.put("long_key", 5L);
+    properties.put("float_key", 1.5f);
+    DeclarativeConfigProperties props =
+        YamlDeclarativeConfigProperties.create(
+            properties, ComponentLoader.forClassLoader(getClass().getClassLoader()));
+
+    assertThat(props.isInt("long_key")).isTrue();
+    assertThat(props.isLong("long_key")).isTrue();
+    assertThat(props.isDouble("float_key")).isTrue();
+    assertThat(props.isDouble("long_key")).isFalse();
+    assertThat(props.isLong("float_key")).isFalse();
+    assertThat(logs.getEvents()).isEmpty();
+  }
+
   private void assertWarning(String message) {
     logs.assertContains(
         e ->
@@ -296,5 +375,10 @@ class YamlDeclarativeConfigPropertiesTest {
     assertThat(empty().getStructured("foo", empty())).isEqualTo(empty());
     assertThat(empty().getStructuredList("foo", Collections.emptyList()))
         .isEqualTo(Collections.emptyList());
+    assertThat(empty().isString("foo")).isFalse();
+    assertThat(empty().isBoolean("foo")).isFalse();
+    assertThat(empty().isInt("foo")).isFalse();
+    assertThat(empty().isLong("foo")).isFalse();
+    assertThat(empty().isDouble("foo")).isFalse();
   }
 }

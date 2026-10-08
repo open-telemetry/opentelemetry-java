@@ -79,6 +79,27 @@ class ReadWriteLogRecordTest {
     assertThat(logRecord.getTimestampEpochNanos()).isEqualTo(100);
   }
 
+  @Test
+  void defaultGetEventName_returnsEventNameFromLogRecordData() {
+    LogRecordData data = TestLogRecordData.builder().setEventName("my.event").build();
+    // Same as above: exercise the interface default through an implementation of only the
+    // abstract methods.
+    ReadWriteLogRecord logRecord =
+        new ReadWriteLogRecord() {
+          @Override
+          public <T> ReadWriteLogRecord setAttribute(AttributeKey<T> key, T value) {
+            return this;
+          }
+
+          @Override
+          public LogRecordData toLogRecordData() {
+            return data;
+          }
+        };
+
+    assertThat(logRecord.getEventName()).isEqualTo("my.event");
+  }
+
   SdkReadWriteLogRecord buildLogRecord() {
     Value<?> body = Value.of("bod");
     AttributesMap initialAttributes = AttributesMap.create(100, 200);

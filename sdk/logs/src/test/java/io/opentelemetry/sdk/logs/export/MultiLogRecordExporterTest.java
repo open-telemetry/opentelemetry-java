@@ -145,4 +145,23 @@ class MultiLogRecordExporterTest {
         .isEqualTo(
             "MultiLogRecordExporter{logRecordExporters=[LogRecordExporter1, LogRecordExporter2]}");
   }
+
+  @Test
+  @SuppressLogger(MultiLogRecordExporter.class)
+  void twoLogRecordExporter_FirstThrowsCheckedException() {
+    LogRecordExporter multiLogRecordExporter =
+        LogRecordExporter.composite(Arrays.asList(logRecordExporter1, logRecordExporter2));
+
+    Mockito.doAnswer(
+            invocation -> {
+              throw new Exception("No export for you.");
+            })
+        .when(logRecordExporter1)
+        .export(ArgumentMatchers.anyList());
+    when(logRecordExporter2.export(same(LOG_LIST))).thenReturn(CompletableResultCode.ofSuccess());
+
+    assertThat(multiLogRecordExporter.export(LOG_LIST).isSuccess()).isFalse();
+    verify(logRecordExporter1).export(same(LOG_LIST));
+    verify(logRecordExporter2).export(same(LOG_LIST));
+  }
 }

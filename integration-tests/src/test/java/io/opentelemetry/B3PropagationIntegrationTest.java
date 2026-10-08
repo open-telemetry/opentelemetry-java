@@ -161,7 +161,7 @@ class B3PropagationIntegrationTest {
 
   @ParameterizedTest
   @ArgumentsSource(WebClientArgumentSupplier.class)
-  void propagation(String testType, WebClient client) {
+  void propagation(WebClient client) {
     OpenTelemetrySdk clientSdk = setupClient();
 
     Span span = clientSdk.getTracer("testTracer").spanBuilder("clientSpan").startSpan();
@@ -182,7 +182,7 @@ class B3PropagationIntegrationTest {
 
   @ParameterizedTest
   @ArgumentsSource(WebClientArgumentSupplier.class)
-  void noClientTracing(String testType, WebClient client) {
+  void noClientTracing(WebClient client) {
     assertThat(client.get("/frontend").aggregate().join().contentUtf8()).isEqualTo("OK");
 
     List<SpanData> finishedSpanItems = spanExporter.getFinishedSpanItems();
@@ -240,8 +240,8 @@ class B3PropagationIntegrationTest {
     public Stream<? extends Arguments> provideArguments(
         ParameterDeclarations parameters, ExtensionContext context) {
       return Stream.of(
-          Arguments.argumentSet("b3multi", "b3multi", b3MultiClient),
-          Arguments.argumentSet("b3single", "b3single", b3SingleClient));
+          Arguments.argumentSet("b3multi", b3MultiClient),
+          Arguments.argumentSet("b3single", b3SingleClient));
     }
   }
 }

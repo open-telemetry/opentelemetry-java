@@ -6,7 +6,7 @@
 package io.opentelemetry.context;
 
 /**
- * Key for indexing values of type {@link T} stored in a {@link Context}. {@link ContextKey} are
+ * Key for indexing values of type {@code T} stored in a {@link Context}. {@link ContextKey} are
  * compared by reference, so it is expected that only one {@link ContextKey} is created for a
  * particular type of context value.
  *

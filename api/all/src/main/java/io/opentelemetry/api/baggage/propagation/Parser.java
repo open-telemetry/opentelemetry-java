@@ -147,9 +147,12 @@ class Parser {
     String decodedValue;
     try {
       decodedValue = decodeValue(value);
-      metadataValue = decodeValue(metadataValue);
     } catch (IllegalArgumentException e) {
       LOGGER.log(Level.WARNING, "Skipping invalid baggage member", e);
+      return;
+    }
+    if (!W3CBaggagePropagator.isValidBaggageMetadata(metadataValue)) {
+      LOGGER.log(Level.WARNING, "Skipping baggage member with invalid metadata");
       return;
     }
     BaggageEntryMetadata baggageEntryMetadata =

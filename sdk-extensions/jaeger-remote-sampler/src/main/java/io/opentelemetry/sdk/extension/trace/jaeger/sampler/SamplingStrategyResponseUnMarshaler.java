@@ -36,8 +36,9 @@ class SamplingStrategyResponseUnMarshaler {
           responseBuilder.setProbabilisticSamplingStrategy(parseProbabilistic(input, length));
           break;
         case 26:
-          input.readRawVarint32(); // skip length
-          responseBuilder.setRateLimitingSamplingStrategy(parseRateLimiting(input));
+          int rateLimitingLength = input.readRawVarint32();
+          responseBuilder.setRateLimitingSamplingStrategy(
+              parseRateLimiting(input, rateLimitingLength));
           break;
         case 34:
           input.readRawVarint32(); // skip length
@@ -95,9 +96,13 @@ class SamplingStrategyResponseUnMarshaler {
   }
 
   private static SamplingStrategyResponse.RateLimitingSamplingStrategy parseRateLimiting(
-      CodedInputStream input) throws IOException {
+      CodedInputStream input, int length) throws IOException {
     SamplingStrategyResponse.RateLimitingSamplingStrategy.Builder builder =
         new SamplingStrategyResponse.RateLimitingSamplingStrategy.Builder();
+    if (length == 0) {
+      // Default rate limiting strategy.
+      return builder.setMaxTracesPerSecond(0).build();
+    }
     boolean done = false;
     while (!done) {
       int tag = input.readTag();

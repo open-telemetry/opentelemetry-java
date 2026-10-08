@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"output_stream"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalOtlpFileExporterModel {
 
   @Nullable private String outputStream;
@@ -32,7 +32,7 @@ public class ExperimentalOtlpFileExporterModel {
   }
 
   @JsonProperty("output_stream")
-  public ExperimentalOtlpFileExporterModel withOutputStream(String outputStream) {
+  public ExperimentalOtlpFileExporterModel setOutputStream(String outputStream) {
     this.outputStream = outputStream;
     return this;
   }

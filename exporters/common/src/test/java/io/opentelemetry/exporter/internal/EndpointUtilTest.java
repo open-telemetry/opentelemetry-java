@@ -27,7 +27,15 @@ class EndpointUtilTest {
         Arguments.argumentSet("http", "http://localhost:4318"),
         Arguments.argumentSet("https", "https://localhost:4317"),
         Arguments.argumentSet("path", "http://localhost:4318/v1/traces"),
-        Arguments.argumentSet("userinfo", "http://foo:bar@localhost:4317/path"));
+        Arguments.argumentSet("userinfo", "http://foo:bar@localhost:4317/path"),
+        // URI.getHost() is null for these (JDK-8188305); they are valid DNS names.
+        Arguments.argumentSet(
+            "dns label starting with digit", "http://otlp.1234-k8s-namespace:4318"),
+        Arguments.argumentSet(
+            "dns label starting with digit, path",
+            "http://otlp-collector.14014-mosaik:4318/v1/metrics"),
+        Arguments.argumentSet(
+            "dns label starting with digit, userinfo", "http://foo:bar@otlp.1234-ns:4317/path"));
   }
 
   @ParameterizedTest
@@ -42,6 +50,7 @@ class EndpointUtilTest {
     return Stream.of(
         Arguments.argumentSet("opaque, no host", "http:localhost:4317"),
         Arguments.argumentSet("single slash, no host", "https:/foo"),
+        Arguments.argumentSet("empty host with port", "http://:4318"),
         Arguments.argumentSet("no scheme", "localhost"),
         Arguments.argumentSet("wrong scheme", "gopher://localhost"));
   }

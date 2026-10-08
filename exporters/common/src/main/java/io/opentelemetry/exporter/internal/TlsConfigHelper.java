@@ -45,6 +45,9 @@ public class TlsConfigHelper {
    * @param trustedCertsPem Certificate in PEM format.
    */
   public void setTrustManagerFromCerts(byte[] trustedCertsPem) {
+    if (sslContext != null) {
+      throw new IllegalStateException("sslContext has been previously configured");
+    }
     if (trustManager != null) {
       throw new IllegalStateException("trustManager has been previously configured");
     }
@@ -72,6 +75,9 @@ public class TlsConfigHelper {
     if (keyManager != null) {
       throw new IllegalStateException("keyManager has been previously configured");
     }
+    if (sslContext != null) {
+      throw new IllegalStateException("sslContext has been previously configured");
+    }
 
     try {
       keyManager = TlsUtil.keyManager(privateKeyPem, certificatePem);
@@ -94,6 +100,9 @@ public class TlsConfigHelper {
   public void setSslContext(SSLContext sslContext, X509TrustManager trustManager) {
     if (this.sslContext != null || this.trustManager != null) {
       throw new IllegalStateException("sslContext or trustManager has been previously configured");
+    }
+    if (this.keyManager != null) {
+      throw new IllegalStateException("keyManager has been previously configured");
     }
     this.trustManager = trustManager;
     this.sslContext = sslContext;

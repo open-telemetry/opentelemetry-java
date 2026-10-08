@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalLanguageSpecificInstrumentationModel {
 
   private Map<String, ExperimentalLanguageSpecificInstrumentationPropertyModel>
@@ -30,7 +30,7 @@ public class ExperimentalLanguageSpecificInstrumentationModel {
   }
 
   @JsonAnySetter
-  public ExperimentalLanguageSpecificInstrumentationModel withAdditionalProperty(
+  public ExperimentalLanguageSpecificInstrumentationModel setAdditionalProperty(
       String name, ExperimentalLanguageSpecificInstrumentationPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

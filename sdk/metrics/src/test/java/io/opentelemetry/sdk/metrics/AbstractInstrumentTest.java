@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -22,6 +23,8 @@ class AbstractInstrumentTest {
           InstrumentValueType.LONG,
           Advice.empty());
 
+  private static final SdkMeter SDK_METER = mock(SdkMeter.class);
+
   @Test
   void getValues() {
     TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
@@ -37,7 +40,7 @@ class AbstractInstrumentTest {
 
   private static final class TestInstrument extends AbstractInstrument {
     TestInstrument(InstrumentDescriptor descriptor) {
-      super(descriptor);
+      super(descriptor, SDK_METER);
     }
   }
 }

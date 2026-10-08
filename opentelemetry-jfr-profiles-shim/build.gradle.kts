@@ -7,6 +7,7 @@ plugins {
 
 description = "OpenTelemetry - JFR to Profiles data conversion example"
 otelJava.moduleName.set("io.opentelemetry.jfr.profiles.shim")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 tasks {
   // this module uses the jdk.jfr.consumer API, which was backported into 1.8 but is '@since 9'

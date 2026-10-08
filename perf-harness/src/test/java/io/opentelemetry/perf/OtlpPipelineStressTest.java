@@ -70,7 +70,7 @@ public class OtlpPipelineStressTest {
   public static final GenericContainer<?> collectorContainer =
       new GenericContainer<>(
               DockerImageName.parse(
-                  "otel/opentelemetry-collector-contrib:0.156.0@sha256:125bdbeb7590cc1952c5b3430ecf14063568980c2c93d5b38676cc0446ed8108"))
+                  "otel/opentelemetry-collector-contrib:0.162.0@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6"))
           .withImagePullPolicy(PullPolicy.alwaysPull())
           .withNetwork(network)
           .withNetworkAliases("otel-collector")
@@ -141,7 +141,7 @@ public class OtlpPipelineStressTest {
 
   @Test
   @Disabled("we don't want to run this with every build.")
-  void oltpExportWithFlakyCollector() throws IOException, InterruptedException {
+  void otlpExportWithFlakyCollector() throws IOException, InterruptedException {
     ToxicList toxics = collectorProxy.toxics();
     //    Latency latency = toxics.latency("jittery_latency", ToxicDirection.UPSTREAM, 500);
     //    latency.setJitter(1000);

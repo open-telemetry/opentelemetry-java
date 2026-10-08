@@ -78,6 +78,27 @@ class OtTracePropagatorTest {
   }
 
   @Test
+  void extractWithLambdaGetter() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put("ot-tracer-traceid", SHORT_TRACE_ID);
+    carrier.put("ot-tracer-spanid", SPAN_ID);
+    carrier.put("ot-tracer-sampled", "true");
+    carrier.put("ot-baggage-key", "value");
+    TextMapGetter<Map<String, String>> lambdaGetter =
+        (map, key) -> map == null ? null : map.get(key);
+
+    Context extracted = propagator.extract(Context.root(), carrier, lambdaGetter);
+
+    assertThat(getSpanContext(extracted))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                SHORT_TRACE_ID_FULL, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
+    assertThat(Baggage.fromContext(extracted).isEmpty()).isTrue();
+    assertThat(propagator.extract(Context.root(), Collections.emptyMap(), lambdaGetter))
+        .isSameAs(Context.root());
+  }
+
+  @Test
   void inject_invalidContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     propagator.inject(
@@ -388,6 +409,19 @@ class OtTracePropagatorTest {
 
     Baggage expectedBaggage = Baggage.builder().put("some-key", "value").build();
     assertThat(Baggage.fromContext(context)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_Baggage_EmptyKey() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(OtTracePropagator.PREFIX_BAGGAGE_HEADER, "value"); // Not really a valid key.
+
+    Context context = propagator.extract(Context.current(), carrier, getter);
+
+    assertThat(Baggage.fromContext(context)).isEqualTo(Baggage.empty());
   }
 
   @Test

@@ -78,6 +78,10 @@ public final class JaegerPropagator implements TextMapPropagator {
   private static final int MAX_BAGGAGE_ENTRIES = 64;
   private static final int MAX_BAGGAGE_BYTES = 8192;
 
+  // Bounds the parse work for a single jaeger-baggage header. Counts malformed tokens, which are
+  // not bounded by MAX_BAGGAGE_ENTRIES because they add no entry.
+  private static final int MAX_BAGGAGE_HEADER_TOKENS = MAX_BAGGAGE_ENTRIES;
+
   private static final Collection<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
   private static final JaegerPropagator INSTANCE = new JaegerPropagator();
 
@@ -201,7 +205,9 @@ public final class JaegerPropagator implements TextMapPropagator {
       }
     }
 
-    String[] parts = value.split(String.valueOf(PROPAGATION_HEADER_DELIMITER));
+    // Bound the split so a header full of delimiters cannot force allocation of an arbitrarily
+    // large token array before the length check below.
+    String[] parts = value.split(String.valueOf(PROPAGATION_HEADER_DELIMITER), 5);
     if (parts.length != 4) {
       logger.fine(
           "Invalid header '"
@@ -245,6 +251,7 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   @Nullable
+  @SuppressWarnings("deprecation") // Legacy baggage headers require key enumeration.
   private static <C> Baggage getBaggageFromHeader(@Nullable C carrier, TextMapGetter<C> getter) {
     BaggageBuilder builder = null;
     int entriesAdded = 0;
@@ -284,6 +291,7 @@ public final class JaegerPropagator implements TextMapPropagator {
               parseBaggageHeader(
                   value,
                   builder,
+                  MAX_BAGGAGE_HEADER_TOKENS,
                   MAX_BAGGAGE_ENTRIES - entriesAdded,
                   MAX_BAGGAGE_BYTES - bytesAdded);
           entriesAdded += counts[0];
@@ -291,31 +299,104 @@ public final class JaegerPropagator implements TextMapPropagator {
         }
       }
     }
-    return builder == null ? null : builder.build();
+    if (builder == null) {
+      return null;
+    }
+    Baggage baggage = builder.build();
+    return baggage.isEmpty() ? null : baggage;
   }
 
-  /** Returns a two-element array of {@code [entriesAdded, bytesAdded]}. */
+  /**
+   * Parses a single {@code jaeger-baggage} header, stopping after {@code maxTokens} tokens, after
+   * {@code maxEntries} entries have been added, or once the next entry would exceed {@code
+   * maxBytes}.
+   *
+   * <p>{@code maxTokens} bounds the parse work and counts malformed tokens, so a header of entirely
+   * malformed tokens cannot keep the loop running to the end of the input. {@code maxEntries} is a
+   * separate acceptance bound, so malformed tokens do not consume the caller's remaining entry
+   * budget.
+   *
+   * <p>Returns a two-element array of {@code [entriesAdded, bytesAdded]}, reflecting what was
+   * actually added to {@code builder}.
+   */
   private static int[] parseBaggageHeader(
-      String header, BaggageBuilder builder, int maxEntries, int maxBytes) {
+      String header, BaggageBuilder builder, int maxTokens, int maxEntries, int maxBytes) {
     int entriesAdded = 0;
     int bytesAdded = 0;
-    for (String part : header.split("\\s*,\\s*")) {
-      if (entriesAdded >= maxEntries || bytesAdded > maxBytes) {
+    int tokensParsed = 0;
+    int len = header.length();
+    int cursor = 0;
+    while (cursor < len && tokensParsed < maxTokens && entriesAdded < maxEntries) {
+      int comma = header.indexOf(',', cursor);
+      int segEnd = (comma == -1) ? len : comma;
+      int segStart = cursor;
+      cursor = (comma == -1) ? len : comma + 1;
+
+      // Skip empty segments (e.g., leading/trailing/repeated commas) without consuming budget.
+      int keyStart = skipLeadingWhitespace(header, segStart, segEnd);
+      if (keyStart == segEnd) {
+        continue;
+      }
+      tokensParsed++;
+
+      int eq = indexOfSoleEquals(header, keyStart, segEnd);
+      if (eq < 0) {
+        logMalformed(header, keyStart, segEnd);
+        continue;
+      }
+      int keyEnd = trimTrailingWhitespace(header, keyStart, eq);
+      int valStart = skipLeadingWhitespace(header, eq + 1, segEnd);
+      int valEnd = trimTrailingWhitespace(header, valStart, segEnd);
+      if (keyStart >= keyEnd || valStart >= valEnd) {
+        logMalformed(header, keyStart, segEnd);
+        continue;
+      }
+
+      int entryBytes = (keyEnd - keyStart) + (valEnd - valStart);
+      if (bytesAdded + entryBytes > maxBytes) {
         break;
       }
-      String[] kv = part.split("\\s*=\\s*");
-      if (kv.length == 2) {
-        if (bytesAdded + kv[0].length() + kv[1].length() > maxBytes) {
-          break;
-        }
-        builder.put(kv[0], kv[1]);
-        entriesAdded++;
-        bytesAdded += kv[0].length() + kv[1].length();
-      } else {
-        logger.fine("malformed token in " + BAGGAGE_HEADER + " header: " + part);
-      }
+      builder.put(header.substring(keyStart, keyEnd), header.substring(valStart, valEnd));
+      entriesAdded++;
+      bytesAdded += entryBytes;
     }
     return new int[] {entriesAdded, bytesAdded};
+  }
+
+  private static int skipLeadingWhitespace(String s, int from, int end) {
+    int i = from;
+    while (i < end && Character.isWhitespace(s.charAt(i))) {
+      i++;
+    }
+    return i;
+  }
+
+  private static int trimTrailingWhitespace(String s, int start, int end) {
+    int i = end;
+    while (i > start && Character.isWhitespace(s.charAt(i - 1))) {
+      i--;
+    }
+    return i;
+  }
+
+  /** Returns the index of the sole {@code '='} in {@code [from, end)}, or -1 if 0 or >1 exist. */
+  private static int indexOfSoleEquals(String s, int from, int end) {
+    int first = s.indexOf('=', from);
+    if (first < 0 || first >= end) {
+      return -1;
+    }
+    int second = s.indexOf('=', first + 1);
+    if (second >= 0 && second < end) {
+      return -1;
+    }
+    return first;
+  }
+
+  private static void logMalformed(String header, int start, int end) {
+    if (logger.isLoggable(Level.FINE)) {
+      logger.fine(
+          "malformed token in " + BAGGAGE_HEADER + " header: " + header.substring(start, end));
+    }
   }
 
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {

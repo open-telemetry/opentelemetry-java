@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.logs;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -34,6 +35,14 @@ public interface Logger {
    * @since 1.61.0
    */
   default boolean isEnabled(Severity severity, Context context) {
+    if (severity == null) {
+      ApiUsageLogger.logNullParam(Logger.class, "isEnabled", "severity");
+      return false;
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Logger.class, "isEnabled", "context");
+      return false;
+    }
     return true;
   }
 
@@ -43,6 +52,10 @@ public interface Logger {
    * @since 1.61.0
    */
   default boolean isEnabled(Severity severity) {
+    if (severity == null) {
+      ApiUsageLogger.logNullParam(Logger.class, "isEnabled", "severity");
+      return false;
+    }
     return isEnabled(severity, Context.current());
   }
 

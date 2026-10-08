@@ -11,6 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExemplarFilterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricReaderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamMode
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.MeterProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
@@ -73,34 +75,36 @@ class MeterProviderFactoryTest {
             "defaults", new MeterProviderModel(), SdkMeterProvider.builder().build()),
         Arguments.argumentSet(
             "with reader view and meter configurator",
-            new MeterProviderModel()
-                .withReaders(
-                    Collections.singletonList(
-                        new MetricReaderModel()
-                            .withPeriodic(
-                                new PeriodicMetricReaderModel()
-                                    .withExporter(
-                                        new PushMetricExporterModel()
-                                            .withOtlpHttp(new OtlpHttpMetricExporterModel())))))
-                .withViews(
-                    Collections.singletonList(
-                        new ViewModel()
-                            .withSelector(
-                                new ViewSelectorModel().withInstrumentName("instrument-name"))
-                            .withStream(
-                                new ViewStreamModel()
-                                    .withName("stream-name")
-                                    .withAttributeKeys(null))))
-                .withMeterConfiguratorDevelopment(
+            MeterProviderModelAccessor.setMeterConfigurator(
+                    new MeterProviderModel()
+                        .setReaders(
+                            Collections.singletonList(
+                                new MetricReaderModel()
+                                    .setPeriodic(
+                                        new PeriodicMetricReaderModel()
+                                            .setExporter(
+                                                new PushMetricExporterModel()
+                                                    .setOtlpHttp(
+                                                        new OtlpHttpMetricExporterModel())))))
+                        .setViews(
+                            Collections.singletonList(
+                                new ViewModel()
+                                    .setSelector(
+                                        new ViewSelectorModel()
+                                            .setInstrumentName("instrument-name"))
+                                    .setStream(
+                                        new ViewStreamModel()
+                                            .setName("stream-name")
+                                            .setAttributeKeys(null)))),
                     new ExperimentalMeterConfiguratorModel()
-                        .withDefaultConfig(new ExperimentalMeterConfigModel().withEnabled(false))
-                        .withMeters(
+                        .setDefaultConfig(new ExperimentalMeterConfigModel().setEnabled(false))
+                        .setMeters(
                             Collections.singletonList(
                                 new ExperimentalMeterMatcherAndConfigModel()
-                                    .withName("foo")
-                                    .withConfig(
-                                        new ExperimentalMeterConfigModel().withEnabled(true)))))
-                .withExemplarFilter(MeterProviderModel.ExemplarFilter.ALWAYS_ON),
+                                    .setName("foo")
+                                    .setConfig(
+                                        new ExperimentalMeterConfigModel().setEnabled(true)))))
+                .setExemplarFilter(ExemplarFilterModel.ALWAYS_ON),
             setMeterConfigurator(
                     SdkMeterProvider.builder(),
                     ScopeConfigurator.<MeterConfig>builder()

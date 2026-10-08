@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +58,12 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
   @Override
   public TelemetryExporterBuilder<SpanData> setConnectTimeout(Duration timeout) {
     builder.setConnectTimeout(timeout);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setMaxRequestSize(long maxRequestSize) {
+    builder.setMaxRequestMessageSize(maxRequestSize);
     return this;
   }
 
@@ -132,6 +139,12 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
   @Override
   public TelemetryExporterBuilder<SpanData> setExecutorService(ExecutorService executorService) {
     builder.setExecutorService(executorService);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setEnabledProtocols(List<String> enabledProtocols) {
+    builder.setEnabledProtocols(enabledProtocols);
     return this;
   }
 

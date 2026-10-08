@@ -8,6 +8,7 @@ plugins {
 
 description = "OpenTelemetry API Incubator"
 otelJava.moduleName.set("io.opentelemetry.api.incubator")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("com.fasterxml.jackson.databind"))
 
 dependencies {
@@ -39,5 +40,11 @@ testing {
         implementation("com.google.guava:guava")
       }
     }
+  }
+}
+
+tasks {
+  check {
+    dependsOn(testing.suites)
   }
 }

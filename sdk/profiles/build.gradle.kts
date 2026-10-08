@@ -7,6 +7,7 @@ plugins {
 
 description = "OpenTelemetry - Profiles SDK"
 otelJava.moduleName.set("sdk.profiles")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 dependencies {
   api(project(":sdk:common"))
