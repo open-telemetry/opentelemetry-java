@@ -49,7 +49,7 @@ class SdkEntityBuilderTest {
     EntityBuilder builder = Entity.builder("host", Attributes.of(stringKey("host.id"), "H1"));
     assertThatThrownBy(() -> builder.setDescription(description))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Identifying and descriptive attribute keys must be disjoint.");
+        .hasMessage("Identifying and descriptive attribute keys must not overlap.");
     assertThat(builder.build().getDescription()).isEqualTo(Attributes.empty());
   }
 
