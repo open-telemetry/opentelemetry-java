@@ -13,6 +13,9 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import io.opentelemetry.sdk.testing.assertj.AttributesAssert;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -48,6 +51,24 @@ class ResourceConfigurationTest {
     assertThat(attributes.get(AttributeKey.stringKey("cat"))).isNull();
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isNull();
     assertThat(attributes.get(AttributeKey.stringKey("color"))).isNull();
+  }
+
+  @Test
+  void configureResource_ServiceNameFromEnvironment() {
+    Resource resource =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.create(Collections.emptyMap(), componentLoader),
+            spiHelper,
+            (r, c) -> r);
+
+    assertThat(EntityUtil.getEntities(resource))
+        .containsExactly(
+            Entity.builder("service", Attributes.of(AttributeKey.stringKey("service.name"), "test"))
+                .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+                .build());
+    assertThat(EntityUtil.getUnassociatedAttributes(resource))
+        .containsEntry("cat", "meow")
+        .containsEntry("service.instance.id", "override-id");
   }
 
   @ParameterizedTest

@@ -9,10 +9,16 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.internal.StringUtils;
-import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
+import io.opentelemetry.sdk.resources.internal.AttributeCheckUtil;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -33,14 +39,6 @@ public abstract class Resource {
       AttributeKey.stringKey("telemetry.sdk.name");
   private static final AttributeKey<String> TELEMETRY_SDK_VERSION =
       AttributeKey.stringKey("telemetry.sdk.version");
-
-  private static final int MAX_LENGTH = 255;
-  private static final String ERROR_MESSAGE_INVALID_CHARS =
-      " should be a ASCII string with a length greater than 0 and not exceed "
-          + MAX_LENGTH
-          + " characters.";
-  private static final String ERROR_MESSAGE_INVALID_VALUE =
-      " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
   private static final Resource TELEMETRY_SDK;
 
@@ -90,8 +88,8 @@ public abstract class Resource {
    * @param attributes a map of attributes that describe the resource.
    * @return a {@code Resource}.
    * @throws NullPointerException if {@code attributes} is null.
-   * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
-   *     ASCII string or exceed {@link #MAX_LENGTH} characters.
+   * @throws IllegalArgumentException if an attribute key is empty, is not printable ASCII, or
+   *     exceeds 255 characters.
    */
   public static Resource create(Attributes attributes) {
     return create(attributes, null);
@@ -104,12 +102,61 @@ public abstract class Resource {
    * @param schemaUrl The URL of the OpenTelemetry schema used to create this Resource.
    * @return a {@code Resource}.
    * @throws NullPointerException if {@code attributes} is null.
-   * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
-   *     ASCII string or exceed {@link #MAX_LENGTH} characters.
+   * @throws IllegalArgumentException if an attribute key is empty, is not printable ASCII, or
+   *     exceeds 255 characters.
    */
   public static Resource create(Attributes attributes, @Nullable String schemaUrl) {
-    checkAttributes(Objects.requireNonNull(attributes, "attributes"));
-    return new AutoValue_Resource(schemaUrl, attributes);
+    return create(attributes, schemaUrl, Collections.emptyList());
+  }
+
+  /**
+   * Builds a resource after conflicts have been resolved. Entity types and attribute key owners
+   * must be unique, and ordinary attribute keys must not also belong to entities. This method
+   * rejects conflicting input rather than choosing which value wins; callers must merge ordinary
+   * attributes first and entities second before calling it.
+   *
+   * @param attributes unassociated attributes that describe the resource.
+   * @param schemaUrl The URL of the OpenTelemetry schema used to create this Resource.
+   * @param entities The normalized set of valid entities that participate in this resource.
+   * @return a {@code Resource}.
+   * @throws NullPointerException if {@code attributes} is null.
+   * @throws IllegalArgumentException if attribute keys are invalid or the state is not normalized.
+   */
+  static Resource create(
+      Attributes attributes, @Nullable String schemaUrl, Collection<Entity> entities) {
+    AttributeCheckUtil.checkAttributes(Objects.requireNonNull(attributes, "attributes"));
+    Collection<Entity> immutableEntities = Collections.unmodifiableList(new ArrayList<>(entities));
+    Set<String> entityTypes = new HashSet<>();
+    Set<String> entityKeys = new HashSet<>();
+    AttributesBuilder fullAttributes = Attributes.builder();
+    for (Entity entity : immutableEntities) {
+      if (!entityTypes.add(entity.getType())) {
+        throw new IllegalArgumentException("Entity types must be unique in normalized resources.");
+      }
+      putEntityAttributes(entity.getId(), entityKeys, fullAttributes);
+      putEntityAttributes(entity.getDescription(), entityKeys, fullAttributes);
+    }
+    attributes.forEach(
+        (key, value) -> {
+          if (entityKeys.contains(key.getKey())) {
+            throw new IllegalArgumentException(
+                "Unassociated attributes must not overlap entity attributes.");
+          }
+        });
+    fullAttributes.putAll(attributes);
+    return new AutoValue_Resource(schemaUrl, immutableEntities, fullAttributes.build());
+  }
+
+  private static void putEntityAttributes(
+      Attributes attributes, Set<String> entityKeys, AttributesBuilder fullAttributes) {
+    attributes.forEach(
+        (key, value) -> {
+          if (!entityKeys.add(key.getKey())) {
+            throw new IllegalArgumentException(
+                "Entity attribute keys must have a single owner and classification.");
+          }
+        });
+    fullAttributes.putAll(attributes);
   }
 
   /**
@@ -120,6 +167,24 @@ public abstract class Resource {
    */
   @Nullable
   public abstract String getSchemaUrl();
+
+  /**
+   * Returns a map of attributes that describe the resource, not associated with entities.
+   *
+   * @return a map of attributes.
+   */
+  final Attributes getUnassociatedAttributes() {
+    AttributesBuilder unassociatedAttributes = getAttributes().toBuilder();
+    unassociatedAttributes.removeIf(key -> EntityUtil.hasAttributeKey(getEntities(), key));
+    return unassociatedAttributes.build();
+  }
+
+  /**
+   * Returns a collection of associated entities.
+   *
+   * @return a collection of entities.
+   */
+  abstract Collection<Entity> getEntities();
 
   /**
    * Returns a map of attributes that describe the resource.
@@ -142,6 +207,16 @@ public abstract class Resource {
    * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code
    * other} {@code Resource}. In case of a collision, the "other" {@code Resource} takes precedence.
    *
+   * <p>Entity associations follow the rules documented in {@link ResourceBuilder}. Incoming
+   * entities are processed before incoming unassociated attributes. Merging the same resources in
+   * the same order can produce different entity associations depending on which pair is merged
+   * first: {@code a.merge(b).merge(c)} can differ from {@code a.merge(b.merge(c))}, even if both
+   * results have the same attribute keys and values.
+   *
+   * <p>The merged {@code schemaUrl} is computed from the two resources' {@code schemaUrl} values,
+   * not from their entities. If either is null, the other is used. If both are non-null and differ,
+   * the merged resource has no {@code schemaUrl}.
+   *
    * @param other the {@code Resource} that will be merged with {@code this}.
    * @return the newly merged {@code Resource}.
    */
@@ -149,60 +224,26 @@ public abstract class Resource {
     if (other == null || other.equals(EMPTY)) {
       return this;
     }
-
-    AttributesBuilder attrBuilder = Attributes.builder();
-    attrBuilder.putAll(this.getAttributes());
-    attrBuilder.putAll(other.getAttributes());
-
-    if (other.getSchemaUrl() == null) {
-      return create(attrBuilder.build(), getSchemaUrl());
-    }
-    if (getSchemaUrl() == null) {
-      return create(attrBuilder.build(), other.getSchemaUrl());
-    }
-    if (!other.getSchemaUrl().equals(getSchemaUrl())) {
-      logger.info(
-          "Attempting to merge Resources with different schemaUrls. "
-              + "The resulting Resource will have no schemaUrl assigned. Schema 1: "
-              + getSchemaUrl()
-              + " Schema 2: "
-              + other.getSchemaUrl());
-      // currently, behavior is undefined if schema URLs don't match. In the future, we may
-      // apply schema transformations if possible.
-      return create(attrBuilder.build(), null);
-    }
-    return create(attrBuilder.build(), getSchemaUrl());
+    return builder()
+        .putAll(this)
+        .putAll(other)
+        .buildWithSchemaUrl(mergeSchemaUrl(getSchemaUrl(), other.getSchemaUrl()));
   }
 
-  private static void checkAttributes(Attributes attributes) {
-    attributes.forEach(
-        (key, value) -> {
-          Utils.checkArgument(
-              isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
-          Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
-        });
-  }
-
-  /**
-   * Determines whether the given {@code String} is a valid printable ASCII string with a length not
-   * exceed {@link #MAX_LENGTH} characters.
-   *
-   * @param name the name to be validated.
-   * @return whether the name is valid.
-   */
-  private static boolean isValid(String name) {
-    return name.length() <= MAX_LENGTH && StringUtils.isPrintableString(name);
-  }
-
-  /**
-   * Determines whether the given {@code String} is a valid printable ASCII string with a length
-   * greater than 0 and not exceed {@link #MAX_LENGTH} characters.
-   *
-   * @param name the name to be validated.
-   * @return whether the name is valid.
-   */
-  private static boolean isValidAndNotEmpty(AttributeKey<?> name) {
-    return !name.getKey().isEmpty() && isValid(name.getKey());
+  @Nullable
+  private static String mergeSchemaUrl(@Nullable String base, @Nullable String next) {
+    if (base == null || next == null || base.equals(next)) {
+      return base == null ? next : base;
+    }
+    logger.info(
+        "Attempting to merge Resources with different schemaUrls. "
+            + "The resulting Resource will have no schemaUrl assigned. Schema 1: "
+            + base
+            + " Schema 2: "
+            + next);
+    // currently, behavior is undefined if schema URLs don't match. In the future, we may
+    // apply schema transformations if possible.
+    return null;
   }
 
   /**
@@ -217,6 +258,9 @@ public abstract class Resource {
   /**
    * Returns a new {@link ResourceBuilder} instance populated with the data of this {@link
    * Resource}.
+   *
+   * <p>A non-null schema URL is copied as explicit builder configuration, even if originally
+   * derived from entities. Subsequent entity changes do not cause this URL to be re-derived.
    *
    * @since 1.1.0
    */
