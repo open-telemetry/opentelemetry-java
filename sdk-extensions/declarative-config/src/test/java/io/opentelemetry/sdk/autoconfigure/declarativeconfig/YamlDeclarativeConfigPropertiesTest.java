@@ -209,6 +209,21 @@ class YamlDeclarativeConfigPropertiesTest {
     assertThat(structuredConfigProps.getStructured("foo", empty())).isEqualTo(empty());
     assertThat(structuredConfigProps.getStructuredList("foo", Collections.emptyList()))
         .isEqualTo(Collections.emptyList());
+
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+    assertThat(otherProps.getString("str_key", "defaultStr")).isEqualTo("str_value");
+    assertThat(otherProps.getInt("int_key", 99)).isEqualTo(1);
+    assertThat(otherProps.getLong("int_key", 99L)).isEqualTo(1L);
+    assertThat(otherProps.getDouble("float_key", 9.99)).isEqualTo(1.1);
+    assertThat(otherProps.getBoolean("bool_key", false)).isTrue();
+    assertThat(otherProps.getScalarList("str_list_key", String.class, Collections.emptyList()))
+        .isEqualTo(Arrays.asList("val1", "val2"));
+    assertThat(otherProps.getStructured("map_key", empty()))
+        .isEqualTo(otherProps.getStructured("map_key"));
+    assertThat(otherProps.get("map_key")).isEqualTo(otherProps.getStructured("map_key"));
+    assertThat(otherProps.getStructuredList("list_key", Collections.emptyList()))
+        .isEqualTo(otherProps.getStructuredList("list_key"));
   }
 
   @Test
