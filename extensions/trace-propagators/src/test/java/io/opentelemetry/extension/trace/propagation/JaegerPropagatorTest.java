@@ -398,6 +398,18 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void extract_MalformedUrlEncodedContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(PROPAGATION_HEADER, "%GG");
+
+    Context inputContext = Context.root();
+
+    Context extractedContext = jaegerPropagator.extract(inputContext, carrier, getter);
+
+    assertThat(extractedContext).isSameAs(inputContext);
+  }
+
+  @Test
   void extract_SampledContext_withBaggage() {
     Map<String, String> carrier = new LinkedHashMap<>();
     JaegerSpanContext context =

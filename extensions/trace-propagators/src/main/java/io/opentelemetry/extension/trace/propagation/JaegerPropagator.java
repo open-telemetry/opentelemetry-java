@@ -194,7 +194,7 @@ public final class JaegerPropagator implements TextMapPropagator {
       try {
         // the propagation value
         value = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
-      } catch (UnsupportedEncodingException e) {
+      } catch (UnsupportedEncodingException | IllegalArgumentException e) {
         logger.fine(
             "Error decoding '"
                 + PROPAGATION_HEADER
