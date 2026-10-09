@@ -317,6 +317,17 @@ class TraceAssertionsTest {
   }
 
   @Test
+  @SuppressWarnings("UnnecessarilyFullyQualified")
+  void nonStaticImportWorkaround() {
+    // Demonstrates the workaround for issue #6459:
+    // When mixing OpenTelemetryAssertions with other assertion libraries (e.g., Truth),
+    // use a non-static import and reference methods explicitly to avoid ambiguity.
+    io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat(SPAN1).hasName("span");
+    io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat(SPAN1)
+        .hasTraceId(TRACE_ID);
+  }
+
+  @Test
   @SuppressWarnings("Convert2MethodRef")
   void failure() {
     assertThatThrownBy(() -> assertThat(SPAN1).hasTraceId("foo"))
