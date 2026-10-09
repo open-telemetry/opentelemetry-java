@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -29,12 +30,14 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -45,10 +48,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
@@ -92,7 +99,10 @@ class SdkSpanBuilderTest {
 
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
     try {
-      assertThat(span.toSpanData().getLinks()).hasSize(2);
+      assertThat(span.toSpanData().getLinks())
+          .containsExactly(
+              LinkData.create(sampledSpanContext), LinkData.create(sampledSpanContext));
+      assertThat(span.toSpanData().getTotalRecordedLinks()).isEqualTo(2);
     } finally {
       span.end();
     }
@@ -111,6 +121,119 @@ class SdkSpanBuilderTest {
     } finally {
       span.end();
     }
+  }
+
+  @ParameterizedTest
+  @MethodSource("invalidLinkArguments")
+  void addLink_invalidWithMetadata(
+      boolean hasTraceState, @Nullable Attributes attributes, boolean recorded) {
+    SpanContext context =
+        SpanContext.create(
+            TraceId.getInvalid(),
+            SpanId.getInvalid(),
+            TraceFlags.builder().setSampled(true).setRandomTraceId(true).build(),
+            hasTraceState
+                ? TraceState.builder().put("vendor", "value").build()
+                : TraceState.getDefault());
+
+    SdkSpan span = (SdkSpan) sdkTracer.spanBuilder(SPAN_NAME).addLink(context).startSpan();
+    span.end();
+    assertThat(span.toSpanData().getLinks())
+        .containsExactlyElementsOf(
+            hasTraceState ? singletonList(LinkData.create(context)) : emptyList());
+    assertThat(span.toSpanData().getTotalRecordedLinks()).isEqualTo(hasTraceState ? 1 : 0);
+
+    span = (SdkSpan) sdkTracer.spanBuilder(SPAN_NAME).addLink(context, attributes).startSpan();
+    span.end();
+    assertThat(span.toSpanData().getLinks())
+        .containsExactlyElementsOf(
+            recorded
+                ? singletonList(
+                    LinkData.create(context, attributes == null ? Attributes.empty() : attributes))
+                : emptyList());
+    assertThat(span.toSpanData().getTotalRecordedLinks()).isEqualTo(recorded ? 1 : 0);
+  }
+
+  private static Stream<Arguments> invalidLinkArguments() {
+    Attributes attributes = Attributes.of(stringKey("message.id"), "123");
+    return Stream.of(
+        Arguments.argumentSet("attributes", false, attributes, true),
+        Arguments.argumentSet("trace state", true, Attributes.empty(), true),
+        Arguments.argumentSet("attributes and trace state", true, attributes, true),
+        Arguments.argumentSet("flags only", false, Attributes.empty(), false),
+        Arguments.argumentSet("null attributes", false, null, false),
+        Arguments.argumentSet("trace state and null attributes", true, null, true));
+  }
+
+  @ParameterizedTest
+  @MethodSource("linkLimits")
+  void addLink_invalidWithMetadataLimitsAndSampling(int maxLinks, int maxAttributes) {
+    Sampler sampler = Mockito.spy(Sampler.alwaysOn());
+    Mockito.when(mockedSpanProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    try (SdkTracerProvider provider =
+        SdkTracerProvider.builder()
+            .setSampler(sampler)
+            .addSpanProcessor(mockedSpanProcessor)
+            .setSpanLimits(
+                SpanLimits.builder()
+                    .setMaxNumberOfLinks(maxLinks)
+                    .setMaxNumberOfAttributesPerLink(maxAttributes)
+                    .setMaxAttributeValueLength(3)
+                    .build())
+            .build()) {
+      SpanContext invalid = SpanContext.getInvalid();
+      SpanContext withTraceState =
+          SpanContext.create(
+              TraceId.getInvalid(),
+              SpanId.getInvalid(),
+              TraceFlags.getDefault(),
+              TraceState.builder().put("vendor", "value").build());
+      Attributes attributes = Attributes.of(stringKey("key0"), "value", stringKey("key1"), "other");
+      SdkSpan span =
+          (SdkSpan)
+              provider
+                  .get("test")
+                  .spanBuilder(SPAN_NAME)
+                  .addLink(null, attributes)
+                  .addLink(invalid)
+                  .addLink(invalid, attributes)
+                  .addLink(sampledSpanContext)
+                  .addLink(withTraceState)
+                  .addLink(withTraceState, attributes)
+                  .startSpan();
+      span.end();
+      SpanData spanData = span.toSpanData();
+      assertThat(spanData.getLinks())
+          .containsExactlyElementsOf(
+              maxLinks == 0
+                  ? emptyList()
+                  : Arrays.asList(
+                      LinkData.create(
+                          invalid,
+                          maxAttributes == 0
+                              ? Attributes.empty()
+                              : Attributes.of(stringKey("key0"), "val"),
+                          2),
+                      LinkData.create(sampledSpanContext),
+                      LinkData.create(withTraceState)));
+      assertThat(spanData.getTotalRecordedLinks()).isEqualTo(4);
+      Mockito.verify(sampler)
+          .shouldSample(
+              ArgumentMatchers.any(),
+              ArgumentMatchers.anyString(),
+              ArgumentMatchers.eq(SPAN_NAME),
+              ArgumentMatchers.eq(SpanKind.INTERNAL),
+              ArgumentMatchers.eq(Attributes.empty()),
+              ArgumentMatchers.eq(spanData.getLinks()));
+    }
+  }
+
+  private static Stream<Arguments> linkLimits() {
+    return Stream.of(
+        Arguments.argumentSet("zero links and attributes", 0, 0),
+        Arguments.argumentSet("zero links", 0, 1),
+        Arguments.argumentSet("zero attributes", 3, 0),
+        Arguments.argumentSet("limited links and attributes", 3, 1));
   }
 
   @Test
@@ -247,8 +370,11 @@ class SdkSpanBuilderTest {
 
   @Test
   void addLinkSpanContextAttributes_nullAttributes() {
-    assertThatCode(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(sampledSpanContext, null))
-        .doesNotThrowAnyException();
+    SdkSpan span =
+        (SdkSpan) sdkTracer.spanBuilder(SPAN_NAME).addLink(sampledSpanContext, null).startSpan();
+    span.end();
+    assertThat(span.toSpanData().getLinks()).containsExactly(LinkData.create(sampledSpanContext));
+    assertThat(span.toSpanData().getTotalRecordedLinks()).isEqualTo(1);
   }
 
   @Test
