@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.67.0 (2026-10-09)
 
 ### API
 
