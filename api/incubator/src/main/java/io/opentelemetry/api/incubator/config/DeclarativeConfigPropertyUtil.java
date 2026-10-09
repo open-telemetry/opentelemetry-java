@@ -62,25 +62,33 @@ final class DeclarativeConfigPropertyUtil {
   @Nullable
   private static Object getString(
       String key, DeclarativeConfigProperties declarativeConfigProperties) {
-    return declarativeConfigProperties.getString(key);
+    return declarativeConfigProperties.isString(key)
+        ? declarativeConfigProperties.getString(key)
+        : null;
   }
 
   @Nullable
   private static Object getBoolean(
       String key, DeclarativeConfigProperties declarativeConfigProperties) {
-    return declarativeConfigProperties.getBoolean(key);
+    return declarativeConfigProperties.isBoolean(key)
+        ? declarativeConfigProperties.getBoolean(key)
+        : null;
   }
 
   @Nullable
   private static Object getLong(
       String key, DeclarativeConfigProperties declarativeConfigProperties) {
-    return declarativeConfigProperties.getLong(key);
+    return declarativeConfigProperties.isLong(key)
+        ? declarativeConfigProperties.getLong(key)
+        : null;
   }
 
   @Nullable
   private static Object getDouble(
       String key, DeclarativeConfigProperties declarativeConfigProperties) {
-    return declarativeConfigProperties.getDouble(key);
+    return declarativeConfigProperties.isDouble(key)
+        ? declarativeConfigProperties.getDouble(key)
+        : null;
   }
 
   @Nullable
