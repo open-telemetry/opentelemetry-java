@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.internal.ImmutableSpanContext;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -50,6 +51,22 @@ public interface SpanContext {
    */
   static SpanContext create(
       String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
+    if (traceIdHex == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "create", "traceIdHex");
+      return SpanContext.getInvalid();
+    }
+    if (spanIdHex == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "create", "spanIdHex");
+      return SpanContext.getInvalid();
+    }
+    if (traceFlags == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "create", "traceFlags");
+      return SpanContext.getInvalid();
+    }
+    if (traceState == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "create", "traceState");
+      return SpanContext.getInvalid();
+    }
     return ImmutableSpanContext.create(
         traceIdHex,
         spanIdHex,
@@ -76,6 +93,22 @@ public interface SpanContext {
    */
   static SpanContext createFromRemoteParent(
       String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
+    if (traceIdHex == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "createFromRemoteParent", "traceIdHex");
+      return SpanContext.getInvalid();
+    }
+    if (spanIdHex == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "createFromRemoteParent", "spanIdHex");
+      return SpanContext.getInvalid();
+    }
+    if (traceFlags == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "createFromRemoteParent", "traceFlags");
+      return SpanContext.getInvalid();
+    }
+    if (traceState == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "createFromRemoteParent", "traceState");
+      return SpanContext.getInvalid();
+    }
     return ImmutableSpanContext.create(
         traceIdHex,
         spanIdHex,

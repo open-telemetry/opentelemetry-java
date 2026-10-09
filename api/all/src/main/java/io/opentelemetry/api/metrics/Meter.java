@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -142,6 +143,15 @@ public interface Meter {
       Runnable callback,
       ObservableMeasurement observableMeasurement,
       ObservableMeasurement... additionalMeasurements) {
+    if (callback == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "batchCallback", "callback");
+    }
+    if (observableMeasurement == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "batchCallback", "observableMeasurement");
+    }
+    if (additionalMeasurements == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "batchCallback", "additionalMeasurements");
+    }
     return DefaultMeter.getInstance()
         .batchCallback(callback, observableMeasurement, additionalMeasurements);
   }
