@@ -24,9 +24,9 @@ public interface ConfigurableSamplerProvider {
 
   /**
    * Returns the name of this sampler, which can be specified with the {@code otel.traces.sampler}
-   * property to enable it. The name returned should NOT be the same as any other exporter name. If
-   * the name does conflict with another exporter name, the resulting behavior is undefined and it
-   * is explicitly unspecified which exporter will actually be used.
+   * property to enable it. The name returned should NOT be the same as any other sampler name. If
+   * the name does conflict with another sampler name, the resulting behavior is undefined and it is
+   * explicitly unspecified which sampler will actually be used.
    */
   String getName();
 }

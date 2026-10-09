@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 /**
  * A service provider interface (SPI) for providing additional metric readers that can be used with
  * the autoconfigured SDK. If the {@code otel.metrics.exporter} property contains a value equal to
- * what is returned by {@link #getName()}, the exporter returned by {@link
+ * what is returned by {@link #getName()}, the reader returned by {@link
  * #createMetricReader(ConfigProperties)} will be enabled and added to the SDK.
  *
  * <p>Where as {@link ConfigurableMetricExporterProvider} provides push-based {@link
