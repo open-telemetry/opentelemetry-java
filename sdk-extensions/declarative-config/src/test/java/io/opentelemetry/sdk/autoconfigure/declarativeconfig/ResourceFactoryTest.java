@@ -203,9 +203,12 @@ class ResourceFactoryTest {
                 entityDetectorContext(EntityUtil.createResource(Collections.singletonList(host))));
 
     if (!expectedId.equals(host.getId())) {
-      assertThat(EntityUtil.getEntities(resource)).isEmpty();
+      assertThat(EntityUtil.getEntities(resource))
+          .containsExactlyElementsOf(EntityUtil.getEntities(Resource.getDefault()));
     } else {
       assertThat(EntityUtil.getEntities(resource))
+          .containsAll(EntityUtil.getEntities(Resource.getDefault()))
+          .filteredOn(entity -> entity.getType().equals("host"))
           .singleElement()
           .satisfies(
               filtered -> {
@@ -259,7 +262,8 @@ class ResourceFactoryTest {
                 model,
                 entityDetectorContext(
                     EntityUtil.createResource(Collections.singletonList(service))));
-    assertThat(EntityUtil.getEntities(resource)).isEmpty();
+    assertThat(EntityUtil.getEntities(resource))
+        .containsExactlyElementsOf(EntityUtil.getEntities(Resource.getDefault()));
     assertThat(resource)
         .isEqualTo(
             Resource.getDefault().toBuilder()

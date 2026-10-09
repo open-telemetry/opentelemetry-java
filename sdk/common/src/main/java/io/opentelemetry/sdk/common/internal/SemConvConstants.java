@@ -28,12 +28,19 @@ public class SemConvConstants {
 
   public static final String SERVICE_TYPE = "service";
   public static final String SERVICE_INSTANCE_TYPE = "service.instance";
+  public static final String TELEMETRY_SDK_TYPE = "telemetry.sdk";
 
   // Attributes
 
   public static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
   public static final AttributeKey<String> SERVICE_INSTANCE_ID =
       AttributeKey.stringKey("service.instance.id");
+  public static final AttributeKey<String> TELEMETRY_SDK_LANGUAGE =
+      AttributeKey.stringKey("telemetry.sdk.language");
+  public static final AttributeKey<String> TELEMETRY_SDK_NAME =
+      AttributeKey.stringKey("telemetry.sdk.name");
+  public static final AttributeKey<String> TELEMETRY_SDK_VERSION =
+      AttributeKey.stringKey("telemetry.sdk.version");
 
   public static final AttributeKey<String> OTEL_COMPONENT_TYPE =
       AttributeKey.stringKey("otel.component.type");

@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.resources.internal.AttributeCheckUtil;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
@@ -32,38 +33,40 @@ import javax.annotation.concurrent.Immutable;
 public abstract class Resource {
   private static final Logger logger = Logger.getLogger(Resource.class.getName());
 
-  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
-  private static final AttributeKey<String> TELEMETRY_SDK_LANGUAGE =
-      AttributeKey.stringKey("telemetry.sdk.language");
-  private static final AttributeKey<String> TELEMETRY_SDK_NAME =
-      AttributeKey.stringKey("telemetry.sdk.name");
-  private static final AttributeKey<String> TELEMETRY_SDK_VERSION =
-      AttributeKey.stringKey("telemetry.sdk.version");
   private static final Resource EMPTY = create(Attributes.empty());
-  private static final Resource TELEMETRY_SDK;
 
   /**
    * The MANDATORY Resource instance contains the mandatory attributes that must be used if they are
    * not provided by the Resource that is given to an SDK signal provider.
    */
   private static final Resource MANDATORY =
-      create(Attributes.of(SERVICE_NAME, "unknown_service:java"));
+      create(Attributes.of(SemConvConstants.SERVICE_NAME, "unknown_service:java"));
 
-  static {
-    TELEMETRY_SDK =
-        create(
-            Attributes.builder()
-                .put(TELEMETRY_SDK_NAME, "opentelemetry")
-                .put(TELEMETRY_SDK_LANGUAGE, "java")
-                .put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION)
-                .build());
-  }
+  private static final Resource TELEMETRY_SDK =
+      builder()
+          .addEntity(
+              Entity.builder(
+                      SemConvConstants.TELEMETRY_SDK_TYPE,
+                      Attributes.of(
+                          SemConvConstants.TELEMETRY_SDK_NAME,
+                          "opentelemetry",
+                          SemConvConstants.TELEMETRY_SDK_LANGUAGE,
+                          "java"))
+                  .setDescription(
+                      Attributes.of(SemConvConstants.TELEMETRY_SDK_VERSION, OtelVersion.VERSION))
+                  .setSchemaUrl(SemConvConstants.SCHEMA_URL_V1_40_0)
+                  .build())
+          .build();
 
-  private static final Resource DEFAULT = MANDATORY.merge(TELEMETRY_SDK);
+  // TODO(jack-berg): Explicitly null out schema url to avoid avoid assigning schemaUrl to default
+  // resource which previously had none. Revisit when entities stabilize.
+  private static final Resource DEFAULT =
+      builder().putAll(MANDATORY).putAll(TELEMETRY_SDK).buildWithSchemaUrl(null);
 
   /**
    * Returns the default {@link Resource}. This resource contains the default attributes provided by
-   * the SDK.
+   * the SDK, with the telemetry SDK attributes associated with an experimental {@code
+   * telemetry.sdk} entity.
    *
    * @return a {@code Resource}.
    */
