@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.resources.internal;
 
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-
 import io.opentelemetry.api.common.Attributes;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -63,5 +61,11 @@ final class SdkEntityBuilder implements EntityBuilder {
   @Override
   public Entity build() {
     return SdkEntity.create(entityType, id, description, schemaUrl);
+  }
+
+  private static void checkArgument(boolean isValid, String errorMessage) {
+    if (!isValid) {
+      throw new IllegalArgumentException(errorMessage);
+    }
   }
 }

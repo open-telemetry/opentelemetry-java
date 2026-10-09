@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.resources;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.ArrayList;
@@ -441,6 +440,6 @@ public class ResourceBuilder {
 
   @Nullable
   static String normalizeSchemaUrl(@Nullable String schemaUrl) {
-    return StringUtils.isNullOrEmpty(schemaUrl) ? null : schemaUrl;
+    return schemaUrl == null || schemaUrl.isEmpty() ? null : schemaUrl;
   }
 }

@@ -296,6 +296,24 @@ class ResourceTest {
   }
 
   @Test
+  void create_invalidAttributeKey() {
+    assertThatThrownBy(() -> Resource.create(Attributes.of(stringKey("\u0002ab"), "value")))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Attribute key should be a ASCII string");
+
+    assertThatThrownBy(() -> Resource.create(Attributes.of(stringKey("key\u007f"), "value")))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Attribute key should be a ASCII string");
+
+    char[] chars = new char[256];
+    Arrays.fill(chars, 'a');
+    String tooLongKey = new String(chars);
+    assertThatThrownBy(() -> Resource.create(Attributes.of(stringKey(tooLongKey), "value")))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Attribute key should be a ASCII string");
+  }
+
+  @Test
   void testResourceEquals() {
     Attributes attribute1 = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
     Attributes attribute2 =
