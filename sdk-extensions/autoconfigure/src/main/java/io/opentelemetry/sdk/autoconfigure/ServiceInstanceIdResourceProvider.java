@@ -20,6 +20,8 @@ import java.util.UUID;
  * {@code service.instance.id}, stable for the lifetime of the JVM. Runs at {@link
  * Integer#MIN_VALUE} so that any other {@link ResourceProvider} or user configuration which sets
  * {@code service.instance.id} takes precedence.
+ *
+ * @since 1.67.0
  */
 public final class ServiceInstanceIdResourceProvider implements ResourceProvider {
 
