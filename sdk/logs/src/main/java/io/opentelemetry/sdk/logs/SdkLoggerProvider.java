@@ -17,7 +17,9 @@ import io.opentelemetry.sdk.common.internal.ComponentRegistry;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
+import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +39,7 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
       java.util.logging.Logger.getLogger(SdkLoggerProvider.class.getName());
 
   private final LoggerSharedState sharedState;
+  private final SdkResourceProvider resourceProvider;
   private final ComponentRegistry<SdkLogger> loggerComponentRegistry;
   private final boolean isNoopLogRecordProcessor;
 
@@ -54,17 +57,18 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
   }
 
   SdkLoggerProvider(
-      Resource resource,
+      SdkResourceProvider resourceProvider,
       Supplier<LogLimits> logLimitsSupplier,
       List<LogRecordProcessor> processors,
       Clock clock,
       ScopeConfigurator<LoggerConfig> loggerConfigurator,
       ExceptionAttributeResolver exceptionAttributeResolver,
       Supplier<MeterProvider> meterProvider) {
+    this.resourceProvider = resourceProvider;
     LogRecordProcessor logRecordProcessor = LogRecordProcessor.composite(processors);
     this.sharedState =
         new LoggerSharedState(
-            resource,
+            resourceProvider,
             logLimitsSupplier,
             logRecordProcessor,
             clock,
@@ -79,6 +83,17 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
                     getLoggerConfig(instrumentationScopeInfo)));
     this.loggerConfigurator = loggerConfigurator;
     this.isNoopLogRecordProcessor = logRecordProcessor instanceof NoopLogRecordProcessor;
+  }
+
+  /**
+   * Returns the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to log
+   * records.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#getSdkResourceProvider(SdkLoggerProvider)}.
+   */
+  SdkResourceProvider getSdkResourceProvider() {
+    return resourceProvider;
   }
 
   private LoggerConfig getLoggerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {

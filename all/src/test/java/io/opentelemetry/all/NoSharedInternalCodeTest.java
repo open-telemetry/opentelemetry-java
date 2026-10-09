@@ -40,6 +40,7 @@ class NoSharedInternalCodeTest {
           "opentelemetry-exporter-prometheus",
           "opentelemetry-extension-trace-propagators",
           "opentelemetry-opencensus-shim",
+          "opentelemetry-sdk",
           "opentelemetry-sdk-common",
           "opentelemetry-sdk-logs",
           "opentelemetry-sdk-metrics",

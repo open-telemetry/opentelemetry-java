@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace.internal;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.lang.reflect.InvocationTargetException;
@@ -71,6 +72,33 @@ public final class SdkTracerProviderUtil {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
           "Error calling addTracerConfiguratorCondition on SdkTracerProviderBuilder", e);
+    }
+  }
+
+  /** Reflectively set the {@link SdkResourceProvider} on the {@link SdkTracerProviderBuilder}. */
+  public static void setSdkResourceProvider(
+      SdkTracerProviderBuilder sdkTracerProviderBuilder, SdkResourceProvider resourceProvider) {
+    try {
+      Method method =
+          SdkTracerProviderBuilder.class.getDeclaredMethod(
+              "setSdkResourceProvider", SdkResourceProvider.class);
+      method.setAccessible(true);
+      method.invoke(sdkTracerProviderBuilder, resourceProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setSdkResourceProvider on SdkTracerProviderBuilder", e);
+    }
+  }
+
+  /** Reflectively get the {@link SdkResourceProvider} from the {@link SdkTracerProvider}. */
+  public static SdkResourceProvider getSdkResourceProvider(SdkTracerProvider sdkTracerProvider) {
+    try {
+      Method method = SdkTracerProvider.class.getDeclaredMethod("getSdkResourceProvider");
+      method.setAccessible(true);
+      return (SdkResourceProvider) method.invoke(sdkTracerProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling getSdkResourceProvider on SdkTracerProvider", e);
     }
   }
 
