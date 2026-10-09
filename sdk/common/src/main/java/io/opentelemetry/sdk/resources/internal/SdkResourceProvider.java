@@ -41,13 +41,10 @@ public final class SdkResourceProvider {
     return new SdkResourceProviderBuilder();
   }
 
-  /**
-   * Returns an {@link SdkResourceProvider} backed by a single {@linkplain
-   * ResourceDetector#constant(Resource) constant detector} wrapping the given {@link Resource}.
-   */
+  /** Returns an {@link SdkResourceProvider} backed by a single constant {@link Resource}. */
   public static SdkResourceProvider create(Resource resource) {
     requireNonNull(resource, "resource");
-    return builder().addDetector(ResourceDetector.constant(resource)).build();
+    return builder().addConstantResource(resource).build();
   }
 
   /** Returns the merged {@link Resource}. */

@@ -7,8 +7,10 @@ package io.opentelemetry.sdk.resources.internal;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Builder for {@link SdkResourceProvider}.
@@ -24,26 +26,39 @@ public final class SdkResourceProviderBuilder {
   SdkResourceProviderBuilder() {}
 
   /**
-   * Adds a {@link ResourceDetector}. Detectors are merged in the order they are added, with
-   * later-added attributes winning on conflict (per {@link
-   * io.opentelemetry.sdk.resources.Resource#merge}).
+   * Adds a constant {@link Resource} with no name.
+   *
+   * @param resource the resource to add
+   * @return this builder
    */
-  public SdkResourceProviderBuilder addDetector(ResourceDetector detector) {
-    requireNonNull(detector, "detector");
-    detectors.add(detector);
+  public SdkResourceProviderBuilder addConstantResource(Resource resource) {
+    return addConstantResource(resource, null);
+  }
+
+  /**
+   * Adds a constant {@link Resource}. Resources are merged in the order they are added, with
+   * later-added attributes winning on conflict (per {@link Resource#merge}).
+   *
+   * @param resource the resource to add
+   * @param name an informational name for logging / debugging, or {@code null} if unnamed
+   * @return this builder
+   */
+  public SdkResourceProviderBuilder addConstantResource(Resource resource, @Nullable String name) {
+    requireNonNull(resource, "resource");
+    detectors.add(new ConstantResourceDetector(name, resource));
     return this;
   }
 
   /**
    * Returns a new {@link SdkResourceProvider}.
    *
-   * @throws IllegalStateException if no detector has been added via {@link
-   *     #addDetector(ResourceDetector)}.
+   * @throws IllegalStateException if no resource has been added via {@link
+   *     #addConstantResource(Resource)}.
    */
   public SdkResourceProvider build() {
     if (detectors.isEmpty()) {
       throw new IllegalStateException(
-          "At least one ResourceDetector must be added via addDetector before calling build().");
+          "At least one Resource must be added via addConstantResource before calling build().");
     }
     return new SdkResourceProvider(detectors);
   }

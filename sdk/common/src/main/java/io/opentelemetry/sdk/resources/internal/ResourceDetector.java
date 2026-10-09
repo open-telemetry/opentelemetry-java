@@ -5,32 +5,11 @@
 
 package io.opentelemetry.sdk.resources.internal;
 
-import static java.util.Objects.requireNonNull;
-
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 
-/**
- * A source of a {@link Resource} to be merged by an {@link SdkResourceProvider}.
- *
- * <p>This class is internal and experimental. Its APIs are unstable and can change at any time. Its
- * APIs (or a version of them) may be promoted to the public stable API in the future, but no
- * guarantees are made.
- */
-public interface ResourceDetector {
-
-  /** Returns a {@link ResourceDetector} that always returns {@code resource} and has no name. */
-  static ResourceDetector constant(Resource resource) {
-    requireNonNull(resource, "resource");
-    return new ConstantResourceDetector(null, resource);
-  }
-
-  /** Returns a {@link ResourceDetector} named {@code name} that always returns {@code resource}. */
-  static ResourceDetector constant(Resource resource, String name) {
-    requireNonNull(resource, "resource");
-    requireNonNull(name, "name");
-    return new ConstantResourceDetector(name, resource);
-  }
+/** A source of a {@link Resource} to be merged by an {@link SdkResourceProvider}. */
+interface ResourceDetector {
 
   /**
    * Returns the name of this detector, or {@code null} if unnamed. Names are informational (e.g.

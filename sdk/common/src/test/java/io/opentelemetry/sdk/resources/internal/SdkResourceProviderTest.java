@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
@@ -36,36 +37,57 @@ class SdkResourceProviderTest {
   }
 
   @Test
-  void builder_singleDetector() {
+  void builder_singleConstantResource() {
     SdkResourceProvider provider =
-        SdkResourceProvider.builder().addDetector(ResourceDetector.constant(RESOURCE_A)).build();
+        SdkResourceProvider.builder().addConstantResource(RESOURCE_A).build();
 
     assertThat(provider.getResource()).isEqualTo(RESOURCE_A);
   }
 
   @Test
-  void builder_multipleDetectors_mergedInOrder() {
+  void builder_multipleConstantResources_mergedInOrder() {
     SdkResourceProvider provider =
         SdkResourceProvider.builder()
-            .addDetector(ResourceDetector.constant(RESOURCE_A))
-            .addDetector(ResourceDetector.constant(RESOURCE_B))
+            .addConstantResource(RESOURCE_A)
+            .addConstantResource(RESOURCE_B)
             .build();
 
     assertThat(provider.getResource()).isEqualTo(RESOURCE_A.merge(RESOURCE_B));
   }
 
   @Test
-  void builder_addDetector_nullDetector_throws() {
-    assertThatThrownBy(() -> SdkResourceProvider.builder().addDetector(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("detector");
+  void builder_addConstantResource_named() {
+    SdkResourceProvider provider =
+        SdkResourceProvider.builder().addConstantResource(RESOURCE_A, "my-detector").build();
+
+    assertThat(provider.getResource()).isEqualTo(RESOURCE_A);
+    assertThat(provider.toString()).contains("ConstantResourceDetector{name=my-detector");
   }
 
   @Test
-  void builder_build_withoutAddDetector_throws() {
+  void builder_addConstantResource_nullName() {
+    SdkResourceProvider provider =
+        SdkResourceProvider.builder().addConstantResource(RESOURCE_A, null).build();
+
+    assertThat(provider.getResource()).isEqualTo(RESOURCE_A);
+    assertThat(provider.toString()).contains("ConstantResourceDetector{name=null");
+  }
+
+  @Test
+  void builder_addConstantResource_nullResource_throws() {
+    assertThatThrownBy(() -> SdkResourceProvider.builder().addConstantResource(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("resource");
+    assertThatThrownBy(() -> SdkResourceProvider.builder().addConstantResource(null, "name"))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("resource");
+  }
+
+  @Test
+  void builder_build_withoutAddConstantResource_throws() {
     assertThatThrownBy(() -> SdkResourceProvider.builder().build())
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("At least one ResourceDetector");
+        .hasMessageContaining("At least one Resource must be added via addConstantResource");
   }
 
   @Test
@@ -74,8 +96,7 @@ class SdkResourceProviderTest {
     // construction and the merged Resource is cached for the lifetime of the provider.
     CountingDetector constant = new CountingDetector(RESOURCE_A, /* shouldReinvoke= */ false);
     CountingDetector reinvoke = new CountingDetector(RESOURCE_B, /* shouldReinvoke= */ true);
-    SdkResourceProvider provider =
-        SdkResourceProvider.builder().addDetector(constant).addDetector(reinvoke).build();
+    SdkResourceProvider provider = new SdkResourceProvider(Arrays.asList(constant, reinvoke));
 
     assertThat(constant.invocations.get()).isEqualTo(1);
     assertThat(reinvoke.invocations.get()).isEqualTo(1);
