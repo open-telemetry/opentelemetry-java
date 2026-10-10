@@ -643,6 +643,44 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  @Timeout(5)
+  void exporterConcurrencyLimitAllowsConcurrentExports() throws Exception {
+    ConcurrentMetricExporter exporter = new ConcurrentMetricExporter();
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(exporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(3)
+            .build();
+    reader.register(collectionRegistration);
+
+    CompletableResultCode flushResult = reader.forceFlush();
+    assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
+    assertThat(exporter.maxConcurrent.get()).isEqualTo(2);
+    exporter.release.countDown();
+    assertThat(flushResult.join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    reader.shutdown();
+  }
+
+  @Test
+  @SuppressLogger(PeriodicMetricReader.class)
+  void concurrentExporterFailureCompletesFlushAsFailure() throws Exception {
+    ConcurrentMetricExporter exporter = new ConcurrentMetricExporter(/* fail= */ true);
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(exporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(3)
+            .build();
+    reader.register(collectionRegistration);
+
+    CompletableResultCode flushResult = reader.forceFlush();
+    assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
+    exporter.release.countDown();
+    assertThat(flushResult.join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    logCapturer.assertContains("Exporter failed");
+    reader.shutdown();
+  }
+
+  @Test
   @Timeout(10)
   @SuppressLogger(PeriodicMetricReader.class)
   void forceFlush_whileExportInFlight_failsExceptionally() throws Exception {
@@ -698,6 +736,57 @@ class PeriodicMetricReaderTest {
     assertThat(firstFlush.isSuccess()).isTrue();
 
     reader.shutdown();
+  }
+
+  private static final class ConcurrentMetricExporter implements MetricExporter {
+    private final CountDownLatch entered = new CountDownLatch(2);
+    private final CountDownLatch release = new CountDownLatch(1);
+    private final AtomicInteger active = new AtomicInteger();
+    private final AtomicInteger maxConcurrent = new AtomicInteger();
+    private final boolean fail;
+
+    private ConcurrentMetricExporter() {
+      this(false);
+    }
+
+    private ConcurrentMetricExporter(boolean fail) {
+      this.fail = fail;
+    }
+
+    @Override
+    public int getConcurrencyLimit() {
+      return 2;
+    }
+
+    @Override
+    public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+      return AggregationTemporality.CUMULATIVE;
+    }
+
+    @Override
+    public CompletableResultCode export(Collection<MetricData> metrics) {
+      int current = active.incrementAndGet();
+      maxConcurrent.accumulateAndGet(current, Math::max);
+      entered.countDown();
+      try {
+        release.await();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      } finally {
+        active.decrementAndGet();
+      }
+      return fail ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
   }
 
   @Test

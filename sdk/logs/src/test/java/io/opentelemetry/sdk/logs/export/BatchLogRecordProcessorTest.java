@@ -498,6 +498,38 @@ class BatchLogRecordProcessorTest {
   }
 
   @Test
+  @Timeout(5)
+  void exporterConcurrencyLimitAllowsConcurrentExports() throws InterruptedException {
+    ConcurrentLogRecordExporter exporter = new ConcurrentLogRecordExporter();
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(
+                BatchLogRecordProcessor.builder(exporter)
+                    .setMaxExportBatchSize(1)
+                    .setScheduleDelay(1, TimeUnit.HOURS)
+                    .build())
+            .build();
+
+    emitLog(loggerProvider, LOG_MESSAGE_1);
+    emitLog(loggerProvider, LOG_MESSAGE_2);
+    CompletableResultCode shutdown = loggerProvider.shutdown();
+
+    assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
+    assertThat(exporter.maxConcurrent.get()).isEqualTo(2);
+    exporter.release.countDown();
+    shutdown.join(1, TimeUnit.SECONDS);
+    assertThat(shutdown.isSuccess()).isTrue();
+  }
+
+  @Test
+  void rejectsNegativeExporterConcurrencyLimit() {
+    when(mockLogRecordExporter.getConcurrencyLimit()).thenReturn(-1);
+    assertThatThrownBy(() -> BatchLogRecordProcessor.builder(mockLogRecordExporter).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("log exporter concurrency limit must be positive");
+  }
+
+  @Test
   void getLogRecordExporter() {
     assertThat(
             BatchLogRecordProcessor.builder(mockLogRecordExporter).build().getLogRecordExporter())
@@ -575,6 +607,43 @@ class BatchLogRecordProcessorTest {
         state = State.UNBLOCKED;
         monitor.notifyAll();
       }
+    }
+  }
+
+  private static final class ConcurrentLogRecordExporter implements LogRecordExporter {
+    private final CountDownLatch entered = new CountDownLatch(2);
+    private final CountDownLatch release = new CountDownLatch(1);
+    private final AtomicInteger active = new AtomicInteger();
+    private final AtomicInteger maxConcurrent = new AtomicInteger();
+
+    @Override
+    public int getConcurrencyLimit() {
+      return 2;
+    }
+
+    @Override
+    public CompletableResultCode export(Collection<LogRecordData> logs) {
+      int current = active.incrementAndGet();
+      maxConcurrent.accumulateAndGet(current, Math::max);
+      entered.countDown();
+      try {
+        release.await();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      } finally {
+        active.decrementAndGet();
+      }
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
     }
   }
 

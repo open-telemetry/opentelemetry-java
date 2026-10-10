@@ -718,6 +718,14 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  void rejectsNegativeExporterConcurrencyLimit() {
+    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(-1);
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("span exporter concurrency limit must be positive");
+  }
+
+  @Test
   void getSpanExporter() {
     assertThat(BatchSpanProcessor.builder(mockSpanExporter).build().getSpanExporter())
         .isSameAs(mockSpanExporter);
