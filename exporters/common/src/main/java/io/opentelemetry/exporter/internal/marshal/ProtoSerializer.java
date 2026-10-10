@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import java.io.IOException;
