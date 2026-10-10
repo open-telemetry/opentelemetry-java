@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableS
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.OtelTraceState.OTEL_TRACE_STATE_KEY;
 
 import io.opentelemetry.api.common.Attributes;
+
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;

@@ -3,14 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.internal;
+package io.opentelemetry.api.impl;
 
 import java.util.Arrays;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time.
+ * Base16 encoding and decoding utilities.
+ *
+ * <p>This class is not intended for use by application developers. Its API is stable and will not
+ * be changed or removed in a backwards-incompatible manner.
+ *
+ * @since 1.68.0
  */
 @Immutable
 public final class OtelEncodingUtils {

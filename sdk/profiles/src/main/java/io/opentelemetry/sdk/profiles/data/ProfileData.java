@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.profiles.data;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.OtelEncodingUtils;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.nio.ByteBuffer;

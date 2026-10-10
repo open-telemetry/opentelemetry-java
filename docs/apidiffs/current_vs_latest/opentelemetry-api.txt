@@ -1,2 +1,13 @@
 Comparing source compatibility of opentelemetry-api-1.68.0-SNAPSHOT.jar against opentelemetry-api-1.67.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.api.impl.OtelEncodingUtils  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) byte byteFromBase16(char, char)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) byte[] bytesFromBase16(java.lang.CharSequence, int)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) void bytesFromBase16(java.lang.CharSequence, int, byte[])
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) void bytesToBase16(byte[], char[], int)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) void byteToBase16(byte, char[], int)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) boolean isValidBase16Character(char)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) boolean isValidBase16String(java.lang.CharSequence)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) long longFromBase16String(java.lang.CharSequence, int)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) void longToBase16String(long, char[], int)
