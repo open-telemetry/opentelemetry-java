@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -693,6 +694,30 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  @Timeout(5)
+  void exporterConcurrencyLimitAllowsConcurrentExports() throws InterruptedException {
+    ConcurrentSpanExporter exporter = new ConcurrentSpanExporter();
+    sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(exporter)
+                    .setMaxExportBatchSize(1)
+                    .setScheduleDelay(1, TimeUnit.HOURS)
+                    .build())
+            .build();
+
+    createEndedSpan(SPAN_NAME_1);
+    createEndedSpan(SPAN_NAME_2);
+    CompletableResultCode shutdown = sdkTracerProvider.shutdown();
+
+    assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
+    assertThat(exporter.maxConcurrent.get()).isEqualTo(2);
+    exporter.release.countDown();
+    shutdown.join(1, TimeUnit.SECONDS);
+    assertThat(shutdown.isSuccess()).isTrue();
+  }
+
+  @Test
   void getSpanExporter() {
     assertThat(BatchSpanProcessor.builder(mockSpanExporter).build().getSpanExporter())
         .isSameAs(mockSpanExporter);
@@ -794,6 +819,43 @@ class BatchSpanProcessorTest {
         state = State.UNBLOCKED;
         monitor.notifyAll();
       }
+    }
+  }
+
+  private static final class ConcurrentSpanExporter implements SpanExporter {
+    private final CountDownLatch entered = new CountDownLatch(2);
+    private final CountDownLatch release = new CountDownLatch(1);
+    private final AtomicInteger active = new AtomicInteger();
+    private final AtomicInteger maxConcurrent = new AtomicInteger();
+
+    @Override
+    public int getConcurrencyLimit() {
+      return 2;
+    }
+
+    @Override
+    public CompletableResultCode export(Collection<SpanData> spans) {
+      int current = active.incrementAndGet();
+      maxConcurrent.accumulateAndGet(current, Math::max);
+      entered.countDown();
+      try {
+        release.await();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      } finally {
+        active.decrementAndGet();
+      }
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
     }
   }
 

@@ -11,16 +11,22 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.ComponentId;
+import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -55,6 +61,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
   private final int maxExportBatchSize;
+  @Nullable private final ExecutorService exportExecutor;
 
   /**
    * Returns a new {@link PeriodicMetricReader} which exports to the {@code exporter} once every
@@ -81,6 +88,24 @@ public final class PeriodicMetricReader implements MetricReader {
     this.maxExportBatchSize = maxExportBatchSize;
     this.scheduled = new Scheduled();
     this.internalTelemetryVersion = internalTelemetryVersion;
+    int concurrencyLimit = exporter.getConcurrencyLimit();
+    if (concurrencyLimit < 0) {
+      throw new IllegalArgumentException("metric exporter concurrency limit must be positive");
+    }
+    if (concurrencyLimit == 0) {
+      concurrencyLimit = 1;
+    }
+    exportExecutor =
+        concurrencyLimit == 1
+            ? null
+            : new ThreadPoolExecutor(
+                concurrencyLimit,
+                concurrencyLimit,
+                0,
+                TimeUnit.NANOSECONDS,
+                new SynchronousQueue<>(),
+                new DaemonThreadFactory(PeriodicMetricReader.class.getSimpleName() + "_Exporter"),
+                new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
   @Override
@@ -145,6 +170,9 @@ public final class PeriodicMetricReader implements MetricReader {
       // reset the interrupted status
       Thread.currentThread().interrupt();
     } finally {
+      if (exportExecutor != null) {
+        exportExecutor.shutdownNow();
+      }
       CompletableResultCode shutdownResult = scheduled.shutdown();
       shutdownResult.whenComplete(
           () -> {
@@ -217,6 +245,37 @@ public final class PeriodicMetricReader implements MetricReader {
       }
       Collection<Collection<MetricData>> batches =
           MetricExportBatcher.batchMetrics(metricData, maxExportBatchSize);
+      if (exportExecutor != null) {
+        List<CompletableResultCode> results = new ArrayList<>();
+        for (Collection<MetricData> batch : batches) {
+          CompletableResultCode batchResult = new CompletableResultCode();
+          results.add(batchResult);
+          try {
+            exportExecutor.execute(
+                () -> {
+                  try {
+                    CompletableResultCode exportResult = exporter.export(batch);
+                    exportResult.whenComplete(
+                        () -> {
+                          if (exportResult.isSuccess()) {
+                            batchResult.succeed();
+                          } else {
+                            batchResult.fail();
+                          }
+                        });
+                  } catch (Throwable t) {
+                    batchResult.fail();
+                    logger.log(Level.WARNING, "Exporter threw an Exception", t);
+                  }
+                });
+          } catch (Throwable t) {
+            batchResult.fail();
+            logger.log(Level.WARNING, "Unable to submit export", t);
+          }
+        }
+        return CompletableResultCode.ofAll(results);
+      }
+
       CompletableResultCode sequentialResult = new CompletableResultCode();
       AtomicBoolean anyFailed = new AtomicBoolean(false);
       Iterator<Collection<MetricData>> batchIterator = batches.iterator();

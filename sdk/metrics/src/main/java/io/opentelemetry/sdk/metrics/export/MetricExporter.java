@@ -61,6 +61,20 @@ public interface MetricExporter
   CompletableResultCode export(Collection<MetricData> metrics);
 
   /**
+   * Returns the maximum number of export calls that this exporter can process concurrently.
+   *
+   * <p>The default value preserves the historical serialized behavior. Exporters that support
+   * concurrent calls may return a larger value and may block an export call when this capacity is
+   * exhausted to apply backpressure.
+   *
+   * @return the export concurrency limit, which must be positive
+   * @since 1.67.0
+   */
+  default int getConcurrencyLimit() {
+    return 1;
+  }
+
+  /**
    * A hint that any metrics previously {@link #export(Collection)}ed should be completed.
    *
    * @return the result of the flush, which is often an asynchronous operation.
