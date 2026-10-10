@@ -7,7 +7,7 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.OtelEncodingUtils;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanId}. */

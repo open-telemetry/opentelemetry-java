@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableS
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidRandomValue;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidThreshold;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.OtelEncodingUtils;
 import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.api.trace.TraceState;
 import java.util.ArrayList;

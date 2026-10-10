@@ -8,7 +8,7 @@ package io.opentelemetry.api.trace.propagation;
 import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.decodeTraceState;
 import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.OtelEncodingUtils;
 import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
