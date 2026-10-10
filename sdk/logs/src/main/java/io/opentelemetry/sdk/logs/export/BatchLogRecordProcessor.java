@@ -19,8 +19,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Implementation of the {@link LogRecordProcessor} that batches logs exported by the SDK then
@@ -159,6 +165,9 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     private volatile boolean continueWork = true;
     private final ArrayList<LogRecordData> batch;
     private final long maxQueueSize;
+    @Nullable private final ExecutorService exportExecutor;
+    private final Set<CompletableResultCode> pendingExports =
+        Collections.newSetFromMap(new ConcurrentHashMap<CompletableResultCode, Boolean>());
 
     private Worker(
         LogRecordExporter logRecordExporter,
@@ -180,6 +189,25 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       this.maxQueueSize = maxQueueSize;
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
+      int concurrencyLimit = logRecordExporter.getConcurrencyLimit();
+      if (concurrencyLimit < 0) {
+        throw new IllegalArgumentException("log exporter concurrency limit must be positive");
+      }
+      if (concurrencyLimit == 0) {
+        concurrencyLimit = 1;
+      }
+      exportExecutor =
+          concurrencyLimit == 1
+              ? null
+              : new ThreadPoolExecutor(
+                  concurrencyLimit,
+                  concurrencyLimit,
+                  0,
+                  TimeUnit.NANOSECONDS,
+                  new SynchronousQueue<>(),
+                  new DaemonThreadFactory(
+                      BatchLogRecordProcessor.class.getSimpleName() + "_Exporter"),
+                  new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     private void addLog(ReadWriteLogRecord logData) {
@@ -240,6 +268,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
         }
       }
       exportCurrentBatch();
+      waitForExports();
       CompletableResultCode flushResult = flushRequested.get();
       if (flushResult != null) {
         flushResult.succeed();
@@ -264,6 +293,9 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
             CompletableResultCode shutdownResult = logRecordExporter.shutdown();
             shutdownResult.whenComplete(
                 () -> {
+                  if (exportExecutor != null) {
+                    exportExecutor.shutdownNow();
+                  }
                   if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
                     result.fail();
                   } else {
@@ -293,12 +325,47 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
         return;
       }
 
+      if (exportExecutor != null) {
+        List<LogRecordData> exportBatch = new ArrayList<>(batch);
+        batch.clear();
+        CompletableResultCode taskResult = new CompletableResultCode();
+        pendingExports.add(taskResult);
+        try {
+          exportExecutor.execute(
+              () -> {
+                try {
+                  exportBatch(exportBatch);
+                  taskResult.succeed();
+                } catch (Throwable t) {
+                  ThrowableUtil.propagateIfFatal(t);
+                  taskResult.fail();
+                } finally {
+                  pendingExports.remove(taskResult);
+                }
+              });
+        } catch (Throwable t) {
+          pendingExports.remove(taskResult);
+          taskResult.fail();
+          ThrowableUtil.propagateIfFatal(t);
+          logger.log(Level.WARNING, "Unable to submit export", t);
+        }
+        return;
+      }
+
+      try {
+        exportBatch(batch);
+      } finally {
+        batch.clear();
+      }
+    }
+
+    private void exportBatch(List<LogRecordData> exportBatch) {
       try {
         // We always increment for every export invocation, so we increment before the export call
         // to make sure thrown errors don't affect it.
-        logProcessorInstrumentation.finishLogs(batch.size());
+        logProcessorInstrumentation.finishLogs(exportBatch.size());
         CompletableResultCode result =
-            logRecordExporter.export(Collections.unmodifiableList(batch));
+            logRecordExporter.export(Collections.unmodifiableList(exportBatch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (!result.isSuccess()) {
           logger.log(Level.FINE, "Exporter failed");
@@ -306,8 +373,13 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       } catch (Throwable t) {
         ThrowableUtil.propagateIfFatal(t);
         logger.log(Level.WARNING, "Exporter threw an Exception", t);
-      } finally {
-        batch.clear();
+      }
+    }
+
+    private void waitForExports() {
+      while (!pendingExports.isEmpty()) {
+        CompletableResultCode.ofAll(new ArrayList<>(pendingExports))
+            .join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
       }
     }
   }
