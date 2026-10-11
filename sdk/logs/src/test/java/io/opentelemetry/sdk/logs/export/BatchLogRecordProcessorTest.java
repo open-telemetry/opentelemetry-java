@@ -57,6 +57,7 @@ class BatchLogRecordProcessorTest {
   @BeforeEach
   void setUp() {
     when(mockLogRecordExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockLogRecordExporter.getConcurrencyLimit()).thenReturn(1);
   }
 
   private void emitLog(SdkLoggerProvider sdkLoggerProvider, String message) {
@@ -439,6 +440,7 @@ class BatchLogRecordProcessorTest {
     CountDownLatch exportedAgain = new CountDownLatch(1);
     reset(mockLogRecordExporter);
     when(mockLogRecordExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockLogRecordExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockLogRecordExporter.export(
             argThat(
                 logs -> {
@@ -524,6 +526,14 @@ class BatchLogRecordProcessorTest {
   @Test
   void rejectsNegativeExporterConcurrencyLimit() {
     when(mockLogRecordExporter.getConcurrencyLimit()).thenReturn(-1);
+    assertThatThrownBy(() -> BatchLogRecordProcessor.builder(mockLogRecordExporter).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("log exporter concurrency limit must be positive");
+  }
+
+  @Test
+  void rejectsZeroExporterConcurrencyLimit() {
+    when(mockLogRecordExporter.getConcurrencyLimit()).thenReturn(0);
     assertThatThrownBy(() -> BatchLogRecordProcessor.builder(mockLogRecordExporter).build())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("log exporter concurrency limit must be positive");

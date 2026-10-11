@@ -88,6 +88,7 @@ class PeriodicMetricReaderTest {
   void setup() {
     when(collectionRegistration.collectAllMetrics())
         .thenReturn(Collections.singletonList(METRIC_DATA));
+    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
   }
 
   @Test
@@ -295,6 +296,7 @@ class PeriodicMetricReaderTest {
   @SuppressLogger(PeriodicMetricReader.class)
   void forceflush_callsFlush() {
     MetricExporter metricExporter = mock(MetricExporter.class);
+    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
     when(metricExporter.export(any()))
         .thenReturn(CompletableResultCode.ofSuccess())
         .thenReturn(CompletableResultCode.ofSuccess())
@@ -475,6 +477,7 @@ class PeriodicMetricReaderTest {
   @Test
   void periodicExport_SequentialBatches() throws Exception {
     MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockExporter.getAggregationTemporality(any()))
         .thenReturn(AggregationTemporality.CUMULATIVE);
     when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
@@ -518,6 +521,7 @@ class PeriodicMetricReaderTest {
   @SuppressLogger(PeriodicMetricReader.class)
   void periodicExport_SequentialBatches_PartialFailure() throws Exception {
     MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockExporter.getAggregationTemporality(any()))
         .thenReturn(AggregationTemporality.CUMULATIVE);
     when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
@@ -567,6 +571,7 @@ class PeriodicMetricReaderTest {
   @Test
   void periodicExport_SequentialBatches_PurelySynchronous() throws Exception {
     MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockExporter.getAggregationTemporality(any()))
         .thenReturn(AggregationTemporality.CUMULATIVE);
     when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
@@ -600,6 +605,7 @@ class PeriodicMetricReaderTest {
   @Test
   void periodicExport_SequentialBatches_PurelyAsynchronous() throws Exception {
     MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockExporter.getAggregationTemporality(any()))
         .thenReturn(AggregationTemporality.CUMULATIVE);
     when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
@@ -659,6 +665,40 @@ class PeriodicMetricReaderTest {
     exporter.release.countDown();
     assertThat(flushResult.join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
     reader.shutdown();
+  }
+
+  @Test
+  @Timeout(5)
+  void exporterConcurrencyLimitWaitsForAsyncExports() throws Exception {
+    AsyncMetricExporter exporter = new AsyncMetricExporter();
+    AtomicBoolean firstCollection = new AtomicBoolean(true);
+    when(collectionRegistration.collectAllMetrics())
+        .thenAnswer(
+            invocation ->
+                firstCollection.getAndSet(false)
+                    ? Collections.singletonList(METRIC_DATA)
+                    : Collections.emptyList());
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(exporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(6)
+            .build();
+    reader.register(collectionRegistration);
+
+    CompletableResultCode flushResult = reader.forceFlush();
+    assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
+    assertThat(flushResult.isDone()).isFalse();
+    exporter.results.get(0).succeed();
+    assertThat(flushResult.join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    reader.shutdown();
+  }
+
+  @Test
+  void rejectsZeroExporterConcurrencyLimit() {
+    when(metricExporter.getConcurrencyLimit()).thenReturn(0);
+    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("metric exporter concurrency limit must be positive");
   }
 
   @Test
@@ -776,6 +816,41 @@ class PeriodicMetricReaderTest {
         active.decrementAndGet();
       }
       return fail ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
+  }
+
+  private static final class AsyncMetricExporter implements MetricExporter {
+    private final CountDownLatch entered = new CountDownLatch(1);
+    private final List<CompletableResultCode> results = new ArrayList<>();
+
+    @Override
+    public int getConcurrencyLimit() {
+      return 2;
+    }
+
+    @Override
+    public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+      return AggregationTemporality.CUMULATIVE;
+    }
+
+    @Override
+    public CompletableResultCode export(Collection<MetricData> metrics) {
+      CompletableResultCode result = new CompletableResultCode();
+      synchronized (results) {
+        results.add(result);
+        entered.countDown();
+      }
+      return result;
     }
 
     @Override

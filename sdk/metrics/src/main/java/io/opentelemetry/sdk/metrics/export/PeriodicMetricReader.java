@@ -89,11 +89,8 @@ public final class PeriodicMetricReader implements MetricReader {
     this.scheduled = new Scheduled();
     this.internalTelemetryVersion = internalTelemetryVersion;
     int concurrencyLimit = exporter.getConcurrencyLimit();
-    if (concurrencyLimit < 0) {
+    if (concurrencyLimit < 1) {
       throw new IllegalArgumentException("metric exporter concurrency limit must be positive");
-    }
-    if (concurrencyLimit == 0) {
-      concurrencyLimit = 1;
     }
     exportExecutor =
         concurrencyLimit == 1
@@ -255,14 +252,12 @@ public final class PeriodicMetricReader implements MetricReader {
                 () -> {
                   try {
                     CompletableResultCode exportResult = exporter.export(batch);
-                    exportResult.whenComplete(
-                        () -> {
-                          if (exportResult.isSuccess()) {
-                            batchResult.succeed();
-                          } else {
-                            batchResult.fail();
-                          }
-                        });
+                    exportResult.join(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                    if (exportResult.isSuccess()) {
+                      batchResult.succeed();
+                    } else {
+                      batchResult.fail();
+                    }
                   } catch (Throwable t) {
                     batchResult.fail();
                     logger.log(Level.WARNING, "Exporter threw an Exception", t);

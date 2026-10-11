@@ -233,11 +233,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
       int concurrencyLimit = spanExporter.getConcurrencyLimit();
-      if (concurrencyLimit < 0) {
+      if (concurrencyLimit < 1) {
         throw new IllegalArgumentException("span exporter concurrency limit must be positive");
-      }
-      if (concurrencyLimit == 0) {
-        concurrencyLimit = 1;
       }
       exportExecutor =
           concurrencyLimit == 1

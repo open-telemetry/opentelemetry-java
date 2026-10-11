@@ -73,6 +73,7 @@ class BatchSpanProcessorTest {
   void setUp() {
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(mockSpanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(1);
 
     when(mockSampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
@@ -543,6 +544,7 @@ class BatchSpanProcessorTest {
     CountDownLatch exportedAgain = new CountDownLatch(1);
     reset(mockSpanExporter);
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockSpanExporter.export(
             argThat(
                 spans -> {
@@ -720,6 +722,14 @@ class BatchSpanProcessorTest {
   @Test
   void rejectsNegativeExporterConcurrencyLimit() {
     when(mockSpanExporter.getConcurrencyLimit()).thenReturn(-1);
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("span exporter concurrency limit must be positive");
+  }
+
+  @Test
+  void rejectsZeroExporterConcurrencyLimit() {
+    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(0);
     assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).build())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("span exporter concurrency limit must be positive");

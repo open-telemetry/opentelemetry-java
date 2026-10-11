@@ -190,11 +190,8 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
       int concurrencyLimit = logRecordExporter.getConcurrencyLimit();
-      if (concurrencyLimit < 0) {
+      if (concurrencyLimit < 1) {
         throw new IllegalArgumentException("log exporter concurrency limit must be positive");
-      }
-      if (concurrencyLimit == 0) {
-        concurrencyLimit = 1;
       }
       exportExecutor =
           concurrencyLimit == 1
