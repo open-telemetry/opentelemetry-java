@@ -197,8 +197,8 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
           concurrencyLimit == 1
               ? null
               : new ThreadPoolExecutor(
-                  concurrencyLimit,
-                  concurrencyLimit,
+                  concurrencyLimit - 1,
+                  concurrencyLimit - 1,
                   0,
                   TimeUnit.NANOSECONDS,
                   new SynchronousQueue<>(),

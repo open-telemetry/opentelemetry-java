@@ -240,8 +240,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
           concurrencyLimit == 1
               ? null
               : new ThreadPoolExecutor(
-                  concurrencyLimit,
-                  concurrencyLimit,
+                  concurrencyLimit - 1,
+                  concurrencyLimit - 1,
                   0,
                   TimeUnit.NANOSECONDS,
                   new SynchronousQueue<>(),

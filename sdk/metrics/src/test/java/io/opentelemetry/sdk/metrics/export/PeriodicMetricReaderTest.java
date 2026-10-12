@@ -44,6 +44,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -659,11 +660,14 @@ class PeriodicMetricReaderTest {
             .build();
     reader.register(collectionRegistration);
 
-    CompletableResultCode flushResult = reader.forceFlush();
+    AtomicReference<CompletableResultCode> flushResult = new AtomicReference<>();
+    Thread flushThread = new Thread(() -> flushResult.set(reader.forceFlush()));
+    flushThread.start();
     assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
     assertThat(exporter.maxConcurrent.get()).isEqualTo(2);
     exporter.release.countDown();
-    assertThat(flushResult.join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    flushThread.join(1000);
+    assertThat(flushResult.get().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
     reader.shutdown();
   }
 
@@ -712,10 +716,13 @@ class PeriodicMetricReaderTest {
             .build();
     reader.register(collectionRegistration);
 
-    CompletableResultCode flushResult = reader.forceFlush();
+    AtomicReference<CompletableResultCode> flushResult = new AtomicReference<>();
+    Thread flushThread = new Thread(() -> flushResult.set(reader.forceFlush()));
+    flushThread.start();
     assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
     exporter.release.countDown();
-    assertThat(flushResult.join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    flushThread.join(1000);
+    assertThat(flushResult.get().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
     logCapturer.assertContains("Exporter failed");
     reader.shutdown();
   }
