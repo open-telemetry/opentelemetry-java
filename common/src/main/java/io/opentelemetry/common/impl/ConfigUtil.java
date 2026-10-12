@@ -39,9 +39,10 @@ public final class ConfigUtil {
    * Return the system property or environment variable for the {@code key}.
    *
    * <p>Normalize the {@code key} using {@link #normalizePropertyKey(String)}. Match to system
-   * property keys also normalized with {@link #normalizePropertyKey(String)}. Match to environment
-   * variable keys normalized with {@link #normalizeEnvironmentVariableKey(String)}. System
-   * properties take priority over environment variables.
+   * property keys also normalized with {@link #normalizePropertyKey(String)}. Further normalize the
+   * {@code key} using {@link #normalizeEnvironmentVariableKey(String)} and match to environment
+   * variable keys normalized the same way. System properties take priority over environment
+   * variables.
    *
    * @param key the property key
    * @param defaultValue the fallback value if neither system property nor environment variable is
@@ -61,8 +62,10 @@ public final class ConfigUtil {
     if (systemProperty != null) {
       return systemProperty;
     }
+    String environmentVariableKey = normalizeEnvironmentVariableKey(normalizedKey);
     return System.getenv().entrySet().stream()
-        .filter(entry -> normalizedKey.equals(normalizeEnvironmentVariableKey(entry.getKey())))
+        .filter(
+            entry -> environmentVariableKey.equals(normalizeEnvironmentVariableKey(entry.getKey())))
         .map(Map.Entry::getValue)
         .findFirst()
         .orElse(defaultValue);
