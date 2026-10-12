@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.HashMap;
@@ -84,11 +85,16 @@ final class MetricExporterConfiguration {
       closeables.add(customizedMetricExporter);
     }
     InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
-    MetricReader reader =
+    PeriodicMetricReaderBuilder readerBuilder =
         PeriodicMetricReader.builder(customizedMetricExporter)
             .setInternalTelemetryVersion(telemetryVersion)
-            .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
-            .build();
+            .setInterval(
+                config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL));
+    Integer maxExportBatchSize = config.getInt("otel.experimental.metric.export.max.batch.size");
+    if (maxExportBatchSize != null) {
+      readerBuilder.setMaxExportBatchSize(maxExportBatchSize);
+    }
+    MetricReader reader = readerBuilder.build();
     closeables.add(reader);
     MetricReader customizedMetricReader = metricReaderCustomizer.apply(reader, config);
     if (customizedMetricReader != reader) {
