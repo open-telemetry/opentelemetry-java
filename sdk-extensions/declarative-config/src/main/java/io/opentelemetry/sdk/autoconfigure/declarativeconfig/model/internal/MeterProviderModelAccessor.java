@@ -25,6 +25,7 @@ public final class MeterProviderModelAccessor {
 
   static final String METER_CONFIGURATOR = "meter_configurator/development";
   static final String VIEW_MATCHING_MODE = "view_matching_mode/development";
+  static final String CONTEXT_SCOPED_ATTRIBUTES = "context_scoped_attributes/development";
 
   public static final Map<String, Class<?>> EXPERIMENTAL_PROPERTIES;
 
@@ -32,6 +33,7 @@ public final class MeterProviderModelAccessor {
     EXPERIMENTAL_PROPERTIES = new HashMap<>();
     EXPERIMENTAL_PROPERTIES.put(METER_CONFIGURATOR, ExperimentalMeterConfiguratorModel.class);
     EXPERIMENTAL_PROPERTIES.put(VIEW_MATCHING_MODE, ExperimentalViewMatchingModeModel.class);
+    EXPERIMENTAL_PROPERTIES.put(CONTEXT_SCOPED_ATTRIBUTES, Boolean.class);
   }
 
   @Nullable
@@ -61,6 +63,19 @@ public final class MeterProviderModelAccessor {
       MeterProviderModel model, ExperimentalViewMatchingModeModel value) {
     requireNonNull(value, "value");
     model.setExtensionProperty(VIEW_MATCHING_MODE, value);
+    return model;
+  }
+
+  @Nullable
+  public static Boolean getContextScopedAttributes(MeterProviderModel model) {
+    return ExtensionPropertyUtil.get(
+        CONTEXT_SCOPED_ATTRIBUTES, model.getExtensionProperties(), Boolean.class);
+  }
+
+  public static MeterProviderModel setContextScopedAttributes(
+      MeterProviderModel model, Boolean value) {
+    requireNonNull(value, "value");
+    model.setExtensionProperty(CONTEXT_SCOPED_ATTRIBUTES, value);
     return model;
   }
 }

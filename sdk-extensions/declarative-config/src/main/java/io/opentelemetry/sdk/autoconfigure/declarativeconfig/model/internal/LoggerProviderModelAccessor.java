@@ -24,12 +24,14 @@ public final class LoggerProviderModelAccessor {
   private LoggerProviderModelAccessor() {}
 
   static final String LOGGER_CONFIGURATOR = "logger_configurator/development";
+  static final String CONTEXT_SCOPED_ATTRIBUTES = "context_scoped_attributes/development";
 
   public static final Map<String, Class<?>> EXPERIMENTAL_PROPERTIES;
 
   static {
     EXPERIMENTAL_PROPERTIES = new HashMap<>();
     EXPERIMENTAL_PROPERTIES.put(LOGGER_CONFIGURATOR, ExperimentalLoggerConfiguratorModel.class);
+    EXPERIMENTAL_PROPERTIES.put(CONTEXT_SCOPED_ATTRIBUTES, Boolean.class);
   }
 
   @Nullable
@@ -45,6 +47,19 @@ public final class LoggerProviderModelAccessor {
       LoggerProviderModel model, ExperimentalLoggerConfiguratorModel value) {
     requireNonNull(value, "value");
     model.setExtensionProperty(LOGGER_CONFIGURATOR, value);
+    return model;
+  }
+
+  @Nullable
+  public static Boolean getContextScopedAttributes(LoggerProviderModel model) {
+    return ExtensionPropertyUtil.get(
+        CONTEXT_SCOPED_ATTRIBUTES, model.getExtensionProperties(), Boolean.class);
+  }
+
+  public static LoggerProviderModel setContextScopedAttributes(
+      LoggerProviderModel model, Boolean value) {
+    requireNonNull(value, "value");
+    model.setExtensionProperty(CONTEXT_SCOPED_ATTRIBUTES, value);
     return model;
   }
 }

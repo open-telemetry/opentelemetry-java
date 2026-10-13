@@ -54,8 +54,16 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
-      boolean enabled) {
-    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+      boolean enabled,
+      boolean contextScopedAttributesEnabled) {
+    super(
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesEnabled);
     this.instrumentCreationEpochNanos = clock.now();
     this.registeredReader = registeredReader;
     this.memoryMode = registeredReader.getReader().getMemoryMode();
@@ -441,12 +449,24 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     }
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public void recordLong(long value, Context context) {
+      Attributes mergedAttributes = handle.storage.mergeContextAttributes(attributes, context);
+      if (mergedAttributes != attributes) {
+        handle.storage.recordLong(value, mergedAttributes, context);
+        return;
+      }
       handle.recordLong(value, attributes, context);
     }
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public void recordDouble(double value, Context context) {
+      Attributes mergedAttributes = handle.storage.mergeContextAttributes(attributes, context);
+      if (mergedAttributes != attributes) {
+        handle.storage.recordDouble(value, mergedAttributes, context);
+        return;
+      }
       handle.recordDouble(value, attributes, context);
     }
   }

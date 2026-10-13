@@ -25,7 +25,17 @@ public abstract class MeterProviderSharedState {
 
   public static MeterProviderSharedState create(
       Clock clock, SdkResourceProvider resourceProvider, ExemplarFilterInternal exemplarFilter) {
-    return new AutoValue_MeterProviderSharedState(clock, resourceProvider, exemplarFilter);
+    return create(
+        clock, resourceProvider, exemplarFilter, /* contextScopedAttributesEnabled= */ false);
+  }
+
+  public static MeterProviderSharedState create(
+      Clock clock,
+      SdkResourceProvider resourceProvider,
+      ExemplarFilterInternal exemplarFilter,
+      boolean contextScopedAttributesEnabled) {
+    return new AutoValue_MeterProviderSharedState(
+        clock, resourceProvider, exemplarFilter, contextScopedAttributesEnabled);
   }
 
   MeterProviderSharedState() {}
@@ -43,4 +53,10 @@ public abstract class MeterProviderSharedState {
 
   /** Returns the {@link ExemplarFilterInternal} for remembering measurements. */
   public abstract ExemplarFilterInternal getExemplarFilter();
+
+  /**
+   * Returns {@code true} if context-scoped attributes should be automatically inherited by
+   * synchronous metric measurements.
+   */
+  public abstract boolean isContextScopedAttributesEnabled();
 }

@@ -218,6 +218,18 @@ class SdkSpanBuilder implements SpanBuilder {
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
+    if (tracerSharedState.isContextScopedAttributesEnabled() && SdkTracer.INCUBATOR_AVAILABLE) {
+      Attributes contextAttributes = IncubatingUtil.getContextAttributes(parentContext);
+      if (!contextAttributes.isEmpty()) {
+        AttributesMap spanAttributes = attributes();
+        contextAttributes.forEach(
+            (key, value) -> {
+              if (spanAttributes.get(key) == null) {
+                spanAttributes.put((AttributeKey) key, value);
+              }
+            });
+      }
+    }
     Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
     SamplingResult samplingResult =
         tracerSharedState

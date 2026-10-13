@@ -32,9 +32,22 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   private static final Logger internalLogger =
       Logger.getLogger(DefaultSynchronousMetricStorage.class.getName());
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.common.ContextAttributes");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
 
   final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
   final UnaryOperator<Attributes> attributesFilter;
+  private final boolean contextScopedAttributesEnabled;
   protected final Clock clock;
   protected final MetricDescriptor metricDescriptor;
   protected final Aggregator<T> aggregator;
@@ -53,13 +66,15 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
-      boolean enabled) {
+      boolean enabled,
+      boolean contextScopedAttributesEnabled) {
     this.metricDescriptor = metricDescriptor;
     this.aggregator = aggregator;
     this.attributesFilter = attributesFilter;
     this.clock = clock;
     this.maxCardinality = maxCardinality - 1;
     this.enabled = enabled;
+    this.contextScopedAttributesEnabled = contextScopedAttributesEnabled;
   }
 
   static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
@@ -70,6 +85,26 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       int maxCardinality,
       Clock clock,
       boolean enabled) {
+    return create(
+        reader,
+        descriptor,
+        aggregator,
+        attributesFilter,
+        maxCardinality,
+        clock,
+        enabled,
+        /* contextScopedAttributesEnabled= */ false);
+  }
+
+  static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
+      RegisteredReader reader,
+      MetricDescriptor descriptor,
+      Aggregator<T> aggregator,
+      UnaryOperator<Attributes> attributesFilter,
+      int maxCardinality,
+      Clock clock,
+      boolean enabled,
+      boolean contextScopedAttributesEnabled) {
     AggregationTemporality aggregationTemporality =
         reader.getReader().getAggregationTemporality(descriptor.getSourceInstrument().getType());
     return aggregationTemporality == CUMULATIVE
@@ -80,9 +115,31 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             clock,
             maxCardinality,
             enabled,
+            contextScopedAttributesEnabled,
             reader.getReader().getMemoryMode())
         : new DeltaSynchronousMetricStorage<>(
-            reader, descriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+            reader,
+            descriptor,
+            aggregator,
+            attributesFilter,
+            clock,
+            maxCardinality,
+            enabled,
+            contextScopedAttributesEnabled);
+  }
+
+  final Attributes mergeContextAttributes(Attributes attributes, Context context) {
+    if (!contextScopedAttributesEnabled || !INCUBATOR_AVAILABLE) {
+      return attributes;
+    }
+    Attributes contextAttributes = StateIncubatingUtil.getContextAttributes(context);
+    if (contextAttributes.isEmpty()) {
+      return attributes;
+    }
+    if (attributes.isEmpty()) {
+      return contextAttributes;
+    }
+    return contextAttributes.toBuilder().putAll(attributes).build();
   }
 
   @Override
@@ -90,11 +147,12 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     if (!enabled) {
       return;
     }
-    doRecordLong(value, attributes, context);
+    doRecordLong(value, mergeContextAttributes(attributes, context), context);
   }
 
   @Override
   public void recordDouble(double value, Attributes attributes, Context context) {
+    attributes = mergeContextAttributes(attributes, context);
     if (!shouldRecordDouble(value, attributes)) {
       return;
     }

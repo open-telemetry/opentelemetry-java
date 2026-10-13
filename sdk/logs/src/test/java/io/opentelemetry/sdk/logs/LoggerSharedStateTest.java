@@ -32,7 +32,8 @@ class LoggerSharedStateTest {
             logRecordProcessor,
             Clock.getDefault(),
             ExceptionAttributeResolver.getDefault(),
-            new SdkLoggerInstrumentation(MeterProvider::noop));
+            new SdkLoggerInstrumentation(MeterProvider::noop),
+            /* contextScopedAttributesEnabled= */ false);
     state.shutdown();
     state.shutdown();
     verify(logRecordProcessor, times(1)).shutdown();

@@ -42,8 +42,16 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
       Clock clock,
       int maxCardinality,
       boolean enabled,
+      boolean contextScopedAttributesEnabled,
       MemoryMode memoryMode) {
-    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+    super(
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesEnabled);
     this.memoryMode = memoryMode;
   }
 
@@ -77,16 +85,28 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
     }
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public void recordLong(long value, Context context) {
       if (!isEnabled()) {
+        return;
+      }
+      Attributes mergedAttributes = mergeContextAttributes(attributes, context);
+      if (mergedAttributes != attributes) {
+        doRecordLong(value, mergedAttributes, context);
         return;
       }
       handle.recordLong(value, attributes, context);
     }
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public void recordDouble(double value, Context context) {
-      if (!shouldRecordDouble(value, attributes)) {
+      Attributes mergedAttributes = mergeContextAttributes(attributes, context);
+      if (!shouldRecordDouble(value, mergedAttributes)) {
+        return;
+      }
+      if (mergedAttributes != attributes) {
+        doRecordDouble(value, mergedAttributes, context);
         return;
       }
       handle.recordDouble(value, attributes, context);

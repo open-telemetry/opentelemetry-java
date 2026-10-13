@@ -58,7 +58,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       List<SpanProcessor> spanProcessors,
       ScopeConfigurator<TracerConfig> tracerConfigurator,
       ExceptionAttributeResolver exceptionAttributeResolver,
-      Supplier<MeterProvider> meterProvider) {
+      Supplier<MeterProvider> meterProvider,
+      boolean contextScopedAttributesEnabled) {
     this.resourceProvider = resourceProvider;
     this.sharedState =
         new TracerSharedState(
@@ -69,7 +70,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             sampler,
             spanProcessors,
             exceptionAttributeResolver,
-            new SdkTracerInstrumentation(meterProvider));
+            new SdkTracerInstrumentation(meterProvider),
+            contextScopedAttributesEnabled);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->

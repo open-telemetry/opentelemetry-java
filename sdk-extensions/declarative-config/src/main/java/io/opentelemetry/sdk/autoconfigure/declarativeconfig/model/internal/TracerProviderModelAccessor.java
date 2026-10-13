@@ -24,12 +24,14 @@ public final class TracerProviderModelAccessor {
   private TracerProviderModelAccessor() {}
 
   static final String TRACER_CONFIGURATOR = "tracer_configurator/development";
+  static final String CONTEXT_SCOPED_ATTRIBUTES = "context_scoped_attributes/development";
 
   public static final Map<String, Class<?>> EXPERIMENTAL_PROPERTIES;
 
   static {
     EXPERIMENTAL_PROPERTIES = new HashMap<>();
     EXPERIMENTAL_PROPERTIES.put(TRACER_CONFIGURATOR, ExperimentalTracerConfiguratorModel.class);
+    EXPERIMENTAL_PROPERTIES.put(CONTEXT_SCOPED_ATTRIBUTES, Boolean.class);
   }
 
   @Nullable
@@ -45,6 +47,19 @@ public final class TracerProviderModelAccessor {
       TracerProviderModel model, ExperimentalTracerConfiguratorModel value) {
     requireNonNull(value, "value");
     model.setExtensionProperty(TRACER_CONFIGURATOR, value);
+    return model;
+  }
+
+  @Nullable
+  public static Boolean getContextScopedAttributes(TracerProviderModel model) {
+    return ExtensionPropertyUtil.get(
+        CONTEXT_SCOPED_ATTRIBUTES, model.getExtensionProperties(), Boolean.class);
+  }
+
+  public static TracerProviderModel setContextScopedAttributes(
+      TracerProviderModel model, Boolean value) {
+    requireNonNull(value, "value");
+    model.setExtensionProperty(CONTEXT_SCOPED_ATTRIBUTES, value);
     return model;
   }
 }

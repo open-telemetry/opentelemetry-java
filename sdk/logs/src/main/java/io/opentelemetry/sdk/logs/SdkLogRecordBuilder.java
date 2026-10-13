@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
@@ -136,6 +137,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   }
 
   @Override
+  @SuppressWarnings({"rawtypes", "unchecked"})
   public void emit() {
     if (loggerSharedState.hasBeenShutdown()) {
       return;
@@ -148,6 +150,18 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
         this.observedTimestampEpochNanos == 0
             ? this.loggerSharedState.getClock().now()
             : this.observedTimestampEpochNanos;
+
+    if (loggerSharedState.isContextScopedAttributesEnabled() && SdkLogger.INCUBATOR_AVAILABLE) {
+      Attributes contextAttributes = IncubatingUtil.getContextAttributes(context);
+      if (!contextAttributes.isEmpty()) {
+        contextAttributes.forEach(
+            (key, value) -> {
+              if (attributes == null || attributes.get(key) == null) {
+                setAttribute((AttributeKey) key, value);
+              }
+            });
+      }
+    }
 
     loggerSharedState.getLoggerInstrumentation().emitLog();
     loggerSharedState
