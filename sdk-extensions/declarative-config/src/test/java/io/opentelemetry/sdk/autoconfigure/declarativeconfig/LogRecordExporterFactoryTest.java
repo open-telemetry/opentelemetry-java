@@ -125,6 +125,14 @@ class LogRecordExporterFactoryTest {
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
+            "otlp_http max_request_size 0",
+            new LogRecordExporterModel()
+                .setOtlpHttp(new OtlpHttpExporterModel().setMaxRequestSize(0)),
+            OtlpHttpLogRecordExporter.getDefault().toBuilder()
+                .setMaxRequestBodySize(Long.MAX_VALUE)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
             "otlp_grpc default",
             new LogRecordExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()),
             OtlpGrpcLogRecordExporter.getDefault().toBuilder().setComponentLoader(context).build()),
@@ -153,6 +161,14 @@ class LogRecordExporterFactoryTest {
                 .setTimeout(Duration.ofSeconds(15))
                 .setCompression("gzip")
                 .setMaxRequestMessageSize(1234)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
+            "otlp_grpc max_request_size 0",
+            new LogRecordExporterModel()
+                .setOtlpGrpc(new OtlpGrpcExporterModel().setMaxRequestSize(0)),
+            OtlpGrpcLogRecordExporter.getDefault().toBuilder()
+                .setMaxRequestMessageSize(Long.MAX_VALUE)
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
