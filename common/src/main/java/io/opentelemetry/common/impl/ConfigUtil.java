@@ -44,6 +44,9 @@ public final class ConfigUtil {
    * variable keys normalized the same way. System properties take priority over environment
    * variables.
    *
+   * <p>For example, {@code otel.experimental.sdk.jvm_stacktrace} matches the environment variable
+   * {@code OTEL_EXPERIMENTAL_SDK_JVM_STACKTRACE}.
+   *
    * @param key the property key
    * @param defaultValue the fallback value if neither system property nor environment variable is
    *     set
