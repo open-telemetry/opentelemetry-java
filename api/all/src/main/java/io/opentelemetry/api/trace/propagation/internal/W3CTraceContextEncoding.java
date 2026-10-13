@@ -9,7 +9,6 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TraceStateBuilder;
-import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -29,8 +28,6 @@ public final class W3CTraceContextEncoding {
   private static final int TRACESTATE_MAX_MEMBERS = 32;
   private static final char TRACESTATE_KEY_VALUE_DELIMITER = '=';
   private static final char TRACESTATE_ENTRY_DELIMITER = ',';
-  private static final Pattern TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN =
-      Pattern.compile("[ \t]*" + TRACESTATE_ENTRY_DELIMITER + "[ \t]*");
 
   /**
    * Decodes a trace state header into a {@link TraceState} object.
@@ -40,23 +37,39 @@ public final class W3CTraceContextEncoding {
    */
   public static TraceState decodeTraceState(String traceStateHeader) {
     TraceStateBuilder traceStateBuilder = TraceState.builder();
-    String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceStateHeader);
-    checkArgument(
-        listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");
-    // Iterate in reverse order because when call builder set the elements is added in the
-    // front of the list.
-    for (int i = listMembers.length - 1; i >= 0; i--) {
-      String listMember = listMembers[i];
-      int index = listMember.indexOf(TRACESTATE_KEY_VALUE_DELIMITER);
-      checkArgument(index != -1, "Invalid TraceState list-member format.");
-      traceStateBuilder.put(listMember.substring(0, index), listMember.substring(index + 1));
+    int memberCount = 0;
+    int end = traceStateHeader.length();
+    // Scan backwards because the builder prepends entries. Use literal comma searches to avoid
+    // backtracking.
+    while (end > 0) {
+      int start = traceStateHeader.lastIndexOf(TRACESTATE_ENTRY_DELIMITER, end - 1) + 1;
+      int nextEnd = start - 1;
+      while (start < end && isOptionalWhitespace(traceStateHeader.charAt(start))) {
+        start++;
+      }
+      while (end > start && isOptionalWhitespace(traceStateHeader.charAt(end - 1))) {
+        end--;
+      }
+      if (start < end) {
+        memberCount++;
+        checkArgument(memberCount <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");
+        int index = traceStateHeader.indexOf(TRACESTATE_KEY_VALUE_DELIMITER, start);
+        checkArgument(index != -1 && index < end, "Invalid TraceState list-member format.");
+        traceStateBuilder.put(
+            traceStateHeader.substring(start, index), traceStateHeader.substring(index + 1, end));
+      }
+      end = nextEnd;
     }
     TraceState traceState = traceStateBuilder.build();
-    if (traceState.size() != listMembers.length) {
+    if (traceState.size() != memberCount) {
       // Validation failure, drop the tracestate
       return TraceState.getDefault();
     }
     return traceState;
+  }
+
+  private static boolean isOptionalWhitespace(char character) {
+    return character == ' ' || character == '\t';
   }
 
   /** Return the trace state encoded as a string according to the W3C specification. */

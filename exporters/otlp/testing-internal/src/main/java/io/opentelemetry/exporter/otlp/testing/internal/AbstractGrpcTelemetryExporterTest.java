@@ -20,6 +20,7 @@ import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.Message;
 import com.google.protobuf.Parser;
 import com.linecorp.armeria.common.HttpData;
+import com.linecorp.armeria.common.HttpHeaders;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
@@ -61,7 +62,7 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.AttributeAssertion;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
@@ -121,6 +122,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       new ConcurrentLinkedQueue<>();
 
   private static final ConcurrentLinkedQueue<GrpcServerResponse> grpcResponses =
+      new ConcurrentLinkedQueue<>();
+
+  private static final ConcurrentLinkedQueue<HttpResponse> grpcTrailerResponses =
       new ConcurrentLinkedQueue<>();
 
   private static volatile byte[] defaultResponseBytes = new byte[0];
@@ -214,6 +218,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                         throws Exception {
                       httpRequests.add(req);
                       attempts.incrementAndGet();
+                      HttpResponse trailerResponse = grpcTrailerResponses.poll();
+                      if (trailerResponse != null) {
+                        return trailerResponse;
+                      }
                       return unwrap().serve(ctx, req);
                     }
                   });
@@ -330,6 +338,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   void reset() {
     exportedResourceTelemetry.clear();
     grpcResponses.clear();
+    grpcTrailerResponses.clear();
     attempts.set(0);
     httpRequests.clear();
     grpcEncodingServerAttempts.set(0);
@@ -983,6 +992,32 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThat(attempts).hasValue(2);
   }
 
+  @ParameterizedTest
+  @ValueSource(ints = {1, 4, 8, 10, 11, 14, 15})
+  @SuppressLogger(GrpcExporter.class)
+  void retryableErrorInTrailers(int code) {
+    // grpc-java commits the RPC on initial response headers, preventing trailer-based retries.
+    assumeThat(exporter.unwrap())
+        .extracting("delegate.grpcSender")
+        .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
+
+    grpcTrailerResponses.add(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.OK)
+                .contentType(MediaType.parse("application/grpc+proto"))
+                .build(),
+            HttpData.empty(),
+            HttpHeaders.of("grpc-status", Integer.toString(code))));
+
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+
+    assertThat(attempts).hasValue(2);
+    assertThat(result.isSuccess()).isTrue();
+  }
+
   @Test
   @SuppressLogger(GrpcExporter.class)
   void retryableError_tooManyAttempts() {
@@ -1383,15 +1418,15 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       List<AttributeAssertion> expectedAttributes =
           Arrays.asList(
               satisfies(
-                  SemConvAttributes.OTEL_COMPONENT_TYPE,
+                  SemConvConstants.OTEL_COMPONENT_TYPE,
                   str -> str.matches("otlp_grpc_(log|metric|span)_exporter")),
               satisfies(
-                  SemConvAttributes.OTEL_COMPONENT_NAME,
+                  SemConvConstants.OTEL_COMPONENT_NAME,
                   str -> str.matches("otlp_grpc_(log|metric|span)_exporter/\\d+")),
               satisfies(
-                  SemConvAttributes.SERVER_PORT, str -> str.isEqualTo(server.httpUri().getPort())),
+                  SemConvConstants.SERVER_PORT, str -> str.isEqualTo(server.httpUri().getPort())),
               satisfies(
-                  SemConvAttributes.SERVER_ADDRESS,
+                  SemConvConstants.SERVER_ADDRESS,
                   str -> str.isEqualTo(server.httpUri().getHost())));
 
       assertThat(inMemoryMetrics.collectAllMetrics())

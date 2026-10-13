@@ -24,35 +24,24 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *
  * <p>Example usage:
  *
- * <pre><code>
- * public class InMemoryMetricExporterExample {
- *
- *   // creating InMemoryMetricExporter
- *   private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
- *   private final MeterSdkProvider meterSdkProvider = OpenTelemetrySdk.getMeterProvider();
- *   private final Meter meter = meterSdkProvider.get("InMemoryMetricExporterExample");
- *   private IntervalMetricReader intervalMetricReader;
- *
- *   void setup() {
- *     intervalMetricReader =
- *         IntervalMetricReader.builder()
- *             .setMetricExporter(exporter)
- *             .setMetricProducers(Collections.singletonList(meterSdkProvider.getMetricProducer()))
- *             .setExportIntervalMillis(1000)
- *             .build();
- *   }
- *
- *   LongCounter generateLongCounterMeter(String name) {
- *     return meter.longCounterBuilder(name).setDescription("Sample LongCounter").build();
- *   }
- *
- *   public static void main(String[] args) throws InterruptedException {
- *     InMemoryMetricExporterExample example = new InMemoryMetricExporterExample();
- *     example.setup();
- *     example.generateLongCounterMeter("counter-1");
- *   }
- * }
- * </code></pre>
+ * <pre>{@code
+ * // class MyClassTest {
+ * //   private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
+ * //   private final SdkMeterProvider meterProvider =
+ * //       SdkMeterProvider.builder()
+ * //           .registerMetricReader(PeriodicMetricReader.builder(exporter).build())
+ * //           .build();
+ * //
+ * //   @Test
+ * //   public void getFinishedMetricItems() {
+ * //     LongCounter counter = meterProvider.get("test-scope").counterBuilder("counter").build();
+ * //     counter.add(1);
+ * //     meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+ * //
+ * //     assertThat(exporter.getFinishedMetricItems()).hasSize(1);
+ * //   }
+ * // }
+ * }</pre>
  *
  * @since 1.14.0
  */

@@ -19,12 +19,15 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.ServiceInstanceIdResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -46,8 +49,12 @@ public class AutoconfigureTest {
     ComponentLoader autoConfigureLoader =
         ComponentLoader.forClassLoader(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
 
+    // ServiceInstanceIdResourceProvider's UUID is static, so expected and actual match.
     Resource resource =
         Resource.getDefault()
+            .merge(
+                new ServiceInstanceIdResourceProvider()
+                    .createResource(DefaultConfigProperties.createFromMap(Collections.emptyMap())))
             .merge(
                 Resource.create(
                     Attributes.of(

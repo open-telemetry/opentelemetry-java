@@ -70,10 +70,7 @@ class ReservoirCell {
     this.attributes = attributes;
     // High precision time is not worth the additional performance expense it incurs for exemplars
     this.recordTime = clock.now(/* highPrecision= */ false);
-    Span current = Span.fromContext(context);
-    if (current.getSpanContext().isValid()) {
-      this.spanContext = current.getSpanContext();
-    }
+    this.spanContext = Span.fromContext(context).getSpanContext();
   }
 
   /**

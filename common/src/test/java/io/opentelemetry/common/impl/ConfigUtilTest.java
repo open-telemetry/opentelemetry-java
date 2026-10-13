@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.internal;
+package io.opentelemetry.common.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
-/** Relies on environment configuration in {@code ./api/all/build.gradle.kts}. */
+/** Relies on environment configuration in {@code ./common/build.gradle.kts}. */
 class ConfigUtilTest {
 
   @Test
@@ -60,12 +60,6 @@ class ConfigUtilTest {
   }
 
   @Test
-  void defaultIfnull() {
-    assertThat(ConfigUtil.defaultIfNull("val1", "val2")).isEqualTo("val1");
-    assertThat(ConfigUtil.defaultIfNull(null, "val2")).isEqualTo("val2");
-  }
-
-  @Test
   @SuppressWarnings("ReturnValueIgnored")
   void systemPropertiesConcurrentAccess() throws ExecutionException, InterruptedException {
     int threads = 4;
@@ -100,9 +94,8 @@ class ConfigUtilTest {
       for (Future<?> future : futures) {
         future.get();
       }
-
     } finally {
-      executor.shutdownNow();
+      executor.shutdown();
     }
   }
 }

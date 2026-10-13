@@ -8,7 +8,6 @@ package io.opentelemetry.api.common;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Objects;
 
 final class ValueBytes implements Value<ByteBuffer> {
 
@@ -19,7 +18,6 @@ final class ValueBytes implements Value<ByteBuffer> {
   }
 
   static Value<ByteBuffer> create(byte[] value) {
-    Objects.requireNonNull(value, "value must not be null");
     return new ValueBytes(Arrays.copyOf(value, value.length));
   }
 
