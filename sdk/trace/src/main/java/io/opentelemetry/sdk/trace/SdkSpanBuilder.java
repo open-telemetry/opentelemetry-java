@@ -55,6 +55,7 @@ class SdkSpanBuilder implements SpanBuilder {
   private final SpanLimits spanLimits;
 
   @Nullable private Context parent; // null means: Use current context.
+  private boolean noParent = false;
   private SpanKind spanKind = SpanKind.INTERNAL;
   @Nullable private AttributesMap attributes;
   @Nullable private List<LinkData> links;
@@ -78,12 +79,14 @@ class SdkSpanBuilder implements SpanBuilder {
       return this;
     }
     this.parent = context;
+    this.noParent = false;
     return this;
   }
 
   @Override
   public SpanBuilder setNoParent() {
     this.parent = Context.root();
+    this.noParent = true;
     return this;
   }
 
@@ -216,7 +219,8 @@ class SdkSpanBuilder implements SpanBuilder {
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
     if (tracerSharedState.isContextScopedAttributesEnabled() && SdkTracer.INCUBATOR_AVAILABLE) {
-      Attributes contextAttributes = IncubatingUtil.getContextAttributes(parentContext);
+      Context contextForAttributes = noParent ? Context.current() : parentContext;
+      Attributes contextAttributes = IncubatingUtil.getContextAttributes(contextForAttributes);
       if (!contextAttributes.isEmpty()) {
         AttributesMap spanAttributes = attributes();
         contextAttributes.forEach(

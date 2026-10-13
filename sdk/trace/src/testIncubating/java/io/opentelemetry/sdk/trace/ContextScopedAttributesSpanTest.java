@@ -125,4 +125,85 @@ class ContextScopedAttributesSpanTest {
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0)).hasAttributes(Attributes.of(stringKey("parent"), "explicit"));
   }
+
+  @Test
+  void contextScopedAttributes_setNoParent_preservesAmbientContextAttributes() {
+    InMemorySpanExporter exporter = InMemorySpanExporter.create();
+    SdkTracerProviderBuilder builder =
+        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
+    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProvider provider = builder.build();
+    Tracer tracer = provider.get("test");
+
+    Span parent = tracer.spanBuilder("parent").startSpan();
+    try (Scope parentScope = parent.makeCurrent()) {
+      Context currentCtx =
+          ContextAttributes.add(Context.current(), Attributes.of(stringKey("scope"), "current"));
+
+      try (Scope ignored = currentCtx.makeCurrent()) {
+        Span span = tracer.spanBuilder("span").setNoParent().startSpan();
+        span.end();
+      }
+    } finally {
+      parent.end();
+    }
+
+    List<SpanData> spans = exporter.getFinishedSpanItems();
+    assertThat(spans).hasSize(2);
+    SpanData child = spans.get(0);
+    assertThat(child).hasAttributes(Attributes.of(stringKey("scope"), "current"));
+    assertThat(child.getParentSpanContext().isValid()).isFalse();
+    assertThat(child.getSpanContext().getTraceId())
+        .isNotEqualTo(parent.getSpanContext().getTraceId());
+  }
+
+  @Test
+  void contextScopedAttributes_explicitParentRoot_dropsContextAttributes() {
+    InMemorySpanExporter exporter = InMemorySpanExporter.create();
+    SdkTracerProviderBuilder builder =
+        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
+    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProvider provider = builder.build();
+    Tracer tracer = provider.get("test");
+
+    Context currentCtx =
+        ContextAttributes.add(Context.root(), Attributes.of(stringKey("scope"), "current"));
+
+    try (Scope ignored = currentCtx.makeCurrent()) {
+      Span span = tracer.spanBuilder("span").setParent(Context.root()).startSpan();
+      span.end();
+    }
+
+    List<SpanData> spans = exporter.getFinishedSpanItems();
+    assertThat(spans).hasSize(1);
+    SpanData spanData = spans.get(0);
+    assertThat(spanData.getAttributes()).isEmpty();
+    assertThat(spanData.getParentSpanContext().isValid()).isFalse();
+  }
+
+  @Test
+  void contextScopedAttributes_spanAttributeCountLimit() {
+    InMemorySpanExporter exporter = InMemorySpanExporter.create();
+    SdkTracerProviderBuilder builder =
+        SdkTracerProvider.builder()
+            .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(1).build())
+            .addSpanProcessor(SimpleSpanProcessor.create(exporter));
+    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProvider provider = builder.build();
+    Tracer tracer = provider.get("test");
+
+    Context ctx =
+        ContextAttributes.add(Context.root(), Attributes.of(stringKey("ctx_attr"), "ctx"));
+
+    try (Scope ignored = ctx.makeCurrent()) {
+      Span span = tracer.spanBuilder("span").setAttribute("explicit_attr", "explicit").startSpan();
+      span.end();
+    }
+
+    List<SpanData> spans = exporter.getFinishedSpanItems();
+    assertThat(spans).hasSize(1);
+    SpanData spanData = spans.get(0);
+    assertThat(spanData).hasAttributes(Attributes.of(stringKey("explicit_attr"), "explicit"));
+    assertThat(spanData.getTotalAttributeCount()).isEqualTo(2);
+  }
 }

@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -32,18 +33,6 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   private static final Logger internalLogger =
       Logger.getLogger(DefaultSynchronousMetricStorage.class.getName());
-  private static final boolean INCUBATOR_AVAILABLE;
-
-  static {
-    boolean incubatorAvailable = false;
-    try {
-      Class.forName("io.opentelemetry.api.incubator.common.ContextAttributes");
-      incubatorAvailable = true;
-    } catch (ClassNotFoundException e) {
-      // Not available
-    }
-    INCUBATOR_AVAILABLE = incubatorAvailable;
-  }
 
   final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
   final UnaryOperator<Attributes> attributesFilter;
@@ -128,13 +117,14 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             contextScopedAttributesEnabled);
   }
 
-  final Attributes mergeContextAttributes(Attributes attributes, Context context) {
-    if (!contextScopedAttributesEnabled || !INCUBATOR_AVAILABLE) {
-      return attributes;
+  @Nullable
+  final Attributes getMergedContextAttributes(Attributes attributes, Context context) {
+    if (!contextScopedAttributesEnabled) {
+      return null;
     }
     Attributes contextAttributes = StateIncubatingUtil.getContextAttributes(context);
     if (contextAttributes.isEmpty()) {
-      return attributes;
+      return null;
     }
     if (attributes.isEmpty()) {
       return contextAttributes;
@@ -147,12 +137,17 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     if (!enabled) {
       return;
     }
-    doRecordLong(value, mergeContextAttributes(attributes, context), context);
+    Attributes merged = getMergedContextAttributes(attributes, context);
+    doRecordLong(value, merged != null ? merged : attributes, context);
   }
 
   @Override
   public void recordDouble(double value, Attributes attributes, Context context) {
-    attributes = mergeContextAttributes(attributes, context);
+    if (!enabled) {
+      return;
+    }
+    Attributes merged = getMergedContextAttributes(attributes, context);
+    attributes = merged != null ? merged : attributes;
     if (!shouldRecordDouble(value, attributes)) {
       return;
     }

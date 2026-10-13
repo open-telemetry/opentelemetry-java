@@ -449,22 +449,30 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     }
 
     @Override
-    @SuppressWarnings("ReferenceEquality")
     public void recordLong(long value, Context context) {
-      Attributes mergedAttributes = handle.storage.mergeContextAttributes(attributes, context);
-      if (mergedAttributes != attributes) {
-        handle.storage.recordLong(value, mergedAttributes, context);
+      if (!handle.storage.isEnabled()) {
+        return;
+      }
+      Attributes mergedAttributes = handle.storage.getMergedContextAttributes(attributes, context);
+      if (mergedAttributes != null) {
+        handle.storage.doRecordLong(value, mergedAttributes, context);
         return;
       }
       handle.recordLong(value, attributes, context);
     }
 
     @Override
-    @SuppressWarnings("ReferenceEquality")
     public void recordDouble(double value, Context context) {
-      Attributes mergedAttributes = handle.storage.mergeContextAttributes(attributes, context);
-      if (mergedAttributes != attributes) {
-        handle.storage.recordDouble(value, mergedAttributes, context);
+      if (!handle.storage.isEnabled()) {
+        return;
+      }
+      Attributes mergedAttributes = handle.storage.getMergedContextAttributes(attributes, context);
+      Attributes attributesToRecord = mergedAttributes != null ? mergedAttributes : attributes;
+      if (!handle.storage.shouldRecordDouble(value, attributesToRecord)) {
+        return;
+      }
+      if (mergedAttributes != null) {
+        handle.storage.doRecordDouble(value, mergedAttributes, context);
         return;
       }
       handle.recordDouble(value, attributes, context);

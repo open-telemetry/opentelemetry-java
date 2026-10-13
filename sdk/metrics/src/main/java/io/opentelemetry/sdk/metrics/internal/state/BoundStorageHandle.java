@@ -13,7 +13,9 @@ import io.opentelemetry.context.Context;
  *
  * <p>Records bypass the per-recording attribute processing and series lookup that {@link
  * WriteableMetricStorage#recordLong} / {@link WriteableMetricStorage#recordDouble} perform, since
- * the series is resolved at bind time. Backs bound instruments.
+ * the series is resolved at bind time. Backs bound instruments. When context-scoped attributes are
+ * enabled and non-empty in the recording context, recording falls back to dynamic series resolution
+ * with the merged attributes.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
