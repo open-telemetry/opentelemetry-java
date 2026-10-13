@@ -99,6 +99,10 @@ final class SdkMeter implements Meter {
     return meterProviderSharedState.getExemplarFilter() instanceof AlwaysOffExemplarFilter;
   }
 
+  boolean isContextScopedAttributesEnabled() {
+    return meterProviderSharedState.isContextScopedAttributesEnabled();
+  }
+
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
 
   private volatile boolean meterEnabled;
@@ -300,7 +304,8 @@ final class SdkMeter implements Meter {
                     meterProviderSharedState.getClock(),
                     instrument,
                     meterProviderSharedState.getExemplarFilter(),
-                    meterEnabled)));
+                    meterEnabled,
+                    meterProviderSharedState.isContextScopedAttributesEnabled())));
       }
     }
 

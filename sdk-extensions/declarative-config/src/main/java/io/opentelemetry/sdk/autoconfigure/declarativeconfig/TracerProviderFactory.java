@@ -99,6 +99,12 @@ final class TracerProviderFactory
       SdkTracerProviderUtil.setTracerConfigurator(builder, configuratorBuilder.build());
     }
 
+    Boolean contextScopedAttributes =
+        TracerProviderModelAccessor.getContextScopedAttributes(tracerProviderModel);
+    if (contextScopedAttributes != null) {
+      SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, contextScopedAttributes);
+    }
+
     return builder;
   }
 

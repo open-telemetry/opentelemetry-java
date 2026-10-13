@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
+import static io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil.setContextScopedAttributesEnabled;
 import static io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil.setLoggerConfigurator;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
@@ -82,43 +83,48 @@ class LoggerProviderFactoryTest {
             "full configuration",
             LoggerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
-                LoggerProviderModelAccessor.setLoggerConfigurator(
-                    new LoggerProviderModel()
-                        .setLimits(
-                            new LogRecordLimitsModel()
-                                .setAttributeCountLimit(1)
-                                .setAttributeValueLengthLimit(2))
-                        .setProcessors(
-                            Collections.singletonList(
-                                new LogRecordProcessorModel()
-                                    .setBatch(
-                                        new BatchLogRecordProcessorModel()
-                                            .setExporter(
-                                                new LogRecordExporterModel()
-                                                    .setOtlpHttp(new OtlpHttpExporterModel()))))),
-                    new ExperimentalLoggerConfiguratorModel()
-                        .setDefaultConfig(new ExperimentalLoggerConfigModel().setEnabled(false))
-                        .setLoggers(
-                            Collections.singletonList(
-                                new ExperimentalLoggerMatcherAndConfigModel()
-                                    .setName("foo")
-                                    .setConfig(
-                                        new ExperimentalLoggerConfigModel()
-                                            .setEnabled(true)
-                                            .setTraceBased(true)
-                                            .setMinimumSeverity(SeverityNumberModel.INFO)))))),
-            setLoggerConfigurator(
-                    SdkLoggerProvider.builder(),
-                    ScopeConfigurator.<LoggerConfig>builder()
-                        .setDefault(LoggerConfig.disabled())
-                        .addCondition(
-                            ScopeConfiguratorBuilder.nameMatchesGlob("foo"),
-                            LoggerConfig.builder()
-                                .setEnabled(true)
-                                .setTraceBased(true)
-                                .setMinimumSeverity(Severity.INFO)
-                                .build())
-                        .build())
+                LoggerProviderModelAccessor.setContextScopedAttributes(
+                    LoggerProviderModelAccessor.setLoggerConfigurator(
+                        new LoggerProviderModel()
+                            .setLimits(
+                                new LogRecordLimitsModel()
+                                    .setAttributeCountLimit(1)
+                                    .setAttributeValueLengthLimit(2))
+                            .setProcessors(
+                                Collections.singletonList(
+                                    new LogRecordProcessorModel()
+                                        .setBatch(
+                                            new BatchLogRecordProcessorModel()
+                                                .setExporter(
+                                                    new LogRecordExporterModel()
+                                                        .setOtlpHttp(
+                                                            new OtlpHttpExporterModel()))))),
+                        new ExperimentalLoggerConfiguratorModel()
+                            .setDefaultConfig(new ExperimentalLoggerConfigModel().setEnabled(false))
+                            .setLoggers(
+                                Collections.singletonList(
+                                    new ExperimentalLoggerMatcherAndConfigModel()
+                                        .setName("foo")
+                                        .setConfig(
+                                            new ExperimentalLoggerConfigModel()
+                                                .setEnabled(true)
+                                                .setTraceBased(true)
+                                                .setMinimumSeverity(SeverityNumberModel.INFO))))),
+                    true)),
+            setContextScopedAttributesEnabled(
+                    setLoggerConfigurator(
+                        SdkLoggerProvider.builder(),
+                        ScopeConfigurator.<LoggerConfig>builder()
+                            .setDefault(LoggerConfig.disabled())
+                            .addCondition(
+                                ScopeConfiguratorBuilder.nameMatchesGlob("foo"),
+                                LoggerConfig.builder()
+                                    .setEnabled(true)
+                                    .setTraceBased(true)
+                                    .setMinimumSeverity(Severity.INFO)
+                                    .build())
+                            .build()),
+                    true)
                 .setLogLimits(
                     () ->
                         LogLimits.builder()

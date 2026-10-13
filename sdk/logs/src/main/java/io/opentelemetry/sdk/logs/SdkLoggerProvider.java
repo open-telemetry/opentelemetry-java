@@ -60,7 +60,8 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
       Clock clock,
       ScopeConfigurator<LoggerConfig> loggerConfigurator,
       ExceptionAttributeResolver exceptionAttributeResolver,
-      Supplier<MeterProvider> meterProvider) {
+      Supplier<MeterProvider> meterProvider,
+      boolean contextScopedAttributesEnabled) {
     LogRecordProcessor logRecordProcessor = LogRecordProcessor.composite(processors);
     this.sharedState =
         new LoggerSharedState(
@@ -69,7 +70,8 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
             logRecordProcessor,
             clock,
             exceptionAttributeResolver,
-            new SdkLoggerInstrumentation(meterProvider));
+            new SdkLoggerInstrumentation(meterProvider),
+            contextScopedAttributesEnabled);
     this.loggerComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->

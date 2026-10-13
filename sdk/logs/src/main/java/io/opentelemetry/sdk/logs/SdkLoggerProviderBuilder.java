@@ -42,6 +42,7 @@ public final class SdkLoggerProviderBuilder {
   private ExceptionAttributeResolver exceptionAttributeResolver =
       ExceptionAttributeResolver.getDefault();
   private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
+  private boolean contextScopedAttributesEnabled;
 
   SdkLoggerProviderBuilder() {}
 
@@ -202,6 +203,18 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
+   * Sets whether context-scoped attributes are automatically inherited by log records.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setContextScopedAttributesEnabled(SdkLoggerProviderBuilder, boolean)}.
+   */
+  SdkLoggerProviderBuilder setContextScopedAttributesEnabled(
+      boolean contextScopedAttributesEnabled) {
+    this.contextScopedAttributesEnabled = contextScopedAttributesEnabled;
+    return this;
+  }
+
+  /**
    * Create a {@link SdkLoggerProvider} instance.
    *
    * @return an instance configured with the provided options
@@ -214,6 +227,7 @@ public final class SdkLoggerProviderBuilder {
         clock,
         loggerConfiguratorBuilder.build(),
         exceptionAttributeResolver,
-        meterProvider);
+        meterProvider,
+        contextScopedAttributesEnabled);
   }
 }

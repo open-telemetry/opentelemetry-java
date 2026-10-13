@@ -24,6 +24,7 @@ final class LoggerSharedState {
   private final Clock clock;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
   private final SdkLoggerInstrumentation loggerInstrumentation;
+  private final boolean contextScopedAttributesEnabled;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
@@ -32,13 +33,15 @@ final class LoggerSharedState {
       LogRecordProcessor logRecordProcessor,
       Clock clock,
       ExceptionAttributeResolver exceptionAttributeResolver,
-      SdkLoggerInstrumentation loggerInstrumentation) {
+      SdkLoggerInstrumentation loggerInstrumentation,
+      boolean contextScopedAttributesEnabled) {
     this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.loggerInstrumentation = loggerInstrumentation;
+    this.contextScopedAttributesEnabled = contextScopedAttributesEnabled;
   }
 
   Resource getResource() {
@@ -63,6 +66,10 @@ final class LoggerSharedState {
 
   SdkLoggerInstrumentation getLoggerInstrumentation() {
     return loggerInstrumentation;
+  }
+
+  boolean isContextScopedAttributesEnabled() {
+    return contextScopedAttributesEnabled;
   }
 
   boolean hasBeenShutdown() {

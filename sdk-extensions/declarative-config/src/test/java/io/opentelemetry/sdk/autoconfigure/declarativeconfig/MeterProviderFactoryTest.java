@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
+import static io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil.setContextScopedAttributesEnabled;
 import static io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil.setMeterConfigurator;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
@@ -75,43 +76,48 @@ class MeterProviderFactoryTest {
             "defaults", new MeterProviderModel(), SdkMeterProvider.builder().build()),
         Arguments.argumentSet(
             "with reader view and meter configurator",
-            MeterProviderModelAccessor.setMeterConfigurator(
-                    new MeterProviderModel()
-                        .setReaders(
-                            Collections.singletonList(
-                                new MetricReaderModel()
-                                    .setPeriodic(
-                                        new PeriodicMetricReaderModel()
-                                            .setExporter(
-                                                new PushMetricExporterModel()
-                                                    .setOtlpHttp(
-                                                        new OtlpHttpMetricExporterModel())))))
-                        .setViews(
-                            Collections.singletonList(
-                                new ViewModel()
-                                    .setSelector(
-                                        new ViewSelectorModel()
-                                            .setInstrumentName("instrument-name"))
-                                    .setStream(
-                                        new ViewStreamModel()
-                                            .setName("stream-name")
-                                            .setAttributeKeys(null)))),
-                    new ExperimentalMeterConfiguratorModel()
-                        .setDefaultConfig(new ExperimentalMeterConfigModel().setEnabled(false))
-                        .setMeters(
-                            Collections.singletonList(
-                                new ExperimentalMeterMatcherAndConfigModel()
-                                    .setName("foo")
-                                    .setConfig(
-                                        new ExperimentalMeterConfigModel().setEnabled(true)))))
+            MeterProviderModelAccessor.setContextScopedAttributes(
+                    MeterProviderModelAccessor.setMeterConfigurator(
+                        new MeterProviderModel()
+                            .setReaders(
+                                Collections.singletonList(
+                                    new MetricReaderModel()
+                                        .setPeriodic(
+                                            new PeriodicMetricReaderModel()
+                                                .setExporter(
+                                                    new PushMetricExporterModel()
+                                                        .setOtlpHttp(
+                                                            new OtlpHttpMetricExporterModel())))))
+                            .setViews(
+                                Collections.singletonList(
+                                    new ViewModel()
+                                        .setSelector(
+                                            new ViewSelectorModel()
+                                                .setInstrumentName("instrument-name"))
+                                        .setStream(
+                                            new ViewStreamModel()
+                                                .setName("stream-name")
+                                                .setAttributeKeys(null)))),
+                        new ExperimentalMeterConfiguratorModel()
+                            .setDefaultConfig(new ExperimentalMeterConfigModel().setEnabled(false))
+                            .setMeters(
+                                Collections.singletonList(
+                                    new ExperimentalMeterMatcherAndConfigModel()
+                                        .setName("foo")
+                                        .setConfig(
+                                            new ExperimentalMeterConfigModel().setEnabled(true))))),
+                    true)
                 .setExemplarFilter(ExemplarFilterModel.ALWAYS_ON),
-            setMeterConfigurator(
-                    SdkMeterProvider.builder(),
-                    ScopeConfigurator.<MeterConfig>builder()
-                        .setDefault(MeterConfig.disabled())
-                        .addCondition(
-                            ScopeConfiguratorBuilder.nameMatchesGlob("foo"), MeterConfig.enabled())
-                        .build())
+            setContextScopedAttributesEnabled(
+                    setMeterConfigurator(
+                        SdkMeterProvider.builder(),
+                        ScopeConfigurator.<MeterConfig>builder()
+                            .setDefault(MeterConfig.disabled())
+                            .addCondition(
+                                ScopeConfiguratorBuilder.nameMatchesGlob("foo"),
+                                MeterConfig.enabled())
+                            .build()),
+                    true)
                 .setExemplarFilter(ExemplarFilter.alwaysOn())
                 .registerMetricReader(
                     PeriodicMetricReader.builder(

@@ -84,33 +84,37 @@ class TracerProviderFactoryTest {
             "full configuration",
             TracerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
-                TracerProviderModelAccessor.setTracerConfigurator(
-                    new TracerProviderModel()
-                        .setLimits(
-                            new SpanLimitsModel()
-                                .setAttributeCountLimit(1)
-                                .setAttributeValueLengthLimit(2)
-                                .setEventCountLimit(3)
-                                .setLinkCountLimit(4)
-                                .setEventAttributeCountLimit(5)
-                                .setLinkAttributeCountLimit(6))
-                        .setSampler(new SamplerModel().setAlwaysOn(new AlwaysOnSamplerModel()))
-                        .setProcessors(
-                            Collections.singletonList(
-                                new SpanProcessorModel()
-                                    .setBatch(
-                                        new BatchSpanProcessorModel()
-                                            .setExporter(
-                                                new SpanExporterModel()
-                                                    .setOtlpHttp(new OtlpHttpExporterModel()))))),
-                    new ExperimentalTracerConfiguratorModel()
-                        .setDefaultConfig(new ExperimentalTracerConfigModel().setEnabled(false))
-                        .setTracers(
-                            Collections.singletonList(
-                                new ExperimentalTracerMatcherAndConfigModel()
-                                    .setName("foo")
-                                    .setConfig(
-                                        new ExperimentalTracerConfigModel().setEnabled(true)))))),
+                TracerProviderModelAccessor.setContextScopedAttributes(
+                    TracerProviderModelAccessor.setTracerConfigurator(
+                        new TracerProviderModel()
+                            .setLimits(
+                                new SpanLimitsModel()
+                                    .setAttributeCountLimit(1)
+                                    .setAttributeValueLengthLimit(2)
+                                    .setEventCountLimit(3)
+                                    .setLinkCountLimit(4)
+                                    .setEventAttributeCountLimit(5)
+                                    .setLinkAttributeCountLimit(6))
+                            .setSampler(new SamplerModel().setAlwaysOn(new AlwaysOnSamplerModel()))
+                            .setProcessors(
+                                Collections.singletonList(
+                                    new SpanProcessorModel()
+                                        .setBatch(
+                                            new BatchSpanProcessorModel()
+                                                .setExporter(
+                                                    new SpanExporterModel()
+                                                        .setOtlpHttp(
+                                                            new OtlpHttpExporterModel()))))),
+                        new ExperimentalTracerConfiguratorModel()
+                            .setDefaultConfig(new ExperimentalTracerConfigModel().setEnabled(false))
+                            .setTracers(
+                                Collections.singletonList(
+                                    new ExperimentalTracerMatcherAndConfigModel()
+                                        .setName("foo")
+                                        .setConfig(
+                                            new ExperimentalTracerConfigModel()
+                                                .setEnabled(true))))),
+                    true)),
             addTracerConfigurator(
                     SdkTracerProvider.builder(),
                     ScopeConfigurator.<TracerConfig>builder()
@@ -138,6 +142,7 @@ class TracerProviderFactoryTest {
   private static SdkTracerProviderBuilder addTracerConfigurator(
       SdkTracerProviderBuilder builder, ScopeConfigurator<TracerConfig> tracerConfigurator) {
     SdkTracerProviderUtil.setTracerConfigurator(builder, tracerConfigurator);
+    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
     return builder;
   }
 }
