@@ -8,7 +8,11 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.common.ContextAttributes;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysOnSamplerModel;
@@ -26,10 +30,12 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.Exper
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.TracerProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import java.io.Closeable;
@@ -38,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -67,6 +74,34 @@ class TracerProviderFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
+  }
+
+  @Test
+  void create_contextScopedAttributesEnabled() {
+    InMemorySpanExporter exporter = InMemorySpanExporter.create();
+    cleanup.addCloseable(exporter);
+    SdkTracerProvider provider =
+        TracerProviderFactory.getInstance()
+            .create(
+                TracerProviderAndAttributeLimits.create(
+                    new AttributeLimitsModel(),
+                    TracerProviderModelAccessor.setContextScopedAttributes(
+                        new TracerProviderModel(), true)),
+                context)
+            .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+            .build();
+    cleanup.addCloseable(provider);
+
+    Context contextWithAttrs =
+        ContextAttributes.add(Context.root(), Attributes.of(AttributeKey.stringKey("foo"), "bar"));
+    provider.get("test").spanBuilder("test").setParent(contextWithAttrs).startSpan().end();
+
+    assertThat(exporter.getFinishedSpanItems())
+        .singleElement()
+        .satisfies(
+            span ->
+                assertThat(span.getAttributes())
+                    .containsEntry(AttributeKey.stringKey("foo"), "bar"));
   }
 
   private static Stream<Arguments> createArguments() {

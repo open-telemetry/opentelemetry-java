@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.incubator.common;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
@@ -26,14 +28,12 @@ public final class ContextAttributes {
    * attributes} takes precedence.
    */
   public static Context add(Context context, Attributes attributes) {
-    if (context == null) {
-      return Context.root();
-    }
+    requireNonNull(context, "context");
     if (attributes == null || attributes.isEmpty()) {
       return context;
     }
     Attributes existing = context.get(CONTEXT_ATTRIBUTES_KEY);
-    if (existing == null || existing.isEmpty()) {
+    if (existing == null) {
       return context.with(CONTEXT_ATTRIBUTES_KEY, attributes);
     }
     Attributes merged = existing.toBuilder().putAll(attributes).build();
@@ -43,6 +43,10 @@ public final class ContextAttributes {
   /**
    * Returns the {@link Attributes} associated with the given {@code context}, or {@link
    * Attributes#empty()} if none are present.
+   *
+   * <p>This method is intended primarily for telemetry pipeline components such as SDKs, samplers,
+   * processors, and exporters. Application code should treat context-scoped attributes as
+   * write-only via {@link #add(Context, Attributes)}.
    */
   public static Attributes get(Context context) {
     if (context == null) {

@@ -9,7 +9,11 @@ import static io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil.setCont
 import static io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil.setMeterConfigurator;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.common.ContextAttributes;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExemplarFilterModel;
@@ -33,12 +37,14 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -68,6 +74,40 @@ class MeterProviderFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
+  }
+
+  @Test
+  void create_contextScopedAttributesEnabled() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    cleanup.addCloseable(reader);
+    SdkMeterProvider provider =
+        MeterProviderFactory.getInstance()
+            .create(
+                MeterProviderModelAccessor.setContextScopedAttributes(
+                    new MeterProviderModel(), true),
+                context)
+            .registerMetricReader(reader)
+            .build();
+    cleanup.addCloseable(provider);
+
+    Context contextWithAttrs =
+        ContextAttributes.add(Context.root(), Attributes.of(AttributeKey.stringKey("foo"), "bar"));
+    provider
+        .get("test")
+        .counterBuilder("test")
+        .build()
+        .add(1, Attributes.empty(), contextWithAttrs);
+
+    assertThat(reader.collectAllMetrics())
+        .singleElement()
+        .satisfies(
+            metricData ->
+                assertThat(metricData.getLongSumData().getPoints())
+                    .singleElement()
+                    .satisfies(
+                        point ->
+                            assertThat(point.getAttributes())
+                                .containsEntry(AttributeKey.stringKey("foo"), "bar")));
   }
 
   private static Stream<Arguments> createArguments() {

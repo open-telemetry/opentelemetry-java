@@ -55,6 +55,7 @@ class SdkSpanBuilder implements SpanBuilder {
   private final SpanLimits spanLimits;
 
   @Nullable private Context parent; // null means: Use current context.
+  private boolean noParent = false;
   private SpanKind spanKind = SpanKind.INTERNAL;
   @Nullable private AttributesMap attributes;
   @Nullable private List<LinkData> links;
@@ -78,12 +79,14 @@ class SdkSpanBuilder implements SpanBuilder {
       return this;
     }
     this.parent = context;
+    this.noParent = false;
     return this;
   }
 
   @Override
   public SpanBuilder setNoParent() {
     this.parent = Context.root();
+    this.noParent = true;
     return this;
   }
 
@@ -184,6 +187,15 @@ class SdkSpanBuilder implements SpanBuilder {
   @SuppressWarnings({"rawtypes", "ReferenceEquality"})
   public Span startSpan() {
     Context parentContext = parent == null ? Context.current() : parent;
+    if (noParent
+        && tracerSharedState.isContextScopedAttributesEnabled()
+        && SdkTracer.INCUBATOR_AVAILABLE) {
+      Context current = Context.current();
+      parentContext =
+          Span.fromContext(current) == Span.getInvalid()
+              ? current
+              : current.with(Span.getInvalid());
+    }
     Span parentSpan = Span.fromContext(parentContext);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;

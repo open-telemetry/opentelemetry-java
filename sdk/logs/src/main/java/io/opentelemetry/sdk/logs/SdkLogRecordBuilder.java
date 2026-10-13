@@ -137,7 +137,6 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   }
 
   @Override
-  @SuppressWarnings({"rawtypes", "unchecked"})
   public void emit() {
     if (loggerSharedState.hasBeenShutdown()) {
       return;
@@ -150,18 +149,6 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
         this.observedTimestampEpochNanos == 0
             ? this.loggerSharedState.getClock().now()
             : this.observedTimestampEpochNanos;
-
-    if (loggerSharedState.isContextScopedAttributesEnabled() && SdkLogger.INCUBATOR_AVAILABLE) {
-      Attributes contextAttributes = IncubatingUtil.getContextAttributes(context);
-      if (!contextAttributes.isEmpty()) {
-        contextAttributes.forEach(
-            (key, value) -> {
-              if (attributes == null || attributes.get(key) == null) {
-                setAttribute((AttributeKey) key, value);
-              }
-            });
-      }
-    }
 
     loggerSharedState.getLoggerInstrumentation().emitLog();
     loggerSharedState
@@ -182,7 +169,26 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     }
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
+    AttributesMap recordAttributes = this.attributes;
+    if (loggerSharedState.isContextScopedAttributesEnabled() && SdkLogger.INCUBATOR_AVAILABLE) {
+      Attributes contextAttributes = IncubatingUtil.getContextAttributes(context);
+      if (!contextAttributes.isEmpty()) {
+        AttributesMap mergedAttributes =
+            recordAttributes != null
+                ? AttributesMap.copyOf(recordAttributes)
+                : AttributesMap.create(
+                    logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+        contextAttributes.forEach(
+            (key, value) -> {
+              if (mergedAttributes.get(key) == null) {
+                mergedAttributes.put((AttributeKey) key, value);
+              }
+            });
+        recordAttributes = mergedAttributes;
+      }
+    }
     return SdkReadWriteLogRecord.create(
         loggerSharedState.getLogLimits(),
         loggerSharedState.getResource(),
@@ -193,7 +199,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
         severity,
         severityText,
         body,
-        attributes,
+        recordAttributes,
         eventName);
   }
 }

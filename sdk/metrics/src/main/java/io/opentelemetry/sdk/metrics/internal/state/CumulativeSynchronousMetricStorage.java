@@ -85,28 +85,16 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
     }
 
     @Override
-    @SuppressWarnings("ReferenceEquality")
     public void recordLong(long value, Context context) {
       if (!isEnabled()) {
-        return;
-      }
-      Attributes mergedAttributes = mergeContextAttributes(attributes, context);
-      if (mergedAttributes != attributes) {
-        doRecordLong(value, mergedAttributes, context);
         return;
       }
       handle.recordLong(value, attributes, context);
     }
 
     @Override
-    @SuppressWarnings("ReferenceEquality")
     public void recordDouble(double value, Context context) {
-      Attributes mergedAttributes = mergeContextAttributes(attributes, context);
-      if (!shouldRecordDouble(value, mergedAttributes)) {
-        return;
-      }
-      if (mergedAttributes != attributes) {
-        doRecordDouble(value, mergedAttributes, context);
+      if (!shouldRecordDouble(value, attributes)) {
         return;
       }
       handle.recordDouble(value, attributes, context);

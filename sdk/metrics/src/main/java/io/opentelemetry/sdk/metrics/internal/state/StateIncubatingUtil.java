@@ -10,23 +10,8 @@ import io.opentelemetry.api.incubator.common.ContextAttributes;
 import io.opentelemetry.context.Context;
 
 final class StateIncubatingUtil {
-  private static final boolean INCUBATOR_AVAILABLE;
-
-  static {
-    boolean incubatorAvailable = false;
-    try {
-      Class.forName("io.opentelemetry.api.incubator.common.ContextAttributes");
-      incubatorAvailable = true;
-    } catch (ClassNotFoundException e) {
-      // Not available
-    }
-    INCUBATOR_AVAILABLE = incubatorAvailable;
-  }
 
   static Attributes getContextAttributes(Context context) {
-    if (!INCUBATOR_AVAILABLE) {
-      return Attributes.empty();
-    }
     return ContextAttributes.get(context);
   }
 

@@ -8,6 +8,7 @@ package io.opentelemetry.api.incubator.common;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -27,8 +28,8 @@ class ContextAttributesTest {
     Context root = Context.root();
     assertThat(ContextAttributes.add(root, null)).isSameAs(root);
     assertThat(ContextAttributes.add(root, Attributes.empty())).isSameAs(root);
-    assertThat(ContextAttributes.add(null, Attributes.of(stringKey("k"), "v")))
-        .isEqualTo(Context.root());
+    assertThatThrownBy(() -> ContextAttributes.add(null, Attributes.of(stringKey("k"), "v")))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,5 +38,30 @@ class LoggerSharedStateTest {
     state.shutdown();
     state.shutdown();
     verify(logRecordProcessor, times(1)).shutdown();
+  }
+
+  @Test
+  void contextScopedAttributesEnabled() {
+    LoggerSharedState stateEnabled =
+        new LoggerSharedState(
+            SdkResourceProvider.create(Resource.empty()),
+            LogLimits::getDefault,
+            mock(LogRecordProcessor.class),
+            Clock.getDefault(),
+            ExceptionAttributeResolver.getDefault(),
+            new SdkLoggerInstrumentation(MeterProvider::noop),
+            /* contextScopedAttributesEnabled= */ true);
+    assertThat(stateEnabled.isContextScopedAttributesEnabled()).isTrue();
+
+    LoggerSharedState stateDisabled =
+        new LoggerSharedState(
+            SdkResourceProvider.create(Resource.empty()),
+            LogLimits::getDefault,
+            mock(LogRecordProcessor.class),
+            Clock.getDefault(),
+            ExceptionAttributeResolver.getDefault(),
+            new SdkLoggerInstrumentation(MeterProvider::noop),
+            /* contextScopedAttributesEnabled= */ false);
+    assertThat(stateDisabled.isContextScopedAttributesEnabled()).isFalse();
   }
 }

@@ -100,7 +100,7 @@ final class SdkMeter implements Meter {
   }
 
   boolean isContextScopedAttributesEnabled() {
-    return meterProviderSharedState.isContextScopedAttributesEnabled();
+    return meterProviderSharedState.isContextScopedAttributesEnabled() && INCUBATOR_AVAILABLE;
   }
 
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
@@ -305,7 +305,7 @@ final class SdkMeter implements Meter {
                     instrument,
                     meterProviderSharedState.getExemplarFilter(),
                     meterEnabled,
-                    meterProviderSharedState.isContextScopedAttributesEnabled())));
+                    isContextScopedAttributesEnabled())));
       }
     }
 
