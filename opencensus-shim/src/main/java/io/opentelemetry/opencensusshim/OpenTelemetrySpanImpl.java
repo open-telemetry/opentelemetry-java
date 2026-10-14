@@ -31,7 +31,6 @@ import static io.opentelemetry.opencensusshim.SpanConverter.setDoubleAttribute;
 import static io.opentelemetry.opencensusshim.SpanConverter.setLongAttribute;
 import static io.opentelemetry.opencensusshim.SpanConverter.setStringAttribute;
 
-import com.google.common.base.Preconditions;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.EndSpanOptions;
@@ -48,6 +47,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Objects;
 
 class OpenTelemetrySpanImpl extends Span
     implements io.opentelemetry.api.trace.Span, DelegatingSpan {
@@ -73,8 +73,8 @@ class OpenTelemetrySpanImpl extends Span
 
   @Override
   public void putAttribute(String key, AttributeValue value) {
-    Preconditions.checkNotNull(key, "key");
-    Preconditions.checkNotNull(value, "value");
+    Objects.requireNonNull(key, "key");
+    Objects.requireNonNull(value, "value");
     value.match(
         arg -> DelegatingSpan.super.setAttribute(key, arg),
         arg -> DelegatingSpan.super.setAttribute(key, arg),
@@ -85,7 +85,7 @@ class OpenTelemetrySpanImpl extends Span
 
   @Override
   public void putAttributes(Map<String, AttributeValue> attributes) {
-    Preconditions.checkNotNull(attributes, "attributes");
+    Objects.requireNonNull(attributes, "attributes");
     attributes.forEach(this::putAttribute);
   }
 
@@ -105,7 +105,7 @@ class OpenTelemetrySpanImpl extends Span
 
   @Override
   public void addLink(Link link) {
-    Preconditions.checkNotNull(link, "link");
+    Objects.requireNonNull(link, "link");
     AttributesBuilder attributesBuilder = Attributes.builder();
     mapAttributes(link.getAttributes(), attributesBuilder);
     // DelegatingSpan does not override addLink, so DelegatingSpan.super.addLink(..) would call the
@@ -136,7 +136,7 @@ class OpenTelemetrySpanImpl extends Span
 
   @Override
   public void setStatus(Status status) {
-    Preconditions.checkNotNull(status, "status");
+    Objects.requireNonNull(status, "status");
     StatusCode code = status.isOk() ? StatusCode.OK : StatusCode.ERROR;
     String description = status.getDescription();
     if (description == null) {

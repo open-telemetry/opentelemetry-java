@@ -37,7 +37,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(21))
+    languageVersion.set(JavaLanguageVersion.of(25))
   }
 
   withJavadocJar()
@@ -297,8 +297,6 @@ dependencies {
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   compileOnly("com.google.code.findbugs:jsr305")
-
-  annotationProcessor("com.google.guava:guava-beta-checker")
 
   // Workaround for @javax.annotation.Generated
   // see: https://github.com/grpc/grpc-java/issues/3633
