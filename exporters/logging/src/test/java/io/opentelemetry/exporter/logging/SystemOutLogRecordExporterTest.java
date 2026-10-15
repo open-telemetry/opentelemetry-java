@@ -82,6 +82,33 @@ class SystemOutLogRecordExporterTest {
   }
 
   @Test
+  void formatWithoutTimestampUsesObservedTimestamp() {
+    long observedTimestamp =
+        LocalDateTime.of(1970, Month.AUGUST, 7, 10, 0).toInstant(ZoneOffset.UTC).toEpochMilli();
+    LogRecordData log =
+        TestLogRecordData.builder()
+            .setResource(Resource.empty())
+            .setInstrumentationScopeInfo(
+                InstrumentationScopeInfo.builder("logTest").setVersion("1.0").build())
+            .setBody("message")
+            .setSeverity(Severity.ERROR3)
+            .setObservedTimestamp(observedTimestamp, TimeUnit.MILLISECONDS)
+            .setSpanContext(
+                SpanContext.create(
+                    "00000000000000010000000000000002",
+                    "0000000000000003",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()))
+            .build();
+    StringBuilder output = new StringBuilder();
+    SystemOutLogRecordExporter.formatLog(output, log);
+    assertThat(output.toString())
+        .isEqualTo(
+            "1970-08-07T10:00:00Z ERROR3 'message' : 00000000000000010000000000000002 "
+                + "0000000000000003 [scopeInfo: logTest:1.0] {}");
+  }
+
+  @Test
   void shutdown() {
     SystemOutLogRecordExporter exporter = SystemOutLogRecordExporter.create();
     assertThat(exporter.shutdown().isSuccess()).isTrue();
