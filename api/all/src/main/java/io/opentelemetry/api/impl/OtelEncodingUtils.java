@@ -13,14 +13,10 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>This class is not intended for use by application developers. Its API is stable and will not
  * be changed or removed in a backwards-incompatible manner.
- *
- * @since 1.68.0
  */
 @Immutable
 public final class OtelEncodingUtils {
-  static final int LONG_BYTES = Long.SIZE / Byte.SIZE;
-  static final int BYTE_BASE16 = 2;
-  static final int LONG_BASE16 = BYTE_BASE16 * LONG_BYTES;
+  private static final int BYTE_BASE16 = 2;
   private static final String ALPHABET = "0123456789abcdef";
   private static final int NUM_ASCII_CHARACTERS = 128;
   private static final char[] ENCODING = buildEncodingArray();
@@ -48,9 +44,6 @@ public final class OtelEncodingUtils {
 
   private static boolean[] buildValidHexArray() {
     boolean[] validHex = new boolean[Character.MAX_VALUE + 1];
-    // Use the fact that the default initial boolean value is false
-    // and only explicitly init the values between the extreme HEX values
-    // This minimized impact during process startup esp. on mobile.
     for (int i = 48; i < 103; i++) {
       validHex[i] = i <= 57 || 97 <= i;
     }
@@ -107,44 +100,6 @@ public final class OtelEncodingUtils {
     }
   }
 
-  /** Fills {@code dest} with the hex encoding of {@code bytes}. */
-  public static void bytesToBase16(byte[] bytes, char[] dest, int length) {
-    for (int i = 0; i < length; i++) {
-      byteToBase16(bytes[i], dest, i * 2);
-    }
-  }
-
-  /**
-   * Encodes the specified byte, and returns the encoded {@code String}.
-   *
-   * @param value the value to be converted.
-   * @param dest the destination char array.
-   * @param destOffset the starting offset in the destination char array.
-   */
-  public static void byteToBase16(byte value, char[] dest, int destOffset) {
-    int b = value & 0xFF;
-    dest[destOffset] = ENCODING[b];
-    dest[destOffset + 1] = ENCODING[b | 0x100];
-  }
-
-  /**
-   * Decodes the specified two character sequence, and returns the resulting {@code byte}.
-   *
-   * @param first the first hex character.
-   * @param second the second hex character.
-   * @return the resulting {@code byte}
-   */
-  public static byte byteFromBase16(char first, char second) {
-    if (first >= NUM_ASCII_CHARACTERS || DECODING[first] == -1) {
-      throw new IllegalArgumentException("invalid character " + first);
-    }
-    if (second >= NUM_ASCII_CHARACTERS || DECODING[second] == -1) {
-      throw new IllegalArgumentException("invalid character " + second);
-    }
-    int decoded = DECODING[first] << 4 | DECODING[second];
-    return (byte) decoded;
-  }
-
   /** Returns whether the {@link CharSequence} is a valid hex string. */
   public static boolean isValidBase16String(CharSequence value) {
     int len = value.length();
@@ -157,8 +112,23 @@ public final class OtelEncodingUtils {
     return true;
   }
 
-  /** Returns whether the given {@code char} is a valid hex character. */
-  public static boolean isValidBase16Character(char b) {
+  private static void byteToBase16(byte value, char[] dest, int destOffset) {
+    int b = value & 0xFF;
+    dest[destOffset] = ENCODING[b];
+    dest[destOffset + 1] = ENCODING[b | 0x100];
+  }
+
+  private static byte byteFromBase16(char first, char second) {
+    if (first >= NUM_ASCII_CHARACTERS || DECODING[first] == -1) {
+      throw new IllegalArgumentException("invalid character " + first);
+    }
+    if (second >= NUM_ASCII_CHARACTERS || DECODING[second] == -1) {
+      throw new IllegalArgumentException("invalid character " + second);
+    }
+    return (byte) (DECODING[first] << 4 | DECODING[second]);
+  }
+
+  private static boolean isValidBase16Character(char b) {
     return VALID_HEX[b];
   }
 
