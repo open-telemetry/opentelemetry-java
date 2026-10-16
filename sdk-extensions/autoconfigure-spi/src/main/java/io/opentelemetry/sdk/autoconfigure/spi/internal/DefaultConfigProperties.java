@@ -28,9 +28,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
- * Properties are normalized to The properties for both of these will be normalized to be all lower
- * case, dashses are replaces with periods, and environment variable underscores are replaces with
- * periods.
+ * Property keys from all sources are normalized to be all lower case, with dashes and underscores
+ * replaced with periods. For example, {@code otel.java.exporter.memory_mode} matches the
+ * environment variable {@code OTEL_JAVA_EXPORTER_MEMORY_MODE}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -71,13 +71,11 @@ public final class DefaultConfigProperties implements ConfigProperties {
       Map<String, String> defaultProperties,
       ComponentLoader componentLoader) {
     Map<String, String> config = new HashMap<>();
-    defaultProperties.forEach(
-        (name, value) -> config.put(ConfigUtil.normalizePropertyKey(name), value));
+    defaultProperties.forEach((name, value) -> config.put(normalizeKey(name), value));
     environmentVariables.forEach(
         (name, value) -> config.put(ConfigUtil.normalizeEnvironmentVariableKey(name), value));
     systemProperties.forEach(
-        (key, value) ->
-            config.put(ConfigUtil.normalizePropertyKey(key.toString()), value.toString()));
+        (key, value) -> config.put(normalizeKey(key.toString()), value.toString()));
 
     this.config = config;
     this.componentLoader = componentLoader;
@@ -87,7 +85,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
       DefaultConfigProperties previousProperties, Map<String, String> overrides) {
     // previousProperties are already normalized, they can be copied as they are
     Map<String, String> config = new HashMap<>(previousProperties.config);
-    overrides.forEach((name, value) -> config.put(ConfigUtil.normalizePropertyKey(name), value));
+    overrides.forEach((name, value) -> config.put(normalizeKey(name), value));
 
     this.config = config;
     this.componentLoader = previousProperties.componentLoader;
@@ -96,13 +94,13 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Override
   @Nullable
   public String getString(String name) {
-    return config.get(ConfigUtil.normalizePropertyKey(name));
+    return config.get(normalizeKey(name));
   }
 
   @Override
   @Nullable
   public Boolean getBoolean(String name) {
-    String value = config.get(ConfigUtil.normalizePropertyKey(name));
+    String value = config.get(normalizeKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -113,7 +111,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Integer getInt(String name) {
-    String value = config.get(ConfigUtil.normalizePropertyKey(name));
+    String value = config.get(normalizeKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -128,7 +126,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Long getLong(String name) {
-    String value = config.get(ConfigUtil.normalizePropertyKey(name));
+    String value = config.get(normalizeKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -143,7 +141,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Double getDouble(String name) {
-    String value = config.get(ConfigUtil.normalizePropertyKey(name));
+    String value = config.get(normalizeKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -158,7 +156,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Nullable
   @SuppressWarnings("UnusedException")
   public Duration getDuration(String name) {
-    String value = config.get(ConfigUtil.normalizePropertyKey(name));
+    String value = config.get(normalizeKey(name));
     if (value == null || value.isEmpty()) {
       return null;
     }
@@ -187,7 +185,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
 
   @Override
   public List<String> getList(String name) {
-    String value = config.get(ConfigUtil.normalizePropertyKey(name));
+    String value = config.get(normalizeKey(name));
     if (value == null) {
       return Collections.emptyList();
     }
@@ -258,6 +256,14 @@ public final class DefaultConfigProperties implements ConfigProperties {
       String name, String value, String type) {
     throw new ConfigurationException(
         "Invalid value for property " + name + "=" + value + ". Must be a " + type + ".");
+  }
+
+  /**
+   * Normalize a property key the same way environment variable keys are normalized, so that keys
+   * containing "_" match their environment variable.
+   */
+  private static String normalizeKey(String key) {
+    return ConfigUtil.normalizeEnvironmentVariableKey(ConfigUtil.normalizePropertyKey(key));
   }
 
   private static List<String> filterBlanksAndNulls(String[] values) {
