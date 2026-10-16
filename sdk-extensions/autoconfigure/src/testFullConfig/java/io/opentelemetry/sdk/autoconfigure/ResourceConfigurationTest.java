@@ -62,7 +62,11 @@ class ResourceConfigurationTest {
             (r, c) -> r);
 
     assertThat(EntityUtil.getEntities(resource))
-        .containsExactly(
+        .containsExactlyInAnyOrder(
+            EntityUtil.getEntities(Resource.getDefault()).stream()
+                .filter(entity -> entity.getType().equals("telemetry.sdk"))
+                .findFirst()
+                .get(),
             Entity.builder("service", Attributes.of(AttributeKey.stringKey("service.name"), "test"))
                 .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
                 .build());
