@@ -148,8 +148,9 @@ public interface SpanBuilder {
    * operations, where a single batch handler processes multiple requests from different traces or
    * the same trace.
    *
-   * <p>Implementations may ignore calls with an {@linkplain SpanContext#isValid() invalid span
-   * context}.
+   * <p>Implementations should record links with an {@linkplain SpanContext#isValid() invalid span
+   * context} if its {@link TraceState} is nonempty. Implementations may ignore calls with an
+   * invalid span context and an empty {@link TraceState}.
    *
    * @param spanContext the context of the linked {@code Span}.
    * @return this.
@@ -163,8 +164,9 @@ public interface SpanBuilder {
    * operations, where a single batch handler processes multiple requests from different traces or
    * the same trace.
    *
-   * <p>Implementations may ignore calls with an {@linkplain SpanContext#isValid() invalid span
-   * context}.
+   * <p>Implementations should record links with an {@linkplain SpanContext#isValid() invalid span
+   * context} if the attributes or its {@link TraceState} are nonempty. Implementations may ignore
+   * calls with an invalid span context when both are empty.
    *
    * @param spanContext the context of the linked {@code Span}.
    * @param attributes the attributes of the {@code Link}.
