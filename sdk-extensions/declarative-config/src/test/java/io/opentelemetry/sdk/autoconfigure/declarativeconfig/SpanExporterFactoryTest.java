@@ -128,6 +128,13 @@ class SpanExporterFactoryTest {
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
+            "otlp_http max_request_size 0",
+            new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel().setMaxRequestSize(0)),
+            OtlpHttpSpanExporter.getDefault().toBuilder()
+                .setMaxRequestBodySize(Long.MAX_VALUE)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
             "otlp_grpc default",
             new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()),
             OtlpGrpcSpanExporter.getDefault().toBuilder().setComponentLoader(context).build()),
@@ -156,6 +163,13 @@ class SpanExporterFactoryTest {
                 .setTimeout(Duration.ofSeconds(15))
                 .setCompression("gzip")
                 .setMaxRequestMessageSize(1234)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
+            "otlp_grpc max_request_size 0",
+            new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel().setMaxRequestSize(0)),
+            OtlpGrpcSpanExporter.getDefault().toBuilder()
+                .setMaxRequestMessageSize(Long.MAX_VALUE)
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
