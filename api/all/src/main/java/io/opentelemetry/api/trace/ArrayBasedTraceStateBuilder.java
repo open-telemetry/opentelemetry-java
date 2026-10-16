@@ -96,6 +96,7 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   public TraceStateBuilder remove(String key) {
     if (key == null) {
       ApiUsageLogger.logNullParam(TraceStateBuilder.class, "remove", "key");
+      return this;
     }
     for (int i = 0; i < reversedEntries.size(); i += 2) {
       if (reversedEntries.get(i).equals(key)) {

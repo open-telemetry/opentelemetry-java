@@ -23,6 +23,7 @@ abstract class ArrayBasedTraceState implements TraceState {
   public String get(String key) {
     if (key == null) {
       ApiUsageLogger.logNullParam(TraceState.class, "get", "key");
+      return null;
     }
     List<String> entries = getEntries();
     for (int i = 0; i < entries.size(); i += 2) {

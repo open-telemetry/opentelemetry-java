@@ -138,9 +138,9 @@ public Span addEvent(String name) {
 }
 ```
 
-Log and fall through when the remaining code safely tolerates null and produces the intended
-fallback without unwanted side effects. Otherwise, return early. Preserve existing null-tolerant
-behavior.
+Return after logging unless the remaining code is a noop or explicitly handles null (for example, by
+substituting a default). Do not continue into a loop or other logic just because it happens to
+tolerate null.
 
 Check non-`@Nullable` reference arguments in declaration order, logging each null once unless an
 early return ends the call.
