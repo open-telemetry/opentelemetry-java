@@ -17,7 +17,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
