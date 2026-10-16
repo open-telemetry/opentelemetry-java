@@ -38,11 +38,14 @@ final class LogRecordProcessorFactory
     ConfigKeyValue processorKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "log record processor");
 
-    if (model.getBatch() != null) {
-      return createBatchLogRecordProcessor(model.getBatch(), context);
+    BatchLogRecordProcessorModel batch = model.getBatch();
+    if (batch != null) {
+      return context.withConfigPath("batch", () -> createBatchLogRecordProcessor(batch, context));
     }
-    if (model.getSimple() != null) {
-      return createSimpleLogRecordProcessor(model.getSimple(), context);
+    SimpleLogRecordProcessorModel simple = model.getSimple();
+    if (simple != null) {
+      return context.withConfigPath(
+          "simple", () -> createSimpleLogRecordProcessor(simple, context));
     }
     if (LogRecordProcessorModelAccessor.getEventToSpanEventBridge(model) != null) {
       return EventToSpanEventBridge.create();
@@ -54,8 +57,7 @@ final class LogRecordProcessorFactory
   private static LogRecordProcessor createBatchLogRecordProcessor(
       BatchLogRecordProcessorModel batchModel, DeclarativeConfigContext context) {
     LogRecordExporterModel exporterModel =
-        FileConfigUtil.requireNonNull(
-            batchModel.getExporter(), "batch log record processor exporter");
+        FileConfigUtil.requireNonNull(context, batchModel.getExporter(), "exporter");
 
     LogRecordExporter logRecordExporter =
         LogRecordExporterFactory.getInstance().create(exporterModel, context);
@@ -80,8 +82,7 @@ final class LogRecordProcessorFactory
   private static LogRecordProcessor createSimpleLogRecordProcessor(
       SimpleLogRecordProcessorModel simpleModel, DeclarativeConfigContext context) {
     LogRecordExporterModel exporterModel =
-        FileConfigUtil.requireNonNull(
-            simpleModel.getExporter(), "simple log record processor exporter");
+        FileConfigUtil.requireNonNull(context, simpleModel.getExporter(), "exporter");
     LogRecordExporter logRecordExporter =
         LogRecordExporterFactory.getInstance().create(exporterModel, context);
     SimpleLogRecordProcessorBuilder builder = SimpleLogRecordProcessor.builder(logRecordExporter);

@@ -34,11 +34,14 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
     ConfigKeyValue processorKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "span processor");
 
-    if (model.getBatch() != null) {
-      return createBatchLogRecordProcessor(model.getBatch(), context);
+    BatchSpanProcessorModel batch = model.getBatch();
+    if (batch != null) {
+      return context.withConfigPath("batch", () -> createBatchLogRecordProcessor(batch, context));
     }
-    if (model.getSimple() != null) {
-      return createSimpleLogRecordProcessor(model.getSimple(), context);
+    SimpleSpanProcessorModel simple = model.getSimple();
+    if (simple != null) {
+      return context.withConfigPath(
+          "simple", () -> createSimpleLogRecordProcessor(simple, context));
     }
 
     return context.loadComponent(SpanProcessor.class, processorKeyValue);
@@ -47,7 +50,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
   private static SpanProcessor createBatchLogRecordProcessor(
       BatchSpanProcessorModel batchModel, DeclarativeConfigContext context) {
     SpanExporterModel exporterModel =
-        FileConfigUtil.requireNonNull(batchModel.getExporter(), "batch span processor exporter");
+        FileConfigUtil.requireNonNull(context, batchModel.getExporter(), "exporter");
     SpanExporter spanExporter = SpanExporterFactory.getInstance().create(exporterModel, context);
     BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(spanExporter);
     if (batchModel.getExportTimeout() != null) {
@@ -70,7 +73,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
   private static SpanProcessor createSimpleLogRecordProcessor(
       SimpleSpanProcessorModel simpleModel, DeclarativeConfigContext context) {
     SpanExporterModel exporterModel =
-        FileConfigUtil.requireNonNull(simpleModel.getExporter(), "simple span processor exporter");
+        FileConfigUtil.requireNonNull(context, simpleModel.getExporter(), "exporter");
     SpanExporter spanExporter = SpanExporterFactory.getInstance().create(exporterModel, context);
     SimpleSpanProcessorBuilder builder = SimpleSpanProcessor.builder(spanExporter);
     context.setInternalTelemetry(builder::setMeterProvider);
