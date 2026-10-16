@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
@@ -168,7 +169,26 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     }
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
+    AttributesMap recordAttributes = this.attributes;
+    if (loggerSharedState.isContextScopedAttributesEnabled() && SdkLogger.INCUBATOR_AVAILABLE) {
+      Attributes contextAttributes = IncubatingUtil.getContextAttributes(context);
+      if (!contextAttributes.isEmpty()) {
+        AttributesMap mergedAttributes =
+            recordAttributes != null
+                ? AttributesMap.copyOf(recordAttributes)
+                : AttributesMap.create(
+                    logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+        contextAttributes.forEach(
+            (key, value) -> {
+              if (mergedAttributes.get(key) == null) {
+                mergedAttributes.put((AttributeKey) key, value);
+              }
+            });
+        recordAttributes = mergedAttributes;
+      }
+    }
     return SdkReadWriteLogRecord.create(
         loggerSharedState.getLogLimits(),
         loggerSharedState.getResource(),
@@ -179,7 +199,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
         severity,
         severityText,
         body,
-        attributes,
+        recordAttributes,
         eventName);
   }
 }

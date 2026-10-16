@@ -98,6 +98,18 @@ public final class AttributesMap implements Attributes {
     mask = hashTable.length - 1;
   }
 
+  private AttributesMap(AttributesMap source) {
+    this.capacity = source.capacity;
+    this.lengthLimit = source.lengthLimit;
+    this.totalAddedValues = source.totalAddedValues;
+    this.size = source.size;
+    this.entryNames = Arrays.copyOf(source.entryNames, source.entryNames.length);
+    this.entryKeys = Arrays.copyOf(source.entryKeys, source.entryKeys.length);
+    this.entryValues = Arrays.copyOf(source.entryValues, source.entryValues.length);
+    this.hashTable = Arrays.copyOf(source.hashTable, source.hashTable.length);
+    this.mask = source.mask;
+  }
+
   /**
    * Create an instance.
    *
@@ -106,6 +118,14 @@ public final class AttributesMap implements Attributes {
    */
   public static AttributesMap create(long capacity, int lengthLimit) {
     return new AttributesMap(capacity, lengthLimit);
+  }
+
+  /**
+   * Create a mutable copy of an existing {@link AttributesMap}, preserving all entries, capacity,
+   * length limit, and total added values count.
+   */
+  public static AttributesMap copyOf(AttributesMap source) {
+    return new AttributesMap(source);
   }
 
   /**

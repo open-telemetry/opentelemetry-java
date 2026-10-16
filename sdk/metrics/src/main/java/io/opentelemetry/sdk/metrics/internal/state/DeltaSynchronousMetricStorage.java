@@ -54,8 +54,16 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
-      boolean enabled) {
-    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+      boolean enabled,
+      boolean contextScopedAttributesEnabled) {
+    super(
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesEnabled);
     this.instrumentCreationEpochNanos = clock.now();
     this.registeredReader = registeredReader;
     this.memoryMode = registeredReader.getReader().getMemoryMode();
@@ -442,11 +450,31 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
     @Override
     public void recordLong(long value, Context context) {
+      if (!handle.storage.isEnabled()) {
+        return;
+      }
+      Attributes mergedAttributes = handle.storage.getMergedContextAttributes(attributes, context);
+      if (mergedAttributes != null) {
+        handle.storage.doRecordLong(value, mergedAttributes, context);
+        return;
+      }
       handle.recordLong(value, attributes, context);
     }
 
     @Override
     public void recordDouble(double value, Context context) {
+      if (!handle.storage.isEnabled()) {
+        return;
+      }
+      Attributes mergedAttributes = handle.storage.getMergedContextAttributes(attributes, context);
+      Attributes attributesToRecord = mergedAttributes != null ? mergedAttributes : attributes;
+      if (!handle.storage.shouldRecordDouble(value, attributesToRecord)) {
+        return;
+      }
+      if (mergedAttributes != null) {
+        handle.storage.doRecordDouble(value, mergedAttributes, context);
+        return;
+      }
       handle.recordDouble(value, attributes, context);
     }
   }

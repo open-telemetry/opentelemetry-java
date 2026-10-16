@@ -40,6 +40,7 @@ public final class SdkTracerProviderBuilder {
   private ExceptionAttributeResolver exceptionAttributeResolver =
       ExceptionAttributeResolver.getDefault();
   private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
+  private boolean contextScopedAttributesEnabled;
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link Span} is started, ended
@@ -248,6 +249,18 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Sets whether context-scoped attributes are automatically inherited by spans.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setContextScopedAttributesEnabled(SdkTracerProviderBuilder, boolean)}.
+   */
+  SdkTracerProviderBuilder setContextScopedAttributesEnabled(
+      boolean contextScopedAttributesEnabled) {
+    this.contextScopedAttributesEnabled = contextScopedAttributesEnabled;
+    return this;
+  }
+
+  /**
    * Create a new {@link SdkTracerProvider} instance with the configuration.
    *
    * @return The instance.
@@ -262,7 +275,8 @@ public final class SdkTracerProviderBuilder {
         spanProcessors,
         tracerConfiguratorBuilder.build(),
         exceptionAttributeResolver,
-        meterProvider);
+        meterProvider,
+        contextScopedAttributesEnabled);
   }
 
   SdkTracerProviderBuilder() {}
