@@ -227,7 +227,11 @@ class MetricReaderFactoryTest {
   @ParameterizedTest
   @MethodSource("createInvalidTestCases")
   void create_Invalid(MetricReaderModel model, String expectedMessage) {
-    assertThatThrownBy(() -> MetricReaderFactory.getInstance().create(model, context))
+    assertThatThrownBy(
+            () ->
+                context.withConfigPath(
+                    "meter_provider.readers[0]",
+                    () -> MetricReaderFactory.getInstance().create(model, context)))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(expectedMessage);
   }
@@ -237,16 +241,16 @@ class MetricReaderFactoryTest {
         Arguments.argumentSet(
             "null periodic reader exporter",
             new MetricReaderModel().setPeriodic(new PeriodicMetricReaderModel()),
-            "periodic metric reader exporter is required but is null"),
+            ".meter_provider.readers[0].periodic exporter is required but is null"),
         Arguments.argumentSet(
             "null pull reader",
             new MetricReaderModel().setPull(new PullMetricReaderModel()),
-            "pull metric reader exporter is required but is null"),
+            ".meter_provider.readers[0].pull exporter is required but is null"),
         Arguments.argumentSet(
             "null pull reader exporter",
             new MetricReaderModel()
                 .setPull(new PullMetricReaderModel().setExporter(new PullMetricExporterModel())),
-            "metric reader must have exactly one entry but has 0"));
+            ".meter_provider.readers[0].pull metric reader must have exactly one entry but has 0"));
   }
 
   private static int randomAvailablePort() throws IOException {

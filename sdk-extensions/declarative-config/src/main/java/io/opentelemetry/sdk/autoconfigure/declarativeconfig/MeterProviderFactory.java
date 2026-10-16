@@ -43,31 +43,38 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
 
     List<MetricReaderModel> readerModels = model.getReaders();
     if (readerModels != null) {
-      readerModels.forEach(
-          readerModel -> {
-            MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
-                MetricReaderFactory.getInstance().create(readerModel, context);
-            CardinalityLimitSelector cardinalityLimits =
-                readerAndCardinalityLimits.getCardinalityLimitsSelector();
-            if (cardinalityLimits == null) {
-              builder.registerMetricReader(readerAndCardinalityLimits.getMetricReader());
-            } else {
-              builder.registerMetricReader(
-                  readerAndCardinalityLimits.getMetricReader(), cardinalityLimits);
-            }
-          });
+      for (int i = 0; i < readerModels.size(); i++) {
+        MetricReaderModel readerModel = readerModels.get(i);
+        MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
+            context.withConfigPath(
+                "readers[" + i + "]",
+                () -> MetricReaderFactory.getInstance().create(readerModel, context));
+        CardinalityLimitSelector cardinalityLimits =
+            readerAndCardinalityLimits.getCardinalityLimitsSelector();
+        if (cardinalityLimits == null) {
+          builder.registerMetricReader(readerAndCardinalityLimits.getMetricReader());
+        } else {
+          builder.registerMetricReader(
+              readerAndCardinalityLimits.getMetricReader(), cardinalityLimits);
+        }
+      }
     }
 
     List<ViewModel> viewModels = model.getViews();
     if (viewModels != null) {
-      viewModels.forEach(
-          viewModel -> {
-            ViewSelectorModel selector = requireNonNull(viewModel.getSelector(), "view selector");
-            ViewStreamModel stream = requireNonNull(viewModel.getStream(), "view stream");
-            builder.registerView(
-                InstrumentSelectorFactory.getInstance().create(selector, context),
-                ViewFactory.getInstance().create(stream, context));
-          });
+      for (int i = 0; i < viewModels.size(); i++) {
+        ViewModel viewModel = viewModels.get(i);
+        context.pushConfigPath("views[" + i + "]");
+        try {
+          ViewSelectorModel selector = requireNonNull(context, viewModel.getSelector(), "selector");
+          ViewStreamModel stream = requireNonNull(context, viewModel.getStream(), "stream");
+          builder.registerView(
+              InstrumentSelectorFactory.getInstance().create(selector, context),
+              ViewFactory.getInstance().create(stream, context));
+        } finally {
+          context.popConfigPath();
+        }
+      }
     }
 
     ExperimentalMeterConfiguratorModel meterConfiguratorModel =
@@ -82,9 +89,13 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
       List<ExperimentalMeterMatcherAndConfigModel> meterMatcherAndConfigs =
           meterConfiguratorModel.getMeters();
       if (meterMatcherAndConfigs != null) {
-        for (ExperimentalMeterMatcherAndConfigModel meterMatcherAndConfig :
-            meterMatcherAndConfigs) {
-          String name = requireNonNull(meterMatcherAndConfig.getName(), "meter matcher name");
+        for (int i = 0; i < meterMatcherAndConfigs.size(); i++) {
+          ExperimentalMeterMatcherAndConfigModel meterMatcherAndConfig =
+              meterMatcherAndConfigs.get(i);
+          String name =
+              context.withConfigPath(
+                  "meter_configurator/development.meters[" + i + "]",
+                  () -> requireNonNull(context, meterMatcherAndConfig.getName(), "name"));
           ExperimentalMeterConfigModel config = meterMatcherAndConfig.getConfig();
           if (name == null || config == null) {
             continue;

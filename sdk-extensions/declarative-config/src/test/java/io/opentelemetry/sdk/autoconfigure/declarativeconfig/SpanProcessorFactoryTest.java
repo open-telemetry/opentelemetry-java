@@ -95,7 +95,11 @@ class SpanProcessorFactoryTest {
   @ParameterizedTest
   @MethodSource("createInvalidTestCases")
   void create_Invalid(SpanProcessorModel model, String expectedMessage) {
-    assertThatThrownBy(() -> SpanProcessorFactory.getInstance().create(model, context))
+    assertThatThrownBy(
+            () ->
+                context.withConfigPath(
+                    "tracer_provider.processors[0]",
+                    () -> SpanProcessorFactory.getInstance().create(model, context)))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(expectedMessage);
   }
@@ -105,11 +109,11 @@ class SpanProcessorFactoryTest {
         Arguments.argumentSet(
             "batch missing exporter",
             new SpanProcessorModel().setBatch(new BatchSpanProcessorModel()),
-            "batch span processor exporter is required but is null"),
+            ".tracer_provider.processors[0].batch exporter is required but is null"),
         Arguments.argumentSet(
             "simple missing exporter",
             new SpanProcessorModel().setSimple(new SimpleSpanProcessorModel()),
-            "simple span processor exporter is required but is null"),
+            ".tracer_provider.processors[0].simple exporter is required but is null"),
         Arguments.argumentSet(
             "unknown component provider",
             new SpanProcessorModel()
