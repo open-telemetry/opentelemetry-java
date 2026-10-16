@@ -80,7 +80,6 @@ val DEPENDENCIES = listOf(
   "com.github.stefanbirkner:system-rules:1.19.0",
   "com.google.api.grpc:proto-google-common-protos:2.78.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp:$okhttpVersion",
   "com.tngtech.archunit:archunit-junit5:1.5.1",

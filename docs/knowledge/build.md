@@ -1,6 +1,6 @@
 # Build
 
-Java 21 or higher is required to build. The built artifacts target Java 8 or higher.
+Java 25 or higher is required to build. The built artifacts target Java 8 or higher.
 
 ## Common tasks
 

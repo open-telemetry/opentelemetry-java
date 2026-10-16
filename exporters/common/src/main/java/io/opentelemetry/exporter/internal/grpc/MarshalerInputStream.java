@@ -22,7 +22,6 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
-import com.google.common.io.ByteStreams;
 import io.grpc.Drainable;
 import io.grpc.KnownLength;
 import io.opentelemetry.sdk.common.export.MessageWriter;
@@ -59,7 +58,13 @@ public final class MarshalerInputStream extends InputStream implements Drainable
       message.writeMessage(target);
       message = null;
     } else if (partial != null) {
-      written = (int) ByteStreams.copy(partial, target);
+      byte[] buffer = new byte[8192];
+      written = 0;
+      int read;
+      while ((read = partial.read(buffer)) != -1) {
+        target.write(buffer, 0, read);
+        written += read;
+      }
       partial = null;
     } else {
       written = 0;
