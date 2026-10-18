@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -185,7 +186,7 @@ public final class JdkHttpSender implements HttpSender {
                     .whenComplete(
                         (httpResponse, throwable) -> {
                           if (throwable != null) {
-                            onError.accept(throwable);
+                            onError.accept(unwrap(throwable));
                             return;
                           }
                           onResponse.accept(httpResponse);
@@ -194,6 +195,19 @@ public final class JdkHttpSender implements HttpSender {
     } catch (RejectedExecutionException e) {
       onError.accept(e);
     }
+  }
+
+  // supplyAsync wraps failures in CompletionException, and IOExceptions are additionally wrapped in
+  // UncheckedIOException above. Pass the original exception to onError, as OkHttpHttpSender does.
+  private static Throwable unwrap(Throwable throwable) {
+    Throwable cause = throwable;
+    if (cause instanceof CompletionException && cause.getCause() != null) {
+      cause = cause.getCause();
+    }
+    if (cause instanceof UncheckedIOException && cause.getCause() != null) {
+      cause = cause.getCause();
+    }
+    return cause;
   }
 
   // Visible for testing
