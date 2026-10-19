@@ -23,6 +23,8 @@
 package io.opentelemetry.context;
 
 import java.util.Arrays;
+
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.Nullable;
 
 final class ArrayBasedContext implements Context {
@@ -55,6 +57,10 @@ final class ArrayBasedContext implements Context {
   @Nullable
   @SuppressWarnings("ReferenceEquality")
   public <V> V get(ContextKey<V> key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Context.class, "get", "key");
+      return null;
+    }
     for (int i = 0; i < entries.length; i += 2) {
       if (entries[i] == key) {
         @SuppressWarnings("unchecked")
@@ -68,6 +74,14 @@ final class ArrayBasedContext implements Context {
   @Override
   @SuppressWarnings("ReferenceEquality")
   public <V> Context with(ContextKey<V> key, V value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Context.class, "with", "key");
+      return this;
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(Context.class, "with", "value");
+      return this;
+    }
     for (int i = 0; i < entries.length; i += 2) {
       if (entries[i] == key) {
         if (entries[i + 1] == value) {

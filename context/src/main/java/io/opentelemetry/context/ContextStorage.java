@@ -25,6 +25,8 @@ package io.opentelemetry.context;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
+
 /**
  * The storage for storing and retrieving the current {@link Context}.
  *
@@ -86,6 +88,10 @@ public interface ContextStorage {
    * main class.
    */
   static void addWrapper(Function<? super ContextStorage, ? extends ContextStorage> wrapper) {
+    if (wrapper == null) {
+      ApiUsageLogger.logNullParam(ContextStorage.class, "addWrapper", "wrapper");
+      return;
+    }
     ContextStorageWrappers.addWrapper(wrapper);
   }
 
