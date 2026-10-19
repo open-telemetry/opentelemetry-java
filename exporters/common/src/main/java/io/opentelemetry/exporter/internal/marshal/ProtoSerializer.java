@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
-import io.opentelemetry.api.impl.OtelEncodingUtils;
+import io.opentelemetry.api.impl.Base16EncodingUtils;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import java.io.IOException;
@@ -37,7 +37,7 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   protected void writeTraceId(ProtoFieldInfo field, String traceId) throws IOException {
     byte[] traceIdBytes =
         idCache.computeIfAbsent(
-            traceId, id -> OtelEncodingUtils.bytesFromBase16(id, TraceId.getLength()));
+            traceId, id -> Base16EncodingUtils.bytesFromBase16(id, TraceId.getLength()));
     writeBytes(field, traceIdBytes);
   }
 
@@ -47,7 +47,7 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
     byte[] traceIdBytes = idCache.get(traceId);
     if (traceIdBytes == null) {
       traceIdBytes = context.getTraceIdBuffer();
-      OtelEncodingUtils.bytesFromBase16(traceId, TraceId.getLength(), traceIdBytes);
+      Base16EncodingUtils.bytesFromBase16(traceId, TraceId.getLength(), traceIdBytes);
       idCache.put(traceId, traceIdBytes);
     }
     writeBytes(field, traceIdBytes);
@@ -57,7 +57,7 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   protected void writeSpanId(ProtoFieldInfo field, String spanId) throws IOException {
     byte[] spanIdBytes =
         idCache.computeIfAbsent(
-            spanId, id -> OtelEncodingUtils.bytesFromBase16(id, SpanId.getLength()));
+            spanId, id -> Base16EncodingUtils.bytesFromBase16(id, SpanId.getLength()));
     writeBytes(field, spanIdBytes);
   }
 
@@ -67,7 +67,7 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
     byte[] spanIdBytes = idCache.get(spanId);
     if (spanIdBytes == null) {
       spanIdBytes = context.getSpanIdBuffer();
-      OtelEncodingUtils.bytesFromBase16(spanId, SpanId.getLength(), spanIdBytes);
+      Base16EncodingUtils.bytesFromBase16(spanId, SpanId.getLength(), spanIdBytes);
       idCache.put(spanId, spanIdBytes);
     }
     writeBytes(field, spanIdBytes);

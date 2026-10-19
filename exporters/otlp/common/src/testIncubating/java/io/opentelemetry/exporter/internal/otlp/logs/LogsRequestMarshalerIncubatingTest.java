@@ -15,7 +15,7 @@ import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.impl.OtelEncodingUtils;
+import io.opentelemetry.api.impl.Base16EncodingUtils;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -245,7 +245,7 @@ class LogsRequestMarshalerIncubatingTest {
   private static ByteString toHex(ByteString hexReadAsBase64) {
     String hex =
         Base64.getEncoder().encodeToString(hexReadAsBase64.toByteArray()).toLowerCase(Locale.ROOT);
-    return ByteString.copyFrom(OtelEncodingUtils.bytesFromBase16(hex, hex.length()));
+    return ByteString.copyFrom(Base16EncodingUtils.bytesFromBase16(hex, hex.length()));
   }
 
   private static byte[] toByteArray(Marshaler marshaler) {

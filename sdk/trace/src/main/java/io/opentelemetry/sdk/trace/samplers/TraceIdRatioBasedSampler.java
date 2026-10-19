@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.samplers;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.impl.OtelEncodingUtils;
+import io.opentelemetry.api.impl.Base16EncodingUtils;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -109,7 +109,7 @@ final class TraceIdRatioBasedSampler implements Sampler {
   }
 
   private static long getTraceIdRandomPart(String traceId) {
-    return OtelEncodingUtils.longFromBase16String(traceId, 16);
+    return Base16EncodingUtils.longFromBase16String(traceId, 16);
   }
 
   private static String decimalFormat(double value) {

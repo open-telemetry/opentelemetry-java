@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import io.opentelemetry.api.impl.OtelEncodingUtils;
+import io.opentelemetry.api.impl.Base16EncodingUtils;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
@@ -27,8 +27,9 @@ final class LinkMarshaler extends MarshalerWithSize {
   static LinkMarshaler create(LinkData linkData) {
     // in tracing this conversion is handled by utility methods on SpanContext,
     // but we don't have a SpanContext here...
-    byte[] traceId = OtelEncodingUtils.bytesFromBase16(linkData.getTraceId(), TraceId.getLength());
-    byte[] spanId = OtelEncodingUtils.bytesFromBase16(linkData.getSpanId(), SpanId.getLength());
+    byte[] traceId =
+        Base16EncodingUtils.bytesFromBase16(linkData.getTraceId(), TraceId.getLength());
+    byte[] spanId = Base16EncodingUtils.bytesFromBase16(linkData.getSpanId(), SpanId.getLength());
 
     return new LinkMarshaler(traceId, spanId);
   }
