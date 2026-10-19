@@ -10,6 +10,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -248,6 +249,10 @@ public interface SpanBuilder {
    * @since 1.45.0
    */
   default SpanBuilder setAttribute(AttributeKey<Long> key, int value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(key, (long) value);
   }
 
@@ -261,7 +266,8 @@ public interface SpanBuilder {
    */
   @SuppressWarnings("unchecked")
   default SpanBuilder setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "setAllAttributes", "attributes");
       return this;
     }
     attributes.forEach(
@@ -307,6 +313,7 @@ public interface SpanBuilder {
    */
   default SpanBuilder setStartTimestamp(Instant startTimestamp) {
     if (startTimestamp == null) {
+      ApiUsageLogger.logNullParam(Instant.class, "setStartTimestamp", "startTimestamp");
       return this;
     }
     return setStartTimestamp(

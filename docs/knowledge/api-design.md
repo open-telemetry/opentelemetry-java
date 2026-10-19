@@ -138,6 +138,13 @@ public Span addEvent(String name) {
 }
 ```
 
+Return after logging unless the remaining code is a noop or explicitly handles null (for example, by
+substituting a default). Do not continue into a loop or other logic just because it happens to
+tolerate null.
+
+Check non-`@Nullable` reference arguments in declaration order, logging each null once unless an
+early return ends the call.
+
 The class and method arguments identify the problem immediately in the log message without
 requiring stack trace analysis. Use `ApiUsageLogger.log(...)` directly when the message is not
 simply "X is null" (e.g. `"spanIdBytes is null or too short"`). `FINEST` is silent by default, so there is no production noise.
