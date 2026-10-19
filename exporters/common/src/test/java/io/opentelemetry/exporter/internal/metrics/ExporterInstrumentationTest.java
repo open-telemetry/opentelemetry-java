@@ -153,4 +153,24 @@ class ExporterInstrumentationTest {
         .containsEntry(SemConvConstants.SERVER_ADDRESS, "foo")
         .containsEntry(SemConvConstants.SERVER_PORT, 1234);
   }
+
+  @Test
+  void serverAttributesHostNotParsedByUri() {
+    // A label starting with a digit is a valid DNS name, but URI.getHost() returns null for it.
+    assertThat(URI.create("http://otlp.1234-ns:4318/v1/traces").getHost()).isNull();
+
+    assertThat(
+            ExporterInstrumentation.extractServerAttributes(
+                URI.create("http://otlp.1234-ns:4318/v1/traces")))
+        .hasSize(2)
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "otlp.1234-ns")
+        .containsEntry(SemConvConstants.SERVER_PORT, 4318);
+
+    assertThat(
+            ExporterInstrumentation.extractServerAttributes(
+                URI.create("https://otlp.1234-ns/v1/traces")))
+        .hasSize(2)
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "otlp.1234-ns")
+        .containsEntry(SemConvConstants.SERVER_PORT, 443);
+  }
 }
