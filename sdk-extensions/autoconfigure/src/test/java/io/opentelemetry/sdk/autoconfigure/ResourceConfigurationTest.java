@@ -88,6 +88,7 @@ class ResourceConfigurationTest {
     assertThat(result.getAttribute(stringKey("service.name"))).isEqualTo("test-service");
     assertThat(EntityUtil.getEntities(result))
         .containsExactlyInAnyOrder(
+            telemetrySdkEntity(),
             serviceEntity("test-service"),
             Entity.builder(
                     "service.instance",
@@ -110,7 +111,8 @@ class ResourceConfigurationTest {
             (r, c) -> r);
 
     assertThat(result.getAttribute(stringKey("service.instance.id"))).isEqualTo("my-custom-id-123");
-    assertThat(EntityUtil.getEntities(result)).containsExactly(serviceEntity("test-service"));
+    assertThat(EntityUtil.getEntities(result))
+        .containsExactlyInAnyOrder(telemetrySdkEntity(), serviceEntity("test-service"));
     assertThat(EntityUtil.getUnassociatedAttributes(result))
         .containsEntry(stringKey("service.instance.id"), "my-custom-id-123");
   }
@@ -128,7 +130,8 @@ class ResourceConfigurationTest {
             (r, c) -> r);
 
     assertThat(EntityUtil.getEntities(result))
-        .containsExactly(
+        .containsExactlyInAnyOrder(
+            telemetrySdkEntity(),
             Entity.builder(
                     "service.instance", Attributes.of(stringKey("service.instance.id"), "custom"))
                 .build());
@@ -305,6 +308,13 @@ class ResourceConfigurationTest {
                 "otel.service.name",
                 "configured"),
             configuredService.toBuilder().put("service.version", "1.0").build()));
+  }
+
+  private static Entity telemetrySdkEntity() {
+    return EntityUtil.getEntities(Resource.getDefault()).stream()
+        .filter(entity -> entity.getType().equals("telemetry.sdk"))
+        .findFirst()
+        .get();
   }
 
   private static Entity serviceEntity(String name) {
