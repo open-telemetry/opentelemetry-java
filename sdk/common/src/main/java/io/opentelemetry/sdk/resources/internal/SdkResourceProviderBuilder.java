@@ -40,7 +40,8 @@ public final class SdkResourceProviderBuilder {
    * later-added attributes winning on conflict (per {@link Resource#merge}).
    *
    * @param resource the resource to add
-   * @param name an informational name for logging / debugging, or {@code null} if unnamed
+   * @param name a diagnostic label for logging / debugging, or {@code null} if unnamed. This is not
+   *     a detector lookup identifier and need not be unique.
    * @return this builder
    */
   public SdkResourceProviderBuilder addConstantResource(Resource resource, @Nullable String name) {
@@ -60,6 +61,6 @@ public final class SdkResourceProviderBuilder {
       throw new IllegalStateException(
           "At least one Resource must be added via addConstantResource before calling build().");
     }
-    return new SdkResourceProvider(detectors);
+    return SdkResourceProvider.createFromDetectors(detectors);
   }
 }

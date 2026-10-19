@@ -67,9 +67,18 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
-  /** Assign a {@link Resource} to be attached to all metrics. */
+  /**
+   * Assign a {@link Resource} to be attached to all metrics.
+   *
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
+   */
   public SdkMeterProviderBuilder setResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call setResource after setSdkResourceProvider has been called.");
+    }
     this.resource = resource;
     this.resourceExplicitlySet = true;
     return this;
@@ -79,10 +88,16 @@ public final class SdkMeterProviderBuilder {
    * Merge a {@link Resource} with the current.
    *
    * @param resource {@link Resource} to merge with current.
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
    * @since 1.29.0
    */
   public SdkMeterProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call addResource after setSdkResourceProvider has been called.");
+    }
     this.resource = this.resource.merge(resource);
     this.resourceExplicitlySet = true;
     return this;
@@ -92,14 +107,18 @@ public final class SdkMeterProviderBuilder {
    * Sets the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to all
    * metrics.
    *
-   * <p>Mutually exclusive with {@link #setResource(Resource)} and {@link #addResource(Resource)};
-   * {@link #build()} throws {@link IllegalStateException} if both are configured.
+   * <p>Mutually exclusive with {@link #setResource(Resource)} and {@link #addResource(Resource)}.
+   * The conflicting setter throws {@link IllegalStateException} if both are configured.
    *
    * <p>This method is experimental so not public. You may reflectively call it using {@link
    * SdkMeterProviderUtil#setSdkResourceProvider(SdkMeterProviderBuilder, SdkResourceProvider)}.
    */
   SdkMeterProviderBuilder setSdkResourceProvider(SdkResourceProvider resourceProvider) {
     Objects.requireNonNull(resourceProvider, "resourceProvider");
+    if (resourceExplicitlySet) {
+      throw new IllegalStateException(
+          "Cannot call setSdkResourceProvider after setResource or addResource has been called.");
+    }
     this.resourceProvider = resourceProvider;
     return this;
   }
@@ -223,10 +242,6 @@ public final class SdkMeterProviderBuilder {
 
   /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
-    if (resourceProvider != null && resourceExplicitlySet) {
-      throw new IllegalStateException(
-          "setSdkResourceProvider is mutually exclusive with setResource / addResource.");
-    }
     SdkResourceProvider effectiveSdkResourceProvider =
         resourceProvider != null ? resourceProvider : SdkResourceProvider.create(resource);
     return new SdkMeterProvider(

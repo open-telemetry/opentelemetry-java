@@ -82,9 +82,15 @@ public final class SdkTracerProviderBuilder {
    *
    * @param resource A Resource implementation.
    * @return this
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
    */
   public SdkTracerProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call setResource after setSdkResourceProvider has been called.");
+    }
     this.resource = resource;
     this.resourceExplicitlySet = true;
     return this;
@@ -94,10 +100,16 @@ public final class SdkTracerProviderBuilder {
    * Merge a {@link Resource} with the current.
    *
    * @param resource {@link Resource} to merge with current.
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
    * @since 1.29.0
    */
   public SdkTracerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call addResource after setSdkResourceProvider has been called.");
+    }
     this.resource = this.resource.merge(resource);
     this.resourceExplicitlySet = true;
     return this;
@@ -107,14 +119,18 @@ public final class SdkTracerProviderBuilder {
    * Sets the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to all
    * spans.
    *
-   * <p>Mutually exclusive with {@link #setResource(Resource)} and {@link #addResource(Resource)};
-   * {@link #build()} throws {@link IllegalStateException} if both are configured.
+   * <p>Mutually exclusive with {@link #setResource(Resource)} and {@link #addResource(Resource)}.
+   * The conflicting setter throws {@link IllegalStateException} if both are configured.
    *
    * <p>This method is experimental so not public. You may reflectively call it using {@link
    * SdkTracerProviderUtil#setSdkResourceProvider(SdkTracerProviderBuilder, SdkResourceProvider)}.
    */
   SdkTracerProviderBuilder setSdkResourceProvider(SdkResourceProvider resourceProvider) {
     requireNonNull(resourceProvider, "resourceProvider");
+    if (resourceExplicitlySet) {
+      throw new IllegalStateException(
+          "Cannot call setSdkResourceProvider after setResource or addResource has been called.");
+    }
     this.resourceProvider = resourceProvider;
     return this;
   }
@@ -275,10 +291,6 @@ public final class SdkTracerProviderBuilder {
    * @return The instance.
    */
   public SdkTracerProvider build() {
-    if (resourceProvider != null && resourceExplicitlySet) {
-      throw new IllegalStateException(
-          "setSdkResourceProvider is mutually exclusive with setResource / addResource.");
-    }
     SdkResourceProvider effectiveSdkResourceProvider =
         resourceProvider != null ? resourceProvider : SdkResourceProvider.create(resource);
     return new SdkTracerProvider(

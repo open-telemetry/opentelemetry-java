@@ -35,7 +35,9 @@ public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
   @Nullable private final SdkResourceProvider resourceProvider;
 
   private ExtendedOpenTelemetrySdk(
-      OpenTelemetrySdk openTelemetrySdk, SdkConfigProvider configProvider) {
+      OpenTelemetrySdk openTelemetrySdk,
+      SdkConfigProvider configProvider,
+      @Nullable SdkResourceProvider resourceProvider) {
     super(
         openTelemetrySdk.getSdkTracerProvider(),
         openTelemetrySdk.getSdkMeterProvider(),
@@ -43,12 +45,13 @@ public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
         openTelemetrySdk.getPropagators());
     this.openTelemetrySdk = openTelemetrySdk;
     this.configProvider = new ObfuscatedConfigProvider(configProvider);
-    this.resourceProvider = resolveSdkResourceProvider(openTelemetrySdk);
+    this.resourceProvider = resourceProvider;
   }
 
   public static ExtendedOpenTelemetrySdk create(
       OpenTelemetrySdk openTelemetrySdk, SdkConfigProvider sdkConfigProvider) {
-    return new ExtendedOpenTelemetrySdk(openTelemetrySdk, sdkConfigProvider);
+    return new ExtendedOpenTelemetrySdk(
+        openTelemetrySdk, sdkConfigProvider, resolveSdkResourceProvider(openTelemetrySdk));
   }
 
   @Override

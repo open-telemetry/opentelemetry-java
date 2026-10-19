@@ -30,11 +30,6 @@ final class ConstantResourceDetector implements ResourceDetector {
   }
 
   @Override
-  public boolean shouldReinvoke() {
-    return false;
-  }
-
-  @Override
   public String toString() {
     return "ConstantResourceDetector{name=" + name + ", resource=" + resource + "}";
   }

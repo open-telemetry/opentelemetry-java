@@ -23,7 +23,6 @@ class ConstantResourceDetectorTest {
 
     assertThat(detector.getName()).isNull();
     assertThat(detector.getResource()).isEqualTo(RESOURCE);
-    assertThat(detector.shouldReinvoke()).isFalse();
   }
 
   @Test
@@ -32,6 +31,5 @@ class ConstantResourceDetectorTest {
 
     assertThat(detector.getName()).isEqualTo("my-detector");
     assertThat(detector.getResource()).isEqualTo(RESOURCE);
-    assertThat(detector.shouldReinvoke()).isFalse();
   }
 }

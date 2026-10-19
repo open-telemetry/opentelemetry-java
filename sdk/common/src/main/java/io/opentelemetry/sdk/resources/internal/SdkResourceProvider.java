@@ -16,11 +16,8 @@ import java.util.List;
  * Provides the {@link Resource} used by the SDK by merging the results of a configured, ordered
  * list of {@link ResourceDetector}s.
  *
- * <p>All detectors are invoked once at construction and the merged {@link Resource} is cached for
- * the lifetime of this provider. {@link ResourceDetector#shouldReinvoke()} is part of the target
- * API shape but has no effect on runtime behavior in this iteration. A future iteration will add
- * TTL-based cache invalidation that re-invokes only {@code shouldReinvoke=true} detectors when the
- * cache expires. Until then, {@code getResource()} is a single field read on the hot path.
+ * <p>All detectors are invoked once when the provider is built. The merged {@link Resource} is
+ * cached for the lifetime of this provider.
  *
  * <p>This class is internal and experimental. Its APIs are unstable and can change at any time. Its
  * APIs (or a version of them) may be promoted to the public stable API in the future, but no
@@ -29,11 +26,19 @@ import java.util.List;
 public final class SdkResourceProvider {
 
   private final List<ResourceDetector> detectors;
+  // TODO: Add TTL-based cache refresh that re-invokes only refreshable detectors while keeping
+  // hot-path resource reads cheap.
   private final Resource cachedResource;
 
-  SdkResourceProvider(List<ResourceDetector> detectors) {
-    this.detectors = Collections.unmodifiableList(new ArrayList<>(detectors));
-    this.cachedResource = merge(this.detectors);
+  private SdkResourceProvider(List<ResourceDetector> detectors, Resource cachedResource) {
+    this.detectors = detectors;
+    this.cachedResource = cachedResource;
+  }
+
+  static SdkResourceProvider createFromDetectors(List<ResourceDetector> detectors) {
+    List<ResourceDetector> detectorSnapshot =
+        Collections.unmodifiableList(new ArrayList<>(detectors));
+    return new SdkResourceProvider(detectorSnapshot, merge(detectorSnapshot));
   }
 
   /** Returns a new {@link SdkResourceProviderBuilder}. */

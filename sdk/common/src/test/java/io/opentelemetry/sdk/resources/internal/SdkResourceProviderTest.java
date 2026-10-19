@@ -46,13 +46,44 @@ class SdkResourceProviderTest {
 
   @Test
   void builder_multipleConstantResources_mergedInOrder() {
+    AttributeKey<String> sharedKey = AttributeKey.stringKey("shared");
+    Resource first = RESOURCE_A.toBuilder().put(sharedKey, "first").build();
+    Resource second = RESOURCE_B.toBuilder().put(sharedKey, "second").build();
     SdkResourceProvider provider =
         SdkResourceProvider.builder()
-            .addConstantResource(RESOURCE_A)
-            .addConstantResource(RESOURCE_B)
+            .addConstantResource(first)
+            .addConstantResource(second)
             .build();
 
-    assertThat(provider.getResource()).isEqualTo(RESOURCE_A.merge(RESOURCE_B));
+    assertThat(provider.getResource()).isEqualTo(first.merge(second));
+    assertThat(provider.getResource().getAttribute(sharedKey)).isEqualTo("second");
+  }
+
+  @Test
+  void builder_conflictingSchemaUrls_usesSequentialMergeSemantics() {
+    Resource first = Resource.create(RESOURCE_A.getAttributes(), "https://example.com/schema/1");
+    Resource second = Resource.create(RESOURCE_B.getAttributes(), "https://example.com/schema/2");
+    Resource third = Resource.create(Attributes.empty(), "https://example.com/schema/3");
+    SdkResourceProviderBuilder builder =
+        SdkResourceProvider.builder().addConstantResource(first).addConstantResource(second);
+
+    assertThat(builder.build().getResource().getSchemaUrl()).isNull();
+
+    SdkResourceProvider provider = builder.addConstantResource(third).build();
+
+    assertThat(provider.getResource()).isEqualTo(first.merge(second).merge(third));
+    assertThat(provider.getResource().getSchemaUrl()).isEqualTo(third.getSchemaUrl());
+  }
+
+  @Test
+  void builder_reuse_doesNotChangePreviousProvider() {
+    SdkResourceProviderBuilder builder =
+        SdkResourceProvider.builder().addConstantResource(RESOURCE_A);
+    SdkResourceProvider first = builder.build();
+    SdkResourceProvider second = builder.addConstantResource(RESOURCE_B).build();
+
+    assertThat(first.getResource()).isEqualTo(RESOURCE_A);
+    assertThat(second.getResource()).isEqualTo(RESOURCE_A.merge(RESOURCE_B));
   }
 
   @Test
@@ -91,31 +122,28 @@ class SdkResourceProviderTest {
   }
 
   @Test
-  void getResource_allDetectorsResolvedOnceAtConstruction_regardlessOfShouldReinvoke() {
-    // shouldReinvoke has no runtime effect in this iteration; all detectors are resolved once at
-    // construction and the merged Resource is cached for the lifetime of the provider.
-    CountingDetector constant = new CountingDetector(RESOURCE_A, /* shouldReinvoke= */ false);
-    CountingDetector reinvoke = new CountingDetector(RESOURCE_B, /* shouldReinvoke= */ true);
-    SdkResourceProvider provider = new SdkResourceProvider(Arrays.asList(constant, reinvoke));
+  void getResource_allDetectorsResolvedOnceAtCreation() {
+    CountingDetector first = new CountingDetector(RESOURCE_A);
+    CountingDetector second = new CountingDetector(RESOURCE_B);
+    SdkResourceProvider provider =
+        SdkResourceProvider.createFromDetectors(Arrays.asList(first, second));
 
-    assertThat(constant.invocations.get()).isEqualTo(1);
-    assertThat(reinvoke.invocations.get()).isEqualTo(1);
+    assertThat(first.invocations.get()).isEqualTo(1);
+    assertThat(second.invocations.get()).isEqualTo(1);
 
     assertThat(provider.getResource()).isEqualTo(RESOURCE_A.merge(RESOURCE_B));
     assertThat(provider.getResource()).isEqualTo(RESOURCE_A.merge(RESOURCE_B));
 
-    assertThat(constant.invocations.get()).isEqualTo(1);
-    assertThat(reinvoke.invocations.get()).isEqualTo(1);
+    assertThat(first.invocations.get()).isEqualTo(1);
+    assertThat(second.invocations.get()).isEqualTo(1);
   }
 
   private static final class CountingDetector implements ResourceDetector {
     final AtomicInteger invocations = new AtomicInteger();
     private final Resource resource;
-    private final boolean shouldReinvoke;
 
-    CountingDetector(Resource resource, boolean shouldReinvoke) {
+    CountingDetector(Resource resource) {
       this.resource = resource;
-      this.shouldReinvoke = shouldReinvoke;
     }
 
     @Override
@@ -127,11 +155,6 @@ class SdkResourceProviderTest {
     public Resource getResource() {
       invocations.incrementAndGet();
       return resource;
-    }
-
-    @Override
-    public boolean shouldReinvoke() {
-      return shouldReinvoke;
     }
   }
 }

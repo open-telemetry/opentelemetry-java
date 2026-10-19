@@ -11,27 +11,17 @@ import javax.annotation.Nullable;
 /** A source of a {@link Resource} to be merged by an {@link SdkResourceProvider}. */
 interface ResourceDetector {
 
+  // TODO(jack-berg): Add shouldReinvoke() or equivalent to distinguish static detectors from
+  // detectors whose entity
+  // descriptive attributes can change at runtime.
+
   /**
-   * Returns the name of this detector, or {@code null} if unnamed. Names are informational (e.g.
-   * for logging / debugging) and are not required to be unique.
+   * Returns a diagnostic label for logging / debugging, or {@code null} if unnamed. This is not a
+   * detector lookup identifier and need not be unique.
    */
   @Nullable
   String getName();
 
   /** Returns the {@link Resource} detected by this detector. */
   Resource getResource();
-
-  /**
-   * Returns whether the enclosing {@link SdkResourceProvider} must re-invoke this detector on every
-   * call to {@link SdkResourceProvider#getResource()}.
-   *
-   * <p>When {@code true}, {@link #getResource()} may be called on every {@link
-   * SdkResourceProvider#getResource()}. When {@code false}, this detector's result may be resolved
-   * once at {@link SdkResourceProvider} construction and cached.
-   *
-   * <p>This flag is part of the target API but has no effect on runtime behavior in the current
-   * iteration - all detectors are cached at construction. TTL-based cache invalidation using this
-   * flag is planned for a future iteration.
-   */
-  boolean shouldReinvoke();
 }
