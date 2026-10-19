@@ -139,6 +139,7 @@ class NullGuardsTest {
     return owner.getName().replace('.', '/')
         + "#"
         + name
+        + ":"
         + MethodTypeDesc.of(ClassDesc.ofDescriptor(returnType.descriptorString()), params)
             .descriptorString();
   }
@@ -277,6 +278,7 @@ class NullGuardsTest {
         cls.thisClass().asInternalName()
             + "#"
             + method.methodName().stringValue()
+            + ":"
             + method.methodType().stringValue();
     GuardStyle explicit = METHOD_STYLE_OVERRIDES.get(key);
     if (explicit != null) {
