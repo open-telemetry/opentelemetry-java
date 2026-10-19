@@ -22,9 +22,8 @@
 
 package io.opentelemetry.context;
 
-import java.util.Arrays;
-
 import io.opentelemetry.common.impl.ApiUsageLogger;
+import java.util.Arrays;
 import javax.annotation.Nullable;
 
 final class ArrayBasedContext implements Context {

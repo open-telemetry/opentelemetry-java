@@ -132,7 +132,8 @@ class NullGuardsTest {
               overrideKey(Context.class, "taskWrapping", Executor.class, Executor.class),
               GuardStyle.FAIL_FAST),
           Map.entry(
-              overrideKey(Context.class, "taskWrapping", ExecutorService.class, ExecutorService.class),
+              overrideKey(
+                  Context.class, "taskWrapping", ExecutorService.class, ExecutorService.class),
               GuardStyle.FAIL_FAST),
           Map.entry(
               overrideKey(

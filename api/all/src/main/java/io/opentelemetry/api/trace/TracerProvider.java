@@ -54,7 +54,8 @@ public interface TracerProvider {
    */
   default TracerBuilder tracerBuilder(String instrumentationScopeName) {
     if (instrumentationScopeName == null) {
-      ApiUsageLogger.logNullParam(TracerProvider.class, "tracerBuilder", "instrumentationScopeName");
+      ApiUsageLogger.logNullParam(
+          TracerProvider.class, "tracerBuilder", "instrumentationScopeName");
       return DefaultTracerBuilder.getInstance();
     }
     return DefaultTracerBuilder.getInstance();

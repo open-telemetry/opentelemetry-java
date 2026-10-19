@@ -22,10 +22,9 @@
 
 package io.opentelemetry.context;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-
-import io.opentelemetry.common.impl.ApiUsageLogger;
 
 /**
  * The storage for storing and retrieving the current {@link Context}.
