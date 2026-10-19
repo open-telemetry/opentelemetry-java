@@ -79,7 +79,7 @@ final class ArrayBasedContext implements Context {
     }
     if (value == null) {
       ApiUsageLogger.logNullParam(Context.class, "with", "value");
-      return this;
+      // Continue to preserve the preexisting behavior of storing null values.
     }
     for (int i = 0; i < entries.length; i += 2) {
       if (entries[i] == key) {
