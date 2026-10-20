@@ -6,7 +6,6 @@
 package io.opentelemetry.extension.trace.propagation;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -17,16 +16,6 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 final class StringUtils {
-
-  /**
-   * Returns {@code true} if the given string is {@code null} or empty.
-   *
-   * @param string the string to check
-   * @return {@code true} if {@code string} is {@code null} or empty
-   */
-  static boolean isNullOrEmpty(@Nullable String string) {
-    return string == null || string.isEmpty();
-  }
 
   /**
    * Returns {@code value} left-padded with zeroes to at least {@code minLength} characters.

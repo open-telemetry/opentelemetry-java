@@ -33,7 +33,7 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
   private static <C> Optional<Context> extractSpanContextFromSingleHeader(
       Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, B3Propagator.COMBINED_HEADER);
-    if (value == null || StringUtils.isNullOrEmpty(value)) {
+    if (value == null || value.isEmpty()) {
       return Optional.empty();
     }
 

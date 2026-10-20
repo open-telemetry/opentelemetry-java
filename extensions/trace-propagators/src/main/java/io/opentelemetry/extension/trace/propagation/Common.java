@@ -56,12 +56,12 @@ final class Common {
 
   static boolean isTraceIdValid(@Nullable String value) {
     return value != null
-        && !StringUtils.isNullOrEmpty(value)
+        && !value.isEmpty()
         && (value.length() == MIN_TRACE_ID_LENGTH || value.length() == MAX_TRACE_ID_LENGTH)
         && TraceId.isValid(StringUtils.padLeft(value, TraceId.getLength()));
   }
 
   static boolean isSpanIdValid(@Nullable String value) {
-    return value != null && !StringUtils.isNullOrEmpty(value) && SpanId.isValid(value);
+    return value != null && !value.isEmpty() && SpanId.isValid(value);
   }
 }

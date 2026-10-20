@@ -182,7 +182,7 @@ public final class JaegerPropagator implements TextMapPropagator {
   private static <C> SpanContext getSpanContextFromHeader(
       @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
-    if (value == null || StringUtils.isNullOrEmpty(value)) {
+    if (value == null || value.isEmpty()) {
       return SpanContext.getInvalid();
     }
 
@@ -359,14 +359,14 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   private static boolean isTraceIdValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
+    return value != null && !value.isEmpty() && value.length() <= MAX_TRACE_ID_LENGTH;
   }
 
   private static boolean isSpanIdValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
+    return value != null && !value.isEmpty() && value.length() <= MAX_SPAN_ID_LENGTH;
   }
 
   private static boolean isFlagsValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_FLAGS_LENGTH);
+    return value != null && !value.isEmpty() && value.length() <= MAX_FLAGS_LENGTH;
   }
 }
