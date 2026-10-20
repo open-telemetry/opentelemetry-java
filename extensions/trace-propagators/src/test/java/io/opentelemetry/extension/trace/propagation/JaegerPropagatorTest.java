@@ -254,6 +254,15 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void extract_EmptyTraceId() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(
+        PROPAGATION_HEADER, generateTraceIdHeaderValue("", SPAN_ID, DEPRECATED_PARENT_SPAN, "0"));
+
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  @Test
   void extract_InvalidTraceId_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
@@ -269,6 +278,15 @@ class JaegerPropagatorTest {
     invalidHeaders.put(
         PROPAGATION_HEADER,
         generateTraceIdHeaderValue(TRACE_ID, "abcdefghijklmnop", DEPRECATED_PARENT_SPAN, "0"));
+
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  @Test
+  void extract_EmptySpanId() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(
+        PROPAGATION_HEADER, generateTraceIdHeaderValue(TRACE_ID, "", DEPRECATED_PARENT_SPAN, "0"));
 
     verifyInvalidBehavior(invalidHeaders);
   }
