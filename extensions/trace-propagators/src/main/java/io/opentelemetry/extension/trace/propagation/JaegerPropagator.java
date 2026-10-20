@@ -418,14 +418,14 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   private static boolean isTraceIdValid(String value) {
-    return value != null && !value.isEmpty() && value.length() <= MAX_TRACE_ID_LENGTH;
+    return !value.isEmpty() && value.length() <= MAX_TRACE_ID_LENGTH;
   }
 
   private static boolean isSpanIdValid(String value) {
-    return value != null && !value.isEmpty() && value.length() <= MAX_SPAN_ID_LENGTH;
+    return !value.isEmpty() && value.length() <= MAX_SPAN_ID_LENGTH;
   }
 
   private static boolean isFlagsValid(String value) {
-    return value != null && !value.isEmpty() && value.length() <= MAX_FLAGS_LENGTH;
+    return !value.isEmpty() && value.length() <= MAX_FLAGS_LENGTH;
   }
 }
