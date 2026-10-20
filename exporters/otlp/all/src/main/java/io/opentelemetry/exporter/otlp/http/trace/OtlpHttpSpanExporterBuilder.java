@@ -100,6 +100,17 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
+   * Sets the maximum OTLP HTTP request body size in bytes. If unset, defaults to 64 MiB.
+   *
+   * @since 1.67.0
+   */
+  public OtlpHttpSpanExporterBuilder setMaxRequestBodySize(long maxRequestBodySizeBytes) {
+    checkArgument(maxRequestBodySizeBytes > 0, "maxRequestBodySizeBytes must be positive");
+    delegate.setMaxRequestBodySize(maxRequestBodySizeBytes);
+    return this;
+  }
+
+  /**
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT}. The
    * endpoint must start with either http:// or https://, and include the full HTTP path.
    */
@@ -285,6 +296,8 @@ public final class OtlpHttpSpanExporterBuilder {
    *
    * <p>Note: enabling legacy protocol versions (TLSv1, TLSv1.1) also requires removing them from
    * the JVM's {@code jdk.tls.disabledAlgorithms} security property.
+   *
+   * @since 1.66.0
    */
   public OtlpHttpSpanExporterBuilder setEnabledProtocols(List<String> enabledProtocols) {
     requireNonNull(enabledProtocols, "enabledProtocols");

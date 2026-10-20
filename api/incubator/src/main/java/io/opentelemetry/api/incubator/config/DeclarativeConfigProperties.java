@@ -5,8 +5,6 @@
 
 package io.opentelemetry.api.incubator.config;
 
-import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
-
 import io.opentelemetry.common.ComponentLoader;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +57,8 @@ public interface DeclarativeConfigProperties {
    *     {@code name} has not been configured or is not a valid scalar string
    */
   default String getString(String name, String defaultValue) {
-    return defaultIfNull(getString(name), defaultValue);
+    String value = getString(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -79,7 +78,8 @@ public interface DeclarativeConfigProperties {
    *     {@code name} has not been configured or is not a valid scalar boolean
    */
   default boolean getBoolean(String name, boolean defaultValue) {
-    return defaultIfNull(getBoolean(name), defaultValue);
+    Boolean value = getBoolean(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -104,7 +104,8 @@ public interface DeclarativeConfigProperties {
    *     {@code name} has not been configured or is not a valid scalar integer
    */
   default int getInt(String name, int defaultValue) {
-    return defaultIfNull(getInt(name), defaultValue);
+    Integer value = getInt(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -123,7 +124,8 @@ public interface DeclarativeConfigProperties {
    *     name} has not been configured or is not a valid scalar long
    */
   default long getLong(String name, long defaultValue) {
-    return defaultIfNull(getLong(name), defaultValue);
+    Long value = getLong(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -142,7 +144,8 @@ public interface DeclarativeConfigProperties {
    *     {@code name} has not been configured or is not a valid scalar double
    */
   default double getDouble(String name, double defaultValue) {
-    return defaultIfNull(getDouble(name), defaultValue);
+    Double value = getDouble(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -170,8 +173,54 @@ public interface DeclarativeConfigProperties {
    *     name} has not been configured or is not a valid sequence of scalars
    */
   default <T> List<T> getScalarList(String name, Class<T> scalarType, List<T> defaultValue) {
-    return defaultIfNull(getScalarList(name, scalarType), defaultValue);
+    List<T> value = getScalarList(name, scalarType);
+    return value == null ? defaultValue : value;
   }
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getString(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar string,
+   *     false otherwise, including when the property is null
+   */
+  boolean isString(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getBoolean(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar boolean,
+   *     false otherwise, including when the property is null
+   */
+  boolean isBoolean(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getInt(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar integer,
+   *     false otherwise, including when the property is null
+   */
+  boolean isInt(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getLong(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar long,
+   *     false otherwise, including when the property is null
+   */
+  boolean isLong(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getDouble(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar double,
+   *     false otherwise, including when the property is null
+   */
+  boolean isDouble(String name);
 
   /**
    * Returns a {@link DeclarativeConfigProperties} configuration property.
@@ -190,7 +239,8 @@ public interface DeclarativeConfigProperties {
    */
   default DeclarativeConfigProperties getStructured(
       String name, DeclarativeConfigProperties defaultValue) {
-    return defaultIfNull(getStructured(name), defaultValue);
+    DeclarativeConfigProperties value = getStructured(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -225,7 +275,8 @@ public interface DeclarativeConfigProperties {
    */
   default List<DeclarativeConfigProperties> getStructuredList(
       String name, List<DeclarativeConfigProperties> defaultValue) {
-    return defaultIfNull(getStructuredList(name), defaultValue);
+    List<DeclarativeConfigProperties> value = getStructuredList(name);
+    return value == null ? defaultValue : value;
   }
 
   /**

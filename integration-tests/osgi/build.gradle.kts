@@ -102,10 +102,14 @@ fun registerOsgiSuite(
 
   val runee = "JavaSE-${java.toolchain.languageVersion.get()}"
   val inputBndrun = layout.buildDirectory.file("bndrun/$suiteName.bndrun")
+  // Suppresses noisy INFO logs from Apache Aries SPI Fly's BaseActivator (one line per SPI
+  // provider registration per bundle). Passed to the forked test JVM via bndrun's -runvm.
+  val loggingConfig = layout.projectDirectory.file("logging.properties").asFile
   val generateBndrunTask = tasks.register("${suiteName}GenerateBndrun") {
     inputs.property("bsn", bsn)
     inputs.property("runee", runee)
     inputs.property("extraRunrequires", extraRunrequires)
+    inputs.file(loggingConfig)
     outputs.file(inputBndrun)
     doLast {
       val extraEntries = extraRunrequires.joinToString("") { ",\\\n|  bnd.identity;id='$it'" }
@@ -114,6 +118,7 @@ fun registerOsgiSuite(
         |-tester: biz.aQute.tester.junit-platform
         |-runfw: org.apache.felix.framework
         |-runee: $runee
+        |-runvm: -Djava.util.logging.config.file="${loggingConfig.absolutePath}"
         |
         |-runrequires: \
         |  bnd.identity;id='$bsn',\

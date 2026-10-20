@@ -10,7 +10,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -39,25 +39,25 @@ final class SemConvLogRecordProcessorInstrumentation implements LogRecordProcess
 
     standardAttrs =
         Attributes.of(
-            SemConvAttributes.OTEL_COMPONENT_TYPE,
+            SemConvConstants.OTEL_COMPONENT_TYPE,
             componentId.getTypeName(),
-            SemConvAttributes.OTEL_COMPONENT_NAME,
+            SemConvConstants.OTEL_COMPONENT_NAME,
             componentId.getComponentName());
     queueFullAttrs =
         Attributes.of(
-            SemConvAttributes.OTEL_COMPONENT_TYPE,
+            SemConvConstants.OTEL_COMPONENT_TYPE,
             componentId.getTypeName(),
-            SemConvAttributes.OTEL_COMPONENT_NAME,
+            SemConvConstants.OTEL_COMPONENT_NAME,
             componentId.getComponentName(),
-            SemConvAttributes.ERROR_TYPE,
+            SemConvConstants.ERROR_TYPE,
             "queue_full");
     shutdownAttrs =
         Attributes.of(
-            SemConvAttributes.OTEL_COMPONENT_TYPE,
+            SemConvConstants.OTEL_COMPONENT_TYPE,
             componentId.getTypeName(),
-            SemConvAttributes.OTEL_COMPONENT_NAME,
+            SemConvConstants.OTEL_COMPONENT_NAME,
             componentId.getComponentName(),
-            SemConvAttributes.ERROR_TYPE,
+            SemConvConstants.ERROR_TYPE,
             "already_shutdown");
   }
 
@@ -82,16 +82,14 @@ final class SemConvLogRecordProcessorInstrumentation implements LogRecordProcess
       return;
     }
     meter()
-        .upDownCounterBuilder("otel.sdk.processor.log.queue.capacity")
-        .setUnit("{log_record}")
-        .setDescription(
-            "The maximum number of log records the queue of a given instance of an SDK Log Record processor can hold. ")
+        .upDownCounterBuilder(SemConvConstants.OTEL_SDK_PROCESSOR_LOG_QUEUE_CAPACITY_NAME)
+        .setUnit(SemConvConstants.OTEL_SDK_PROCESSOR_LOG_QUEUE_CAPACITY_UNIT)
+        .setDescription(SemConvConstants.OTEL_SDK_PROCESSOR_LOG_QUEUE_CAPACITY_DESCRIPTION)
         .buildWithCallback(m -> m.record(capacity, standardAttrs));
     meter()
-        .upDownCounterBuilder("otel.sdk.processor.log.queue.size")
-        .setUnit("{log_record}")
-        .setDescription(
-            "The number of log records in the queue of a given instance of an SDK log processor.")
+        .upDownCounterBuilder(SemConvConstants.OTEL_SDK_PROCESSOR_LOG_QUEUE_SIZE_NAME)
+        .setUnit(SemConvConstants.OTEL_SDK_PROCESSOR_LOG_QUEUE_SIZE_UNIT)
+        .setDescription(SemConvConstants.OTEL_SDK_PROCESSOR_LOG_QUEUE_SIZE_DESCRIPTION)
         .buildWithCallback(m -> m.record(getSize.get(), standardAttrs));
   }
 
@@ -103,10 +101,9 @@ final class SemConvLogRecordProcessorInstrumentation implements LogRecordProcess
         if (processedLogs == null) {
           processedLogs =
               meter()
-                  .counterBuilder("otel.sdk.processor.log.processed")
-                  .setUnit("{log_record}")
-                  .setDescription(
-                      "The number of log records for which the processing has finished, either successful or failed.")
+                  .counterBuilder(SemConvConstants.OTEL_SDK_PROCESSOR_LOG_PROCESSED_NAME)
+                  .setUnit(SemConvConstants.OTEL_SDK_PROCESSOR_LOG_PROCESSED_UNIT)
+                  .setDescription(SemConvConstants.OTEL_SDK_PROCESSOR_LOG_PROCESSED_DESCRIPTION)
                   .build();
           this.processedLogs = processedLogs;
         }

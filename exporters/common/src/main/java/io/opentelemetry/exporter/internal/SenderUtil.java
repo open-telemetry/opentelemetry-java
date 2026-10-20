@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.internal;
 
-import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.common.impl.ConfigUtil;
 import io.opentelemetry.sdk.common.export.GrpcSenderProvider;
 import io.opentelemetry.sdk.common.export.HttpSenderProvider;
 import java.util.HashMap;

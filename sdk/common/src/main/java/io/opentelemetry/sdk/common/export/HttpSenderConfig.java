@@ -108,6 +108,8 @@ public interface HttpSenderConfig {
    *
    * <p>Note: enabling legacy protocol versions (TLSv1, TLSv1.1) also requires removing them from
    * the JVM's {@code jdk.tls.disabledAlgorithms} security property.
+   *
+   * @since 1.66.0
    */
   @Nullable
   default List<String> getEnabledProtocols() {

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -40,9 +41,9 @@ final class SdkLoggerInstrumentation {
         if (createdLogs == null) {
           createdLogs =
               meter()
-                  .counterBuilder("otel.sdk.log.created")
-                  .setUnit("{log_record}")
-                  .setDescription("The number of logs submitted to enabled SDK Loggers.")
+                  .counterBuilder(SemConvConstants.OTEL_SDK_LOG_CREATED_NAME)
+                  .setUnit(SemConvConstants.OTEL_SDK_LOG_CREATED_UNIT)
+                  .setDescription(SemConvConstants.OTEL_SDK_LOG_CREATED_DESCRIPTION)
                   .build();
           this.createdLogs = createdLogs;
         }

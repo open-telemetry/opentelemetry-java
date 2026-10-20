@@ -17,7 +17,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -114,15 +114,15 @@ class ExporterInstrumentationTest {
             ExporterInstrumentation.extractServerAttributes(
                 URI.create("https://example.com/foo/bar?a=b")))
         .hasSize(2)
-        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
-        .containsEntry(SemConvAttributes.SERVER_PORT, 443);
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "example.com")
+        .containsEntry(SemConvConstants.SERVER_PORT, 443);
 
     assertThat(
             ExporterInstrumentation.extractServerAttributes(
                 URI.create("https://example.com:1234/foo/bar?a=b")))
         .hasSize(2)
-        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
-        .containsEntry(SemConvAttributes.SERVER_PORT, 1234);
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "example.com")
+        .containsEntry(SemConvConstants.SERVER_PORT, 1234);
   }
 
   @Test
@@ -131,26 +131,46 @@ class ExporterInstrumentationTest {
             ExporterInstrumentation.extractServerAttributes(
                 URI.create("http://example.com/foo/bar?a=b")))
         .hasSize(2)
-        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
-        .containsEntry(SemConvAttributes.SERVER_PORT, 80);
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "example.com")
+        .containsEntry(SemConvConstants.SERVER_PORT, 80);
 
     assertThat(
             ExporterInstrumentation.extractServerAttributes(
                 URI.create("http://example.com:1234/foo/bar?a=b")))
         .hasSize(2)
-        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
-        .containsEntry(SemConvAttributes.SERVER_PORT, 1234);
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "example.com")
+        .containsEntry(SemConvConstants.SERVER_PORT, 1234);
   }
 
   @Test
   void serverAttributesUnknownScheme() {
     assertThat(ExporterInstrumentation.extractServerAttributes(URI.create("custom://foo")))
         .hasSize(1)
-        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "foo");
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "foo");
 
     assertThat(ExporterInstrumentation.extractServerAttributes(URI.create("custom://foo:1234")))
         .hasSize(2)
-        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "foo")
-        .containsEntry(SemConvAttributes.SERVER_PORT, 1234);
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "foo")
+        .containsEntry(SemConvConstants.SERVER_PORT, 1234);
+  }
+
+  @Test
+  void serverAttributesHostNotParsedByUri() {
+    // A label starting with a digit is a valid DNS name, but URI.getHost() returns null for it.
+    assertThat(URI.create("http://otlp.1234-ns:4318/v1/traces").getHost()).isNull();
+
+    assertThat(
+            ExporterInstrumentation.extractServerAttributes(
+                URI.create("http://otlp.1234-ns:4318/v1/traces")))
+        .hasSize(2)
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "otlp.1234-ns")
+        .containsEntry(SemConvConstants.SERVER_PORT, 4318);
+
+    assertThat(
+            ExporterInstrumentation.extractServerAttributes(
+                URI.create("https://otlp.1234-ns/v1/traces")))
+        .hasSize(2)
+        .containsEntry(SemConvConstants.SERVER_ADDRESS, "otlp.1234-ns")
+        .containsEntry(SemConvConstants.SERVER_PORT, 443);
   }
 }

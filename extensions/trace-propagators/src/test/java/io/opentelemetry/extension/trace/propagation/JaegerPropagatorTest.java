@@ -31,9 +31,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -81,6 +83,25 @@ class JaegerPropagatorTest {
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
     return context.with(Span.wrap(spanContext));
+  }
+
+  @Test
+  void extractWithLambdaGetter() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(PROPAGATION_HEADER, TRACE_ID + ":" + SPAN_ID + ":0:1");
+    carrier.put(BAGGAGE_PREFIX + "key", "value");
+    TextMapGetter<Map<String, String>> lambdaGetter =
+        (map, key) -> map == null ? null : map.get(key);
+
+    Context extracted = jaegerPropagator.extract(Context.root(), carrier, lambdaGetter);
+
+    assertThat(getSpanContext(extracted))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
+    assertThat(Baggage.fromContext(extracted).isEmpty()).isTrue();
+    assertThat(jaegerPropagator.extract(Context.root(), Collections.emptyMap(), lambdaGetter))
+        .isSameAs(Context.root());
   }
 
   @Test
@@ -377,6 +398,18 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void extract_MalformedUrlEncodedContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(PROPAGATION_HEADER, "%GG");
+
+    Context inputContext = Context.root();
+
+    Context extractedContext = jaegerPropagator.extract(inputContext, carrier, getter);
+
+    assertThat(extractedContext).isSameAs(inputContext);
+  }
+
+  @Test
   void extract_SampledContext_withBaggage() {
     Map<String, String> carrier = new LinkedHashMap<>();
     JaegerSpanContext context =
@@ -493,6 +526,25 @@ class JaegerPropagatorTest {
                 .put("nometa", "nometa-value")
                 .put("meta", "meta-value")
                 .build());
+  }
+
+  @Test
+  @Timeout(value = 1, unit = TimeUnit.SECONDS)
+  void extract_baggageHeader_largeInputIsBounded() {
+    // Parsing an oversized jaeger-baggage header must not allocate proportionally
+    // to the input.
+    StringBuilder header = new StringBuilder(4_000_000);
+    for (int i = 0; i < 1_000_000; i++) {
+      header.append("a=b,");
+    }
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, header.toString());
+
+    // Only the first accepted entry is retained (all keys are "a"); the parse must stop well
+    // before the end of the header.
+    Baggage extracted = fromContext(jaegerPropagator.extract(Context.root(), carrier, getter));
+    assertThat(extracted.size()).isEqualTo(1);
+    assertThat(extracted.getEntryValue("a")).isEqualTo("b");
   }
 
   @Test

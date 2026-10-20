@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.trace.samplers;
 
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.INVALID_THRESHOLD;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.MIN_THRESHOLD;
+import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.NO_TRACE_STATE_UPDATE;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidThreshold;
 
 import io.opentelemetry.api.common.Attributes;
@@ -16,7 +17,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
-import java.util.function.Function;
 
 final class ComposableParentThresholdSampler implements ComposableSampler {
 
@@ -40,19 +40,23 @@ final class ComposableParentThresholdSampler implements ComposableSampler {
       return rootSampler.getSamplingIntent(parentContext, name, spanKind, attributes, parentLinks);
     }
 
+    boolean parentSampled = parentSpanContext.getTraceFlags().isSampled();
     OtelTraceState otTraceState = OtelTraceState.parse(parentSpanContext.getTraceState());
-    if (isValidThreshold(otTraceState.getThreshold())) {
+    long parentThreshold = otTraceState.getThreshold();
+    if (isValidThreshold(parentThreshold)
+        && (!parentSampled
+            || parentThreshold
+                <= otTraceState.getRandomValueOrFromTraceId(parentSpanContext.getTraceId()))) {
       return ImmutableSamplingIntent.create(
-          otTraceState.getThreshold(),
+          parentThreshold,
           /* adjustedCountReliable= */ true,
           Attributes.empty(),
-          Function.identity());
+          NO_TRACE_STATE_UPDATE);
     }
 
-    long threshold =
-        parentSpanContext.getTraceFlags().isSampled() ? MIN_THRESHOLD : INVALID_THRESHOLD;
+    long threshold = parentSampled ? MIN_THRESHOLD : INVALID_THRESHOLD;
     return ImmutableSamplingIntent.create(
-        threshold, /* adjustedCountReliable= */ false, Attributes.empty(), Function.identity());
+        threshold, /* adjustedCountReliable= */ false, Attributes.empty(), NO_TRACE_STATE_UPDATE);
   }
 
   @Override

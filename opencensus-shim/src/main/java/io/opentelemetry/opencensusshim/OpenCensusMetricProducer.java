@@ -35,8 +35,8 @@ public final class OpenCensusMetricProducer implements MetricProducer {
   }
 
   /**
-   * Constructs a new {@link OpenCensusMetricProducer} that reports against the given {@link
-   * Resource}.
+   * Constructs a new {@link OpenCensusMetricProducer} that reads from the global OpenCensus {@link
+   * MetricProducerManager}.
    *
    * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification (see <a
    *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/5138">#5138</a>).

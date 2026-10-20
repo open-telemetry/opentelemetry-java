@@ -91,7 +91,7 @@ public class JfrExportExample {
         0,
         profileId,
         0,
-        "format",
+        "jfr",
         ByteBuffer.wrap(Files.readAllBytes(jfrFilePath)),
         Collections.emptyList());
   }

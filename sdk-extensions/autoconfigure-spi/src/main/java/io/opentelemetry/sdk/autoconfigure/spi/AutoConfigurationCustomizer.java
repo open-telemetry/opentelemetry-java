@@ -95,9 +95,9 @@ public interface AutoConfigurationCustomizer {
       Supplier<Map<String, String>> propertiesSupplier);
 
   /**
-   * Adds a {@link Function} to invoke the with the {@link ConfigProperties} to allow customization.
-   * The return value of the {@link Function} will be merged into the {@link ConfigProperties}
-   * before it is used for auto-configuration, overwriting the properties that are already there.
+   * Adds a {@link Function} to invoke with the {@link ConfigProperties} to allow customization. The
+   * return value of the {@link Function} will be merged into the {@link ConfigProperties} before it
+   * is used for auto-configuration, overwriting the properties that are already there.
    *
    * <p>Multiple calls will cause properties to be merged in order, with later ones overwriting
    * duplicate keys in earlier ones.
@@ -110,7 +110,7 @@ public interface AutoConfigurationCustomizer {
   }
 
   /**
-   * Adds a {@link BiFunction} to invoke the with the {@link SdkTracerProviderBuilder} to allow
+   * Adds a {@link BiFunction} to invoke with the {@link SdkTracerProviderBuilder} to allow
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
@@ -133,7 +133,7 @@ public interface AutoConfigurationCustomizer {
   }
 
   /**
-   * Adds a {@link BiFunction} to invoke the with the {@link SdkMeterProviderBuilder} to allow
+   * Adds a {@link BiFunction} to invoke with the {@link SdkMeterProviderBuilder} to allow
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
@@ -173,7 +173,7 @@ public interface AutoConfigurationCustomizer {
   }
 
   /**
-   * Adds a {@link BiFunction} to invoke the with the {@link SdkLoggerProviderBuilder} to allow
+   * Adds a {@link BiFunction} to invoke with the {@link SdkLoggerProviderBuilder} to allow
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
@@ -205,9 +205,9 @@ public interface AutoConfigurationCustomizer {
    * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
    * io.opentelemetry.sdk.logs.LogRecordProcessor}s. The return value of the {@link BiFunction} will
    * replace the passed-in argument. In contrast to {@link
-   * #addLogRecordExporterCustomizer(BiFunction)} (BiFunction)} this allows modifications to happen
-   * before batching occurs. As a result, it is possible to efficiently filter logs, add artificial
-   * logs or delay logs for enhancing them with external, delayed data.
+   * #addLogRecordExporterCustomizer(BiFunction)} this allows modifications to happen before
+   * batching occurs. As a result, it is possible to efficiently filter logs, add artificial logs or
+   * delay logs for enhancing them with external, delayed data.
    *
    * <p>Multiple calls will execute the customizers in order.
    *

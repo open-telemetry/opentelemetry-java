@@ -9,9 +9,9 @@ import static java.util.Collections.singletonList;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
-import io.opentelemetry.api.baggage.BaggageEntry;
 import io.opentelemetry.api.internal.PercentEscaper;
 import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -19,6 +19,7 @@ import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -51,7 +52,12 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
-    if (context == null || setter == null) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Context.class, "inject", "context");
+      return;
+    }
+    if (setter == null) {
+      ApiUsageLogger.logNullParam(TextMapSetter.class, "inject", "setter");
       return;
     }
     Baggage baggage = Baggage.fromContext(context);
@@ -70,7 +76,16 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     int[] entryCount = {0};
     baggage.forEach(
         (key, baggageEntry) -> {
-          if (baggageIsInvalid(key, baggageEntry)) {
+          if (!isValidBaggageKey(key)) {
+            LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid key");
+            return;
+          }
+          if (!isValidBaggageValue(baggageEntry.getValue())) {
+            LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid value");
+            return;
+          }
+          if (!isValidBaggageMetadata(baggageEntry.getMetadata().getValue())) {
+            LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid metadata");
             return;
           }
           if (entryCount[0] >= MAX_BAGGAGE_ENTRIES) {
@@ -78,20 +93,18 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
           }
           String encodedValue = encodeValue(baggageEntry.getValue());
           String metadataValue = baggageEntry.getMetadata().getValue();
-          String encodedMetadata =
-              (metadataValue != null && !metadataValue.isEmpty())
-                  ? encodeValue(metadataValue)
-                  : null;
+          String metadata =
+              (metadataValue != null && !metadataValue.isEmpty()) ? metadataValue : null;
           // Exit early if adding this entry causes the total length to exceed the limit
           // encodedEntryLength includes a trailing comma; the final string trims exactly one,
           // so the net contribution to the final length is entryLength - 1.
-          if (headerContent.length() + encodedEntryLength(key, encodedValue, encodedMetadata) - 1
+          if (headerContent.length() + encodedEntryLength(key, encodedValue, metadata) - 1
               > MAX_BAGGAGE_BYTES) {
             return;
           }
           headerContent.append(key).append("=").append(encodedValue);
-          if (encodedMetadata != null) {
-            headerContent.append(";").append(encodedMetadata);
+          if (metadata != null) {
+            headerContent.append(";").append(metadata);
           }
           headerContent.append(",");
           entryCount[0]++;
@@ -113,14 +126,13 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   /**
    * Returns the length of the serialized entry as it would appear in the baggage header, including
    * the trailing comma used by the trailing-comma pattern in {@link #baggageToString}. The length
-   * accounts for {@code "key=encodedValue,"} plus {@code ";encodedMetadata"} when metadata is
-   * present.
+   * accounts for {@code "key=encodedValue,"} plus {@code ";metadata"} when metadata is present.
    */
   private static int encodedEntryLength(
-      String key, String encodedValue, @Nullable String encodedMetadata) {
+      String key, String encodedValue, @Nullable String metadata) {
     int length = key.length() + 1 + encodedValue.length() + 1; // "key=value,"
-    if (encodedMetadata != null) {
-      length += 1 + encodedMetadata.length(); // ";metadata"
+    if (metadata != null) {
+      length += 1 + metadata.length(); // ";metadata"
     }
     return length;
   }
@@ -128,9 +140,11 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
+      ApiUsageLogger.logNullParam(Context.class, "extract", "context");
       return Context.root();
     }
     if (getter == null) {
+      ApiUsageLogger.logNullParam(TextMapGetter.class, "extract", "getter");
       return context;
     }
 
@@ -178,10 +192,6 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     return new Parser(baggageHeader, maxEntries).parseInto(baggageBuilder);
   }
 
-  private static boolean baggageIsInvalid(String key, BaggageEntry baggageEntry) {
-    return !isValidBaggageKey(key) || !isValidBaggageValue(baggageEntry.getValue());
-  }
-
   /**
    * Determines whether the given {@code String} is a valid entry key.
    *
@@ -200,6 +210,29 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
    */
   private static boolean isValidBaggageValue(String value) {
     return value != null;
+  }
+
+  /**
+   * Determines whether the given {@code String} is valid W3C baggage metadata.
+   *
+   * @param metadata the metadata to be validated.
+   * @return whether the metadata is valid.
+   */
+  static boolean isValidBaggageMetadata(@Nullable String metadata) {
+    if (metadata == null || metadata.isEmpty()) {
+      return true;
+    }
+    for (int i = 0; i < metadata.length(); i++) {
+      if (!isValidMetadataChar(metadata.charAt(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // tab or printable ASCII except " , \
+  private static boolean isValidMetadataChar(char c) {
+    return c == '\t' || (c >= ' ' && c <= '~' && c != '"' && c != ',' && c != '\\');
   }
 
   @Override

@@ -15,6 +15,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.SamplerComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysOffSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysOnSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysRecordSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TraceIdRatioBasedSamplerModel;
@@ -26,6 +27,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.Exper
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalJaegerRemoteSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.SamplerModelAccessor;
+import io.opentelemetry.sdk.extension.incubator.trace.samplers.AlwaysRecordSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.CompositeSampler;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
@@ -66,7 +68,7 @@ class SamplerFactoryTest {
     Sampler sampler = SamplerFactory.getInstance().create(model, context);
     cleanup.addCloseables(closeables);
 
-    assertThat(sampler.toString()).isEqualTo(expectedSampler.toString());
+    assertThat(sampler.getDescription()).isEqualTo(expectedSampler.getDescription());
   }
 
   private static Stream<Arguments> createArguments() {
@@ -123,6 +125,16 @@ class SamplerFactoryTest {
                 .setLocalParentSampled(Sampler.traceIdRatioBased(0.4d))
                 .setLocalParentNotSampled(Sampler.traceIdRatioBased(0.5d))
                 .build()),
+        Arguments.argumentSet(
+            "always_record",
+            new SamplerModel()
+                .setAlwaysRecord(
+                    new AlwaysRecordSamplerModel()
+                        .setRoot(
+                            new SamplerModel()
+                                .setTraceIdRatioBased(
+                                    new TraceIdRatioBasedSamplerModel().setRatio(0.1d)))),
+            AlwaysRecordSampler.create(Sampler.traceIdRatioBased(0.1d))),
         Arguments.argumentSet(
             "jaeger_remote",
             SamplerModelAccessor.setJaegerRemote(
@@ -212,6 +224,10 @@ class SamplerFactoryTest {
                 new ExperimentalComposableSamplerModel()
                     .setParentThreshold(new ExperimentalComposableParentThresholdSamplerModel())),
             "parent threshold sampler root is required but is null"),
+        Arguments.argumentSet(
+            "always_record missing root",
+            new SamplerModel().setAlwaysRecord(new AlwaysRecordSamplerModel()),
+            "always_record sampler .root is required"),
         Arguments.argumentSet(
             "unknown component provider",
             new SamplerModel()
