@@ -7,6 +7,7 @@ package io.opentelemetry.extension.trace.propagation;
 
 import static io.opentelemetry.extension.trace.propagation.B3Propagator.COMBINED_HEADER;
 
+import io.opentelemetry.api.impl.TemporaryBuffers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
