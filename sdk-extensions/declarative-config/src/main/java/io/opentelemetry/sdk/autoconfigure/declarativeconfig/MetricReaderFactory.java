@@ -19,7 +19,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import java.time.Duration;
 
 final class MetricReaderFactory
@@ -77,7 +76,7 @@ final class MetricReaderFactory
       }
       Integer maxExportBatchSize = PeriodicMetricReaderModelAccessor.getMaxExportBatchSize(model);
       if (maxExportBatchSize != null) {
-        SdkMeterProviderUtil.setMaxExportBatchSize(builder, maxExportBatchSize);
+        builder.setMaxExportBatchSize(maxExportBatchSize);
       }
 
       MetricReader reader = context.addCloseable(builder.build());

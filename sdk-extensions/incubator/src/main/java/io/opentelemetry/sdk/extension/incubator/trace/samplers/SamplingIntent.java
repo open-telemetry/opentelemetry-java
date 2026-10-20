@@ -7,7 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.trace.samplers;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TraceState;
-import java.util.function.Function;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import java.util.function.BiFunction;
 
 /** Information to make a sampling decision. */
 public interface SamplingIntent {
@@ -17,7 +18,7 @@ public interface SamplingIntent {
       long threshold,
       boolean adjustedCountReliable,
       Attributes attributes,
-      Function<TraceState, TraceState> traceStateUpdater) {
+      BiFunction<TraceState, SamplingDecision, TraceState> traceStateUpdater) {
     return ImmutableSamplingIntent.create(
         threshold, adjustedCountReliable, attributes, traceStateUpdater);
   }
@@ -40,6 +41,10 @@ public interface SamplingIntent {
   /** Returns any attributes to add to the span to record the sampling result. */
   Attributes getAttributes();
 
-  /** Returns a function to apply to the tracestate of the span to possibly update it. */
-  Function<TraceState, TraceState> getTraceStateUpdater();
+  /**
+   * Returns a function to apply to the parent tracestate and final sampling decision to possibly
+   * update the tracestate of the span. The function must not modify the OpenTelemetry {@code ot}
+   * entry of the tracestate.
+   */
+  BiFunction<TraceState, SamplingDecision, TraceState> getTraceStateUpdater();
 }

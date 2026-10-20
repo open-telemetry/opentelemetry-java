@@ -129,6 +129,18 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   }
 
   /**
+   * Sets the maximum OTLP gRPC request message size in bytes. If unset, defaults to 64 MiB.
+   *
+   * @since 1.67.0
+   */
+  public OtlpGrpcLogRecordExporterBuilder setMaxRequestMessageSize(
+      long maxRequestMessageSizeBytes) {
+    checkArgument(maxRequestMessageSizeBytes > 0, "maxRequestMessageSizeBytes must be positive");
+    delegate.setMaxRequestMessageSize(maxRequestMessageSizeBytes);
+    return this;
+  }
+
+  /**
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT_URL}. The
    * endpoint must start with either http:// or https://.
    */
@@ -309,6 +321,8 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    *
    * <p>Note: enabling legacy protocol versions (TLSv1, TLSv1.1) also requires removing them from
    * the JVM's {@code jdk.tls.disabledAlgorithms} security property.
+   *
+   * @since 1.66.0
    */
   public OtlpGrpcLogRecordExporterBuilder setEnabledProtocols(List<String> enabledProtocols) {
     requireNonNull(enabledProtocols, "enabledProtocols");

@@ -66,10 +66,14 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
     InstrumentationScopeInfo instrumentationScopeInfo = log.getInstrumentationScopeInfo();
     Value<?> body = log.getBodyValue();
     String eventName = log.getEventName();
+    long timestampEpochNanos = log.getTimestampEpochNanos();
+    if (timestampEpochNanos == 0) {
+      timestampEpochNanos = log.getObservedTimestampEpochNanos();
+    }
     stringBuilder
         .append(
             ISO_FORMAT.format(
-                Instant.ofEpochMilli(NANOSECONDS.toMillis(log.getTimestampEpochNanos()))
+                Instant.ofEpochMilli(NANOSECONDS.toMillis(timestampEpochNanos))
                     .atZone(ZoneOffset.UTC)))
         .append(" ")
         .append(log.getSeverity());

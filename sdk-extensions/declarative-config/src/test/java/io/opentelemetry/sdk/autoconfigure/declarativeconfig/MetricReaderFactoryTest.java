@@ -36,7 +36,6 @@ import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
@@ -128,13 +127,10 @@ class MetricReaderFactoryTest {
                                     .setCardinalityLimits(
                                         new CardinalityLimitsModel().setDefault(100)),
                                 200)),
-                    SdkMeterProviderUtil.setMaxExportBatchSize(
-                            PeriodicMetricReader.builder(
-                                    OtlpHttpMetricExporter.builder()
-                                        .setComponentLoader(context)
-                                        .build())
-                                .setInterval(Duration.ofMillis(1)),
-                            200)
+                    PeriodicMetricReader.builder(
+                            OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
+                        .setInterval(Duration.ofMillis(1))
+                        .setMaxExportBatchSize(200)
                         .build(),
                     100,
                     false)));

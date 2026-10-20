@@ -28,7 +28,7 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
 
   SdkDoubleHistogram(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor);
+    super(descriptor, sdkMeter);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
@@ -48,7 +48,7 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
 
   @Override
   public void record(double value, Attributes attributes) {
-    record(value, attributes, Context.current());
+    record(value, attributes, currentOrRootContext());
   }
 
   @Override

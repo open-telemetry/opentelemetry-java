@@ -48,6 +48,7 @@ public class OtlpGrpcSpanExporterComponentProvider implements ComponentProvider 
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
+        builder::setMaxRequestMessageSize,
         /* isHttpProtobuf= */ false,
         builder::setInternalTelemetryVersion,
         () -> builder.setMeterProvider(MeterProvider::noop));

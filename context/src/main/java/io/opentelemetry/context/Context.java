@@ -52,7 +52,7 @@ import javax.annotation.Nullable;
  * Context withCredential = Context.current().with(CRED_KEY, cred);
  * withCredential.wrap(new Runnable() {
  *   public void run() {
- *      readUserRecords(userId, CRED_KEY.get());
+ *      readUserRecords(userId, Context.current().get(CRED_KEY));
  *   }
  * }).run();
  * }</pre>
@@ -182,7 +182,7 @@ public interface Context {
    * Context withCredential = Context.current().with(CRED_KEY, cred);
    * withCredential.wrap(new Runnable() {
    *   public void run() {
-   *      readUserRecords(userId, CRED_KEY.get());
+   *      readUserRecords(userId, Context.current().get(CRED_KEY));
    *   }
    * }).run();
    * }</pre>
@@ -245,8 +245,8 @@ public interface Context {
   }
 
   /**
-   * Returns a {@link Runnable} that makes this the {@linkplain Context#current() current context}
-   * and then invokes the input {@link Runnable}.
+   * Returns a {@link Callable} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link Callable}.
    */
   default <T> Callable<T> wrap(Callable<T> callable) {
     return () -> {

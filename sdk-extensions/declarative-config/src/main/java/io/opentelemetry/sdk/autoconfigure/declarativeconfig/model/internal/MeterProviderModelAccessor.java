@@ -24,12 +24,14 @@ public final class MeterProviderModelAccessor {
   private MeterProviderModelAccessor() {}
 
   static final String METER_CONFIGURATOR = "meter_configurator/development";
+  static final String VIEW_MATCHING_MODE = "view_matching_mode/development";
 
   public static final Map<String, Class<?>> EXPERIMENTAL_PROPERTIES;
 
   static {
     EXPERIMENTAL_PROPERTIES = new HashMap<>();
     EXPERIMENTAL_PROPERTIES.put(METER_CONFIGURATOR, ExperimentalMeterConfiguratorModel.class);
+    EXPERIMENTAL_PROPERTIES.put(VIEW_MATCHING_MODE, ExperimentalViewMatchingModeModel.class);
   }
 
   @Nullable
@@ -44,6 +46,21 @@ public final class MeterProviderModelAccessor {
       MeterProviderModel model, ExperimentalMeterConfiguratorModel value) {
     requireNonNull(value, "value");
     model.setExtensionProperty(METER_CONFIGURATOR, value);
+    return model;
+  }
+
+  @Nullable
+  public static ExperimentalViewMatchingModeModel getViewMatchingMode(MeterProviderModel model) {
+    return ExtensionPropertyUtil.get(
+        VIEW_MATCHING_MODE,
+        model.getExtensionProperties(),
+        ExperimentalViewMatchingModeModel.class);
+  }
+
+  public static MeterProviderModel setViewMatchingMode(
+      MeterProviderModel model, ExperimentalViewMatchingModeModel value) {
+    requireNonNull(value, "value");
+    model.setExtensionProperty(VIEW_MATCHING_MODE, value);
     return model;
   }
 }

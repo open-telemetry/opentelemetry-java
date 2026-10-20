@@ -6,6 +6,7 @@
 package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.internal.IncubatingUtil;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
@@ -22,11 +23,20 @@ class DefaultTracerProvider implements TracerProvider {
 
   @Override
   public Tracer get(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(TracerProvider.class, "get", "instrumentationScopeName");
+    }
     return DefaultTracer.getInstance();
   }
 
   @Override
   public Tracer get(String instrumentationScopeName, String instrumentationScopeVersion) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(TracerProvider.class, "get", "instrumentationScopeName");
+    }
+    if (instrumentationScopeVersion == null) {
+      ApiUsageLogger.logNullParam(TracerProvider.class, "get", "instrumentationScopeVersion");
+    }
     return DefaultTracer.getInstance();
   }
 

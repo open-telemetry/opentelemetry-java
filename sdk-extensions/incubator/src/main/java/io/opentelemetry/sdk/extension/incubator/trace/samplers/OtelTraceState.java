@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.trace.samplers;
 
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.INVALID_RANDOM_VALUE;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.INVALID_THRESHOLD;
+import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.MAX_RANDOM_VALUE;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.MAX_THRESHOLD;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidRandomValue;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidThreshold;
@@ -126,6 +127,17 @@ final class OtelTraceState {
 
   long getRandomValue() {
     return randomValue;
+  }
+
+  /**
+   * Returns the explicit randomness value if present, otherwise the randomness derived from the
+   * last 56 bits of the trace ID.
+   */
+  long getRandomValueOrFromTraceId(String traceId) {
+    if (isValidRandomValue(randomValue)) {
+      return randomValue;
+    }
+    return OtelEncodingUtils.longFromBase16String(traceId, 16) & MAX_RANDOM_VALUE;
   }
 
   long getThreshold() {

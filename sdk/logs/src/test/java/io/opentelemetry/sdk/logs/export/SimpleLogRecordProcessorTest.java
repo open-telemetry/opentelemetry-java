@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -70,6 +71,20 @@ class SimpleLogRecordProcessorTest {
     logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
     logRecordProcessor.onEmit(Context.current(), readWriteLogRecord);
     verify(logRecordExporter, times(2)).export(anyList());
+  }
+
+  @Test
+  @SuppressLogger(SimpleLogRecordProcessor.class)
+  void onEmit_ExporterThrowsCheckedException() {
+    when(logRecordExporter.export(any()))
+        .thenAnswer(
+            invocation -> {
+              throw new Exception("Exporter error!");
+            });
+
+    assertThatCode(() -> logRecordProcessor.onEmit(Context.current(), readWriteLogRecord))
+        .doesNotThrowAnyException();
+    verify(logRecordExporter).export(anyList());
   }
 
   @Test

@@ -173,7 +173,18 @@ final class ComposableRuleBasedSamplerFactory
       boolean[] match = new boolean[] {false};
       attributes.forEach(
           (key, value) -> {
-            if (matcher.matchesKey(key.getKey()) && matcher.matchesValue(String.valueOf(value))) {
+            if (!matcher.matchesKey(key.getKey())) {
+              return;
+            }
+            if (value instanceof List) {
+              // For array attributes, it is a match if any item matches
+              for (Object item : (List<?>) value) {
+                if (matcher.matchesValue(String.valueOf(item))) {
+                  match[0] = true;
+                  return;
+                }
+              }
+            } else if (matcher.matchesValue(String.valueOf(value))) {
               match[0] = true;
             }
           });

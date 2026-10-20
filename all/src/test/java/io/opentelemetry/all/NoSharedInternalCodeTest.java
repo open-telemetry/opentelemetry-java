@@ -33,21 +33,18 @@ class NoSharedInternalCodeTest {
 
   private static final Set<String> exemptions =
       Set.of(
-          "opentelemetry-api-incubator",
           "opentelemetry-exporter-common",
           "opentelemetry-exporter-logging",
           "opentelemetry-exporter-logging-otlp",
           "opentelemetry-exporter-prometheus",
           "opentelemetry-extension-trace-propagators",
           "opentelemetry-opencensus-shim",
-          "opentelemetry-sdk-common",
           "opentelemetry-sdk-logs",
           "opentelemetry-sdk-metrics",
           "opentelemetry-sdk-profiles",
           "opentelemetry-sdk-testing",
           "opentelemetry-sdk-trace",
           "opentelemetry-sdk-extension-autoconfigure",
-          "opentelemetry-sdk-extension-autoconfigure-spi",
           "opentelemetry-sdk-extension-declarative-config",
           "opentelemetry-sdk-extension-incubator",
           "opentelemetry-sdk-extension-jaeger-remote-sampler",

@@ -14,3 +14,8 @@ otelJava.osgiServiceLoaderProcessor.set(true)
 
 dependencies {
 }
+
+tasks.test {
+  // Configure environment variable for ConfigUtilTest
+  environment("CONFIG_KEY", "environment")
+}

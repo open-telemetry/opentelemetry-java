@@ -9,6 +9,10 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
@@ -17,6 +21,9 @@ import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class HistogramExemplarReservoirTest {
+  private static final String TRACE_ID = "ff000000000000000000000000000041";
+  private static final String SPAN_ID = "ff00000000000041";
+
   @Test
   void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();
@@ -61,6 +68,27 @@ class HistogramExemplarReservoirTest {
               assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
               assertThat(exemplar.getValue()).isEqualTo(4);
               assertThat(exemplar.getFilteredAttributes()).isEmpty();
+            });
+  }
+
+  @Test
+  void oneBucket_overwriteWithoutSpan_clearsSpanContext() {
+    TestClock clock = TestClock.create();
+    HistogramExemplarReservoir reservoir =
+        new HistogramExemplarReservoir(clock, Collections.emptyList());
+    Context context =
+        Context.root()
+            .with(
+                Span.wrap(
+                    SpanContext.createFromRemoteParent(
+                        TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
+    reservoir.offerDoubleMeasurement(1, Attributes.empty(), context);
+    reservoir.offerDoubleMeasurement(2, Attributes.empty(), Context.root());
+    assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
+        .satisfiesExactly(
+            exemplar -> {
+              assertThat(exemplar.getValue()).isEqualTo(2);
+              assertThat(exemplar.getSpanContext()).isEqualTo(SpanContext.getInvalid());
             });
   }
 

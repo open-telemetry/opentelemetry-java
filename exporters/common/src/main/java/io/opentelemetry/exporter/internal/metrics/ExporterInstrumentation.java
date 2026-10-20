@@ -10,10 +10,12 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.common.internal.Signal;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -55,10 +57,22 @@ public class ExporterInstrumentation {
   static Attributes extractServerAttributes(URI httpEndpoint) {
     AttributesBuilder builder = Attributes.builder();
     String host = httpEndpoint.getHost();
-    if (host != null) {
-      builder.put(SemConvAttributes.SERVER_ADDRESS, host);
-    }
     int port = httpEndpoint.getPort();
+    if (host == null) {
+      // URI.getHost() returns null for some valid DNS names (JDK-8188305); URL accepts them.
+      try {
+        URL url = httpEndpoint.toURL();
+        if (!url.getHost().isEmpty()) {
+          host = url.getHost();
+        }
+        port = url.getPort();
+      } catch (MalformedURLException e) {
+        // Not a URL either, leave host unset.
+      }
+    }
+    if (host != null) {
+      builder.put(SemConvConstants.SERVER_ADDRESS, host);
+    }
     if (port == -1) {
       String scheme = httpEndpoint.getScheme();
       if ("https".equals(scheme)) {
@@ -68,7 +82,7 @@ public class ExporterInstrumentation {
       }
     }
     if (port != -1) {
-      builder.put(SemConvAttributes.SERVER_PORT, port);
+      builder.put(SemConvConstants.SERVER_PORT, port);
     }
     return builder.build();
   }
@@ -133,10 +147,10 @@ public class ExporterInstrumentation {
 
     private Attributes buildRequestAttributes() {
       if (httpStatusCode != null) {
-        return Attributes.of(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE, httpStatusCode);
+        return Attributes.of(SemConvConstants.HTTP_RESPONSE_STATUS_CODE, httpStatusCode);
       }
       if (grpcStatusCode != null) {
-        return Attributes.of(SemConvAttributes.RPC_RESPONSE_STATUS_CODE, grpcStatusCode.name());
+        return Attributes.of(SemConvConstants.RPC_RESPONSE_STATUS_CODE, grpcStatusCode.name());
       }
       return Attributes.empty();
     }

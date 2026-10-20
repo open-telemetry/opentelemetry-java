@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.List;
 
 /**
@@ -45,6 +46,11 @@ public interface DoubleHistogramBuilder {
    * @since 1.32.0
    */
   default DoubleHistogramBuilder setExplicitBucketBoundariesAdvice(List<Double> bucketBoundaries) {
+    if (bucketBoundaries == null) {
+      ApiUsageLogger.logNullParam(
+          List.class, "setExplicitBucketBoundariesAdvice", "bucketBoundaries");
+      return this;
+    }
     return this;
   }
 

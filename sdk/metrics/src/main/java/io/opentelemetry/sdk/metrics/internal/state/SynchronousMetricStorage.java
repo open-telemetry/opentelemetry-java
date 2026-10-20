@@ -59,7 +59,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
         registeredReader,
         metricDescriptor,
         aggregator,
-        registeredView.getViewAttributesProcessor(),
+        registeredView.getAttributesFilter(),
         registeredView.getCardinalityLimit(),
         clock,
         enabled);

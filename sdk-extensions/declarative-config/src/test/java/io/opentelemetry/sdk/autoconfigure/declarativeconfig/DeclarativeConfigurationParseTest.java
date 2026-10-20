@@ -51,7 +51,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void parse_nullValuesParsedToEmptyObjects() {
     String objectPlaceholderString =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -69,7 +69,7 @@ class DeclarativeConfigurationParseTest {
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -451,7 +451,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void read_WithEnvironmentVariables() {
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -472,7 +472,7 @@ class DeclarativeConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .setFileFormat("1.0")
+                .setFileFormat("1.2")
                 .setTracerProvider(
                     new TracerProviderModel()
                         .setProcessors(
@@ -497,7 +497,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void read_WithSystemProperties() {
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -518,7 +518,7 @@ class DeclarativeConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .setFileFormat("1.0")
+                .setFileFormat("1.2")
                 .setTracerProvider(
                     new TracerProviderModel()
                         .setProcessors(
@@ -543,7 +543,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void read_WithMixedEnvVarsAndSystemProperties() {
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
@@ -562,7 +562,7 @@ class DeclarativeConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .setFileFormat("1.0")
+                .setFileFormat("1.2")
                 .setResource(
                     new ResourceModel()
                         .setAttributes(

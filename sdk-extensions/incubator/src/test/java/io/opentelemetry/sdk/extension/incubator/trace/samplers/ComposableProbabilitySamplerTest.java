@@ -25,18 +25,18 @@ class ComposableProbabilitySamplerTest {
   @Test
   void testDescription() {
     assertThat(ComposableSampler.probability(1.0).getDescription())
-        .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=0, ratio=1.0}");
+        .isEqualTo("ComposableProbabilitySampler{threshold=0, ratio=1.0}");
     assertThat(ComposableSampler.probability(1.0))
-        .hasToString("ComposableTraceIdRatioBasedSampler{threshold=0, ratio=1.0}");
+        .hasToString("ComposableProbabilitySampler{threshold=0, ratio=1.0}");
 
     assertThat(ComposableSampler.probability(0.5).getDescription())
-        .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=8, ratio=0.5}");
+        .isEqualTo("ComposableProbabilitySampler{threshold=8, ratio=0.5}");
     assertThat(ComposableSampler.probability(0.25).getDescription())
-        .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=c, ratio=0.25}");
+        .isEqualTo("ComposableProbabilitySampler{threshold=c, ratio=0.25}");
     assertThat(ComposableSampler.probability(1e-300).getDescription())
-        .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=max, ratio=1.0E-300}");
+        .isEqualTo("ComposableProbabilitySampler{threshold=max, ratio=1.0E-300}");
     assertThat(ComposableSampler.probability(0).getDescription())
-        .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=max, ratio=0.0}");
+        .isEqualTo("ComposableProbabilitySampler{threshold=max, ratio=0.0}");
   }
 
   @ParameterizedTest

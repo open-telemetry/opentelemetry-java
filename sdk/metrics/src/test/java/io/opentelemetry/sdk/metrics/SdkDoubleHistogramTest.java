@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -24,6 +25,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -304,7 +307,10 @@ class SdkDoubleHistogramTest {
     Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
     DoubleHistogram histogram = sdkMeter.histogramBuilder("testHistogram").build();
 
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop()))
+            .build();
     Tracer tracer = tracerProvider.get("foo");
 
     Span span = tracer.spanBuilder("span").startSpan();
@@ -348,7 +354,10 @@ class SdkDoubleHistogramTest {
     Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
     DoubleHistogram histogram = sdkMeter.histogramBuilder("testHistogram").build();
 
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop()))
+            .build();
     Tracer tracer = tracerProvider.get("foo");
 
     Span span = tracer.spanBuilder("span").startSpan();
