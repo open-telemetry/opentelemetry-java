@@ -65,9 +65,8 @@ class SdkTracerProviderTest {
             .build();
 
     assertThat(tracerProvider).isNotNull();
-    assertThat(tracerProvider)
-        .extracting("sharedState")
-        .hasFieldOrPropertyWithValue("resource", resourceWithDefaults);
+    assertThat(SdkTracerProviderUtil.getSdkResourceProvider(tracerProvider).getResource())
+        .isEqualTo(resourceWithDefaults);
   }
 
   @Test
@@ -102,9 +101,8 @@ class SdkTracerProviderTest {
             .build();
 
     assertThat(tracerProvider).isNotNull();
-    assertThat(tracerProvider)
-        .extracting("sharedState")
-        .hasFieldOrPropertyWithValue("resource", resource);
+    assertThat(SdkTracerProviderUtil.getSdkResourceProvider(tracerProvider).getResource())
+        .isEqualTo(resource);
   }
 
   @Test
