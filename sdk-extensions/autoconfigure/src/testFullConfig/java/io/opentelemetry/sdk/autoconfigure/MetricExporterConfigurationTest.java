@@ -124,8 +124,7 @@ class MetricExporterConfigurationTest {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             ImmutableMap.of(
-                "otel.metric.export.interval", "10s",
-                "otel.experimental.metric.export.max.batch.size", "200"));
+                "otel.metric.export.interval", "10s", "otel.metric.export.max.batch.size", "200"));
 
     MetricReader reader =
         MetricExporterConfiguration.configureReader(
@@ -142,7 +141,7 @@ class MetricExporterConfigurationTest {
     List<Closeable> closeables = new ArrayList<>();
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            ImmutableMap.of("otel.experimental.metric.export.max.batch.size", "0"));
+            ImmutableMap.of("otel.metric.export.max.batch.size", "0"));
 
     assertThatThrownBy(
             () ->

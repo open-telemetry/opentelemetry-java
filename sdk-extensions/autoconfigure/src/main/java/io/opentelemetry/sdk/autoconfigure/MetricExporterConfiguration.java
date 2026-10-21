@@ -90,7 +90,7 @@ final class MetricExporterConfiguration {
             .setInternalTelemetryVersion(telemetryVersion)
             .setInterval(
                 config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL));
-    Integer maxExportBatchSize = config.getInt("otel.experimental.metric.export.max.batch.size");
+    Integer maxExportBatchSize = config.getInt("otel.metric.export.max.batch.size");
     if (maxExportBatchSize != null) {
       readerBuilder.setMaxExportBatchSize(maxExportBatchSize);
     }
