@@ -42,7 +42,6 @@ class NoSharedInternalCodeTest {
           "opentelemetry-sdk",
           "opentelemetry-sdk-logs",
           "opentelemetry-sdk-metrics",
-          "opentelemetry-sdk-profiles",
           "opentelemetry-sdk-testing",
           "opentelemetry-sdk-trace",
           "opentelemetry-sdk-extension-autoconfigure",

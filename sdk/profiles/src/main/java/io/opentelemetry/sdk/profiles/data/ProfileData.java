@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.profiles.data;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.Base16EncodingUtils;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.nio.ByteBuffer;
@@ -100,7 +100,7 @@ public interface ProfileData {
    * is considered invalid. This field is required.
    */
   default byte[] getProfileIdBytes() {
-    return OtelEncodingUtils.bytesFromBase16(getProfileId(), 32);
+    return Base16EncodingUtils.bytesFromBase16(getProfileId(), 32);
   }
 
   /**

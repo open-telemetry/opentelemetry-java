@@ -12,7 +12,7 @@ import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableS
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidRandomValue;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidThreshold;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.Base16EncodingUtils;
 import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.api.trace.TraceState;
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ final class OtelTraceState {
   private static long parseTh(String th) {
     if (th.isEmpty()
         || th.length() > MAX_VALUE_LENGTH
-        || !OtelEncodingUtils.isValidBase16String(th)) {
+        || !Base16EncodingUtils.isValidBase16String(th)) {
       return INVALID_THRESHOLD;
     }
 
@@ -77,15 +77,15 @@ final class OtelTraceState {
       return 0;
     }
 
-    return OtelEncodingUtils.longFromBase16String(new PaddedValue(th), 0);
+    return Base16EncodingUtils.longFromBase16String(new PaddedValue(th), 0);
   }
 
   private static long parseRv(String rv) {
-    if (rv.length() != MAX_VALUE_LENGTH || !OtelEncodingUtils.isValidBase16String(rv)) {
+    if (rv.length() != MAX_VALUE_LENGTH || !Base16EncodingUtils.isValidBase16String(rv)) {
       return INVALID_RANDOM_VALUE;
     }
 
-    return OtelEncodingUtils.longFromBase16String(new PaddedValue(rv), 0);
+    return Base16EncodingUtils.longFromBase16String(new PaddedValue(rv), 0);
   }
 
   static void serializeTh(long threshold, StringBuilder sb) {
@@ -95,7 +95,7 @@ final class OtelTraceState {
     }
     // We only need 56 bits, but we can live with one extra byte being encoded.
     char[] buf = TemporaryBuffers.chars(16);
-    OtelEncodingUtils.longToBase16String(threshold, buf, 0);
+    Base16EncodingUtils.longToBase16String(threshold, buf, 0);
     int startIdx = 2;
     int endIdx = 16;
     for (; endIdx > startIdx; endIdx--) {
@@ -109,7 +109,7 @@ final class OtelTraceState {
   private static void serializeRv(long randomValue, StringBuilder sb) {
     // We only need 56 bits, but we can live with one extra byte being encoded.
     char[] buf = TemporaryBuffers.chars(16);
-    OtelEncodingUtils.longToBase16String(randomValue, buf, 0);
+    Base16EncodingUtils.longToBase16String(randomValue, buf, 0);
     int startIdx = 2;
     int endIdx = 16;
     sb.append(buf, startIdx, endIdx - startIdx);
@@ -137,7 +137,7 @@ final class OtelTraceState {
     if (isValidRandomValue(randomValue)) {
       return randomValue;
     }
-    return OtelEncodingUtils.longFromBase16String(traceId, 16) & MAX_RANDOM_VALUE;
+    return Base16EncodingUtils.longFromBase16String(traceId, 16) & MAX_RANDOM_VALUE;
   }
 
   long getThreshold() {
