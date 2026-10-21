@@ -720,6 +720,27 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  @SuppressLogger(BatchSpanProcessor.class)
+  void exporterConcurrencyLimitHandlesExporterException() {
+    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(2);
+    doThrow(new IllegalArgumentException("No export for you."))
+        .when(mockSpanExporter)
+        .export(anyList());
+    sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(mockSpanExporter)
+                    .setMaxExportBatchSize(1)
+                    .setScheduleDelay(1, TimeUnit.HOURS)
+                    .build())
+            .build();
+
+    createEndedSpan(SPAN_NAME_1);
+
+    assertThat(sdkTracerProvider.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void rejectsNegativeExporterConcurrencyLimit() {
     when(mockSpanExporter.getConcurrencyLimit()).thenReturn(-1);
     assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).build())

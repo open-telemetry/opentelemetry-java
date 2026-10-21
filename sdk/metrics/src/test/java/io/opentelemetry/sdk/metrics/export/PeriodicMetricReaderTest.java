@@ -706,6 +706,14 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  void rejectsNegativeExporterConcurrencyLimit() {
+    when(metricExporter.getConcurrencyLimit()).thenReturn(-1);
+    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("metric exporter concurrency limit must be positive");
+  }
+
+  @Test
   @SuppressLogger(PeriodicMetricReader.class)
   void concurrentExporterFailureCompletesFlushAsFailure() throws Exception {
     ConcurrentMetricExporter exporter = new ConcurrentMetricExporter(/* fail= */ true);
