@@ -130,7 +130,7 @@ public final class PeriodicMetricReader implements MetricReader {
       return CompletableResultCode.ofSuccess();
     }
     CompletableResultCode collectExport = new CompletableResultCode();
-    signals.offer(new Signal(collectExport, /* poison= */ false));
+    signals.offer(Signal.flush(collectExport));
     CompletableResultCode result = new CompletableResultCode();
     collectExport.whenComplete(
         () -> {
@@ -161,8 +161,8 @@ public final class PeriodicMetricReader implements MetricReader {
 
     // Final flush + poison. Worker drains the flush signal, completes it, then exits on POISON.
     CompletableResultCode finalFlush = new CompletableResultCode();
-    signals.offer(new Signal(finalFlush, /* poison= */ false));
-    signals.offer(Signal.POISON);
+    signals.offer(Signal.flush(finalFlush));
+    signals.offer(Signal.poison());
 
     // Block until the worker drains the final flush and terminates. This preserves the
     // pre-refactor semantic that shutdown() does not return until the final export has completed.
@@ -237,7 +237,7 @@ public final class PeriodicMetricReader implements MetricReader {
     // Coalesce: only enqueue a tick if none is currently pending or being processed. Matches the
     // prior behavior of dropping ticks while an export is in flight.
     if (tickPending.compareAndSet(false, true)) {
-      signals.offer(Signal.TICK);
+      signals.offer(Signal.tick());
     }
   }
 
@@ -251,6 +251,7 @@ public final class PeriodicMetricReader implements MetricReader {
         return;
       }
       if (signal.poison) {
+        tickPending.set(false);
         return;
       }
       try {
@@ -334,8 +335,8 @@ public final class PeriodicMetricReader implements MetricReader {
    * final flush on shutdown), and poison pill (from shutdown to terminate the worker).
    */
   private static final class Signal {
-    static final Signal TICK = new Signal(null, /* poison= */ false, /* isTick= */ true);
-    static final Signal POISON = new Signal(null, /* poison= */ true, /* isTick= */ false);
+    private static final Signal TICK = new Signal(null, /* poison= */ false, /* isTick= */ true);
+    private static final Signal POISON = new Signal(null, /* poison= */ true, /* isTick= */ false);
 
     @Nullable final CompletableResultCode flushResult;
     final boolean poison;
@@ -347,8 +348,16 @@ public final class PeriodicMetricReader implements MetricReader {
       this.isTick = isTick;
     }
 
-    Signal(@Nullable CompletableResultCode flushResult, boolean poison) {
-      this(flushResult, poison, /* isTick= */ false);
+    static Signal tick() {
+      return TICK;
+    }
+
+    static Signal flush(CompletableResultCode flushResult) {
+      return new Signal(flushResult, /* poison= */ false, /* isTick= */ false);
+    }
+
+    static Signal poison() {
+      return POISON;
     }
   }
 }
