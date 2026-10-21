@@ -34,7 +34,7 @@ public class ExperimentalInstrumentationModel {
   /**
    * Configure general SemConv options that may apply to multiple languages and instrumentations.
    *
-   * <p>Instrumenation may merge general config options with the language specific configuration at
+   * <p>Instrumentation may merge general config options with the language specific configuration at
    * .instrumentation.<language>.
    *
    * <p>If omitted, default values as described in ExperimentalGeneralInstrumentation are used.

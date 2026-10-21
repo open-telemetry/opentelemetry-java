@@ -1,0 +1,96 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.common.impl;
+
+import java.util.ConcurrentModificationException;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+
+/**
+ * Configuration utilities.
+ *
+ * <p>This class is not intended for use by application developers. Its API is stable and will not
+ * be changed or removed in a backwards-incompatible manner.
+ *
+ * @since 1.67.0
+ */
+public final class ConfigUtil {
+
+  private ConfigUtil() {}
+
+  /**
+   * Returns a copy of system properties which is safe to iterate over.
+   *
+   * <p>In java 8 and android environments, iterating through system properties may trigger {@link
+   * ConcurrentModificationException}. This method ensures callers can iterate safely without risk
+   * of exception. See https://github.com/open-telemetry/opentelemetry-java/issues/6732 for details.
+   *
+   * @return a copy of system properties
+   */
+  public static Properties safeSystemProperties() {
+    return (Properties) System.getProperties().clone();
+  }
+
+  /**
+   * Return the system property or environment variable for the {@code key}.
+   *
+   * <p>Normalize the {@code key} using {@link #normalizePropertyKey(String)}. Match to system
+   * property keys also normalized with {@link #normalizePropertyKey(String)}. Further normalize the
+   * {@code key} using {@link #normalizeEnvironmentVariableKey(String)} and match to environment
+   * variable keys normalized the same way. System properties take priority over environment
+   * variables.
+   *
+   * <p>For example, {@code otel.experimental.sdk.jvm_stacktrace} matches the environment variable
+   * {@code OTEL_EXPERIMENTAL_SDK_JVM_STACKTRACE}.
+   *
+   * @param key the property key
+   * @param defaultValue the fallback value if neither system property nor environment variable is
+   *     set
+   * @return the system property if not null, or the environment variable if not null, or {@code
+   *     defaultValue}
+   */
+  public static String getString(String key, String defaultValue) {
+    String normalizedKey = normalizePropertyKey(key);
+
+    String systemProperty =
+        safeSystemProperties().entrySet().stream()
+            .filter(entry -> normalizedKey.equals(normalizePropertyKey(entry.getKey().toString())))
+            .map(entry -> entry.getValue().toString())
+            .findFirst()
+            .orElse(null);
+    if (systemProperty != null) {
+      return systemProperty;
+    }
+    String environmentVariableKey = normalizeEnvironmentVariableKey(normalizedKey);
+    return System.getenv().entrySet().stream()
+        .filter(
+            entry -> environmentVariableKey.equals(normalizeEnvironmentVariableKey(entry.getKey())))
+        .map(Map.Entry::getValue)
+        .findFirst()
+        .orElse(defaultValue);
+  }
+
+  /**
+   * Normalize an environment variable key by converting to lower case and replacing "_" with ".".
+   *
+   * @param key the environment variable key
+   * @return the normalized key
+   */
+  public static String normalizeEnvironmentVariableKey(String key) {
+    return key.toLowerCase(Locale.ROOT).replace("_", ".");
+  }
+
+  /**
+   * Normalize a property key by converting to lower case and replacing "-" with ".".
+   *
+   * @param key the property key
+   * @return the normalized key
+   */
+  public static String normalizePropertyKey(String key) {
+    return key.toLowerCase(Locale.ROOT).replace("-", ".");
+  }
+}

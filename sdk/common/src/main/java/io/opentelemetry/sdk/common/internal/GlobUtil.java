@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.common.internal;
 
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 /**
@@ -31,49 +30,13 @@ public final class GlobUtil {
    * </ul>
    */
   public static Predicate<String> createGlobPatternPredicate(String globPattern) {
-    // If globPattern contains '*' or '?', convert it to a regex and return corresponding
-    // predicate
-    Pattern pattern = null;
     for (int i = 0; i < globPattern.length(); i++) {
       char c = globPattern.charAt(i);
       if (c == '*' || c == '?') {
-        pattern = toRegexPattern(globPattern);
-        break;
+        return new GlobPatternPredicate(globPattern, globPattern.codePoints().toArray());
       }
     }
-    return new GlobPatternPredicate(globPattern, pattern);
-  }
-
-  /**
-   * Transform the {@code globPattern} to a regex by converting {@code *} to {@code .*}, {@code ?}
-   * to {@code .}, and escaping other regex special characters.
-   */
-  private static Pattern toRegexPattern(String globPattern) {
-    int tokenStart = -1;
-    StringBuilder patternBuilder = new StringBuilder();
-    for (int i = 0; i < globPattern.length(); i++) {
-      char c = globPattern.charAt(i);
-      if (c == '*' || c == '?') {
-        if (tokenStart != -1) {
-          patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart, i)));
-          tokenStart = -1;
-        }
-        if (c == '*') {
-          patternBuilder.append(".*");
-        } else {
-          // c == '?'
-          patternBuilder.append(".");
-        }
-      } else {
-        if (tokenStart == -1) {
-          tokenStart = i;
-        }
-      }
-    }
-    if (tokenStart != -1) {
-      patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart)));
-    }
-    return Pattern.compile(patternBuilder.toString());
+    return new GlobPatternPredicate(globPattern, null);
   }
 
   /**
@@ -82,9 +45,9 @@ public final class GlobUtil {
    */
   private static class GlobPatternPredicate implements Predicate<String> {
     private final String globPattern;
-    @Nullable private final Pattern pattern;
+    @Nullable private final int[] pattern;
 
-    private GlobPatternPredicate(String globPattern, @Nullable Pattern pattern) {
+    private GlobPatternPredicate(String globPattern, @Nullable int[] pattern) {
       this.globPattern = globPattern;
       this.pattern = pattern;
     }
@@ -96,7 +59,7 @@ public final class GlobUtil {
         return true;
       }
       if (pattern != null) {
-        return pattern.matcher(s).matches();
+        return matches(pattern, s);
       }
       // Exact match
       return globPattern.equals(s);
@@ -105,6 +68,59 @@ public final class GlobUtil {
     @Override
     public String toString() {
       return "GlobPatternPredicate{globPattern=" + globPattern + "}";
+    }
+
+    /**
+     * Retries only the most recent star, bounding matching time to O(pattern length * input length)
+     * with constant per-match space.
+     */
+    private static boolean matches(int[] pattern, String s) {
+      int patternIndex = 0;
+      int inputIndex = 0;
+      int starIndex = -1;
+      int starInputIndex = -1;
+      while (inputIndex < s.length()) {
+        if (patternIndex < pattern.length && pattern[patternIndex] == '*') {
+          // Try an empty match first, remembering this star as the next retry point.
+          starIndex = patternIndex++;
+          starInputIndex = inputIndex;
+          continue;
+        }
+        // Match whole code points so '?' consumes a supplementary character as one unit.
+        int codePoint = s.codePointAt(inputIndex);
+        if (patternIndex < pattern.length
+            && (pattern[patternIndex] == codePoint
+                || (pattern[patternIndex] == '?' && matchesWildcard(codePoint)))) {
+          patternIndex++;
+          inputIndex += Character.charCount(codePoint);
+          continue;
+        }
+        if (starIndex == -1) {
+          return false;
+        }
+        // On mismatch, extend the most recent star by one code point and retry its suffix.
+        int starCodePoint = s.codePointAt(starInputIndex);
+        if (!matchesWildcard(starCodePoint)) {
+          return false;
+        }
+        starInputIndex += Character.charCount(starCodePoint);
+        inputIndex = starInputIndex;
+        patternIndex = starIndex + 1;
+      }
+      // With the input exhausted, only stars can match the remaining pattern (as empty matches).
+      while (patternIndex < pattern.length && pattern[patternIndex] == '*') {
+        patternIndex++;
+      }
+      return patternIndex == pattern.length;
+    }
+
+    private static boolean matchesWildcard(int codePoint) {
+      // Preserve the line terminator exclusions of regex '.' without DOTALL.
+      return codePoint != '\n'
+          && codePoint != '\r'
+          && codePoint != 0x85
+          && codePoint != 0x2028
+          && codePoint != 0x2029;
     }
   }
 }

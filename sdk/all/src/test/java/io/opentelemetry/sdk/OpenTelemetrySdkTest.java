@@ -18,6 +18,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
@@ -159,14 +160,26 @@ class OpenTelemetrySdkTest {
 
   @Test
   void tracerBuilder() {
-    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                    .build())
+            .build();
     assertThat(openTelemetry.tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
 
   @Test
   void tracerBuilder_ViaProvider() {
-    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                    .build())
+            .build();
     assertThat(openTelemetry.getTracerProvider().tracerBuilder("instr"))
         .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
@@ -414,5 +427,29 @@ class OpenTelemetrySdkTest {
         .matches("OpenTelemetrySdk\\{.*, meterProvider=SdkMeterProvider\\{.*}.*}")
         .matches("OpenTelemetrySdk\\{.*, loggerProvider=SdkLoggerProvider\\{.*}.*}")
         .matches("OpenTelemetrySdk\\{.*, propagators=DefaultContextPropagators\\{.*}}");
+  }
+
+  @Test
+  void builderDefaults_tracerProviderHasNoProcessors_spansNotRecording() {
+    // Regression test for #8740: no processors must produce non-recording spans.
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+
+    Span span = openTelemetry.getTracer("test").spanBuilder("test-span").startSpan();
+    assertThat(span.isRecording()).isFalse();
+  }
+
+  @Test
+  void tracerProviderWithSpanProcessor_spansRecording() {
+    // Verify that configuring a SpanProcessor still produces recording spans.
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                    .build())
+            .build();
+
+    Span span = openTelemetry.getTracer("test").spanBuilder("test-span").startSpan();
+    assertThat(span.isRecording()).isTrue();
   }
 }

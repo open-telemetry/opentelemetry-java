@@ -6,6 +6,7 @@
 package io.opentelemetry.api.common;
 
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -28,41 +29,73 @@ public interface AttributeKey<T> {
 
   /** Returns a new AttributeKey for String valued attributes. */
   static AttributeKey<String> stringKey(String key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "stringKey", "key");
+      return InternalAttributeKeyImpl.create("", AttributeType.STRING);
+    }
     return InternalAttributeKeyImpl.create(key, AttributeType.STRING);
   }
 
   /** Returns a new AttributeKey for Boolean valued attributes. */
   static AttributeKey<Boolean> booleanKey(String key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "booleanKey", "key");
+      return InternalAttributeKeyImpl.create("", AttributeType.BOOLEAN);
+    }
     return InternalAttributeKeyImpl.create(key, AttributeType.BOOLEAN);
   }
 
   /** Returns a new AttributeKey for Long valued attributes. */
   static AttributeKey<Long> longKey(String key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "longKey", "key");
+      return InternalAttributeKeyImpl.create("", AttributeType.LONG);
+    }
     return InternalAttributeKeyImpl.create(key, AttributeType.LONG);
   }
 
   /** Returns a new AttributeKey for Double valued attributes. */
   static AttributeKey<Double> doubleKey(String key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "doubleKey", "key");
+      return InternalAttributeKeyImpl.create("", AttributeType.DOUBLE);
+    }
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE);
   }
 
   /** Returns a new AttributeKey for List&lt;String&gt; valued attributes. */
   static AttributeKey<List<String>> stringArrayKey(String key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "stringArrayKey", "key");
+      return InternalAttributeKeyImpl.create("", AttributeType.STRING_ARRAY);
+    }
     return InternalAttributeKeyImpl.create(key, AttributeType.STRING_ARRAY);
   }
 
   /** Returns a new AttributeKey for List&lt;Boolean&gt; valued attributes. */
   static AttributeKey<List<Boolean>> booleanArrayKey(String key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "booleanArrayKey", "key");
+      return InternalAttributeKeyImpl.create("", AttributeType.BOOLEAN_ARRAY);
+    }
     return InternalAttributeKeyImpl.create(key, AttributeType.BOOLEAN_ARRAY);
   }
 
   /** Returns a new AttributeKey for List&lt;Long&gt; valued attributes. */
   static AttributeKey<List<Long>> longArrayKey(String key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "longArrayKey", "key");
+      return InternalAttributeKeyImpl.create("", AttributeType.LONG_ARRAY);
+    }
     return InternalAttributeKeyImpl.create(key, AttributeType.LONG_ARRAY);
   }
 
   /** Returns a new AttributeKey for List&lt;Double&gt; valued attributes. */
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "doubleArrayKey", "key");
+      return InternalAttributeKeyImpl.create("", AttributeType.DOUBLE_ARRAY);
+    }
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
 
@@ -80,6 +113,10 @@ public interface AttributeKey<T> {
    * @since 1.59.0
    */
   static AttributeKey<Value<?>> valueKey(String key) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "valueKey", "key");
+      return InternalAttributeKeyImpl.create("", AttributeType.VALUE);
+    }
     return InternalAttributeKeyImpl.create(key, AttributeType.VALUE);
   }
 }

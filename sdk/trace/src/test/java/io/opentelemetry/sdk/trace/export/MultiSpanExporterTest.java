@@ -132,4 +132,23 @@ class MultiSpanExporterTest {
     Mockito.verify(spanExporter1).shutdown();
     Mockito.verify(spanExporter2).shutdown();
   }
+
+  @Test
+  @SuppressLogger(MultiSpanExporter.class)
+  void twoSpanExporter_FirstThrowsCheckedException() {
+    SpanExporter multiSpanExporter =
+        SpanExporter.composite(Arrays.asList(spanExporter1, spanExporter2));
+
+    Mockito.doAnswer(
+            invocation -> {
+              throw new Exception("No export for you.");
+            })
+        .when(spanExporter1)
+        .export(ArgumentMatchers.anyList());
+    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(CompletableResultCode.ofSuccess());
+
+    assertThat(multiSpanExporter.export(SPAN_LIST).isSuccess()).isFalse();
+    Mockito.verify(spanExporter1).export(same(SPAN_LIST));
+    Mockito.verify(spanExporter2).export(same(SPAN_LIST));
+  }
 }

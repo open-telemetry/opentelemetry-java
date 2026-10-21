@@ -76,6 +76,10 @@ public interface Baggage extends ImplicitContextKeyed {
 
   @Override
   default Context storeInContext(Context context) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Baggage.class, "storeInContext", "context");
+      return Context.root();
+    }
     return context.with(BaggageContextKey.KEY, this);
   }
 
@@ -118,6 +122,10 @@ public interface Baggage extends ImplicitContextKeyed {
    */
   @Nullable
   default BaggageEntry getEntry(String entryKey) {
+    if (entryKey == null) {
+      ApiUsageLogger.logNullParam(Baggage.class, "getEntry", "entryKey");
+      return null;
+    }
     BaggageEntry[] result = new BaggageEntry[] {null};
     forEach(
         (key, entry) -> {

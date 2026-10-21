@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
-import static io.opentelemetry.sdk.metrics.internal.view.NoopAttributesProcessor.NOOP;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -46,7 +45,7 @@ public final class ViewRegistry {
       RegisteredView.create(
           InstrumentSelector.builder().setName("*").build(),
           DEFAULT_VIEW,
-          NOOP,
+          AttributesFilters.ALLOW_ALL,
           MetricStorage.DEFAULT_MAX_CARDINALITY,
           SourceInfo.noSourceInfo());
   private static final Logger logger = Logger.getLogger(ViewRegistry.class.getName());
@@ -67,7 +66,7 @@ public final class ViewRegistry {
               View.builder()
                   .setAggregation(defaultAggregationSelector.getDefaultAggregation(instrumentType))
                   .build(),
-              AttributesProcessor.noop(),
+              AttributesFilters.ALLOW_ALL,
               cardinalityLimitSelector.getCardinalityLimit(instrumentType),
               SourceInfo.noSourceInfo()));
     }
@@ -195,7 +194,7 @@ public final class ViewRegistry {
     return RegisteredView.create(
         instrumentDefaultView.getInstrumentSelector(),
         instrumentDefaultView.getView(),
-        new AdviceAttributesProcessor(requireNonNull(advice.getAttributes())),
+        AttributesFilters.byAdvice(requireNonNull(advice.getAttributes())),
         instrumentDefaultView.getCardinalityLimit(),
         instrumentDefaultView.getViewSourceInfo());
   }

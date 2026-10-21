@@ -45,7 +45,7 @@ public class AutoconfigureDeclarativeConfigTest {
   @Test
   void declarativeConfigSdkInitializes(@TempDir Path tempDir) throws IOException {
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.2\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
@@ -98,7 +98,7 @@ public class AutoconfigureDeclarativeConfigTest {
         new ServiceResourceDetector().create(DeclarativeConfigProperties.empty());
     Resource resource =
         Resource.getDefault().toBuilder()
-            .putAll(detectedResource.getAttributes())
+            .putAll(detectedResource)
             .put(AttributeKey.stringKey("service.name"), "test-osgi-declarative")
             .build();
 

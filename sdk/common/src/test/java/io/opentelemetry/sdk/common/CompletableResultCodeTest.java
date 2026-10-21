@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -278,6 +279,7 @@ class CompletableResultCodeTest {
   }
 
   @Test
+  @SuppressLogger(CompletableResultCode.class)
   void completionActionExceptionDoesNotAbortLaterActions() {
     CompletableResultCode result = new CompletableResultCode();
     AtomicBoolean actionInvoked = new AtomicBoolean();
@@ -296,6 +298,7 @@ class CompletableResultCodeTest {
   }
 
   @Test
+  @SuppressLogger(CompletableResultCode.class)
   void completionActionExceptionDoesNotPreventOfAllCompletion() {
     CompletableResultCode source = new CompletableResultCode();
     CompletableResultCode other = new CompletableResultCode();
@@ -317,6 +320,7 @@ class CompletableResultCodeTest {
   }
 
   @Test
+  @SuppressLogger(CompletableResultCode.class)
   void completionActionExceptionPropagatesWhenAlreadyComplete() {
     CompletableResultCode result = new CompletableResultCode().succeed();
 

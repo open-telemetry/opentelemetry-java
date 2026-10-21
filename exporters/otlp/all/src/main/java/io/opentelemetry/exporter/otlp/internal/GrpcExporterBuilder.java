@@ -47,6 +47,7 @@ import javax.net.ssl.X509TrustManager;
 public class GrpcExporterBuilder {
 
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
+  public static final long DEFAULT_MAX_REQUEST_MESSAGE_SIZE = 64 * 1024L * 1024L;
 
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
@@ -68,6 +69,7 @@ public class GrpcExporterBuilder {
   private ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(GrpcExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
+  private long maxRequestMessageSize = DEFAULT_MAX_REQUEST_MESSAGE_SIZE;
   @Nullable private List<String> enabledProtocols;
 
   // Use Object type since gRPC may not be on the classpath.
@@ -171,6 +173,11 @@ public class GrpcExporterBuilder {
     return this;
   }
 
+  public GrpcExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSize) {
+    this.maxRequestMessageSize = maxRequestMessageSize;
+    return this;
+  }
+
   public GrpcExporterBuilder setEnabledProtocols(@Nullable List<String> enabledProtocols) {
     this.enabledProtocols = enabledProtocols;
     return this;
@@ -195,6 +202,7 @@ public class GrpcExporterBuilder {
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.grpcChannel = grpcChannel;
     copy.componentLoader = componentLoader;
+    copy.maxRequestMessageSize = maxRequestMessageSize;
     copy.enabledProtocols = enabledProtocols;
     return copy;
   }
@@ -248,7 +256,8 @@ public class GrpcExporterBuilder {
         internalTelemetryVersion,
         ComponentId.generateLazy(exporterType),
         meterProviderSupplier,
-        endpoint);
+        endpoint,
+        maxRequestMessageSize);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -283,6 +292,7 @@ public class GrpcExporterBuilder {
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
+    joiner.add("maxRequestMessageSize=" + maxRequestMessageSize);
     joiner.add("exporterType=" + exporterType.toString());
     joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way

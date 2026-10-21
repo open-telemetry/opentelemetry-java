@@ -11,7 +11,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -24,8 +23,6 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
@@ -712,86 +709,6 @@ class SdkMeterProviderTest {
                     .hasDescription("not_desc_2")
                     .hasUnit("unit")
                     .hasDoubleGaugeSatisfying(gauge -> {}));
-  }
-
-  @Test
-  void viewSdk_capturesBaggageFromContext() {
-    InstrumentSelector selector =
-        InstrumentSelector.builder().setType(InstrumentType.COUNTER).setName("test").build();
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    ViewBuilder viewBuilder = View.builder().setAggregation(Aggregation.sum());
-    SdkMeterProviderUtil.appendAllBaggageAttributes(viewBuilder);
-    SdkMeterProvider provider =
-        sdkMeterProviderBuilder
-            .registerMetricReader(reader)
-            .registerView(selector, viewBuilder.build())
-            .build();
-    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
-    Baggage baggage = Baggage.builder().put("baggage", "value").build();
-    Context context = Context.root().with(baggage);
-    LongCounter counter = meter.counterBuilder("test").build();
-
-    // Make sure whether or not we explicitly pass baggage, all values have it appended.
-    counter.add(1, Attributes.empty(), context);
-    // Also check implicit context
-    try (Scope ignored = context.makeCurrent()) {
-      counter.add(1, Attributes.empty());
-    }
-    // Now make sure all metrics have baggage appended.
-    // Implicitly we should have ONLY ONE metric data point that has baggage appended.
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("test")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.isCumulative()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point.hasAttributes(attributeEntry("baggage", "value")))));
-  }
-
-  @Test
-  void viewSdk_capturesBaggageFromContext_exemplarsAlwaysOff() {
-    // The record-path Context feeds the view's AttributesProcessor (baggage append here) in
-    // addition to the exemplar path. Disabling exemplars must not cause the parameterless
-    // record overload to substitute Context.root() when the view still needs the current
-    // context, otherwise the implicit-context measurement would land in a different series.
-    InstrumentSelector selector =
-        InstrumentSelector.builder().setType(InstrumentType.COUNTER).setName("test").build();
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    ViewBuilder viewBuilder = View.builder().setAggregation(Aggregation.sum());
-    SdkMeterProviderUtil.appendAllBaggageAttributes(viewBuilder);
-    SdkMeterProvider provider =
-        sdkMeterProviderBuilder
-            .setExemplarFilter(ExemplarFilter.alwaysOff())
-            .registerMetricReader(reader)
-            .registerView(selector, viewBuilder.build())
-            .build();
-    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
-    Baggage baggage = Baggage.builder().put("baggage", "value").build();
-    Context context = Context.root().with(baggage);
-    LongCounter counter = meter.counterBuilder("test").build();
-
-    counter.add(1, Attributes.empty(), context);
-    try (Scope ignored = context.makeCurrent()) {
-      counter.add(1, Attributes.empty());
-    }
-
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("test")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.isCumulative()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasAttributes(attributeEntry("baggage", "value"))
-                                            .hasValue(2))));
   }
 
   @Test

@@ -31,6 +31,8 @@ final class SpanExporterConfiguration {
     EXPORTER_ARTIFACT_ID_BY_NAME.put("jaeger", "opentelemetry-exporter-jaeger");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
+    EXPORTER_ARTIFACT_ID_BY_NAME.put(
+        "experimental-otlp/stdout", "opentelemetry-exporter-logging-otlp");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
   }
 

@@ -29,7 +29,7 @@ final class OpenTelemetryConfigurationFactory
       Logger.getLogger(OpenTelemetryConfigurationFactory.class.getName());
   private static final Pattern SUPPORTED_FILE_FORMATS =
       Pattern.compile("^(0.4)|(1.\\d+(-rc.\\d+)?)$");
-  private static final String EXPECTED_FILE_FORMAT = "1.1";
+  private static final String EXPECTED_FILE_FORMAT = "1.2";
 
   private static final OpenTelemetryConfigurationFactory INSTANCE =
       new OpenTelemetryConfigurationFactory();

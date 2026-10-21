@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
@@ -25,6 +26,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -140,7 +143,10 @@ class SdkDoubleGaugeTest {
     DoubleGauge doubleGauge =
         sdkMeter.gaugeBuilder("testGauge").setDescription("description").setUnit("K").build();
 
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop()))
+            .build();
     Tracer tracer = tracerProvider.get("foo");
 
     Span span = tracer.spanBuilder("span").startSpan();

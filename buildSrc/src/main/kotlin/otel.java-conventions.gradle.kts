@@ -37,7 +37,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(21))
+    languageVersion.set(JavaLanguageVersion.of(25))
   }
 
   withJavadocJar()
@@ -46,7 +46,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "14.1.0"
+  toolVersion = "14.3.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -298,8 +298,6 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   compileOnly("com.google.code.findbugs:jsr305")
 
-  annotationProcessor("com.google.guava:guava-beta-checker")
-
   // Workaround for @javax.annotation.Generated
   // see: https://github.com/grpc/grpc-java/issues/3633
   compileOnly("javax.annotation:javax.annotation-api")
@@ -343,6 +341,10 @@ testing {
           systemProperty("java.util.logging.config.class", "io.opentelemetry.internal.testing.slf4j.JulBridgeInitializer")
           systemProperty("org.slf4j.simpleLogger.log.io.micrometer.core.instrument.MeterRegistry", "error")
           systemProperty("org.slf4j.simpleLogger.log.tc", "error")
+          // Silence ApiUsageLogger output in tests. Includes the one-shot WARNING that fires on
+          // first misuse plus the per-event FINEST logs. Tests that intentionally exercise API
+          // misuse can re-enable this logger locally with @SuppressLogger or a Handler override.
+          systemProperty("org.slf4j.simpleLogger.log.io.opentelemetry.usage", "off")
 
           // Starting in java 21, dynamically attaching agents triggers warnings. Mockito depends on
           // agents to redefine classes. Hence, on java 21+ we get warnings of the form:

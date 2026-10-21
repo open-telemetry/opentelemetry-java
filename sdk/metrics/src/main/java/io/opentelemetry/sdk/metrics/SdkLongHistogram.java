@@ -29,7 +29,7 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
 
   SdkLongHistogram(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor, sdkMeter, storage);
+    super(descriptor, sdkMeter);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }

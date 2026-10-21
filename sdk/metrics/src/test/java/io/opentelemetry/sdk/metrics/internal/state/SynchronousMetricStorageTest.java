@@ -38,7 +38,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesFilters;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.DoubleSumAssert;
@@ -77,7 +77,6 @@ public class SynchronousMetricStorageTest {
   private RegisteredReader cumulativeReader;
   private final TestClock testClock = TestClock.create();
   private Aggregator<LongPointData> aggregator;
-  private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
 
   private void initialize(MemoryMode memoryMode) {
     deltaReader =
@@ -109,7 +108,7 @@ public class SynchronousMetricStorageTest {
             cumulativeReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -125,19 +124,16 @@ public class SynchronousMetricStorageTest {
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
-  void attributesProcessor_applied(MemoryMode memoryMode) {
+  void attributeFilter_applied(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    Attributes attributes = Attributes.builder().put("K", "V").build();
-    AttributesProcessor attributesProcessor =
-        AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
-    AttributesProcessor spyAttributesProcessor = spy(attributesProcessor);
+    Attributes attributes = Attributes.builder().put("keep", "V").put("drop", "X").build();
     SynchronousMetricStorage storage =
         DefaultSynchronousMetricStorage.create(
             cumulativeReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            spyAttributesProcessor,
+            AttributesFilters.byKeyName("keep"::equals),
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -146,10 +142,7 @@ public class SynchronousMetricStorageTest {
     assertThat(md)
         .hasDoubleSumSatisfying(
             sum ->
-                sum.hasPointsSatisfying(
-                    point ->
-                        point.hasAttributes(
-                            attributeEntry("K", "V"), attributeEntry("modifiedK", "modifiedV"))));
+                sum.hasPointsSatisfying(point -> point.hasAttributes(attributeEntry("keep", "V"))));
   }
 
   @ParameterizedTest
@@ -162,7 +155,7 @@ public class SynchronousMetricStorageTest {
             cumulativeReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -222,7 +215,7 @@ public class SynchronousMetricStorageTest {
             cumulativeReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -278,7 +271,7 @@ public class SynchronousMetricStorageTest {
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -337,7 +330,7 @@ public class SynchronousMetricStorageTest {
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -445,7 +438,7 @@ public class SynchronousMetricStorageTest {
             cumulativeReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -514,7 +507,7 @@ public class SynchronousMetricStorageTest {
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -624,7 +617,7 @@ public class SynchronousMetricStorageTest {
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -713,7 +706,7 @@ public class SynchronousMetricStorageTest {
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -859,7 +852,7 @@ public class SynchronousMetricStorageTest {
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -879,7 +872,7 @@ public class SynchronousMetricStorageTest {
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -900,7 +893,7 @@ public class SynchronousMetricStorageTest {
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);
@@ -922,7 +915,7 @@ public class SynchronousMetricStorageTest {
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
-            attributesProcessor,
+            AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
             /* enabled= */ true);

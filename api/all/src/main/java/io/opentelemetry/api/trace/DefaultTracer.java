@@ -30,6 +30,9 @@ final class DefaultTracer implements Tracer {
 
   @Override
   public SpanBuilder spanBuilder(String spanName) {
+    if (spanName == null) {
+      ApiUsageLogger.logNullParam(Tracer.class, "spanBuilder", "spanName");
+    }
     return NoopSpanBuilder.create();
   }
 

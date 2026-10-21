@@ -31,7 +31,7 @@ import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesFilters;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
@@ -69,7 +69,7 @@ class AsynchronousMetricStorageTest {
       RegisteredView.create(
           selector,
           View.builder().build(),
-          AttributesProcessor.noop(),
+          AttributesFilters.ALLOW_ALL,
           CARDINALITY_LIMIT,
           SourceInfo.noSourceInfo());
 
@@ -186,8 +186,8 @@ class AsynchronousMetricStorageTest {
             registeredReader,
             RegisteredView.create(
                 selector,
-                View.builder().build(),
-                AttributesProcessor.filterByKeyName(key -> key.equals("key1")),
+                View.builder().setAttributeFilter(key -> key.equals("key1")).build(),
+                AttributesFilters.byKeyName(key -> key.equals("key1")),
                 CARDINALITY_LIMIT,
                 SourceInfo.noSourceInfo()),
             testClock,
