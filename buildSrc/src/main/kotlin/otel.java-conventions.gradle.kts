@@ -126,6 +126,13 @@ tasks {
       showStandardStreams = true
     }
     maxHeapSize = "1500m"
+
+    doFirst {
+      // Test dependencies (mockito and assertj) still use Unsafe memory-access methods deprecated by JEP 498.
+      if (javaLauncher.get().metadata.languageVersion.asInt() >= 24) {
+        jvmArgs("--sun-misc-unsafe-memory-access=allow")
+      }
+    }
   }
 
   withType<Javadoc>().configureEach {
