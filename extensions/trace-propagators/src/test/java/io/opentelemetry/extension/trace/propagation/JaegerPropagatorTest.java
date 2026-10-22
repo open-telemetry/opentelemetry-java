@@ -349,6 +349,21 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void extract_SampledDebugFirehoseContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    JaegerSpanContext context =
+        new JaegerSpanContext(
+            TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, (byte) 0x0b);
+    carrier.put(PROPAGATION_HEADER, TextMapCodec.contextAsString(context));
+
+    assertThat(carrier.get(PROPAGATION_HEADER)).endsWith(":b");
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.root(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
+  }
+
+  @Test
   void extract_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     JaegerSpanContext context =
