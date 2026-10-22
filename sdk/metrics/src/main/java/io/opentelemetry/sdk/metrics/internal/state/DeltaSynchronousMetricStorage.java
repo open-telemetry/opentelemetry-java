@@ -54,8 +54,16 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
-      boolean enabled) {
-    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+      boolean enabled,
+      boolean contextScopedAttributesEnabled) {
+    super(
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesEnabled);
     this.instrumentCreationEpochNanos = clock.now();
     this.registeredReader = registeredReader;
     this.memoryMode = registeredReader.getReader().getMemoryMode();

@@ -365,6 +365,27 @@ class AttributesMapTest {
     assertThat(attributes).isNotEqualTo(map);
   }
 
+  @Test
+  void copyOf_preservesStateAndDroppedCounts() {
+    AttributesMap original = AttributesMap.create(2, 5);
+    original.put(stringKey("k1"), "val1");
+    original.put(stringKey("k2"), "val2");
+    original.put(stringKey("k3"), "val3"); // dropped, totalAddedValues = 3, size = 2
+
+    AttributesMap copy = AttributesMap.copyOf(original);
+
+    assertThat(copy.size()).isEqualTo(2);
+    assertThat(copy.getTotalAddedValues()).isEqualTo(3);
+    assertThat(copy.get(stringKey("k1"))).isEqualTo("val1");
+    assertThat(copy.get(stringKey("k2"))).isEqualTo("val2");
+    assertThat(copy.get(stringKey("k3"))).isNull();
+
+    // Mutations on copy do not affect original
+    copy.put(stringKey("k4"), "val4"); // dropped on copy
+    assertThat(copy.getTotalAddedValues()).isEqualTo(4);
+    assertThat(original.getTotalAddedValues()).isEqualTo(3);
+  }
+
   private static List<String> throwingList() {
     return new AbstractList<String>() {
       @Override

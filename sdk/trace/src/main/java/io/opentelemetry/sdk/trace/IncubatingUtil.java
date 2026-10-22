@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.common.ContextAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 
@@ -31,5 +34,9 @@ final class IncubatingUtil {
       SpanLimits spanLimits) {
     return new ExtendedSdkSpanBuilder(
         spanName, instrumentationScopeInfo, tracerSharedState, spanLimits);
+  }
+
+  static Attributes getContextAttributes(Context context) {
+    return ContextAttributes.get(context);
   }
 }

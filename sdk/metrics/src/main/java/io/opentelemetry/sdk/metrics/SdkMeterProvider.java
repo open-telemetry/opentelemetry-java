@@ -73,7 +73,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       Clock clock,
       SdkResourceProvider resourceProvider,
       ExemplarFilterInternal exemplarFilter,
-      ScopeConfigurator<MeterConfig> meterConfigurator) {
+      ScopeConfigurator<MeterConfig> meterConfigurator,
+      boolean contextScopedAttributesEnabled) {
     this.resourceProvider = resourceProvider;
     this.registeredViews = registeredViews;
     this.registeredReaders =
@@ -85,7 +86,9 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
                         ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
             .collect(toList());
     this.metricProducers = metricProducers;
-    this.sharedState = MeterProviderSharedState.create(clock, resourceProvider, exemplarFilter);
+    this.sharedState =
+        MeterProviderSharedState.create(
+            clock, resourceProvider, exemplarFilter, contextScopedAttributesEnabled);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->

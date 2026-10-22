@@ -5,11 +5,16 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
+import static io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil.setContextScopedAttributesEnabled;
 import static io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil.setLoggerConfigurator;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.common.ContextAttributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel;
@@ -29,13 +34,16 @@ import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -67,6 +75,34 @@ class LoggerProviderFactoryTest {
     assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
   }
 
+  @Test
+  void create_contextScopedAttributesEnabled() {
+    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
+    cleanup.addCloseable(exporter);
+    SdkLoggerProvider provider =
+        LoggerProviderFactory.getInstance()
+            .create(
+                LoggerProviderAndAttributeLimits.create(
+                    new AttributeLimitsModel(),
+                    LoggerProviderModelAccessor.setContextScopedAttributes(
+                        new LoggerProviderModel(), true)),
+                context)
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
+            .build();
+    cleanup.addCloseable(provider);
+
+    Context contextWithAttrs =
+        ContextAttributes.add(Context.root(), Attributes.of(AttributeKey.stringKey("foo"), "bar"));
+    provider.get("test").logRecordBuilder().setContext(contextWithAttrs).setBody("test").emit();
+
+    assertThat(exporter.getFinishedLogRecordItems())
+        .singleElement()
+        .satisfies(
+            log ->
+                assertThat(log.getAttributes())
+                    .containsEntry(AttributeKey.stringKey("foo"), "bar"));
+  }
+
   private static Stream<Arguments> createArguments() {
     return Stream.of(
         Arguments.argumentSet(
@@ -82,43 +118,48 @@ class LoggerProviderFactoryTest {
             "full configuration",
             LoggerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
-                LoggerProviderModelAccessor.setLoggerConfigurator(
-                    new LoggerProviderModel()
-                        .setLimits(
-                            new LogRecordLimitsModel()
-                                .setAttributeCountLimit(1)
-                                .setAttributeValueLengthLimit(2))
-                        .setProcessors(
-                            Collections.singletonList(
-                                new LogRecordProcessorModel()
-                                    .setBatch(
-                                        new BatchLogRecordProcessorModel()
-                                            .setExporter(
-                                                new LogRecordExporterModel()
-                                                    .setOtlpHttp(new OtlpHttpExporterModel()))))),
-                    new ExperimentalLoggerConfiguratorModel()
-                        .setDefaultConfig(new ExperimentalLoggerConfigModel().setEnabled(false))
-                        .setLoggers(
-                            Collections.singletonList(
-                                new ExperimentalLoggerMatcherAndConfigModel()
-                                    .setName("foo")
-                                    .setConfig(
-                                        new ExperimentalLoggerConfigModel()
-                                            .setEnabled(true)
-                                            .setTraceBased(true)
-                                            .setMinimumSeverity(SeverityNumberModel.INFO)))))),
-            setLoggerConfigurator(
-                    SdkLoggerProvider.builder(),
-                    ScopeConfigurator.<LoggerConfig>builder()
-                        .setDefault(LoggerConfig.disabled())
-                        .addCondition(
-                            ScopeConfiguratorBuilder.nameMatchesGlob("foo"),
-                            LoggerConfig.builder()
-                                .setEnabled(true)
-                                .setTraceBased(true)
-                                .setMinimumSeverity(Severity.INFO)
-                                .build())
-                        .build())
+                LoggerProviderModelAccessor.setContextScopedAttributes(
+                    LoggerProviderModelAccessor.setLoggerConfigurator(
+                        new LoggerProviderModel()
+                            .setLimits(
+                                new LogRecordLimitsModel()
+                                    .setAttributeCountLimit(1)
+                                    .setAttributeValueLengthLimit(2))
+                            .setProcessors(
+                                Collections.singletonList(
+                                    new LogRecordProcessorModel()
+                                        .setBatch(
+                                            new BatchLogRecordProcessorModel()
+                                                .setExporter(
+                                                    new LogRecordExporterModel()
+                                                        .setOtlpHttp(
+                                                            new OtlpHttpExporterModel()))))),
+                        new ExperimentalLoggerConfiguratorModel()
+                            .setDefaultConfig(new ExperimentalLoggerConfigModel().setEnabled(false))
+                            .setLoggers(
+                                Collections.singletonList(
+                                    new ExperimentalLoggerMatcherAndConfigModel()
+                                        .setName("foo")
+                                        .setConfig(
+                                            new ExperimentalLoggerConfigModel()
+                                                .setEnabled(true)
+                                                .setTraceBased(true)
+                                                .setMinimumSeverity(SeverityNumberModel.INFO))))),
+                    true)),
+            setContextScopedAttributesEnabled(
+                    setLoggerConfigurator(
+                        SdkLoggerProvider.builder(),
+                        ScopeConfigurator.<LoggerConfig>builder()
+                            .setDefault(LoggerConfig.disabled())
+                            .addCondition(
+                                ScopeConfiguratorBuilder.nameMatchesGlob("foo"),
+                                LoggerConfig.builder()
+                                    .setEnabled(true)
+                                    .setTraceBased(true)
+                                    .setMinimumSeverity(Severity.INFO)
+                                    .build())
+                            .build()),
+                    true)
                 .setLogLimits(
                     () ->
                         LogLimits.builder()

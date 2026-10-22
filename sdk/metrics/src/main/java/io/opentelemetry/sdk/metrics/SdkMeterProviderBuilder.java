@@ -53,6 +53,7 @@ public final class SdkMeterProviderBuilder {
   private ExemplarFilterInternal exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
   private ScopeConfiguratorBuilder<MeterConfig> meterConfiguratorBuilder =
       MeterConfig.configuratorBuilder();
+  private boolean contextScopedAttributesEnabled;
 
   SdkMeterProviderBuilder() {}
 
@@ -240,6 +241,19 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
+  /**
+   * Sets whether context-scoped attributes are automatically inherited by synchronous metric
+   * measurements.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#setContextScopedAttributesEnabled(SdkMeterProviderBuilder, boolean)}.
+   */
+  SdkMeterProviderBuilder setContextScopedAttributesEnabled(
+      boolean contextScopedAttributesEnabled) {
+    this.contextScopedAttributesEnabled = contextScopedAttributesEnabled;
+    return this;
+  }
+
   /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
     SdkResourceProvider effectiveSdkResourceProvider =
@@ -251,6 +265,7 @@ public final class SdkMeterProviderBuilder {
         clock,
         effectiveSdkResourceProvider,
         exemplarFilter,
-        meterConfiguratorBuilder.build());
+        meterConfiguratorBuilder.build(),
+        contextScopedAttributesEnabled);
   }
 }
