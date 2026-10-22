@@ -10,6 +10,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.common.impl.ApiUsageLogger;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.io.File;
@@ -43,7 +44,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
@@ -111,24 +119,81 @@ class NullGuardsTest {
    * fallbacks in runtime-defaulted artifacts.
    */
   private static final Map<String, GuardStyle> METHOD_STYLE_OVERRIDES =
-      Map.of(
-          overrideKey(GlobalOpenTelemetry.class, "set", void.class, OpenTelemetry.class),
-              GuardStyle.FAIL_FAST,
-          overrideKey(GlobalOpenTelemetry.class, "set", void.class, Supplier.class),
-              GuardStyle.FAIL_FAST,
-          overrideKey(
+      Map.ofEntries(
+          Map.entry(
+              overrideKey(GlobalOpenTelemetry.class, "set", void.class, OpenTelemetry.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(GlobalOpenTelemetry.class, "set", void.class, Supplier.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(
                   OpenTelemetry.class,
                   "propagating",
                   OpenTelemetry.class,
                   ContextPropagators.class),
-              GuardStyle.FAIL_FAST,
+              GuardStyle.FAIL_FAST),
+          // Context wrappers are setup-time adapters. Fail fast rather than defer an NPE until use
+          // or substitute a noop that could discard application work or return an invalid result.
+          Map.entry(
+              overrideKey(Context.class, "taskWrapping", Executor.class, Executor.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(
+                  Context.class, "taskWrapping", ExecutorService.class, ExecutorService.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(
+                  Context.class,
+                  "taskWrapping",
+                  ScheduledExecutorService.class,
+                  ScheduledExecutorService.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrap", Executor.class, Executor.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrap", ExecutorService.class, ExecutorService.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(
+                  Context.class,
+                  "wrap",
+                  ScheduledExecutorService.class,
+                  ScheduledExecutorService.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrap", Runnable.class, Runnable.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrap", Callable.class, Callable.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapFunction", Function.class, Function.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapFunction", BiFunction.class, BiFunction.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapConsumer", Consumer.class, Consumer.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapConsumer", BiConsumer.class, BiConsumer.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapSupplier", Supplier.class, Supplier.class),
+              GuardStyle.FAIL_FAST),
           // Value.empty() cannot preserve these generic return types. We may reevaluate in future.
-          overrideKey(Value.class, "of", Value.class, String.class), GuardStyle.FAIL_FAST,
-          overrideKey(Value.class, "of", Value.class, byte[].class), GuardStyle.FAIL_FAST,
-          overrideKey(Value.class, "of", Value.class, Value[].class), GuardStyle.FAIL_FAST,
-          overrideKey(Value.class, "of", Value.class, List.class), GuardStyle.FAIL_FAST,
-          overrideKey(Value.class, "of", Value.class, KeyValue[].class), GuardStyle.FAIL_FAST,
-          overrideKey(Value.class, "of", Value.class, Map.class), GuardStyle.FAIL_FAST);
+          Map.entry(
+              overrideKey(Value.class, "of", Value.class, String.class), GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Value.class, "of", Value.class, byte[].class), GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Value.class, "of", Value.class, Value[].class), GuardStyle.FAIL_FAST),
+          Map.entry(overrideKey(Value.class, "of", Value.class, List.class), GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Value.class, "of", Value.class, KeyValue[].class), GuardStyle.FAIL_FAST),
+          Map.entry(overrideKey(Value.class, "of", Value.class, Map.class), GuardStyle.FAIL_FAST));
 
   private static String overrideKey(
       Class<?> owner, String name, Class<?> returnType, Class<?>... paramTypes) {
