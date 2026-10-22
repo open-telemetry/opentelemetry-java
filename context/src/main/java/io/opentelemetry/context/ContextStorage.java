@@ -33,31 +33,31 @@ import javax.annotation.Nullable;
  * before {@link Context} is attached:
  *
  * <pre>{@code
- * > public class MyStorage implements ContextStorageProvider {
- * >
- * >   @Override
- * >   public ContextStorage get() {
- * >     ContextStorage threadLocalStorage = ContextStorage.defaultStorage();
- * >     return new RequestContextStorage() {
- * >       @Override
- * >       public Scope T attach(Context toAttach) {
- * >         Context current = current();
- * >         setMdc(toAttach);
- * >         Scope scope = threadLocalStorage.attach(toAttach);
- * >         return () -> {
- * >           clearMdc();
- * >           setMdc(current);
- * >           scope.close();
- * >         }
- * >       }
- * >
- * >       @Override
- * >       public Context current() {
- * >         return threadLocalStorage.current();
- * >       }
- * >     }
- * >   }
- * > }
+ * public class MyStorage implements ContextStorageProvider {
+ *
+ *   @Override
+ *   public ContextStorage get() {
+ *     ContextStorage threadLocalStorage = ContextStorage.defaultStorage();
+ *     return new ContextStorage() {
+ *       @Override
+ *       public Scope attach(Context toAttach) {
+ *         Context current = current();
+ *         setMdc(toAttach);
+ *         Scope scope = threadLocalStorage.attach(toAttach);
+ *         return () -> {
+ *           clearMdc();
+ *           setMdc(current);
+ *           scope.close();
+ *         };
+ *       }
+ *
+ *       @Override
+ *       public Context current() {
+ *         return threadLocalStorage.current();
+ *       }
+ *     };
+ *   }
+ * }
  * }</pre>
  */
 public interface ContextStorage {

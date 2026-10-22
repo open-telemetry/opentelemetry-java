@@ -1069,6 +1069,24 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void overrideHostMixedCase() {
+    List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri().toString())
+            .addHeader("Host", "opentelemetry")
+            .build()) {
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    }
+    List<U> expectedResourceTelemetry = toProto(telemetry);
+    assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+
+    assertThat(httpRequests)
+        .singleElement()
+        .satisfies(req -> assertThat(req.authority()).isEqualTo("opentelemetry"));
+  }
+
+  @Test
   void executorService() {
     ExecutorServiceSpy executorService =
         new ExecutorServiceSpy(Executors.newSingleThreadExecutor());

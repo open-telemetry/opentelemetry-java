@@ -325,6 +325,51 @@ class JdkHttpSenderTest {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  void sendInternal_unsupportedContentEncoding_closesBody() throws Exception {
+    AtomicBoolean closed = new AtomicBoolean();
+    java.net.http.HttpResponse<InputStream> mockJdkResponse =
+        mock(java.net.http.HttpResponse.class);
+    when(mockJdkResponse.statusCode()).thenReturn(200);
+    when(mockJdkResponse.body())
+        .thenReturn(
+            new ByteArrayInputStream(new byte[0]) {
+              @Override
+              public void close() throws IOException {
+                closed.set(true);
+                super.close();
+              }
+            });
+    when(mockJdkResponse.headers())
+        .thenReturn(
+            HttpHeaders.of(
+                Collections.singletonMap("Content-Encoding", Collections.singletonList("br")),
+                (a, b) -> true));
+    doReturn(mockJdkResponse).when(mockHttpClient).send(any(), any());
+
+    JdkHttpSender testSender =
+        new JdkHttpSender(
+            mockHttpClient,
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            Long.MAX_VALUE);
+
+    try {
+      assertThatThrownBy(() -> testSender.sendInternal(new NoOpRequestBodyWriter()))
+          .isInstanceOf(IOException.class)
+          .hasMessage("Unsupported Content-Encoding: br");
+      assertThat(closed.get()).isTrue();
+    } finally {
+      testSender.shutdown();
+    }
+  }
+
   @Test
   void send_ioException_callsOnError() throws Exception {
     doThrow(new IOException("send failed")).when(mockHttpClient).send(any(), any());

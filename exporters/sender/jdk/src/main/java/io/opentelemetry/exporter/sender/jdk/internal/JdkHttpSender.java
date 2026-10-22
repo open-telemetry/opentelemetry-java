@@ -382,8 +382,10 @@ public final class JdkHttpSender implements HttpSender {
     if (contentEncoding != null
         && !"gzip".equalsIgnoreCase(contentEncoding)
         && !"identity".equalsIgnoreCase(contentEncoding)) {
-      throw new UnsupportedContentEncodingException(
-          "Unsupported Content-Encoding: " + contentEncoding);
+      try (InputStream ignored = response.body()) {
+        throw new UnsupportedContentEncodingException(
+            "Unsupported Content-Encoding: " + contentEncoding);
+      }
     }
     boolean decompress = "gzip".equalsIgnoreCase(contentEncoding);
 

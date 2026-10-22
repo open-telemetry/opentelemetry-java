@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.io.Closeable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -54,6 +55,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private final List<RegisteredReader> registeredReaders;
   private final List<MetricProducer> metricProducers;
   private final MeterProviderSharedState sharedState;
+  private final SdkResourceProvider resourceProvider;
   private final ComponentRegistry<SdkMeter> registry;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
@@ -69,9 +71,10 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       IdentityHashMap<MetricReader, CardinalityLimitSelector> metricReaders,
       List<MetricProducer> metricProducers,
       Clock clock,
-      Resource resource,
+      SdkResourceProvider resourceProvider,
       ExemplarFilterInternal exemplarFilter,
       ScopeConfigurator<MeterConfig> meterConfigurator) {
+    this.resourceProvider = resourceProvider;
     this.registeredViews = registeredViews;
     this.registeredReaders =
         metricReaders.entrySet().stream()
@@ -82,7 +85,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
                         ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
             .collect(toList());
     this.metricProducers = metricProducers;
-    this.sharedState = MeterProviderSharedState.create(clock, resource, exemplarFilter);
+    this.sharedState = MeterProviderSharedState.create(clock, resourceProvider, exemplarFilter);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->
@@ -106,6 +109,17 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private MeterConfig getMeterConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
     MeterConfig meterConfig = meterConfigurator.apply(instrumentationScopeInfo);
     return meterConfig == null ? MeterConfig.defaultConfig() : meterConfig;
+  }
+
+  /**
+   * Returns the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to
+   * metrics.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#getSdkResourceProvider(SdkMeterProvider)}.
+   */
+  SdkResourceProvider getSdkResourceProvider() {
+    return resourceProvider;
   }
 
   void setMeterConfigurator(ScopeConfigurator<MeterConfig> meterConfigurator) {

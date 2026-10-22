@@ -9,7 +9,6 @@ rootProject.extra["versions"] = dependencyVersions
 
 
 val autoValueVersion = "1.11.1"
-val asmVersion = "9.10.1"
 val errorProneVersion = "2.50.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
@@ -33,7 +32,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.protobuf:protobuf-bom:4.36.2",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.18.2", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.84.1",
+  "io.grpc:grpc-bom:1.84.3",
   "io.netty:netty-bom:4.2.19.Final",
   "org.assertj:assertj-bom:3.27.7",
   "org.osgi:org.osgi.test.bom:1.3.0",
@@ -65,8 +64,6 @@ val DEPENDENCIES = listOf(
   "org.openjdk.jmh:jmh-core:${jmhVersion}",
   "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
   "org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}",
-  "org.ow2.asm:asm:${asmVersion}",
-  "org.ow2.asm:asm-tree:${asmVersion}",
   "org.mockito:mockito-core:${mockitoVersion}",
   "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
   "org.slf4j:slf4j-simple:${slf4jVersion}",
@@ -77,7 +74,6 @@ val DEPENDENCIES = listOf(
   "com.github.stefanbirkner:system-rules:1.19.0",
   "com.google.api.grpc:proto-google-common-protos:2.78.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp:$okhttpVersion",
   "com.tngtech.archunit:archunit-junit5:1.5.1",
@@ -88,7 +84,7 @@ val DEPENDENCIES = listOf(
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.instrumentation:opentelemetry-resources:2.28.1-alpha",
-  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.60.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.61.0-alpha",
   "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.44.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.11.1-alpha",
   "io.opentracing:opentracing-api:0.33.0",

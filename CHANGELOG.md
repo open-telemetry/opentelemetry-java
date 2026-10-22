@@ -10,7 +10,7 @@
   ([#8531](https://github.com/open-telemetry/opentelemetry-java/pull/8531))
 * Add null guards and API usage logging for tracing, baggage, attributes, logging, and metrics
   ([#8803](https://github.com/open-telemetry/opentelemetry-java/pull/8803), [#8863](https://github.com/open-telemetry/opentelemetry-java/pull/8863), [#8864](https://github.com/open-telemetry/opentelemetry-java/pull/8864))
-* Bound allocations and avoid regex backtracking when parsing W3C `tracestate`
+* Fix [GHSA-ccrj-gw8r-854m](https://github.com/open-telemetry/opentelemetry-java/security/advisories/GHSA-ccrj-gw8r-854m): Bound allocations and avoid regex backtracking when parsing W3C `tracestate`
   ([#8817](https://github.com/open-telemetry/opentelemetry-java/pull/8817), [#8914](https://github.com/open-telemetry/opentelemetry-java/pull/8914))
 
 #### Incubating

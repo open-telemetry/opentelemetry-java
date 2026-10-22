@@ -118,7 +118,7 @@ fun registerOsgiSuite(
         |-tester: biz.aQute.tester.junit-platform
         |-runfw: org.apache.felix.framework
         |-runee: $runee
-        |-runvm: -Djava.util.logging.config.file="${loggingConfig.absolutePath}"
+        |-runvm: --sun-misc-unsafe-memory-access=allow, -Djava.util.logging.config.file="${loggingConfig.absolutePath}"
         |
         |-runrequires: \
         |  bnd.identity;id='$bsn',\

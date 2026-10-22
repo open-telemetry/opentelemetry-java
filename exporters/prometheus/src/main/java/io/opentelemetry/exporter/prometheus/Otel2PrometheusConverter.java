@@ -540,9 +540,9 @@ final class Otel2PrometheusConverter {
 
     Map<String, String> labelNameToValue = buildAttributeLabels(attributes);
 
+    // Additional attributes (exemplar trace_id and span_id) take precedence over attributes.
     for (int i = 0; i < additionalAttributes.length; i += 2) {
-      labelNameToValue.putIfAbsent(
-          requireNonNull(additionalAttributes[i]), additionalAttributes[i + 1]);
+      labelNameToValue.put(requireNonNull(additionalAttributes[i]), additionalAttributes[i + 1]);
     }
 
     if (scope != null && otelScopeLabelsEnabled) {

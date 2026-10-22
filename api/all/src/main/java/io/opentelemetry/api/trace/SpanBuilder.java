@@ -10,6 +10,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -148,8 +149,9 @@ public interface SpanBuilder {
    * operations, where a single batch handler processes multiple requests from different traces or
    * the same trace.
    *
-   * <p>Implementations may ignore calls with an {@linkplain SpanContext#isValid() invalid span
-   * context}.
+   * <p>Implementations should record links with an {@linkplain SpanContext#isValid() invalid span
+   * context} if its {@link TraceState} is nonempty. Implementations may ignore calls with an
+   * invalid span context and an empty {@link TraceState}.
    *
    * @param spanContext the context of the linked {@code Span}.
    * @return this.
@@ -163,8 +165,9 @@ public interface SpanBuilder {
    * operations, where a single batch handler processes multiple requests from different traces or
    * the same trace.
    *
-   * <p>Implementations may ignore calls with an {@linkplain SpanContext#isValid() invalid span
-   * context}.
+   * <p>Implementations should record links with an {@linkplain SpanContext#isValid() invalid span
+   * context} if the attributes or its {@link TraceState} are nonempty. Implementations may ignore
+   * calls with an invalid span context when both are empty.
    *
    * @param spanContext the context of the linked {@code Span}.
    * @param attributes the attributes of the {@code Link}.
@@ -248,6 +251,10 @@ public interface SpanBuilder {
    * @since 1.45.0
    */
   default SpanBuilder setAttribute(AttributeKey<Long> key, int value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributeKey.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(key, (long) value);
   }
 
@@ -261,7 +268,8 @@ public interface SpanBuilder {
    */
   @SuppressWarnings("unchecked")
   default SpanBuilder setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "setAllAttributes", "attributes");
       return this;
     }
     attributes.forEach(
@@ -307,6 +315,7 @@ public interface SpanBuilder {
    */
   default SpanBuilder setStartTimestamp(Instant startTimestamp) {
     if (startTimestamp == null) {
+      ApiUsageLogger.logNullParam(Instant.class, "setStartTimestamp", "startTimestamp");
       return this;
     }
     return setStartTimestamp(

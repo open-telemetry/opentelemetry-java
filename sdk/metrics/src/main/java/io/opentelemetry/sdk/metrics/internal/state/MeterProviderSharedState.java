@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -23,10 +24,8 @@ import javax.annotation.concurrent.Immutable;
 public abstract class MeterProviderSharedState {
 
   public static MeterProviderSharedState create(
-      Clock clock, Resource resource, ExemplarFilterInternal exemplarFilter) {
-    MeterProviderSharedState sharedState =
-        new AutoValue_MeterProviderSharedState(clock, resource, exemplarFilter);
-    return sharedState;
+      Clock clock, SdkResourceProvider resourceProvider, ExemplarFilterInternal exemplarFilter) {
+    return new AutoValue_MeterProviderSharedState(clock, resourceProvider, exemplarFilter);
   }
 
   MeterProviderSharedState() {}
@@ -34,8 +33,13 @@ public abstract class MeterProviderSharedState {
   /** Returns the {@link Clock} used for measurements. */
   public abstract Clock getClock();
 
+  /** Returns the {@link SdkResourceProvider} used to resolve the attached {@link Resource}. */
+  public abstract SdkResourceProvider getSdkResourceProvider();
+
   /** Returns the {@link Resource} to attach telemetry to. */
-  public abstract Resource getResource();
+  public Resource getResource() {
+    return getSdkResourceProvider().getResource();
+  }
 
   /** Returns the {@link ExemplarFilterInternal} for remembering measurements. */
   public abstract ExemplarFilterInternal getExemplarFilter();
