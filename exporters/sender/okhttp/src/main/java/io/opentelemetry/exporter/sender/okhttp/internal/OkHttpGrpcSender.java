@@ -214,8 +214,9 @@ public final class OkHttpGrpcSender implements GrpcSender {
               onError.accept(new SocketTimeoutException("Call timed out"));
               return;
             }
-            enqueue(
+            startCall(
                 call,
+                attempt,
                 new Callback() {
                   @Override
                   public void onFailure(Call call, IOException e) {
@@ -262,6 +263,29 @@ public final class OkHttpGrpcSender implements GrpcSender {
           });
     } catch (RejectedExecutionException e) {
       onError.accept(e);
+    }
+  }
+
+  private void startCall(Call call, int attempt, Callback callback) {
+    if (attempt == 0) {
+      enqueue(call, callback);
+      return;
+    }
+    // Retries already run on a dispatcher thread, so execute them on this thread instead of
+    // enqueueing a new call, which a bounded executor would reject.
+    boolean shutdown;
+    synchronized (shutdownLock) {
+      shutdown = isShutdown;
+    }
+    if (shutdown) {
+      call.cancel();
+      callback.onFailure(call, new IOException("Canceled"));
+      return;
+    }
+    try {
+      callback.onResponse(call, call.execute());
+    } catch (IOException e) {
+      callback.onFailure(call, e);
     }
   }
 

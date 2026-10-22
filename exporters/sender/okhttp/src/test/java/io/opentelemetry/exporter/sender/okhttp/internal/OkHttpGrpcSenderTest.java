@@ -16,13 +16,16 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.security.Security;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -141,6 +144,47 @@ class OkHttpGrpcSenderTest {
     assertThat(errorRef.get()).isNotNull();
     assertThat(errorRef.get()).hasMessageContaining("executor rejected");
     assertThat(responseRef.get()).isNull();
+  }
+
+  @Test
+  void send_retryWithSingleThreadExecutor_doesNotRejectRetry() throws Exception {
+    // Allocate an ephemeral port and immediately close it so that every attempt fails to connect
+    int port;
+    try (ServerSocket socket = new ServerSocket(0)) {
+      port = socket.getLocalPort();
+    }
+    // The only thread is busy running the first attempt when the retry starts
+    ThreadPoolExecutor executor =
+        new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, new SynchronousQueue<>());
+
+    OkHttpGrpcSender sender =
+        new OkHttpGrpcSender(
+            "http://localhost:" + port,
+            null,
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
+            null,
+            null,
+            executor,
+            Long.MAX_VALUE,
+            null);
+
+    CompletableFuture<Throwable> error = new CompletableFuture<>();
+    try {
+      sender.send(
+          new TestMessageWriter(),
+          response -> error.completeExceptionally(new AssertionError("Unexpected response")),
+          error::complete);
+
+      // Without running the retry on the current thread, the retry is rejected by the executor and
+      // fails with "executor rejected" instead of the connection error
+      assertThat(error.get(10, TimeUnit.SECONDS)).isInstanceOf(ConnectException.class);
+    } finally {
+      sender.shutdown();
+      executor.shutdownNow();
+    }
   }
 
   @Test
