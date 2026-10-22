@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.FileConfigUtil.requireNonNull;
 
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IdGeneratorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerConfigModel;
@@ -53,23 +55,31 @@ final class TracerProviderFactory
                 context);
     builder.setSpanLimits(spanLimits);
 
-    if (tracerProviderModel.getSampler() != null) {
+    SamplerModel samplerModel = tracerProviderModel.getSampler();
+    if (samplerModel != null) {
       Sampler sampler =
-          SamplerFactory.getInstance().create(tracerProviderModel.getSampler(), context);
+          context.withConfigPath(
+              "sampler", () -> SamplerFactory.getInstance().create(samplerModel, context));
       builder.setSampler(sampler);
     }
 
     List<SpanProcessorModel> processors = tracerProviderModel.getProcessors();
     if (processors != null) {
-      processors.forEach(
-          processor ->
-              builder.addSpanProcessor(
-                  SpanProcessorFactory.getInstance().create(processor, context)));
+      for (int i = 0; i < processors.size(); i++) {
+        SpanProcessorModel processor = processors.get(i);
+        builder.addSpanProcessor(
+            context.withConfigPath(
+                "processors[" + i + "]",
+                () -> SpanProcessorFactory.getInstance().create(processor, context)));
+      }
     }
 
-    if (tracerProviderModel.getIdGenerator() != null) {
+    IdGeneratorModel idGeneratorModel = tracerProviderModel.getIdGenerator();
+    if (idGeneratorModel != null) {
       builder.setIdGenerator(
-          IdGeneratorFactory.getInstance().create(tracerProviderModel.getIdGenerator(), context));
+          context.withConfigPath(
+              "id_generator",
+              () -> IdGeneratorFactory.getInstance().create(idGeneratorModel, context)));
     }
 
     ExperimentalTracerConfiguratorModel tracerConfiguratorModel =
@@ -84,9 +94,13 @@ final class TracerProviderFactory
       List<ExperimentalTracerMatcherAndConfigModel> tracerMatcherAndConfigs =
           tracerConfiguratorModel.getTracers();
       if (tracerMatcherAndConfigs != null) {
-        for (ExperimentalTracerMatcherAndConfigModel tracerMatcherAndConfig :
-            tracerMatcherAndConfigs) {
-          String name = requireNonNull(tracerMatcherAndConfig.getName(), "tracer matcher name");
+        for (int i = 0; i < tracerMatcherAndConfigs.size(); i++) {
+          ExperimentalTracerMatcherAndConfigModel tracerMatcherAndConfig =
+              tracerMatcherAndConfigs.get(i);
+          String name =
+              context.withConfigPath(
+                  "tracer_configurator/development.tracers[" + i + "]",
+                  () -> requireNonNull(context, tracerMatcherAndConfig.getName(), "name"));
           ExperimentalTracerConfigModel config = tracerMatcherAndConfig.getConfig();
           if (name == null || config == null) {
             continue;

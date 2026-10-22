@@ -37,14 +37,19 @@ final class MetricReaderFactory
       MetricReaderModel model, DeclarativeConfigContext context) {
     FileConfigUtil.validateSingleKeyValue(context, model, "metric reader");
 
-    if (model.getPeriodic() != null) {
-      return PeriodicMetricReaderFactory.INSTANCE.create(model.getPeriodic(), context);
+    PeriodicMetricReaderModel periodic = model.getPeriodic();
+    if (periodic != null) {
+      return context.withConfigPath(
+          "periodic", () -> PeriodicMetricReaderFactory.INSTANCE.create(periodic, context));
     }
-    if (model.getPull() != null) {
-      return PullMetricReaderFactory.INSTANCE.create(model.getPull(), context);
+    PullMetricReaderModel pull = model.getPull();
+    if (pull != null) {
+      return context.withConfigPath(
+          "pull", () -> PullMetricReaderFactory.INSTANCE.create(pull, context));
     }
 
-    throw new DeclarativeConfigException("reader must be set");
+    throw new DeclarativeConfigException(
+        FileConfigUtil.withConfigPath(context, "reader must be set"));
   }
 
   private static class PeriodicMetricReaderFactory
@@ -58,7 +63,7 @@ final class MetricReaderFactory
     public MetricReaderAndCardinalityLimits create(
         PeriodicMetricReaderModel model, DeclarativeConfigContext context) {
       PushMetricExporterModel exporterModel =
-          requireNonNull(model.getExporter(), "periodic metric reader exporter");
+          requireNonNull(context, model.getExporter(), "exporter");
       MetricExporter metricExporter =
           MetricExporterFactory.getInstance().create(exporterModel, context);
 
@@ -95,7 +100,7 @@ final class MetricReaderFactory
     public MetricReaderAndCardinalityLimits create(
         PullMetricReaderModel model, DeclarativeConfigContext context) {
       PullMetricExporterModel exporterModel =
-          requireNonNull(model.getExporter(), "pull metric reader exporter");
+          requireNonNull(context, model.getExporter(), "exporter");
       CardinalityLimitSelector cardinalityLimitSelector = null;
       if (model.getCardinalityLimits() != null) {
         cardinalityLimitSelector =

@@ -12,6 +12,8 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LoggerProviderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PropagatorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
@@ -69,55 +71,76 @@ final class OpenTelemetryConfigurationFactory
           (ExtendedOpenTelemetrySdk) builder.build(), Resource.getDefault());
     }
 
-    if (model.getPropagator() != null) {
+    PropagatorModel propagatorModel = model.getPropagator();
+    if (propagatorModel != null) {
       builder.setPropagators(
-          PropagatorFactory.getInstance().create(model.getPropagator(), context));
+          context.withConfigPath(
+              "propagator",
+              () -> PropagatorFactory.getInstance().create(propagatorModel, context)));
     }
 
     Resource resource = Resource.getDefault();
-    if (model.getResource() != null) {
-      resource = ResourceFactory.getInstance().create(model.getResource(), context);
+    ResourceModel resourceModel = model.getResource();
+    if (resourceModel != null) {
+      resource =
+          context.withConfigPath(
+              "resource", () -> ResourceFactory.getInstance().create(resourceModel, context));
     }
 
     MeterProviderModel meterProviderModel = model.getMeterProvider();
     if (meterProviderModel == null) {
       meterProviderModel = new MeterProviderModel();
     }
-    SdkMeterProvider meterProvider =
-        MeterProviderFactory.getInstance()
-            .create(meterProviderModel, context)
-            .setResource(resource)
-            .build();
-    context.setMeterProvider(meterProvider);
-    builder.setMeterProvider(context.addCloseable(meterProvider));
+    context.pushConfigPath("meter_provider");
+    try {
+      SdkMeterProvider meterProvider =
+          MeterProviderFactory.getInstance()
+              .create(meterProviderModel, context)
+              .setResource(resource)
+              .build();
+      context.setMeterProvider(meterProvider);
+      builder.setMeterProvider(context.addCloseable(meterProvider));
+    } finally {
+      context.popConfigPath();
+    }
 
     LoggerProviderModel loggerProviderModel = model.getLoggerProvider();
     if (loggerProviderModel == null) {
       loggerProviderModel = new LoggerProviderModel();
     }
-    builder.setLoggerProvider(
-        context.addCloseable(
-            LoggerProviderFactory.getInstance()
-                .create(
-                    LoggerProviderAndAttributeLimits.create(
-                        model.getAttributeLimits(), loggerProviderModel),
-                    context)
-                .setResource(resource)
-                .build()));
+    context.pushConfigPath("logger_provider");
+    try {
+      builder.setLoggerProvider(
+          context.addCloseable(
+              LoggerProviderFactory.getInstance()
+                  .create(
+                      LoggerProviderAndAttributeLimits.create(
+                          model.getAttributeLimits(), loggerProviderModel),
+                      context)
+                  .setResource(resource)
+                  .build()));
+    } finally {
+      context.popConfigPath();
+    }
 
     TracerProviderModel tracerProviderModel = model.getTracerProvider();
     if (tracerProviderModel == null) {
       tracerProviderModel = new TracerProviderModel();
     }
-    builder.setTracerProvider(
-        context.addCloseable(
-            TracerProviderFactory.getInstance()
-                .create(
-                    TracerProviderAndAttributeLimits.create(
-                        model.getAttributeLimits(), tracerProviderModel),
-                    context)
-                .setResource(resource)
-                .build()));
+    context.pushConfigPath("tracer_provider");
+    try {
+      builder.setTracerProvider(
+          context.addCloseable(
+              TracerProviderFactory.getInstance()
+                  .create(
+                      TracerProviderAndAttributeLimits.create(
+                          model.getAttributeLimits(), tracerProviderModel),
+                      context)
+                  .setResource(resource)
+                  .build()));
+    } finally {
+      context.popConfigPath();
+    }
 
     return new DeclarativeConfigResult(
         (ExtendedOpenTelemetrySdk) context.addCloseable(builder.build()), resource);

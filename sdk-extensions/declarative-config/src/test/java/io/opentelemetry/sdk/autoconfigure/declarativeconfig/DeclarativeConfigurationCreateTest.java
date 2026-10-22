@@ -175,6 +175,24 @@ class DeclarativeConfigurationCreateTest {
   }
 
   @Test
+  void parseAndCreate_ErrorIncludesDocumentPath() {
+    String yaml =
+        "file_format: \"1.2\"\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - batch:\n"
+            + "        schedule_delay: 100\n";
+
+    assertThatThrownBy(
+            () ->
+                DeclarativeConfiguration.parseAndCreate(
+                    new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessageContaining(
+            ".tracer_provider.processors[0].batch exporter is required but is null");
+  }
+
+  @Test
   void create_ModelCustomizer() {
     OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
     model.setFileFormat("1.2");
