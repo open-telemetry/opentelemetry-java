@@ -372,7 +372,8 @@ class JdkHttpSenderTest {
 
   @Test
   void send_ioException_callsOnError() throws Exception {
-    doThrow(new IOException("send failed")).when(mockHttpClient).send(any(), any());
+    IOException exception = new IOException("send failed");
+    doThrow(exception).when(mockHttpClient).send(any(), any());
 
     JdkHttpSender testSender =
         new JdkHttpSender(
@@ -403,9 +404,7 @@ class JdkHttpSenderTest {
           });
 
       assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
-      assertThat(errorRef.get()).isNotNull();
-      assertThat(errorRef.get()).hasRootCauseInstanceOf(IOException.class);
-      assertThat(errorRef.get()).hasRootCauseMessage("send failed");
+      assertThat(errorRef.get()).isSameAs(exception);
       assertThat(responseRef.get()).isNull();
     } finally {
       testSender.shutdown();
