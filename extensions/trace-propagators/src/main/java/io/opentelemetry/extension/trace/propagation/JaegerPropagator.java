@@ -7,8 +7,7 @@ package io.opentelemetry.extension.trace.propagation;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
-import io.opentelemetry.api.internal.StringUtils;
-import io.opentelemetry.api.internal.TemporaryBuffers;
+import io.opentelemetry.api.impl.TemporaryBuffers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -184,7 +183,7 @@ public final class JaegerPropagator implements TextMapPropagator {
   private static <C> SpanContext getSpanContextFromHeader(
       @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
-    if (StringUtils.isNullOrEmpty(value)) {
+    if (value == null || value.isEmpty()) {
       return SpanContext.getInvalid();
     }
 
@@ -419,14 +418,14 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   private static boolean isTraceIdValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
+    return !value.isEmpty() && value.length() <= MAX_TRACE_ID_LENGTH;
   }
 
   private static boolean isSpanIdValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
+    return !value.isEmpty() && value.length() <= MAX_SPAN_ID_LENGTH;
   }
 
   private static boolean isFlagsValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_FLAGS_LENGTH);
+    return !value.isEmpty() && value.length() <= MAX_FLAGS_LENGTH;
   }
 }

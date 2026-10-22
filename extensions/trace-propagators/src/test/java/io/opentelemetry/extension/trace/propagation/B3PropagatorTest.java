@@ -8,7 +8,6 @@ package io.opentelemetry.extension.trace.propagation;
 import static io.opentelemetry.extension.trace.propagation.B3Propagator.DEBUG_CONTEXT_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -237,6 +236,15 @@ class B3PropagatorTest {
   }
 
   @Test
+  void extract_EmptyTraceId() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, "");
+    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
+    invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  @Test
   void extract_InvalidTraceId_TooShort() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID.substring(2));
@@ -268,6 +276,15 @@ class B3PropagatorTest {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, "g" + SPAN_ID.substring(1));
+    invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  @Test
+  void extract_EmptySpanId() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
+    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, "");
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     verifyInvalidBehavior(invalidHeaders);
   }
