@@ -732,7 +732,7 @@ class PeriodicMetricReaderTest {
     assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
     exporter.release.countDown();
     flushThread.join(1000);
-    assertThat(flushResult.get().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(flushResult.get().join(1, TimeUnit.SECONDS).isSuccess()).isFalse();
     logCapturer.assertContains("Exporter failed");
     reader.shutdown();
   }
