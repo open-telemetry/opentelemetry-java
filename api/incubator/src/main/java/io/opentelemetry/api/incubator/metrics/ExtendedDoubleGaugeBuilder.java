@@ -19,4 +19,12 @@ public interface ExtendedDoubleGaugeBuilder extends DoubleGaugeBuilder {
   default ExtendedDoubleGaugeBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
     return this;
   }
+
+  /**
+   * Specify the opt-in advice, which indicates whether this gauge should be disabled by default and
+   * require explicit opt-in via a view to produce metric data.
+   */
+  default ExtendedDoubleGaugeBuilder setOptInAdvice(boolean optIn) {
+    return this;
+  }
 }

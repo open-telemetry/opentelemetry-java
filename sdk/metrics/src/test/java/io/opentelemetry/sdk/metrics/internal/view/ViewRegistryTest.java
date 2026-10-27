@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.DEFAULT_REGISTERED_VIEW;
+import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.DROP_REGISTERED_VIEW;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -20,14 +21,17 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.annotation.Nullable;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -43,12 +47,18 @@ class ViewRegistryTest {
           .build();
 
   private static RegisteredView registeredView(InstrumentSelector instrumentSelector, View view) {
+    return registeredView(instrumentSelector, view, null);
+  }
+
+  private static RegisteredView registeredView(
+      InstrumentSelector instrumentSelector, View view, @Nullable Boolean enabled) {
     return RegisteredView.create(
         instrumentSelector,
         view,
         AttributesFilters.ALLOW_ALL,
         MetricStorage.DEFAULT_MAX_CARDINALITY,
-        SourceInfo.fromCurrentStack());
+        SourceInfo.fromCurrentStack(),
+        enabled);
   }
 
   @Test
@@ -517,6 +527,94 @@ class ViewRegistryTest {
                     Advice.empty()),
                 INSTRUMENTATION_SCOPE_INFO))
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
+  }
+
+  @Test
+  void findViews_OptInAndViewEnabled() {
+    ViewBuilder enabledViewBuilder = View.builder().setDescription("enabled view");
+    SdkMeterProviderUtil.setEnabled(enabledViewBuilder, /* enabled= */ true);
+    RegisteredView enabledView =
+        registeredView(
+            InstrumentSelector.builder().setName("opt_in_enabled").build(),
+            enabledViewBuilder.build(),
+            /* enabled= */ true);
+
+    ViewBuilder disabledViewBuilder = View.builder().setAggregation(Aggregation.sum());
+    SdkMeterProviderUtil.setEnabled(disabledViewBuilder, /* enabled= */ false);
+    RegisteredView disabledView =
+        registeredView(
+            InstrumentSelector.builder().setName("disabled_by_view").build(),
+            disabledViewBuilder.build(),
+            /* enabled= */ false);
+
+    RegisteredView unsetEnabledView =
+        registeredView(
+            InstrumentSelector.builder().setName("opt_in_unset_view").build(),
+            View.builder().setAggregation(Aggregation.sum()).build(),
+            /* enabled= */ null);
+
+    ViewRegistry viewRegistry =
+        ViewRegistry.create(
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Arrays.asList(enabledView, disabledView, unsetEnabledView));
+
+    // OptIn instrument with no matching view gets DROP_REGISTERED_VIEW
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "opt_in_no_view",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.builder().setOptIn(true).build()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(DROP_REGISTERED_VIEW));
+
+    // OptIn instrument matching a view with enabled=true is enabled
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "opt_in_enabled",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.builder().setOptIn(true).build()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(enabledView));
+
+    // OptIn instrument matching a view without enabled=true gets drop aggregation
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "opt_in_unset_view",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.builder().setOptIn(true).build()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .hasSize(1)
+        .element(0)
+        .satisfies(rv -> assertThat(rv.getView().getAggregation()).isEqualTo(Aggregation.drop()));
+
+    // Non-OptIn instrument matching a view with enabled=false gets drop aggregation regardless of
+    // view's aggregation
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "disabled_by_view",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .hasSize(1)
+        .element(0)
+        .satisfies(rv -> assertThat(rv.getView().getAggregation()).isEqualTo(Aggregation.drop()));
   }
 
   private static void assertAdviceFilter(RegisteredView view, AttributeKey<?>... expectedKeys) {

@@ -161,7 +161,7 @@ class SdkDoubleUpDownCounterTest {
   @Test
   void testToString() {
     String expected =
-        "SdkDoubleUpDownCounter{descriptor=InstrumentDescriptor{name=testUpDownCounter, description=description, unit=ms, type=UP_DOWN_COUNTER, valueType=DOUBLE, advice=Advice{explicitBucketBoundaries=null, attributes=null}}}";
+        "SdkDoubleUpDownCounter{descriptor=InstrumentDescriptor{name=testUpDownCounter, description=description, unit=ms, type=UP_DOWN_COUNTER, valueType=DOUBLE, advice=Advice{explicitBucketBoundaries=null, attributes=null, optIn=false}}}";
     DoubleUpDownCounter counter =
         sdkMeter
             .upDownCounterBuilder("testUpDownCounter")
