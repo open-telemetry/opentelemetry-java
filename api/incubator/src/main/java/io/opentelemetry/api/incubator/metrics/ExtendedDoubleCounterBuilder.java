@@ -19,4 +19,12 @@ public interface ExtendedDoubleCounterBuilder extends DoubleCounterBuilder {
   default ExtendedDoubleCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
     return this;
   }
+
+  /**
+   * Specify the opt-in advice, which indicates whether this counter should be disabled by default
+   * and require explicit opt-in via a view to produce metric data.
+   */
+  default ExtendedDoubleCounterBuilder setOptInAdvice(boolean optIn) {
+    return this;
+  }
 }

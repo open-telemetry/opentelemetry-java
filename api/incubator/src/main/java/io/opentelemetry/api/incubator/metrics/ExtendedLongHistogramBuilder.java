@@ -19,4 +19,12 @@ public interface ExtendedLongHistogramBuilder extends LongHistogramBuilder {
   default ExtendedLongHistogramBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
     return this;
   }
+
+  /**
+   * Specify the opt-in advice, which indicates whether this histogram should be disabled by default
+   * and require explicit opt-in via a view to produce metric data.
+   */
+  default ExtendedLongHistogramBuilder setOptInAdvice(boolean optIn) {
+    return this;
+  }
 }
