@@ -48,7 +48,7 @@ class InstrumentBuilderTest {
                 + "unit=instrument-unit, "
                 + "type=COUNTER, "
                 + "valueType=LONG, "
-                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}"
+                + "advice=Advice{explicitBucketBoundaries=null, attributes=null, optIn=false}"
                 + "}}");
   }
 
@@ -71,7 +71,7 @@ class InstrumentBuilderTest {
                 + "unit=instrument-unit, "
                 + "type=HISTOGRAM, "
                 + "valueType=DOUBLE, "
-                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}"
+                + "advice=Advice{explicitBucketBoundaries=null, attributes=null, optIn=false}"
                 + "}}");
   }
 }

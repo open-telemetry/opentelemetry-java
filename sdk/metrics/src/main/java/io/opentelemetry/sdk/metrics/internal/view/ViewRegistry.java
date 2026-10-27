@@ -14,8 +14,10 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
@@ -45,6 +47,13 @@ public final class ViewRegistry {
       RegisteredView.create(
           InstrumentSelector.builder().setName("*").build(),
           DEFAULT_VIEW,
+          AttributesFilters.ALLOW_ALL,
+          MetricStorage.DEFAULT_MAX_CARDINALITY,
+          SourceInfo.noSourceInfo());
+  static final RegisteredView DROP_REGISTERED_VIEW =
+      RegisteredView.create(
+          InstrumentSelector.builder().setName("*").build(),
+          View.builder().setAggregation(Aggregation.drop()).build(),
           AttributesFilters.ALLOW_ALL,
           MetricStorage.DEFAULT_MAX_CARDINALITY,
           SourceInfo.noSourceInfo());
@@ -102,10 +111,22 @@ public final class ViewRegistry {
     // Find matching views for the instrument
     for (RegisteredView entry : registeredViews) {
       if (matchesSelector(entry.getInstrumentSelector(), descriptor, meterScope)) {
+        if (Boolean.FALSE.equals(entry.getEnabled())) {
+          result.add(applyDropAggregation(entry));
+          continue;
+        }
         AggregatorFactory viewAggregatorFactory =
             (AggregatorFactory) entry.getView().getAggregation();
         if (viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
-          result.add(entry);
+          if (descriptor.getAdvice().isOptIn() && !Boolean.TRUE.equals(entry.getEnabled())) {
+            result.add(applyDropAggregation(entry));
+          } else if (Boolean.TRUE.equals(entry.getEnabled())
+              && descriptor.getAdvice().hasAttributes()
+              && entry.getView().getAttributeFilter().equals(StringPredicates.ALL)) {
+            result.add(applyAdviceToDefaultView(entry, descriptor.getAdvice()));
+          } else {
+            result.add(entry);
+          }
         } else {
           logger.log(
               Level.WARNING,
@@ -122,6 +143,10 @@ public final class ViewRegistry {
     // If a view matched, return it
     if (!result.isEmpty()) {
       return Collections.unmodifiableList(result);
+    }
+
+    if (descriptor.getAdvice().isOptIn()) {
+      return Collections.singletonList(DROP_REGISTERED_VIEW);
     }
 
     // No views matched, use default view
@@ -190,12 +215,41 @@ public final class ViewRegistry {
   }
 
   private static RegisteredView applyAdviceToDefaultView(
-      RegisteredView instrumentDefaultView, Advice advice) {
+      RegisteredView registeredView, Advice advice) {
     return RegisteredView.create(
-        instrumentDefaultView.getInstrumentSelector(),
-        instrumentDefaultView.getView(),
+        registeredView.getInstrumentSelector(),
+        registeredView.getView(),
         AttributesFilters.byAdvice(requireNonNull(advice.getAttributes())),
-        instrumentDefaultView.getCardinalityLimit(),
-        instrumentDefaultView.getViewSourceInfo());
+        registeredView.getCardinalityLimit(),
+        registeredView.getViewSourceInfo(),
+        registeredView.getEnabled());
+  }
+
+  private static RegisteredView applyDropAggregation(RegisteredView registeredView) {
+    if (Aggregation.drop().equals(registeredView.getView().getAggregation())) {
+      return registeredView;
+    }
+    View view = registeredView.getView();
+    ViewBuilder viewBuilder =
+        View.builder()
+            .setAggregation(Aggregation.drop())
+            .setAttributeFilter(view.getAttributeFilter())
+            .setCardinalityLimit(view.getCardinalityLimit());
+    if (view.getName() != null) {
+      viewBuilder.setName(view.getName());
+    }
+    if (view.getDescription() != null) {
+      viewBuilder.setDescription(view.getDescription());
+    }
+    if (registeredView.getEnabled() != null) {
+      SdkMeterProviderUtil.setEnabled(viewBuilder, registeredView.getEnabled());
+    }
+    return RegisteredView.create(
+        registeredView.getInstrumentSelector(),
+        viewBuilder.build(),
+        registeredView.getAttributesFilter(),
+        registeredView.getCardinalityLimit(),
+        registeredView.getViewSourceInfo(),
+        registeredView.getEnabled());
   }
 }

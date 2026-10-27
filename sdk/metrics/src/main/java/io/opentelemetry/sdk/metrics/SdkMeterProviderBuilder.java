@@ -166,7 +166,8 @@ public final class SdkMeterProviderBuilder {
             view,
             AttributesFilters.byKeyName(view.getAttributeFilter()),
             view.getCardinalityLimit(),
-            SourceInfo.fromCurrentStack()));
+            SourceInfo.fromCurrentStack(),
+            view.getEnabled()));
     return this;
   }
 

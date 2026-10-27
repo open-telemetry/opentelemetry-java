@@ -65,5 +65,43 @@ class ExtendedDefaultMeterTest extends AbstractDefaultMeterTest {
     assertThat(meter.upDownCounterBuilder("test").ofDoubles().build().isEnabled()).isFalse();
     assertThat(meter.upDownCounterBuilder("test").ofDoubles().build())
         .isInstanceOf(ExtendedDoubleUpDownCounter.class);
+    assertThat(
+            ((ExtendedLongGaugeBuilder) meter.gaugeBuilder("test").ofLongs())
+                .setOptInAdvice(true)
+                .build())
+        .isInstanceOf(ExtendedLongGauge.class);
+    assertThat(
+            ((ExtendedDoubleGaugeBuilder) meter.gaugeBuilder("test")).setOptInAdvice(true).build())
+        .isInstanceOf(ExtendedDoubleGauge.class);
+    assertThat(
+            ((ExtendedLongHistogramBuilder) meter.histogramBuilder("test").ofLongs())
+                .setOptInAdvice(true)
+                .build())
+        .isInstanceOf(ExtendedLongHistogram.class);
+    assertThat(
+            ((ExtendedDoubleHistogramBuilder) meter.histogramBuilder("test"))
+                .setOptInAdvice(true)
+                .build())
+        .isInstanceOf(ExtendedDoubleHistogram.class);
+    assertThat(
+            ((ExtendedLongCounterBuilder) meter.counterBuilder("test"))
+                .setOptInAdvice(true)
+                .build())
+        .isInstanceOf(ExtendedLongCounter.class);
+    assertThat(
+            ((ExtendedDoubleCounterBuilder) meter.counterBuilder("test").ofDoubles())
+                .setOptInAdvice(true)
+                .build())
+        .isInstanceOf(ExtendedDoubleCounter.class);
+    assertThat(
+            ((ExtendedLongUpDownCounterBuilder) meter.upDownCounterBuilder("test"))
+                .setOptInAdvice(true)
+                .build())
+        .isInstanceOf(ExtendedLongUpDownCounter.class);
+    assertThat(
+            ((ExtendedDoubleUpDownCounterBuilder) meter.upDownCounterBuilder("test").ofDoubles())
+                .setOptInAdvice(true)
+                .build())
+        .isInstanceOf(ExtendedDoubleUpDownCounter.class);
   }
 }

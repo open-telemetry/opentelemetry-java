@@ -80,5 +80,11 @@ final class ExtendedSdkLongGauge extends SdkLongGauge implements ExtendedLongGau
       builder.setAdviceAttributes(attributes);
       return this;
     }
+
+    @Override
+    public ExtendedLongGaugeBuilder setOptInAdvice(boolean optIn) {
+      builder.setAdviceOptIn(optIn);
+      return this;
+    }
   }
 }
