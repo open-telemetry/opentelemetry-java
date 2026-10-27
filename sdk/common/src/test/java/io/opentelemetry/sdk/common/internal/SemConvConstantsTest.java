@@ -9,7 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.semconv.ErrorAttributes;
 import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.SchemaUrls;
 import io.opentelemetry.semconv.ServerAttributes;
+import io.opentelemetry.semconv.ServiceAttributes;
 import io.opentelemetry.semconv.incubating.OtelIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.OtelIncubatingMetrics;
 import io.opentelemetry.semconv.incubating.RpcIncubatingAttributes;
@@ -19,6 +21,17 @@ class SemConvConstantsTest {
 
   @Test
   void attributeKeys() {
+    assertThat(SemConvConstants.SCHEMA_URL_V1_40_0).isEqualTo(SchemaUrls.V1_40_0);
+
+    // TODO(jack-berg): assert against generated constants once we start generating for entities
+    // types
+    assertThat(SemConvConstants.SERVICE_TYPE).isEqualTo("service");
+    assertThat(SemConvConstants.SERVICE_INSTANCE_TYPE).isEqualTo("service.instance");
+
+    assertThat(SemConvConstants.SERVICE_NAME).isEqualTo(ServiceAttributes.SERVICE_NAME);
+    assertThat(SemConvConstants.SERVICE_INSTANCE_ID)
+        .isEqualTo(ServiceAttributes.SERVICE_INSTANCE_ID);
+
     assertThat(SemConvConstants.OTEL_COMPONENT_NAME)
         .isEqualTo(OtelIncubatingAttributes.OTEL_COMPONENT_NAME);
     assertThat(SemConvConstants.OTEL_COMPONENT_TYPE)

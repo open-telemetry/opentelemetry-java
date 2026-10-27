@@ -9,27 +9,39 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.autoconfigure.ResourceConfiguration.DISABLED_ATTRIBUTE_KEYS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonMap;
+import static org.slf4j.event.Level.WARN;
 
 import com.google.common.collect.ImmutableMap;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junitpioneer.jupiter.SetSystemProperty;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceConfigurationTest {
+
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(ResourceBuilder.class);
 
   private static final ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(ResourceConfigurationTest.class.getClassLoader());
@@ -51,7 +63,9 @@ class ResourceConfigurationTest {
         .isEqualTo(
             Resource.getDefault().toBuilder()
                 .putAll(new ServiceInstanceIdResourceProvider().createResource(config))
-                .put(stringKey("service.name"), "test-service")
+                .putAll(
+                    EntityUtil.createResource(
+                        Collections.singletonList(serviceEntity("test-service"))))
                 .put("food", "cheesecake")
                 .put("shape", "square")
                 .build());
@@ -72,9 +86,18 @@ class ResourceConfigurationTest {
     assertThat(serviceInstanceId).isNotNull();
     assertThat(UUID.fromString(serviceInstanceId)).isNotNull();
     assertThat(result.getAttribute(stringKey("service.name"))).isEqualTo("test-service");
+    assertThat(EntityUtil.getEntities(result))
+        .containsExactlyInAnyOrder(
+            serviceEntity("test-service"),
+            Entity.builder(
+                    "service.instance",
+                    Attributes.of(stringKey("service.instance.id"), serviceInstanceId))
+                .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+                .build());
   }
 
   @Test
+  @SuppressLogger(ResourceBuilder.class)
   void serviceInstanceIdExplicitValuePreserved() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.service.name", "test-service");
@@ -87,6 +110,29 @@ class ResourceConfigurationTest {
             (r, c) -> r);
 
     assertThat(result.getAttribute(stringKey("service.instance.id"))).isEqualTo("my-custom-id-123");
+    assertThat(EntityUtil.getEntities(result)).containsExactly(serviceEntity("test-service"));
+    assertThat(EntityUtil.getUnassociatedAttributes(result))
+        .containsEntry(stringKey("service.instance.id"), "my-custom-id-123");
+  }
+
+  @Test
+  @SuppressLogger(ResourceBuilder.class)
+  void serviceInstanceEntityOverridesFallback() {
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            singletonMap("otel.entities", "service.instance{service.instance.id=custom}"));
+    Resource result =
+        ResourceConfiguration.configureResource(
+            config,
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    assertThat(EntityUtil.getEntities(result))
+        .containsExactly(
+            Entity.builder(
+                    "service.instance", Attributes.of(stringKey("service.instance.id"), "custom"))
+                .build());
+    assertThat(result.getAttribute(stringKey("service.instance.id"))).isEqualTo("custom");
   }
 
   @ParameterizedTest
@@ -130,41 +176,48 @@ class ResourceConfigurationTest {
 
   @Test
   void createEnvironmentResource_WithResourceAttributes() {
-    Attributes attributes =
+    Resource resource =
         ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createFromMap(
-                    singletonMap(
-                        "otel.resource.attributes", "service.name=myService,appName=MyApp")))
-            .getAttributes();
+            DefaultConfigProperties.createFromMap(
+                singletonMap(
+                    "otel.resource.attributes",
+                    "service.name=myService,service.instance.id=custom,appName=MyApp")));
+    Attributes attributes = resource.getAttributes();
+    assertThat(EntityUtil.getEntities(resource)).isEmpty();
+    assertThat(EntityUtil.getUnassociatedAttributes(resource)).isEqualTo(attributes);
 
     assertThat(attributes)
-        .hasSize(2)
+        .hasSize(3)
         .containsEntry(stringKey("service.name"), "myService")
+        .containsEntry(stringKey("service.instance.id"), "custom")
         .containsEntry("appName", "MyApp");
   }
 
   @Test
+  @SetSystemProperty(key = "otel.service.name", value = "myService")
   void createEnvironmentResource_WithServiceName() {
-    Attributes attributes =
-        ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createFromMap(
-                    singletonMap("otel.service.name", "myService")))
-            .getAttributes();
+    Resource resource = ResourceConfiguration.createEnvironmentResource();
 
-    assertThat(attributes).hasSize(1).containsEntry(stringKey("service.name"), "myService");
+    assertThat(resource.getAttributes())
+        .hasSize(1)
+        .containsEntry(stringKey("service.name"), "myService");
+    assertThat(EntityUtil.getEntities(resource)).containsExactly(serviceEntity("myService"));
+    assertThat(EntityUtil.getUnassociatedAttributes(resource)).isEmpty();
+    assertThat(resource.getSchemaUrl()).isEqualTo("https://opentelemetry.io/schemas/1.40.0");
   }
 
   @Test
   void createEnvironmentResource_ServiceNamePriority() {
-    Attributes attributes =
+    Resource resource =
         ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createFromMap(
-                    ImmutableMap.of(
-                        "otel.resource.attributes",
-                        "service.name=myService,appName=MyApp",
-                        "otel.service.name",
-                        "ReallyMyService")))
-            .getAttributes();
+            DefaultConfigProperties.createFromMap(
+                ImmutableMap.of(
+                    "otel.resource.attributes",
+                    "service.name=myService,appName=MyApp",
+                    "otel.service.name",
+                    "ReallyMyService")));
+    Attributes attributes = resource.getAttributes();
+    assertThat(EntityUtil.getEntities(resource)).containsExactly(serviceEntity("ReallyMyService"));
 
     assertThat(attributes)
         .hasSize(2)
@@ -209,5 +262,54 @@ class ResourceConfigurationTest {
               assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
               assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
             });
+  }
+
+  @ParameterizedTest
+  @MethodSource("legacyEntityOverrides")
+  @SuppressLogger(ResourceBuilder.class)
+  void legacyEntityOverride(Map<String, String> overrides, Resource expectedResource) {
+    Map<String, String> properties = new HashMap<>(overrides);
+    properties.put(
+        "otel.entities", "service{service.name=detected}[service.version=1.0];host{host.id=H1}");
+    Resource resource =
+        ResourceConfiguration.createEnvironmentResource(
+            DefaultConfigProperties.createFromMap(properties));
+
+    assertThat(resource).isEqualTo(expectedResource);
+    logs.assertContains(
+        event -> event.getLevel().equals(WARN),
+        overrides.containsKey("otel.resource.attributes")
+            ? "Removing entity association [service]"
+            : "Replacing entity [service]");
+  }
+
+  static Stream<Arguments> legacyEntityOverrides() {
+    Entity host = Entity.builder("host", Attributes.of(stringKey("host.id"), "H1")).build();
+    Resource configuredService =
+        EntityUtil.createResource(Arrays.asList(host, serviceEntity("configured")));
+    return Stream.of(
+        Arguments.argumentSet(
+            "resource attributes",
+            singletonMap("otel.resource.attributes", "service.name=resource"),
+            EntityUtil.createResource(Collections.singletonList(host)).toBuilder()
+                .put("service.name", "resource")
+                .put("service.version", "1.0")
+                .build()),
+        Arguments.argumentSet(
+            "service name", singletonMap("otel.service.name", "configured"), configuredService),
+        Arguments.argumentSet(
+            "service name beats resource attributes",
+            ImmutableMap.of(
+                "otel.resource.attributes",
+                "service.name=resource",
+                "otel.service.name",
+                "configured"),
+            configuredService.toBuilder().put("service.version", "1.0").build()));
+  }
+
+  private static Entity serviceEntity(String name) {
+    return Entity.builder("service", Attributes.of(stringKey("service.name"), name))
+        .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+        .build();
   }
 }

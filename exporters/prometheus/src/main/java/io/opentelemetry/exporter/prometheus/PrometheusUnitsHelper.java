@@ -74,7 +74,7 @@ class PrometheusUnitsHelper {
       return null;
     }
     if (otelUnit.contains("{")) {
-      otelUnit = otelUnit.replaceAll("\\{[^}]*}", "").trim();
+      otelUnit = removeAnnotations(otelUnit).trim();
       if (otelUnit.isEmpty() || otelUnit.equals("/") || otelUnit.equals("1")) {
         return null;
       }
@@ -93,6 +93,35 @@ class PrometheusUnitsHelper {
       }
     }
     return unitOrNull(otelUnit);
+  }
+
+  /**
+   * Removes each opening brace through the next closing brace in linear time. Nested opening braces
+   * do not start separate annotations. Unterminated annotations are retained, and the original
+   * string is returned without allocation if no complete annotation is found.
+   */
+  private static String removeAnnotations(String unit) {
+    StringBuilder result = null;
+    int start = 0;
+    while (start < unit.length()) {
+      int annotationStart = unit.indexOf('{', start);
+      if (annotationStart == -1) {
+        break;
+      }
+      int annotationEnd = unit.indexOf('}', annotationStart + 1);
+      if (annotationEnd == -1) {
+        break;
+      }
+      if (result == null) {
+        result = new StringBuilder(unit.length());
+      }
+      result.append(unit, start, annotationStart);
+      start = annotationEnd + 1;
+    }
+    if (result == null) {
+      return unit;
+    }
+    return result.append(unit, start, unit.length()).toString();
   }
 
   @Nullable

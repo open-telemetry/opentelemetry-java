@@ -34,6 +34,7 @@ import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -45,6 +46,7 @@ import java.util.OptionalLong;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -61,7 +63,6 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.TlsVersion;
@@ -81,12 +82,16 @@ public final class OkHttpGrpcSender implements GrpcSender {
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
+  private final Object shutdownLock = new Object();
+  private boolean isShutdown;
   private final boolean managedExecutor;
   private final OkHttpClient client;
   private final HttpUrl url;
   @Nullable private final Compressor compressor;
   private final Supplier<Map<String, List<String>>> headersSupplier;
   private final long maxResponseBodySize;
+  @Nullable private final RetryPolicy retryPolicy;
+  private final long timeoutNanos;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
   @SuppressWarnings("TooManyParameters")
@@ -104,6 +109,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable List<String> enabledProtocols) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
+    this.timeoutNanos = TimeUnit.MILLISECONDS.toNanos(callTimeoutMillis);
 
     Dispatcher dispatcher;
     if (executorService == null) {
@@ -119,12 +125,6 @@ public final class OkHttpGrpcSender implements GrpcSender {
             .dispatcher(dispatcher)
             .callTimeout(Duration.ofMillis(callTimeoutMillis))
             .connectTimeout(Duration.ofMillis(connectTimeoutMillis));
-    if (retryPolicy != null) {
-      clientBuilder.addInterceptor(
-          new RetryInterceptor(
-              retryPolicy, OkHttpGrpcSender::isRetryable, response -> OptionalLong.empty()));
-    }
-
     boolean isPlainHttp = endpoint.startsWith("http://");
     if (isPlainHttp) {
       clientBuilder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
@@ -158,11 +158,13 @@ public final class OkHttpGrpcSender implements GrpcSender {
     this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);
     this.maxResponseBodySize = maxResponseBodySize;
+    this.retryPolicy = retryPolicy;
   }
 
   @Override
   public void send(
       MessageWriter messageWriter, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
+    RetryState retryState = newRetryState();
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
     Map<String, List<String>> headers = headersSupplier.get();
@@ -176,32 +178,109 @@ public final class OkHttpGrpcSender implements GrpcSender {
     if (compressor != null) {
       requestBuilder.addHeader("grpc-encoding", compressor.getEncoding());
     }
-    RequestBody requestBody = new GrpcRequestBody(messageWriter, compressor);
-    requestBuilder.post(requestBody);
+    requestBuilder.post(new GrpcRequestBody(messageWriter, compressor));
+
+    sendAttempt(requestBuilder, messageWriter, onResponse, onError, 0, retryState);
+  }
+
+  @Nullable
+  private RetryState newRetryState() {
+    return retryPolicy == null
+        ? null
+        : new RetryState(
+            retryPolicy,
+            retryPolicy.getRetryExceptionPredicate() == null
+                ? RetryState::isRetryableException
+                : retryPolicy.getRetryExceptionPredicate(),
+            RetryState::defaultSleeper,
+            RetryState::defaultRandomJitter,
+            timeoutNanos,
+            System::nanoTime);
+  }
+
+  private void sendAttempt(
+      Request.Builder requestBuilder,
+      MessageWriter messageWriter,
+      Consumer<GrpcResponse> onResponse,
+      Consumer<Throwable> onError,
+      int attempt,
+      @Nullable RetryState retryState) {
 
     try {
       InstrumentationUtil.suppressInstrumentation(
-          () ->
-              client
-                  .newCall(requestBuilder.build())
-                  .enqueue(
-                      new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                          onError.accept(e);
-                        }
+          () -> {
+            Call call = client.newCall(requestBuilder.build());
+            if (retryState != null && !retryState.configureCallTimeout(call)) {
+              onError.accept(new SocketTimeoutException("Call timed out"));
+              return;
+            }
+            enqueue(
+                call,
+                new Callback() {
+                  @Override
+                  public void onFailure(Call call, IOException e) {
+                    if (!call.isCanceled()
+                        && retryState != null
+                        && retryState.canRetry(attempt)
+                        && retryState.shouldRetryOnException(e)
+                        && retryState.backoff(OptionalLong.empty())) {
+                      sendAttempt(
+                          requestBuilder,
+                          messageWriter,
+                          onResponse,
+                          onError,
+                          attempt + 1,
+                          retryState);
+                    } else {
+                      onError.accept(e);
+                    }
+                  }
 
-                        @Override
-                        public void onResponse(Call call, Response response) {
-                          handleResponse(response, onResponse);
-                        }
-                      }));
+                  @Override
+                  public void onResponse(Call call, Response response) {
+                    handleResponse(
+                        response,
+                        (resolvedResponse, canRetry) -> {
+                          if (retryState != null
+                              && retryState.canRetry(attempt)
+                              && canRetry
+                              && isRetryable(resolvedResponse)
+                              && retryState.backoff(OptionalLong.empty())) {
+                            sendAttempt(
+                                requestBuilder,
+                                messageWriter,
+                                onResponse,
+                                onError,
+                                attempt + 1,
+                                retryState);
+                          } else {
+                            onResponse.accept(resolvedResponse);
+                          }
+                        });
+                  }
+                });
+          });
     } catch (RejectedExecutionException e) {
       onError.accept(e);
     }
   }
 
-  private void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
+  private void enqueue(Call call, Callback callback) {
+    synchronized (shutdownLock) {
+      if (!isShutdown) {
+        call.enqueue(callback);
+        return;
+      }
+    }
+    call.cancel();
+    callback.onFailure(call, new IOException("Canceled"));
+  }
+
+  void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
+    handleResponse(response, (resolvedResponse, ignored) -> onResponse.accept(resolvedResponse));
+  }
+
+  private void handleResponse(Response response, BiConsumer<GrpcResponse, Boolean> onResponse) {
     try (ResponseBody body = response.body()) {
       // A gRPC message frame has a 5-byte header: 1 compression-flag byte + 4 message-length
       // bytes. Read the header first so that the size limit applies to the message payload only,
@@ -212,8 +291,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
         body.source().skip(4); // message length — we bound reads by EOF instead
       } catch (IOException e) {
         logger.log(Level.FINE, "Invalid gRPC response frame", e);
+        GrpcResponse resolvedResponse =
+            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]);
         onResponse.accept(
-            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]));
+            resolvedResponse, resolvedResponse.getStatusCode() != GrpcStatusCode.UNKNOWN);
         return;
       }
 
@@ -238,7 +319,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
       }
 
       if (wireBuffer.size() > maxResponseBodySize) {
-        onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+        onResponse.accept(responseMessageTooLarge(maxResponseBodySize), false);
         return;
       }
 
@@ -250,7 +331,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
         // Compressed: validate the encoding and decompress with a post-decompression size limit
         String encoding = response.header("grpc-encoding");
         if (!"gzip".equalsIgnoreCase(encoding)) {
-          onResponse.accept(responseUnsupportedGrpcEncoding(encoding));
+          onResponse.accept(responseUnsupportedGrpcEncoding(encoding), false);
           return;
         }
         try {
@@ -263,7 +344,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
             }
           }
           if (decompressedBuffer.size() > maxResponseBodySize) {
-            onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+            onResponse.accept(responseMessageTooLarge(maxResponseBodySize), false);
             return;
           }
           bodyBytes = decompressedBuffer.readByteArray();
@@ -272,7 +353,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
         }
       }
       onResponse.accept(
-          ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes));
+          ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes),
+          true);
     }
   }
 
@@ -327,6 +409,9 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
   @Override
   public CompletableResultCode shutdown() {
+    synchronized (shutdownLock) {
+      isShutdown = true;
+    }
     client.dispatcher().cancelAll();
     client.connectionPool().evictAll();
 
@@ -364,15 +449,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
     return CompletableResultCode.ofSuccess();
   }
 
-  /** Whether response is retriable or not. */
-  public static boolean isRetryable(Response response) {
-    // We don't check trailers for retry since retryable error codes always come with response
-    // headers, not trailers, in practice.
-    String grpcStatus = response.header(GRPC_STATUS);
-    if (grpcStatus == null) {
-      return false;
-    }
-    return RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
+  /** Whether a resolved response is retriable or not. */
+  static boolean isRetryable(GrpcResponse response) {
+    return RetryUtil.retryableGrpcStatusCodes()
+        .contains(Integer.toString(response.getStatusCode().getValue()));
   }
 
   // From grpc-java

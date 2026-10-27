@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi;
 
-import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
-
 import io.opentelemetry.common.ComponentLoader;
 import java.time.Duration;
 import java.util.List;
@@ -34,7 +32,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default String getString(String name, String defaultValue) {
-    return defaultIfNull(getString(name), defaultValue);
+    String value = getString(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -56,7 +55,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default boolean getBoolean(String name, boolean defaultValue) {
-    return defaultIfNull(getBoolean(name), defaultValue);
+    Boolean value = getBoolean(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -77,7 +77,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default int getInt(String name, int defaultValue) {
-    return defaultIfNull(getInt(name), defaultValue);
+    Integer value = getInt(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -98,7 +99,8 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default long getLong(String name, long defaultValue) {
-    return defaultIfNull(getLong(name), defaultValue);
+    Long value = getLong(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -119,16 +121,18 @@ public interface ConfigProperties {
    * @since 1.15.0
    */
   default double getDouble(String name, double defaultValue) {
-    return defaultIfNull(getDouble(name), defaultValue);
+    Double value = getDouble(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
-   * Returns a duration property from the map, or {@code null} if it cannot be found or it has a
-   * wrong type.
+   * Returns a duration property from the map, or {@code null} if it cannot be found.
    *
    * <p>Durations can be of the form "{number}{unit}", where unit is one of:
    *
    * <ul>
+   *   <li>ns
+   *   <li>us
    *   <li>ms
    *   <li>s
    *   <li>m
@@ -150,13 +154,14 @@ public interface ConfigProperties {
    * Returns a Duration value configuration property.
    *
    * @see ConfigProperties#getDuration(String name)
-   * @return a Double-valued configuration property or {@code defaultValue} if a property with name
-   *     {@code name} has not been configured.
+   * @return a Duration-valued configuration property or {@code defaultValue} if a property with
+   *     name {@code name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
    * @since 1.15.0
    */
   default Duration getDuration(String name, Duration defaultValue) {
-    return defaultIfNull(getDuration(name), defaultValue);
+    Duration value = getDuration(name);
+    return value == null ? defaultValue : value;
   }
 
   /**
@@ -196,8 +201,8 @@ public interface ConfigProperties {
    * Returns a Map value configuration property.
    *
    * @see ConfigProperties#getMap(String name)
-   * @return a Double-valued configuration property or {@code defaultValue} if a property with
-   *     {@code name} has not been configured.
+   * @return a Map-valued configuration property or {@code defaultValue} if a property with {@code
+   *     name} has not been configured.
    * @throws ConfigurationException if the property is not a valid string.
    * @since 1.15.0
    */

@@ -18,14 +18,18 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /** Unit tests for {@link W3CTraceContextPropagator}. */
 class W3CTraceContextPropagatorTest {
@@ -294,6 +298,36 @@ class W3CTraceContextPropagatorTest {
                 TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE));
   }
 
+  @ParameterizedTest
+  @MethodSource("tracestateWhitespaceCharacters")
+  @Timeout(5)
+  void extract_LargeTracestateWhitespace(char whitespace) {
+    char[] padding = new char[100_000];
+    Arrays.fill(padding, whitespace);
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(W3CTraceContextPropagator.TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED);
+    carrier.put(W3CTraceContextPropagator.TRACE_STATE, "foo=bar" + new String(padding) + "x");
+    assertThat(getSpanContext(w3cTraceContextPropagator.extract(Context.root(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TraceState.getDefault()));
+
+    carrier.put(W3CTraceContextPropagator.TRACE_STATE, "foo=bar" + new String(padding));
+    assertThat(getSpanContext(w3cTraceContextPropagator.extract(Context.root(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID_BASE16,
+                SPAN_ID_BASE16,
+                TraceFlags.getSampled(),
+                TraceState.builder().put("foo", "bar").build()));
+  }
+
+  private static Stream<Arguments> tracestateWhitespaceCharacters() {
+    return Stream.of(
+        Arguments.argumentSet("long runs of spaces", ' '),
+        Arguments.argumentSet("long runs of tabs", '\t'));
+  }
+
   @Test
   void extract_EmptyHeader() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
@@ -536,8 +570,7 @@ class W3CTraceContextPropagatorTest {
   // Tests transplanted from the w3c test suite
 
   @ParameterizedTest
-  @ValueSource(
-      strings = {"foo@=1,bar=2", "@foo=1,bar=2", "foo@@bar=1,bar=2", "foo@bar@baz=1,bar=2"})
+  @MethodSource("illegalVendorFormats")
   void test_tracestate_key_illegal_vendor_format(String traceState) {
     Map<String, String> invalidHeaders = new HashMap<>();
     invalidHeaders.put(W3CTraceContextPropagator.TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED);
@@ -545,5 +578,13 @@ class W3CTraceContextPropagatorTest {
     Context context =
         W3CTraceContextPropagator.getInstance().extract(Context.root(), invalidHeaders, getter);
     assertThat(Span.fromContext(context).getSpanContext().getTraceState().get("bar")).isNull();
+  }
+
+  private static Stream<Arguments> illegalVendorFormats() {
+    return Stream.of(
+        Arguments.argumentSet("empty vendor id", "foo@=1,bar=2"),
+        Arguments.argumentSet("empty tenant id", "@foo=1,bar=2"),
+        Arguments.argumentSet("consecutive at signs", "foo@@bar=1,bar=2"),
+        Arguments.argumentSet("multiple vendor separators", "foo@bar@baz=1,bar=2"));
   }
 }

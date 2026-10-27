@@ -265,6 +265,31 @@ class DeclarativeConfigContext implements ComponentLoader {
       return delegate.getDouble(name);
     }
 
+    @Override
+    public boolean isString(String name) {
+      return delegate.isString(name);
+    }
+
+    @Override
+    public boolean isBoolean(String name) {
+      return delegate.isBoolean(name);
+    }
+
+    @Override
+    public boolean isInt(String name) {
+      return delegate.isInt(name);
+    }
+
+    @Override
+    public boolean isLong(String name) {
+      return delegate.isLong(name);
+    }
+
+    @Override
+    public boolean isDouble(String name) {
+      return delegate.isDouble(name);
+    }
+
     @Nullable
     @Override
     public <T> List<T> getScalarList(String name, Class<T> scalarType) {

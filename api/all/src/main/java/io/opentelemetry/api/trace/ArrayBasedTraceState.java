@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ReadOnlyArrayMap;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -21,6 +22,7 @@ abstract class ArrayBasedTraceState implements TraceState {
   @Nullable
   public String get(String key) {
     if (key == null) {
+      ApiUsageLogger.logNullParam(TraceState.class, "get", "key");
       return null;
     }
     List<String> entries = getEntries();
@@ -45,6 +47,7 @@ abstract class ArrayBasedTraceState implements TraceState {
   @Override
   public void forEach(BiConsumer<String, String> consumer) {
     if (consumer == null) {
+      ApiUsageLogger.logNullParam(TraceState.class, "forEach", "consumer");
       return;
     }
     List<String> entries = getEntries();

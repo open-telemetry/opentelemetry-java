@@ -105,9 +105,10 @@ class RetryInterceptorTest {
   @Test
   void noRetryOnNullResponse() throws IOException {
     Interceptor.Chain chain = mock(Interceptor.Chain.class);
+    Request request = new Request.Builder().url(server.httpUri().toString()).build();
     when(chain.proceed(any())).thenReturn(null);
-    when(chain.request())
-        .thenReturn(new Request.Builder().url(server.httpUri().toString()).build());
+    when(chain.request()).thenReturn(request);
+    when(chain.call()).thenReturn(client.newCall(request));
     assertThatThrownBy(
             () -> {
               retrier.intercept(chain);
@@ -130,6 +131,25 @@ class RetryInterceptorTest {
 
     verifyNoInteractions(random);
     verifyNoInteractions(sleeper);
+  }
+
+  @Test
+  void backoffResetsForEachCall() throws Exception {
+    server.enqueue(HttpResponse.of(HttpStatus.INTERNAL_SERVER_ERROR));
+    server.enqueue(HttpResponse.of(HttpStatus.OK));
+    server.enqueue(HttpResponse.of(HttpStatus.INTERNAL_SERVER_ERROR));
+    server.enqueue(HttpResponse.of(HttpStatus.OK));
+    when(random.get()).thenReturn(1.0d);
+    doNothing().when(sleeper).sleep(anyLong());
+
+    try (Response first = sendRequest();
+        Response second = sendRequest()) {
+      assertThat(first.isSuccessful()).isTrue();
+      assertThat(second.isSuccessful()).isTrue();
+    }
+
+    verify(sleeper, times(2)).sleep(TimeUnit.SECONDS.toNanos(1));
+    verify(sleeper, never()).sleep(TimeUnit.MILLISECONDS.toNanos(1600));
   }
 
   @ParameterizedTest

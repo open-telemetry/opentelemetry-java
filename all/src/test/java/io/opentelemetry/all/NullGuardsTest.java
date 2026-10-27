@@ -7,12 +7,31 @@ package io.opentelemetry.all;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.common.impl.ApiUsageLogger;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.classfile.Annotation;
+import java.lang.classfile.Attributes;
+import java.lang.classfile.ClassFile;
+import java.lang.classfile.ClassModel;
+import java.lang.classfile.CodeElement;
+import java.lang.classfile.Instruction;
+import java.lang.classfile.MethodModel;
+import java.lang.classfile.Opcode;
+import java.lang.classfile.TypeKind;
+import java.lang.classfile.instruction.BranchInstruction;
+import java.lang.classfile.instruction.InvokeInstruction;
+import java.lang.classfile.instruction.LabelTarget;
+import java.lang.classfile.instruction.LoadInstruction;
+import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
+import java.lang.reflect.AccessFlag;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -25,7 +44,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
@@ -38,16 +64,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.AnnotationNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.JumpInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.VarInsnNode;
 
 /**
  * Structural test that public API entry points guard non-{@code @Nullable} reference parameters
@@ -63,8 +79,8 @@ import org.objectweb.asm.tree.VarInsnNode;
  *       supertype whose package starts with {@code io.opentelemetry.api.} or {@code
  *       io.opentelemetry.context.} is classified {@code RUNTIME}. This picks up SDK implementations
  *       of runtime API types ({@code SdkSpan}, {@code SdkLongCounter}, ...) without an enumeration.
- *   <li>Explicit per-method overrides in {@link #METHOD_STYLE_OVERRIDES} handle the small set of
- *       config-time methods on runtime-artifact classes (e.g. {@code GlobalOpenTelemetry.set}).
+ *   <li>Explicit per-method overrides in {@link #METHOD_STYLE_OVERRIDES} handle config-time methods
+ *       and runtime methods without type-safe fallbacks.
  * </ol>
  *
  * <p>Detection is intentionally lenient: it looks for the guard pattern anywhere in the method
@@ -78,8 +94,9 @@ class NullGuardsTest {
 
   private static final String OTEL_BASE_PACKAGE = "io.opentelemetry";
   private static final String EQUALS_DESC =
-      Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Object.class));
-  private static final String OBJECT_INTERNAL_NAME = Type.getInternalName(Object.class);
+      MethodTypeDesc.of(ClassDesc.ofDescriptor("Z"), ClassDesc.of("java.lang.Object"))
+          .descriptorString();
+  private static final String OBJECT_INTERNAL_NAME = Object.class.getName().replace('.', '/');
 
   /**
    * Runtime API scope: the artifacts and packages that constitute the runtime instrumentation API.
@@ -98,35 +115,103 @@ class NullGuardsTest {
           "opentelemetry-context", "io.opentelemetry.context");
 
   /**
-   * Per-method style overrides for the small set of config-time methods that live on classes in
-   * runtime-defaulted artifacts.
+   * Per-method style overrides for config-time methods and runtime methods without type-safe
+   * fallbacks in runtime-defaulted artifacts.
    */
   private static final Map<String, GuardStyle> METHOD_STYLE_OVERRIDES =
-      Map.of(
-          overrideKey(GlobalOpenTelemetry.class, "set", void.class, OpenTelemetry.class),
-              GuardStyle.FAIL_FAST,
-          overrideKey(GlobalOpenTelemetry.class, "set", void.class, Supplier.class),
-              GuardStyle.FAIL_FAST,
-          overrideKey(
+      Map.ofEntries(
+          Map.entry(
+              overrideKey(GlobalOpenTelemetry.class, "set", void.class, OpenTelemetry.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(GlobalOpenTelemetry.class, "set", void.class, Supplier.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(
                   OpenTelemetry.class,
                   "propagating",
                   OpenTelemetry.class,
                   ContextPropagators.class),
-              GuardStyle.FAIL_FAST);
+              GuardStyle.FAIL_FAST),
+          // Context wrappers are setup-time adapters. Fail fast rather than defer an NPE until use
+          // or substitute a noop that could discard application work or return an invalid result.
+          Map.entry(
+              overrideKey(Context.class, "taskWrapping", Executor.class, Executor.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(
+                  Context.class, "taskWrapping", ExecutorService.class, ExecutorService.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(
+                  Context.class,
+                  "taskWrapping",
+                  ScheduledExecutorService.class,
+                  ScheduledExecutorService.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrap", Executor.class, Executor.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrap", ExecutorService.class, ExecutorService.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(
+                  Context.class,
+                  "wrap",
+                  ScheduledExecutorService.class,
+                  ScheduledExecutorService.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrap", Runnable.class, Runnable.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrap", Callable.class, Callable.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapFunction", Function.class, Function.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapFunction", BiFunction.class, BiFunction.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapConsumer", Consumer.class, Consumer.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapConsumer", BiConsumer.class, BiConsumer.class),
+              GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Context.class, "wrapSupplier", Supplier.class, Supplier.class),
+              GuardStyle.FAIL_FAST),
+          // Value.empty() cannot preserve these generic return types. We may reevaluate in future.
+          Map.entry(
+              overrideKey(Value.class, "of", Value.class, String.class), GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Value.class, "of", Value.class, byte[].class), GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Value.class, "of", Value.class, Value[].class), GuardStyle.FAIL_FAST),
+          Map.entry(overrideKey(Value.class, "of", Value.class, List.class), GuardStyle.FAIL_FAST),
+          Map.entry(
+              overrideKey(Value.class, "of", Value.class, KeyValue[].class), GuardStyle.FAIL_FAST),
+          Map.entry(overrideKey(Value.class, "of", Value.class, Map.class), GuardStyle.FAIL_FAST));
 
   private static String overrideKey(
       Class<?> owner, String name, Class<?> returnType, Class<?>... paramTypes) {
-    Type[] params = Arrays.stream(paramTypes).map(Type::getType).toArray(Type[]::new);
-    return Type.getInternalName(owner)
+    ClassDesc[] params =
+        Arrays.stream(paramTypes)
+            .map(type -> ClassDesc.ofDescriptor(type.descriptorString()))
+            .toArray(ClassDesc[]::new);
+    return owner.getName().replace('.', '/')
         + "#"
         + name
-        + Type.getMethodDescriptor(Type.getType(returnType), params);
+        + ":"
+        + MethodTypeDesc.of(ClassDesc.ofDescriptor(returnType.descriptorString()), params)
+            .descriptorString();
   }
 
   /**
    * Artifacts that have not yet been audited for null-guard compliance. Remove an entry once a
-   * per-module PR has landed all guards for it. The sample module ({@code opentelemetry-api}) is
-   * intentionally absent from this list.
+   * per-module PR has landed all guards for it.
    */
   private static final Set<String> exemptions =
       Set.of(
@@ -168,14 +253,14 @@ class NullGuardsTest {
   }
 
   /** Cross-artifact registry loaded once. Key is internal class name (slashes). */
-  private static Map<String, ClassNode> classRegistry;
+  private static Map<String, ClassModel> classRegistry;
 
   @BeforeAll
   static void loadClassRegistry() throws IOException {
     if (classRegistry != null) {
       return;
     }
-    Map<String, ClassNode> registry = new HashMap<>();
+    Map<String, ClassModel> registry = new HashMap<>();
     for (String[] entry : readArtifactsAndJars()) {
       loadJarInto(entry[1], registry);
     }
@@ -185,16 +270,16 @@ class NullGuardsTest {
   @ParameterizedTest
   @MethodSource("artifactsAndJars")
   void nullGuards(String artifactId, String absolutePath) throws IOException {
-    Map<String, ClassNode> artifactClasses = new LinkedHashMap<>();
+    Map<String, ClassModel> artifactClasses = new LinkedHashMap<>();
     loadJarInto(absolutePath, artifactClasses);
     GuardStyle artifactDefault = defaultStyleFor(artifactId);
 
     List<Finding> findings = new ArrayList<>();
-    for (ClassNode cls : artifactClasses.values()) {
+    for (ClassModel cls : artifactClasses.values()) {
       if (!isInAuditablePackage(cls)) {
         continue;
       }
-      for (MethodNode method : cls.methods) {
+      for (MethodModel method : cls.methods()) {
         if (!isMethodPubliclyReachable(cls, method)) {
           continue;
         }
@@ -220,7 +305,7 @@ class NullGuardsTest {
     }
   }
 
-  private static void loadJarInto(String jarPath, Map<String, ClassNode> out) throws IOException {
+  private static void loadJarInto(String jarPath, Map<String, ClassModel> out) throws IOException {
     try (JarFile jar = new JarFile(new File(jarPath))) {
       Enumeration<JarEntry> entries = jar.entries();
       while (entries.hasMoreElements()) {
@@ -230,10 +315,8 @@ class NullGuardsTest {
           continue;
         }
         try (InputStream in = jar.getInputStream(entry)) {
-          ClassReader reader = new ClassReader(in);
-          ClassNode node = new ClassNode();
-          reader.accept(node, ClassReader.SKIP_FRAMES);
-          out.put(node.name, node);
+          ClassModel model = ClassFile.of().parse(in.readAllBytes());
+          out.put(model.thisClass().asInternalName(), model);
         }
       }
     }
@@ -255,8 +338,13 @@ class NullGuardsTest {
   }
 
   private static GuardStyle guardStyleFor(
-      ClassNode cls, MethodNode method, GuardStyle artifactDefault) {
-    String key = cls.name + "#" + method.name + method.desc;
+      ClassModel cls, MethodModel method, GuardStyle artifactDefault) {
+    String key =
+        cls.thisClass().asInternalName()
+            + "#"
+            + method.methodName().stringValue()
+            + ":"
+            + method.methodType().stringValue();
     GuardStyle explicit = METHOD_STYLE_OVERRIDES.get(key);
     if (explicit != null) {
       return explicit;
@@ -272,47 +360,51 @@ class NullGuardsTest {
    * on any supertype whose package is under {@code io.opentelemetry.api.} or {@code
    * io.opentelemetry.context.}. Static and private methods cannot override.
    */
-  private static boolean overridesRuntimeApiMethod(ClassNode cls, MethodNode method) {
-    if ((method.access & (Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE)) != 0) {
+  private static boolean overridesRuntimeApiMethod(ClassModel cls, MethodModel method) {
+    if (method.flags().has(AccessFlag.STATIC) || method.flags().has(AccessFlag.PRIVATE)) {
       return false;
     }
-    if ("<init>".equals(method.name) || "<clinit>".equals(method.name)) {
+    String name = method.methodName().stringValue();
+    if ("<init>".equals(name) || "<clinit>".equals(name)) {
       return false;
     }
     return anySupertypeMatches(
-        cls, sup -> isRuntimeApiPackage(sup.name) && declaresMethod(sup, method.name, method.desc));
+        cls,
+        sup ->
+            isRuntimeApiPackage(sup.thisClass().asInternalName())
+                && declaresMethod(sup, name, method.methodType().stringValue()));
   }
 
   /**
    * Walks {@code cls}'s superclass chain and interface graph (not including {@code cls} itself),
    * returning true if {@code match} accepts any visited supertype. Cycle-safe.
    */
-  private static boolean anySupertypeMatches(ClassNode cls, Predicate<ClassNode> match) {
+  private static boolean anySupertypeMatches(ClassModel cls, Predicate<ClassModel> match) {
     Set<String> visited = new LinkedHashSet<>();
-    visited.add(cls.name);
+    visited.add(cls.thisClass().asInternalName());
     return walkSupertypes(cls, visited, match);
   }
 
   private static boolean walkSupertypes(
-      ClassNode cls, Set<String> visited, Predicate<ClassNode> match) {
-    if (cls.superName != null && !OBJECT_INTERNAL_NAME.equals(cls.superName)) {
-      if (visitSupertype(classRegistry.get(cls.superName), visited, match)) {
+      ClassModel cls, Set<String> visited, Predicate<ClassModel> match) {
+    if (cls.superclass().isPresent()) {
+      String superName = cls.superclass().get().asInternalName();
+      if (!OBJECT_INTERNAL_NAME.equals(superName)
+          && visitSupertype(classRegistry.get(superName), visited, match)) {
         return true;
       }
     }
-    if (cls.interfaces != null) {
-      for (String iface : cls.interfaces) {
-        if (visitSupertype(classRegistry.get(iface), visited, match)) {
-          return true;
-        }
+    for (var iface : cls.interfaces()) {
+      if (visitSupertype(classRegistry.get(iface.asInternalName()), visited, match)) {
+        return true;
       }
     }
     return false;
   }
 
   private static boolean visitSupertype(
-      ClassNode cls, Set<String> visited, Predicate<ClassNode> match) {
-    if (cls == null || !visited.add(cls.name)) {
+      ClassModel cls, Set<String> visited, Predicate<ClassModel> match) {
+    if (cls == null || !visited.add(cls.thisClass().asInternalName())) {
       return false;
     }
     if (match.test(cls)) {
@@ -321,26 +413,30 @@ class NullGuardsTest {
     return walkSupertypes(cls, visited, match);
   }
 
-  private static boolean declaresMethod(ClassNode cls, String name, String desc) {
-    return cls.methods.stream()
-        .filter(m -> (m.access & (Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE)) == 0)
-        .anyMatch(m -> name.equals(m.name) && desc.equals(m.desc));
+  private static boolean declaresMethod(ClassModel cls, String name, String desc) {
+    return cls.methods().stream()
+        .filter(m -> !m.flags().has(AccessFlag.STATIC) && !m.flags().has(AccessFlag.PRIVATE))
+        .anyMatch(
+            m ->
+                name.equals(m.methodName().stringValue())
+                    && desc.equals(m.methodType().stringValue()));
   }
 
-  private static boolean isInAuditablePackage(ClassNode cls) {
-    if ((cls.access & Opcodes.ACC_SYNTHETIC) != 0) {
+  private static boolean isInAuditablePackage(ClassModel cls) {
+    if (cls.flags().has(AccessFlag.SYNTHETIC)) {
       return false;
     }
     if (isAutoValueGenerated(cls)) {
       return false;
     }
-    return isAuditableOtelPackage(cls.name);
+    return isAuditableOtelPackage(cls.thisClass().asInternalName());
   }
 
   /** Auto-generated; not editable. */
-  private static boolean isAutoValueGenerated(ClassNode cls) {
-    int lastSep = Math.max(cls.name.lastIndexOf('/'), cls.name.lastIndexOf('$'));
-    return cls.name.startsWith("AutoValue_", lastSep + 1);
+  private static boolean isAutoValueGenerated(ClassModel cls) {
+    String name = cls.thisClass().asInternalName();
+    int lastSep = Math.max(name.lastIndexOf('/'), name.lastIndexOf('$'));
+    return name.startsWith("AutoValue_", lastSep + 1);
   }
 
   /**
@@ -349,25 +445,26 @@ class NullGuardsTest {
    * method declared on a public supertype in a non-internal {@code io.opentelemetry.*} package
    * (typical for package-private SDK impls of API interfaces like {@code SdkSpan implements Span}).
    */
-  private static boolean isMethodPubliclyReachable(ClassNode cls, MethodNode method) {
-    if ((method.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) == 0) {
+  private static boolean isMethodPubliclyReachable(ClassModel cls, MethodModel method) {
+    if (!method.flags().has(AccessFlag.PUBLIC) && !method.flags().has(AccessFlag.PROTECTED)) {
       return false;
     }
-    if ((cls.access & Opcodes.ACC_PUBLIC) != 0) {
+    if (cls.flags().has(AccessFlag.PUBLIC)) {
       return true;
     }
-    if ((method.access & (Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE)) != 0) {
+    if (method.flags().has(AccessFlag.STATIC) || method.flags().has(AccessFlag.PRIVATE)) {
       return false;
     }
-    if ("<init>".equals(method.name) || "<clinit>".equals(method.name)) {
+    String name = method.methodName().stringValue();
+    if ("<init>".equals(name) || "<clinit>".equals(name)) {
       return false;
     }
     return anySupertypeMatches(
         cls,
         sup ->
-            (sup.access & Opcodes.ACC_PUBLIC) != 0
-                && isAuditableOtelPackage(sup.name)
-                && declaresMethod(sup, method.name, method.desc));
+            sup.flags().has(AccessFlag.PUBLIC)
+                && isAuditableOtelPackage(sup.thisClass().asInternalName())
+                && declaresMethod(sup, name, method.methodType().stringValue()));
   }
 
   private static boolean isAuditableOtelPackage(String internalName) {
@@ -379,31 +476,39 @@ class NullGuardsTest {
   }
 
   private static void findGuardViolations(
-      ClassNode cls, MethodNode method, GuardStyle style, List<Finding> findings) {
-    if ((method.access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_SYNTHETIC | Opcodes.ACC_BRIDGE))
-        != 0) {
+      ClassModel cls, MethodModel method, GuardStyle style, List<Finding> findings) {
+    if (method.flags().has(AccessFlag.ABSTRACT)
+        || method.flags().has(AccessFlag.SYNTHETIC)
+        || method.flags().has(AccessFlag.BRIDGE)) {
       return;
     }
     if (isKnownNullAcceptingSignature(method)) {
       return;
     }
-    Type[] paramTypes = Type.getMethodType(method.desc).getArgumentTypes();
-    if (paramTypes.length == 0) {
+    List<ClassDesc> paramTypes = method.methodTypeSymbol().parameterList();
+    if (paramTypes.isEmpty()) {
       return;
     }
 
-    boolean isStatic = (method.access & Opcodes.ACC_STATIC) != 0;
+    boolean isStatic = method.flags().has(AccessFlag.STATIC);
     int slot = isStatic ? 0 : 1;
-    for (int i = 0; i < paramTypes.length; i++) {
-      Type pt = paramTypes[i];
+    for (int i = 0; i < paramTypes.size(); i++) {
+      ClassDesc pt = paramTypes.get(i);
       int paramSlot = slot;
       int paramIndex = i;
-      slot += pt.getSize();
-      if (pt.getSort() != Type.OBJECT && pt.getSort() != Type.ARRAY) {
+      slot += TypeKind.from(pt).slotSize();
+      if (pt.isPrimitive()) {
         continue;
       }
       Consumer<String> report =
-          msg -> findings.add(new Finding(cls.name, method.name, method.desc, paramIndex, msg));
+          msg ->
+              findings.add(
+                  new Finding(
+                      cls.thisClass().asInternalName(),
+                      method.methodName().stringValue(),
+                      method.methodType().stringValue(),
+                      paramIndex,
+                      msg));
       boolean nullable = isParamNullable(method, paramIndex);
       boolean requireNonNullGuard = GuardScanner.hasRequireNonNullGuard(method, paramSlot);
       boolean apiUsageLoggerGuard = GuardScanner.hasApiUsageLoggerGuard(method, paramSlot);
@@ -431,57 +536,55 @@ class NullGuardsTest {
     }
   }
 
-  private static boolean isKnownNullAcceptingSignature(MethodNode method) {
-    return "equals".equals(method.name) && EQUALS_DESC.equals(method.desc);
+  private static boolean isKnownNullAcceptingSignature(MethodModel method) {
+    return "equals".equals(method.methodName().stringValue())
+        && EQUALS_DESC.equals(method.methodType().stringValue());
   }
 
-  private static boolean isParamNullable(MethodNode method, int paramIndex) {
-    if (containsNullable(method.visibleParameterAnnotations, paramIndex)) {
-      return true;
-    }
-    return containsNullable(method.invisibleParameterAnnotations, paramIndex);
+  private static boolean isParamNullable(MethodModel method, int paramIndex) {
+    return method
+            .findAttribute(Attributes.runtimeVisibleParameterAnnotations())
+            .map(a -> containsNullable(a.parameterAnnotations(), paramIndex))
+            .orElse(false)
+        || method
+            .findAttribute(Attributes.runtimeInvisibleParameterAnnotations())
+            .map(a -> containsNullable(a.parameterAnnotations(), paramIndex))
+            .orElse(false);
   }
 
-  private static boolean containsNullable(List<AnnotationNode>[] paramAnnos, int paramIndex) {
-    if (paramAnnos == null || paramIndex >= paramAnnos.length || paramAnnos[paramIndex] == null) {
-      return false;
-    }
-    return paramAnnos[paramIndex].stream()
-        .anyMatch(a -> a.desc != null && a.desc.endsWith("/Nullable;"));
+  private static boolean containsNullable(List<List<Annotation>> paramAnnos, int paramIndex) {
+    return paramIndex < paramAnnos.size()
+        && paramAnnos.get(paramIndex).stream()
+            .anyMatch(a -> a.className().stringValue().endsWith("/Nullable;"));
   }
 
   /** Bytecode-level detection of the two null-guard shapes on a given parameter slot. */
   private static final class GuardScanner {
 
-    private static final String OBJECTS = Type.getInternalName(Objects.class);
-    private static final String API_USAGE_LOGGER = Type.getInternalName(ApiUsageLogger.class);
+    private static final ClassDesc OBJECTS = ClassDesc.of(Objects.class.getName());
+    private static final ClassDesc API_USAGE_LOGGER = ClassDesc.of(ApiUsageLogger.class.getName());
 
     private GuardScanner() {}
 
     /** True iff {@code paramSlot} is passed as the first arg to {@code Objects.requireNonNull}. */
-    static boolean hasRequireNonNullGuard(MethodNode method, int paramSlot) {
-      for (AbstractInsnNode insn = method.instructions.getFirst();
-          insn != null;
-          insn = insn.getNext()) {
-        if (!(insn instanceof MethodInsnNode)) {
+    static boolean hasRequireNonNullGuard(MethodModel method, int paramSlot) {
+      List<Instruction> instructions =
+          method.code().stream()
+              .flatMap(code -> code.elementStream())
+              .filter(Instruction.class::isInstance)
+              .map(Instruction.class::cast)
+              .toList();
+      for (int i = 0; i < instructions.size(); i++) {
+        if (!(instructions.get(i) instanceof InvokeInstruction invoke)
+            || invoke.opcode() != Opcode.INVOKESTATIC
+            || !invoke.owner().matches(OBJECTS)
+            || !"requireNonNull".equals(invoke.name().stringValue())) {
           continue;
         }
-        MethodInsnNode mi = (MethodInsnNode) insn;
-        if (mi.getOpcode() != Opcodes.INVOKESTATIC
-            || !OBJECTS.equals(mi.owner)
-            || !"requireNonNull".equals(mi.name)) {
-          continue;
-        }
-        AbstractInsnNode prev = previousInsn(mi.getPrevious());
-        // For 2-arg overloads, skip past the trailing message arg to reach the receiver.
-        if (Type.getArgumentTypes(mi.desc).length == 2) {
-          prev = prev == null ? null : previousInsn(prev.getPrevious());
-        }
-        if (prev instanceof VarInsnNode) {
-          VarInsnNode v = (VarInsnNode) prev;
-          if (v.getOpcode() == Opcodes.ALOAD && v.var == paramSlot) {
-            return true;
-          }
+        // Skip the trailing message argument for two-argument overloads.
+        int argumentIndex = i - invoke.typeSymbol().parameterCount();
+        if (argumentIndex >= 0 && isReferenceLoad(instructions.get(argumentIndex), paramSlot)) {
+          return true;
         }
       }
       return false;
@@ -492,58 +595,40 @@ class NullGuardsTest {
      * ...; return; }}: an {@code IFNONNULL} on the param whose fall-through branch contains a call
      * to {@code ApiUsageLogger} before the jump target.
      */
-    static boolean hasApiUsageLoggerGuard(MethodNode method, int paramSlot) {
-      for (AbstractInsnNode insn = method.instructions.getFirst();
-          insn != null;
-          insn = insn.getNext()) {
-        if (!(insn instanceof VarInsnNode)) {
+    static boolean hasApiUsageLoggerGuard(MethodModel method, int paramSlot) {
+      List<CodeElement> elements =
+          method.code().stream().flatMap(code -> code.elementStream()).toList();
+      for (int i = 0; i < elements.size(); i++) {
+        if (!isReferenceLoad(elements.get(i), paramSlot)) {
           continue;
         }
-        VarInsnNode v = (VarInsnNode) insn;
-        if (v.getOpcode() != Opcodes.ALOAD || v.var != paramSlot) {
+        int next = i + 1;
+        while (next < elements.size() && !(elements.get(next) instanceof Instruction)) {
+          next++;
+        }
+        if (next >= elements.size()
+            || !(elements.get(next) instanceof BranchInstruction jump)
+            || jump.opcode() != Opcode.IFNONNULL) {
           continue;
         }
-        AbstractInsnNode next = nextInsn(v.getNext());
-        if (!(next instanceof JumpInsnNode)) {
-          continue;
-        }
-        JumpInsnNode jump = (JumpInsnNode) next;
-        if (jump.getOpcode() != Opcodes.IFNONNULL) {
-          continue;
-        }
-        AbstractInsnNode cursor = jump.getNext();
-        while (cursor != null && !cursor.equals(jump.label)) {
-          if (cursor instanceof MethodInsnNode
-              && API_USAGE_LOGGER.equals(((MethodInsnNode) cursor).owner)) {
+        for (int cursor = next + 1; cursor < elements.size(); cursor++) {
+          CodeElement element = elements.get(cursor);
+          if (element instanceof LabelTarget target && target.label().equals(jump.target())) {
+            break;
+          }
+          if (element instanceof InvokeInstruction invoke
+              && invoke.owner().matches(API_USAGE_LOGGER)) {
             return true;
           }
-          cursor = cursor.getNext();
         }
       }
       return false;
     }
 
-    /** Walk back over ASM meta nodes (labels, line numbers, frames) to the previous real insn. */
-    private static AbstractInsnNode previousInsn(AbstractInsnNode insn) {
-      while (insn != null && isMeta(insn)) {
-        insn = insn.getPrevious();
-      }
-      return insn;
-    }
-
-    /** Walk forward over ASM meta nodes to the next real insn. */
-    private static AbstractInsnNode nextInsn(AbstractInsnNode insn) {
-      while (insn != null && isMeta(insn)) {
-        insn = insn.getNext();
-      }
-      return insn;
-    }
-
-    private static boolean isMeta(AbstractInsnNode insn) {
-      int t = insn.getType();
-      return t == AbstractInsnNode.LABEL
-          || t == AbstractInsnNode.LINE
-          || t == AbstractInsnNode.FRAME;
+    private static boolean isReferenceLoad(CodeElement element, int paramSlot) {
+      return element instanceof LoadInstruction load
+          && load.typeKind() == TypeKind.REFERENCE
+          && load.slot() == paramSlot;
     }
   }
 
@@ -577,30 +662,17 @@ class NullGuardsTest {
   }
 
   private static String prettyParams(String methodDesc) {
-    Type[] argTypes = Type.getArgumentTypes(methodDesc);
-    StringBuilder sb = new StringBuilder("(");
-    for (int i = 0; i < argTypes.length; i++) {
-      if (i > 0) {
-        sb.append(", ");
-      }
-      sb.append(simpleTypeName(argTypes[i]));
-    }
-    return sb.append(')').toString();
+    return MethodTypeDesc.ofDescriptor(methodDesc).parameterList().stream()
+        .map(ClassDesc::displayName)
+        .collect(Collectors.joining(", ", "(", ")"));
   }
 
   private static String prettyParamType(String methodDesc, int paramIndex) {
-    Type[] argTypes = Type.getArgumentTypes(methodDesc);
-    if (paramIndex < 0 || paramIndex >= argTypes.length) {
+    MethodTypeDesc type = MethodTypeDesc.ofDescriptor(methodDesc);
+    if (paramIndex < 0 || paramIndex >= type.parameterCount()) {
       return "?";
     }
-    return simpleTypeName(argTypes[paramIndex]);
-  }
-
-  private static String simpleTypeName(Type type) {
-    String name = type.getClassName();
-    int lastDot =
-        name.lastIndexOf('.', name.endsWith("[]") ? name.length() - 3 : name.length() - 1);
-    return lastDot < 0 ? name : name.substring(lastDot + 1);
+    return type.parameterType(paramIndex).displayName();
   }
 
   private static String packageOf(String internalName) {
