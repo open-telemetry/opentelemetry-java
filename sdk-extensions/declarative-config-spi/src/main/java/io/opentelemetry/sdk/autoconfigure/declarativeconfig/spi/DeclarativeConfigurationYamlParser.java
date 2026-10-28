@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
+package io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi;
 
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import java.io.InputStream;

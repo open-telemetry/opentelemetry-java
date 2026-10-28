@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal;
 
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationYamlParser;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationYamlParser;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;

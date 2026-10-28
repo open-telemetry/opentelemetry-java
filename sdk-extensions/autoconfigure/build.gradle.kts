@@ -107,7 +107,6 @@ testing {
     register<JvmTestSuite>("testIncubating") {
       dependencies {
         implementation(project(":sdk-extensions:declarative-config"))
-        implementation(project(":sdk-extensions:declarative-config-jackson"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":sdk:testing"))
@@ -121,7 +120,6 @@ testing {
     register<JvmTestSuite>("testDeclarativeConfigSpi") {
       dependencies {
         implementation(project(":sdk-extensions:declarative-config"))
-        implementation(project(":sdk-extensions:declarative-config-jackson"))
         implementation(project(":exporters:logging"))
         implementation(project(":sdk:testing"))
       }

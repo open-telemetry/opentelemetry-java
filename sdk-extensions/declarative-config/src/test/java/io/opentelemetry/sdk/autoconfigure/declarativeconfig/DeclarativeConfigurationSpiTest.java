@@ -11,6 +11,8 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.DeclarativeConfigProviderLoader;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.SnakeYamlDeclarativeConfigurationParser;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationMapper;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationYamlParser;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;

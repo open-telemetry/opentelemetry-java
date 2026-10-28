@@ -25,9 +25,7 @@ dependencies {
   implementation(project(":sdk:testing"))
   implementation(project(":exporters:otlp:all"))
   implementation(project(":api:incubator"))
-  implementation(project(":sdk-extensions:autoconfigure-spi"))
   implementation(project(":sdk-extensions:declarative-config"))
-  implementation(project(":sdk-extensions:declarative-config-jackson"))
 }
 
 // org.graalvm.buildtools.native plugin requires java 17+ as of version 0.11.0

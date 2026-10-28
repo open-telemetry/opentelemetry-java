@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson.internal;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationMapper;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationMapper;
 import java.util.Map;
 import javax.annotation.Nullable;
 

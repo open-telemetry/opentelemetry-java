@@ -14,6 +14,8 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.Declarative
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.SnakeYamlDeclarativeConfigurationParser;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationMapper;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationYamlParser;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;

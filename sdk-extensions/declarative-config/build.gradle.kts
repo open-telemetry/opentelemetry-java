@@ -13,22 +13,23 @@ plugins {
 description = "OpenTelemetry SDK Declarative Config"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig")
 otelJava.requireSuppressWarningsExplanation.set(false)
-otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
-  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationYamlParser",
+  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationYamlParser",
 ))
 // declarative-config discovers these providers at runtime via ServiceLoader
 otelJava.osgiServiceLoaderRequires.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",
-  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationYamlParser",
-  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationMapper",
+  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationYamlParser",
+  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationMapper",
 ))
 
 dependencies {
   api(project(":sdk:all"))
   api(project(":api:incubator"))
-  compileOnly(project(":sdk-extensions:autoconfigure-spi"))
+  api(project(":sdk-extensions:autoconfigure-spi"))
+  api(project(":sdk-extensions:declarative-config-spi"))
+  runtimeOnly(project(":sdk-extensions:declarative-config-jackson"))
   // Needed for composable samplers
   implementation(project(":sdk-extensions:incubator"))
 
@@ -38,8 +39,6 @@ dependencies {
   implementation("org.snakeyaml:snakeyaml-engine")
 
   testImplementation(project(":sdk:testing"))
-  testImplementation(project(":sdk-extensions:declarative-config-jackson"))
-  testImplementation(project(":sdk-extensions:autoconfigure-spi"))
   testImplementation(project(":exporters:logging"))
   testImplementation(project(":exporters:logging-otlp"))
   testImplementation(project(":exporters:otlp:all"))
