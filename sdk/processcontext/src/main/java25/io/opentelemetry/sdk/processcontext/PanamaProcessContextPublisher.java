@@ -35,7 +35,7 @@ final class PanamaProcessContextPublisher implements ProcessContextPublisher {
   private static final int MADV_DONTFORK = 0x10;
   private static final int PR_SET_VMA = 0x53564d41;
   private static final int PR_SET_VMA_ANON_NAME = 0;
-  private static final int MFD_CLOEXEC = 0x0001;
+  private static final int MFD_CLOEXEC = 0x1;
   private static final int MFD_ALLOW_SEALING = 0x2;
   private static final int MFD_NOEXEC_SEAL = 0x8;
   private static final int EINVAL = 22;

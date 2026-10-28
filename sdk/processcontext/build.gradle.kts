@@ -15,6 +15,8 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   implementation(project(":exporters:otlp:common"))
+  implementation(project(":sdk-extensions:autoconfigure-spi"))
+  implementation(project(":api:incubator"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
