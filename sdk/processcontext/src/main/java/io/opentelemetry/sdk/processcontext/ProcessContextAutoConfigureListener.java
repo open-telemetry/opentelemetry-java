@@ -10,9 +10,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
-// import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import io.opentelemetry.sdk.processcontext.data.ProcessContextData;
-// import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -33,9 +31,6 @@ public class ProcessContextAutoConfigureListener implements AutoConfigureListene
   public void afterAutoConfigure(OpenTelemetrySdk sdk) {
 
     ExtendedOpenTelemetrySdk extendedOpenTelemetrySdk = (ExtendedOpenTelemetrySdk) sdk;
-    //    ExtendedOpenTelemetrySdk.create(sdk,
-    // SdkConfigProvider.create(DeclarativeConfigProperties.empty())).getSdkResourceProvider().getResource();
-
     SdkResourceProvider sdkResourceProvider = extendedOpenTelemetrySdk.getSdkResourceProvider();
 
     ProcessContextData processContextData =
