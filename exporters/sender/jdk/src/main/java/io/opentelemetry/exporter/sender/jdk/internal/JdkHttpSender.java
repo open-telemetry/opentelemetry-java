@@ -125,7 +125,7 @@ public final class JdkHttpSender implements HttpSender {
       long maxResponseBodySize,
       @Nullable List<String> enabledProtocols) {
     this(
-        configureClient(sslContext, connectTimeout, proxyOptions, enabledProtocols),
+        configureClient(endpoint, sslContext, connectTimeout, proxyOptions, enabledProtocols),
         endpoint,
         contentType,
         compressor,
@@ -147,11 +147,17 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   private static HttpClient configureClient(
+      URI endpoint,
       @Nullable SSLContext sslContext,
       Duration connectTimeout,
       @Nullable ProxyOptions proxyOptions,
       @Nullable List<String> enabledProtocols) {
     HttpClient.Builder builder = HttpClient.newBuilder().connectTimeout(connectTimeout);
+    // HTTP/2 over cleartext uses the deprecated h2c upgrade mechanism, which is not supported by
+    // many OTLP/HTTP servers. HTTPS endpoints negotiate HTTP/2 through ALPN as usual.
+    if ("http".equalsIgnoreCase(endpoint.getScheme())) {
+      builder.version(HttpClient.Version.HTTP_1_1);
+    }
     if (sslContext != null) {
       builder.sslContext(sslContext);
     }
