@@ -114,14 +114,20 @@ public final class ViewRegistry {
         AggregatorFactory viewAggregatorFactory =
             (AggregatorFactory) entry.getView().getAggregation();
         if (viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
+          // Drop the stream if the view explicitly sets enabled=false, or if the instrument is
+          // opt-in and the view does not explicitly set enabled=true.
           if (Boolean.FALSE.equals(entry.getEnabled())
               || (descriptor.getAdvice().isOptIn() && !Boolean.TRUE.equals(entry.getEnabled()))) {
             result.add(applyDropAggregation(entry));
           } else if (Boolean.TRUE.equals(entry.getEnabled())
               && descriptor.getAdvice().hasAttributes()
               && entry.getView().getAttributeFilter().equals(StringPredicates.ALL)) {
+            // When a view enables an instrument without configuring an attribute filter, apply the
+            // instrument's attributes advice so enabling an opt-in instrument respects its other
+            // advisory parameters.
             result.add(applyAdviceToDefaultView(entry, descriptor.getAdvice()));
           } else {
+            // Otherwise, use the matched view as configured.
             result.add(entry);
           }
         } else {
