@@ -5,8 +5,15 @@
 
 package io.opentelemetry.sdk.processcontext;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Factory for obtaining a {@link ProcessContextPublisher}.
+ *
+ * <p>The supplied publisher will, depending on the Java version and OpenTelemetry configuration, be
+ * either a no-op or an implementation using calls to linux libc.
+ */
 public class ProcessContextPublisherFactory {
 
   private static final Logger logger =
@@ -30,8 +37,12 @@ public class ProcessContextPublisherFactory {
             && Integer.parseInt(System.getProperty("java.specification.version")) >= 25;
 
     // off by default until it's considered stable.
+    // Config work in progress: OTEL_EXPERIMENTAL_PROCESS_CONTEXT_ENABLED per
+    // https://github.com/open-telemetry/opentelemetry-specification/pull/5341
+    // and https://github.com/open-telemetry/opentelemetry-specification/pull/5370
     boolean enabled =
-        System.getProperty("otel.processcontext.publish", "false").equalsIgnoreCase("true");
+        System.getProperty("otel.experimental.process.context.enabled", "false")
+            .equalsIgnoreCase("true");
 
     if (available && enabled) {
       try {
@@ -41,8 +52,14 @@ public class ProcessContextPublisherFactory {
                     .getConstructors()[0]
                     .newInstance((Object[]) null);
       } catch (Exception e) {
-        logger.warning("Failed to init ProcessContextPublisher: " + e.getMessage());
+        logger.log(Level.WARNING, "Failed to init ProcessContextPublisher", e.getMessage());
       }
+    }
+
+    if (enabled && !available) {
+      logger.log(
+          Level.WARNING,
+          "Process Context publication requested, but no suitable implementation available for this environment");
     }
 
     processContextPublisher = tmp;
