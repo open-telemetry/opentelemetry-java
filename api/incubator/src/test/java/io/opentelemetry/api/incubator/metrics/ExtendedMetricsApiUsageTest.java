@@ -182,6 +182,8 @@ class ExtendedMetricsApiUsageTest {
     counter1.add(1);
     counter2.add(1);
 
+    // Verify that only counter1 is collected and measurements recorded to disabled counter2 are
+    // dropped
     assertThat(reader.collectAllMetrics())
         .satisfiesExactly(
             metricData ->
