@@ -627,7 +627,10 @@ class B3PropagatorTest {
   void fieldsList_multiInject() {
     assertThat(b3Propagator.fields())
         .containsExactly(
-            B3Propagator.TRACE_ID_HEADER, B3Propagator.SPAN_ID_HEADER, B3Propagator.SAMPLED_HEADER);
+            B3Propagator.TRACE_ID_HEADER,
+            B3Propagator.SPAN_ID_HEADER,
+            B3Propagator.SAMPLED_HEADER,
+            B3Propagator.DEBUG_HEADER);
   }
 
   @Test
@@ -708,6 +711,38 @@ class B3PropagatorTest {
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
     assertThat(context.get(DEBUG_CONTEXT_KEY)).isTrue();
+  }
+
+  @Test
+  void inject_ReusedCarrier_DoesNotRetainDebugFlag() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+
+    Context debugContext =
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()),
+            Context.root().with(DEBUG_CONTEXT_KEY, true));
+
+    b3Propagator.inject(debugContext, carrier, setter);
+    assertThat(carrier).containsEntry(B3Propagator.DEBUG_HEADER, Common.TRUE_INT);
+
+    for (String header : b3Propagator.fields()) {
+      carrier.remove(header);
+    }
+
+    Context normalContext =
+        withSpanContext(
+            SpanContext.create(
+                EXTRA_TRACE_ID, EXTRA_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()),
+            Context.root());
+
+    b3Propagator.inject(normalContext, carrier, setter);
+
+    assertThat(carrier).doesNotContainKey(B3Propagator.DEBUG_HEADER);
+    assertThat(carrier).containsEntry(B3Propagator.SAMPLED_HEADER, Common.FALSE_INT);
+
+    // The receiver must also see this request as unsampled.
+    Context extractedContext = b3Propagator.extract(Context.root(), carrier, getter);
+    assertThat(getSpanContext(extractedContext).isSampled()).isFalse();
   }
 
   @Test
