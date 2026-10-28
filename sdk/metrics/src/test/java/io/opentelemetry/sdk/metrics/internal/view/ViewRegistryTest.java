@@ -530,6 +530,7 @@ class ViewRegistryTest {
   }
 
   @Test
+  @SuppressLogger(ViewRegistry.class)
   void findViews_OptInAndViewEnabled() {
     ViewBuilder enabledViewBuilder = View.builder().setDescription("enabled view");
     SdkMeterProviderUtil.setEnabled(enabledViewBuilder, /* enabled= */ true);
@@ -547,6 +548,15 @@ class ViewRegistryTest {
             disabledViewBuilder.build(),
             /* enabled= */ false);
 
+    ViewBuilder incompatibleDisabledViewBuilder =
+        View.builder().setAggregation(Aggregation.explicitBucketHistogram());
+    SdkMeterProviderUtil.setEnabled(incompatibleDisabledViewBuilder, /* enabled= */ false);
+    RegisteredView incompatibleDisabledView =
+        registeredView(
+            InstrumentSelector.builder().setName("incompatible_disabled").build(),
+            incompatibleDisabledViewBuilder.build(),
+            /* enabled= */ false);
+
     RegisteredView unsetEnabledView =
         registeredView(
             InstrumentSelector.builder().setName("opt_in_unset_view").build(),
@@ -557,7 +567,7 @@ class ViewRegistryTest {
         ViewRegistry.create(
             DefaultAggregationSelector.getDefault(),
             CardinalityLimitSelector.defaultCardinalityLimitSelector(),
-            Arrays.asList(enabledView, disabledView, unsetEnabledView));
+            Arrays.asList(enabledView, disabledView, incompatibleDisabledView, unsetEnabledView));
 
     // OptIn instrument with no matching view gets DROP_REGISTERED_VIEW
     assertThat(
@@ -615,6 +625,21 @@ class ViewRegistryTest {
         .hasSize(1)
         .element(0)
         .satisfies(rv -> assertThat(rv.getView().getAggregation()).isEqualTo(Aggregation.drop()));
+
+    // Incompatible view with enabled=false still logs a warning and is ignored
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "incompatible_disabled",
+                    "",
+                    "",
+                    InstrumentType.OBSERVABLE_COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
+    logs.assertContains(
+        "View aggregation explicit_bucket_histogram is incompatible with instrument incompatible_disabled of type OBSERVABLE_COUNTER");
   }
 
   private static void assertAdviceFilter(RegisteredView view, AttributeKey<?>... expectedKeys) {

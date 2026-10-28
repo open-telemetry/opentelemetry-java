@@ -111,14 +111,11 @@ public final class ViewRegistry {
     // Find matching views for the instrument
     for (RegisteredView entry : registeredViews) {
       if (matchesSelector(entry.getInstrumentSelector(), descriptor, meterScope)) {
-        if (Boolean.FALSE.equals(entry.getEnabled())) {
-          result.add(applyDropAggregation(entry));
-          continue;
-        }
         AggregatorFactory viewAggregatorFactory =
             (AggregatorFactory) entry.getView().getAggregation();
         if (viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
-          if (descriptor.getAdvice().isOptIn() && !Boolean.TRUE.equals(entry.getEnabled())) {
+          if (Boolean.FALSE.equals(entry.getEnabled())
+              || (descriptor.getAdvice().isOptIn() && !Boolean.TRUE.equals(entry.getEnabled()))) {
             result.add(applyDropAggregation(entry));
           } else if (Boolean.TRUE.equals(entry.getEnabled())
               && descriptor.getAdvice().hasAttributes()

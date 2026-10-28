@@ -170,11 +170,7 @@ class OptInAdviceTest {
   void nonOptInInstrumentDisabledByViewEnabledFalse(
       InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> unused) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
-    ViewBuilder viewBuilder =
-        View.builder()
-            .setAggregation(
-                Aggregation.explicitBucketHistogram(
-                    ExplicitBucketHistogramOptions.builder().build()));
+    ViewBuilder viewBuilder = View.builder();
     SdkMeterProviderUtil.setEnabled(viewBuilder, /* enabled= */ false);
     meterProvider =
         SdkMeterProvider.builder()
@@ -185,6 +181,33 @@ class OptInAdviceTest {
     TestInstrument instrument = instrumentFactory.create(meterProvider, "test", /* optIn= */ false);
     assertThat(instrument.isEnabled()).isFalse();
     instrument.record(1, ATTRIBUTES);
+
+    assertThat(reader.collectAllMetrics()).isEmpty();
+  }
+
+  @Test
+  void nonOptInCounterDisabledByViewEnabledFalseOverridesAggregation() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    ViewBuilder viewBuilder =
+        View.builder()
+            .setAggregation(
+                Aggregation.explicitBucketHistogram(
+                    ExplicitBucketHistogramOptions.builder().build()));
+    SdkMeterProviderUtil.setEnabled(viewBuilder, /* enabled= */ false);
+    meterProvider =
+        SdkMeterProvider.builder()
+            .registerMetricReader(reader)
+            .registerView(
+                InstrumentSelector.builder().setName("test_counter").build(), viewBuilder.build())
+            .build();
+
+    ExtendedLongCounter counter =
+        (ExtendedLongCounter)
+            ((ExtendedLongCounterBuilder) meterProvider.get("meter").counterBuilder("test_counter"))
+                .setOptInAdvice(false)
+                .build();
+    assertThat(counter.isEnabled()).isFalse();
+    counter.add(1, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics()).isEmpty();
   }
