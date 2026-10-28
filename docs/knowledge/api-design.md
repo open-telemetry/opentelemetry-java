@@ -58,6 +58,24 @@ Configuration is part of our public API surface area, subject to our
 [versioning policy](../../VERSIONING.md) unless explicitly marked unstable (for example,
 `*.experimental.*` for env vars / system properties and `*/development` for declarative config).
 
+### Zero values
+
+Prefer `0` to mean "no limit" for optional upper bounds, such as export timeouts
+and maximum request sizes, when disabling the bound has well-defined semantics
+and does not require allocating storage proportional to an infinity sentinel.
+
+The litmus test is: "Can we disable this bound coherently without treating
+infinity as an allocation size or changing the component's operating model?"
+
+Require positive values for concrete allocation capacities, such as batch
+processor queue and batch sizes, or when unlimited behavior would require a
+materially different implementation. Preserve meaningful literal-zero semantics,
+such as no delay, rather than interpreting zero intervals as infinity.
+
+Follow specification-defined semantics. Relaxing an API to accept a previously
+rejected `0` is allowed, including in stable modules. Document and test zero
+behavior explicitly.
+
 ## Deprecating API
 
 Applies to both stable and alpha modules. Use plain `@Deprecated` — do **not** use
