@@ -10,8 +10,8 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.sdk.autoconfigure.spi.impl.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.io.Closeable;
@@ -139,7 +139,7 @@ class DeclarativeConfigContext implements ComponentLoader {
    * @throws DeclarativeConfigException if no matching providers are found, or if multiple are found
    *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties)} throws
    */
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings({"unchecked", "deprecation"})
   <T> T loadComponent(Class<T> type, ConfigKeyValue configKeyValue) {
     String name = configKeyValue.getKey();
     ExtendedDeclarativeConfigProperties config =
@@ -148,7 +148,20 @@ class DeclarativeConfigContext implements ComponentLoader {
             configProvider == null ? ConfigProvider.noop() : configProvider);
 
     if (componentProviders == null) {
-      componentProviders = ComponentLoader.loadList(this, ComponentProvider.class);
+      List<ComponentProvider> providers =
+          new ArrayList<>(ComponentLoader.loadList(this, ComponentProvider.class));
+      for (io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider legacyProvider :
+          ComponentLoader.loadList(
+              this, io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class)) {
+        if (providers.stream()
+            .noneMatch(
+                p ->
+                    p.getType() == legacyProvider.getType()
+                        && p.getName().equals(legacyProvider.getName()))) {
+          providers.add(legacyProvider);
+        }
+      }
+      componentProviders = providers;
     }
     List<ComponentProvider> matchedProviders =
         componentProviders.stream()

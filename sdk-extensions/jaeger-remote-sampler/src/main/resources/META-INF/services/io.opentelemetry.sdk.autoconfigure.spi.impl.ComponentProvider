@@ -1,1 +1,2 @@
 io.opentelemetry.sdk.extension.trace.jaeger.sampler.internal.JaegerRemoteSamplerComponentProvider
+

@@ -17,7 +17,7 @@ otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider",
   "io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider",
   "io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider",
-  "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.impl.ComponentProvider",
 ))
 base.archivesName.set("opentelemetry-exporter-otlp")
 
