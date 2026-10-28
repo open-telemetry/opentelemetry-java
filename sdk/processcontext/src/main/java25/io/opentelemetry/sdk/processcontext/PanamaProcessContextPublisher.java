@@ -133,7 +133,6 @@ final class PanamaProcessContextPublisher implements ProcessContextPublisher {
   @Nullable private Arena payloadArena = null;
 
   @Override
-  @SuppressWarnings({"unused", "NullAway"})
   public synchronized void publish(ProcessContextData processContextData, Clock clock)
       throws IOException {
 

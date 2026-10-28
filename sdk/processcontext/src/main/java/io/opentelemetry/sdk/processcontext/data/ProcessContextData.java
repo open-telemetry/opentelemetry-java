@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.processcontext.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -26,6 +27,9 @@ public interface ProcessContextData {
    */
   @SuppressWarnings("AutoValueSubclassLeaked")
   static ProcessContextData create(Resource resource, Attributes attributes) {
+    Objects.requireNonNull(resource, "resource");
+    Objects.requireNonNull(attributes, "attributes");
+
     return new AutoValue_ImmutableProcessContextData(resource, attributes);
   }
 
