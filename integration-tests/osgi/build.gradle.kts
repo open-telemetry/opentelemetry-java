@@ -284,8 +284,8 @@ val autoconfigureSuiteTask = registerOsgiSuite(
   runtimeOnly(project(":exporters:sender:jdk"))
 }
 
-// Suite: autoconfigure + declarative-config. Same as above but with declarative-config on the
-// classpath, additionally exercising declarative-config bundle OSGi metadata.
+// Suite: autoconfigure + declarative-config. Same as above but with declarative-config and its
+// Jackson mapper adapter on the classpath, additionally exercising their OSGi metadata.
 val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
   "autoconfigureDeclarativeConfig",
   extraRunrequires = listOf(
@@ -293,6 +293,7 @@ val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
     "opentelemetry-exporter-otlp",
     "opentelemetry-extension-trace-propagators",
     "opentelemetry-sdk-extension-declarative-config",
+    "opentelemetry-sdk-extension-declarative-config-jackson",
   ),
   serviceLoaderProvides = listOf(
     "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",
@@ -302,6 +303,7 @@ val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
   implementation(project(":sdk:all"))
   implementation(project(":sdk-extensions:autoconfigure"))
   implementation(project(":sdk-extensions:declarative-config"))
+  implementation(project(":sdk-extensions:declarative-config-jackson"))
   implementation(project(":exporters:otlp:all"))
   implementation(project(":extensions:trace-propagators"))
   runtimeOnly(project(":exporters:sender:jdk"))

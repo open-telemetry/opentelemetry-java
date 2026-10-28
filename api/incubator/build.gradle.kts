@@ -21,6 +21,8 @@ dependencies {
 
   // To use parsed config file as input for InstrumentationConfigUtilTest
   testImplementation(project(":sdk-extensions:declarative-config"))
+  testRuntimeOnly(project(":sdk-extensions:autoconfigure-spi"))
+  testRuntimeOnly(project(":sdk-extensions:declarative-config-jackson"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":api:testing-internal"))
@@ -36,6 +38,7 @@ testing {
       dependencies {
         implementation("com.fasterxml.jackson.core:jackson-databind")
         implementation(project(":sdk-extensions:declarative-config"))
+        implementation(project(":sdk-extensions:declarative-config-jackson"))
         implementation(project(":sdk-extensions:autoconfigure"))
         implementation("com.google.guava:guava")
       }
