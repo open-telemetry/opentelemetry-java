@@ -5,15 +5,15 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.DeclarativeConfigProviderLoader;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.DeclarativeConfigurationMapperUtil;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.SnakeYamlDeclarativeConfigurationParser;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ModelMapper;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
@@ -26,23 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-import org.snakeyaml.engine.v2.api.Load;
-import org.snakeyaml.engine.v2.api.LoadSettings;
-import org.snakeyaml.engine.v2.api.YamlUnicodeReader;
-import org.snakeyaml.engine.v2.common.ScalarStyle;
-import org.snakeyaml.engine.v2.composer.Composer;
-import org.snakeyaml.engine.v2.nodes.MappingNode;
-import org.snakeyaml.engine.v2.nodes.Node;
-import org.snakeyaml.engine.v2.nodes.ScalarNode;
-import org.snakeyaml.engine.v2.nodes.Tag;
-import org.snakeyaml.engine.v2.parser.ParserImpl;
-import org.snakeyaml.engine.v2.resolver.ScalarResolver;
-import org.snakeyaml.engine.v2.scanner.StreamReader;
-import org.snakeyaml.engine.v2.schema.CoreSchema;
 
 /**
  * Configure {@link OpenTelemetrySdk} using <a
@@ -54,21 +37,17 @@ import org.snakeyaml.engine.v2.schema.CoreSchema;
  *
  * <h2>For Implementers</h2>
  *
- * <p>External consumers needing to parse OpenTelemetry YAML configuration files should use the same
- * Jackson {@code ObjectMapper} configuration for compatibility. See {@link
- * io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ModelMapper#MAPPER}.
+ * <p>YAML parsing and model mapping can be replaced by implementations of {@link
+ * DeclarativeConfigurationYamlParser} and {@link DeclarativeConfigurationMapper}.
  */
 public final class DeclarativeConfiguration {
 
   private static final Logger logger = Logger.getLogger(DeclarativeConfiguration.class.getName());
-  // Matches ${VAR_NAME}, ${env:VAR_NAME}, or ${sys:property.name} with optional :-default
-  private static final Pattern ENV_VARIABLE_REFERENCE =
-      Pattern.compile("\\$\\{(?:(env|sys):)?([a-zA-Z_][a-zA-Z0-9_.]*)(?::-([^\\n}]*))?}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
-
-  // Visible for testing
-  static final ObjectMapper MAPPER = ModelMapper.MAPPER;
+  private static final DeclarativeConfigurationYamlParser YAML_PARSER =
+      DeclarativeConfigProviderLoader.load(
+          DeclarativeConfigurationYamlParser.class, SnakeYamlDeclarativeConfigurationParser::new);
 
   private DeclarativeConfiguration() {}
 
@@ -152,7 +131,9 @@ public final class DeclarativeConfiguration {
       Map<String, String> environmentVariables,
       Map<Object, Object> systemProperties) {
     Object yamlObj = loadYaml(configuration, environmentVariables, systemProperties);
-    return MAPPER.convertValue(yamlObj, OpenTelemetryConfigurationModel.class);
+    OpenTelemetryConfigurationModel model =
+        DeclarativeConfigurationMapperUtil.convert(yamlObj, OpenTelemetryConfigurationModel.class);
+    return Objects.requireNonNull(model, "Unable to map configuration to model");
   }
 
   // Visible for testing
@@ -160,9 +141,7 @@ public final class DeclarativeConfiguration {
       InputStream inputStream,
       Map<String, String> environmentVariables,
       Map<Object, Object> systemProperties) {
-    LoadSettings settings = LoadSettings.builder().setSchema(new CoreSchema()).build();
-    Load yaml = new EnvLoad(settings, environmentVariables, systemProperties);
-    return yaml.loadFromInputStream(inputStream);
+    return YAML_PARSER.parse(inputStream, environmentVariables, systemProperties);
   }
 
   /**
@@ -188,8 +167,7 @@ public final class DeclarativeConfiguration {
 
   static DeclarativeConfigProperties toConfigProperties(
       Object model, ComponentLoader componentLoader) {
-    Map<String, Object> configurationMap =
-        MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
+    Map<String, Object> configurationMap = DeclarativeConfigurationMapperUtil.toMap(model);
     if (configurationMap == null) {
       configurationMap = Collections.emptyMap();
     }
@@ -210,8 +188,11 @@ public final class DeclarativeConfiguration {
     YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
         requireYamlDeclarativeConfigProperties(genericSamplerModel);
     SamplerModel samplerModel =
-        MAPPER.convertValue(
-            DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties), SamplerModel.class);
+        Objects.requireNonNull(
+            DeclarativeConfigurationMapperUtil.convert(
+                DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties),
+                SamplerModel.class),
+            "Unable to map sampler configuration to model");
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
         new DeclarativeConfigContext(yamlDeclarativeConfigProperties.getComponentLoader()),
@@ -245,192 +226,6 @@ public final class DeclarativeConfiguration {
         throw e;
       }
       throw new DeclarativeConfigException("Unexpected configuration error", e);
-    }
-  }
-
-  private static final class EnvLoad extends Load {
-
-    private final LoadSettings settings;
-    private final Map<String, String> environmentVariables;
-    private final Map<Object, Object> systemProperties;
-
-    private EnvLoad(
-        LoadSettings settings,
-        Map<String, String> environmentVariables,
-        Map<Object, Object> systemProperties) {
-      super(settings);
-      this.settings = settings;
-      this.environmentVariables = environmentVariables;
-      this.systemProperties = systemProperties;
-    }
-
-    @Override
-    public Object loadFromInputStream(InputStream yamlStream) {
-      Objects.requireNonNull(yamlStream, "InputStream cannot be null");
-      return loadOne(
-          new EnvComposer(
-              settings,
-              new ParserImpl(
-                  settings, new StreamReader(settings, new YamlUnicodeReader(yamlStream))),
-              environmentVariables,
-              systemProperties));
-    }
-  }
-
-  /**
-   * A YAML Composer that performs environment variable and system property substitution according
-   * to the <a
-   * href="https://opentelemetry.io/docs/specs/otel/configuration/data-model/#environment-variable-substitution">
-   * OpenTelemetry Configuration Data Model specification</a>.
-   *
-   * <p>This composer supports:
-   *
-   * <ul>
-   *   <li>Environment variable references: {@code ${ENV_VAR}} or {@code ${env:ENV_VAR}}
-   *   <li>System property references: {@code ${sys:property.name}}
-   *   <li>Default values: {@code ${ENV_VAR:-default_value}}
-   *   <li>Escape sequences: {@code $$} is replaced with a single {@code $}
-   * </ul>
-   *
-   * <p>Substitution only applies to scalar values. Mapping keys are not candidates for
-   * substitution. Referenced variables that are undefined, null, or empty are replaced with empty
-   * values unless a default value is provided.
-   *
-   * <p>The {@code $} character serves as an escape sequence where {@code $$} in the input is
-   * translated to a single {@code $} in the output. This prevents substitution for the escaped
-   * content.
-   */
-  private static final class EnvComposer extends Composer {
-
-    private final Load load;
-    private final Map<String, String> environmentVariables;
-    private final Map<Object, Object> systemProperties;
-    private final ScalarResolver scalarResolver;
-
-    private static final String ESCAPE_SEQUENCE = "$$";
-    private static final int ESCAPE_SEQUENCE_LENGTH = ESCAPE_SEQUENCE.length();
-    private static final char ESCAPE_SEQUENCE_REPLACEMENT = '$';
-
-    private EnvComposer(
-        LoadSettings settings,
-        ParserImpl parser,
-        Map<String, String> environmentVariables,
-        Map<Object, Object> systemProperties) {
-      super(settings, parser);
-      this.load = new Load(settings);
-      this.environmentVariables = environmentVariables;
-      this.systemProperties = systemProperties;
-      this.scalarResolver = settings.getSchema().getScalarResolver();
-    }
-
-    @Override
-    protected Node composeValueNode(MappingNode node) {
-      Node itemValue = super.composeValueNode(node);
-      if (!(itemValue instanceof ScalarNode)) {
-        // Only apply environment variable substitution to ScalarNodes
-        return itemValue;
-      }
-      ScalarNode scalarNode = (ScalarNode) itemValue;
-      String envSubstitution = envSubstitution(scalarNode.getValue());
-
-      // If the environment variable substitution does not change the value, do not modify the node
-      if (envSubstitution.equals(scalarNode.getValue())) {
-        return itemValue;
-      }
-
-      Object envSubstitutionObj = load.loadFromString(envSubstitution);
-      Tag tag = itemValue.getTag();
-      ScalarStyle scalarStyle = scalarNode.getScalarStyle();
-
-      Tag resolvedTag =
-          envSubstitutionObj == null
-              ? Tag.NULL
-              : scalarResolver.resolve(envSubstitutionObj.toString(), true);
-
-      // Only non-quoted substituted scalars can have their tag changed
-      if (!itemValue.getTag().equals(resolvedTag)
-          && scalarStyle != ScalarStyle.SINGLE_QUOTED
-          && scalarStyle != ScalarStyle.DOUBLE_QUOTED) {
-        tag = resolvedTag;
-      }
-
-      boolean resolved = true;
-      return new ScalarNode(
-          tag,
-          resolved,
-          envSubstitution,
-          scalarStyle,
-          itemValue.getStartMark(),
-          itemValue.getEndMark());
-    }
-
-    private String envSubstitution(String val) {
-      // Iterate through val left to right, search for escape sequence "$$"
-      // For the substring of val between the last escape sequence and the next found, perform
-      // environment variable substitution
-      // Add the escape replacement character '$' in place of each escape sequence found
-
-      int lastEscapeIndexEnd = 0;
-      StringBuilder newVal = null;
-      while (true) {
-        int escapeIndex = val.indexOf(ESCAPE_SEQUENCE, lastEscapeIndexEnd);
-        int substitutionEndIndex = escapeIndex == -1 ? val.length() : escapeIndex;
-        newVal = envVarSubstitution(newVal, val, lastEscapeIndexEnd, substitutionEndIndex);
-        if (escapeIndex == -1) {
-          break;
-        } else {
-          newVal.append(ESCAPE_SEQUENCE_REPLACEMENT);
-        }
-        lastEscapeIndexEnd = escapeIndex + ESCAPE_SEQUENCE_LENGTH;
-        if (lastEscapeIndexEnd >= val.length()) {
-          break;
-        }
-      }
-
-      return newVal.toString();
-    }
-
-    private StringBuilder envVarSubstitution(
-        @Nullable StringBuilder newVal, String source, int startIndex, int endIndex) {
-      String val = source.substring(startIndex, endIndex);
-      Matcher matcher = ENV_VARIABLE_REFERENCE.matcher(val);
-
-      if (!matcher.find()) {
-        return newVal == null ? new StringBuilder(val) : newVal.append(val);
-      }
-
-      if (newVal == null) {
-        newVal = new StringBuilder();
-      }
-
-      int offset = 0;
-      do {
-        MatchResult matchResult = matcher.toMatchResult();
-        String prefix = matcher.group(1); // "env", "sys", or null
-        String key = matcher.group(2); // variable/property name
-        String defaultValue = matcher.group(3);
-        if (defaultValue == null) {
-          defaultValue = "";
-        }
-
-        String replacement;
-        if ("sys".equals(prefix)) {
-          // System property substitution
-          Object sysProp = systemProperties.get(key);
-          replacement = sysProp != null ? sysProp.toString() : defaultValue;
-        } else {
-          // Environment variable substitution (default or explicit "env:" prefix)
-          replacement = environmentVariables.getOrDefault(key, defaultValue);
-        }
-
-        newVal.append(val, offset, matchResult.start()).append(replacement);
-        offset = matchResult.end();
-      } while (matcher.find());
-      if (offset != val.length()) {
-        newVal.append(val, offset, val.length());
-      }
-
-      return newVal;
     }
   }
 

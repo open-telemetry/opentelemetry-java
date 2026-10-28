@@ -16,10 +16,13 @@ otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationYamlParser",
 ))
-// declarative-config discovers customizer providers at runtime via ServiceLoader
+// declarative-config discovers these providers at runtime via ServiceLoader
 otelJava.osgiServiceLoaderRequires.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",
+  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationYamlParser",
+  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationMapper",
 ))
 
 dependencies {
@@ -33,9 +36,9 @@ dependencies {
 
   api("com.fasterxml.jackson.core:jackson-annotations")
   implementation("org.snakeyaml:snakeyaml-engine")
-  implementation("com.fasterxml.jackson.core:jackson-databind")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk-extensions:declarative-config-jackson"))
   testImplementation(project(":sdk-extensions:autoconfigure-spi"))
   testImplementation(project(":exporters:logging"))
   testImplementation(project(":exporters:logging-otlp"))
@@ -46,6 +49,7 @@ dependencies {
   testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-resources")
   testImplementation("com.linecorp.armeria:armeria-junit5")
+  testImplementation("com.fasterxml.jackson.core:jackson-databind")
 //
   testImplementation("com.google.guava:guava-testlib")
   testImplementation("nl.jqno.equalsverifier:equalsverifier")
@@ -108,8 +112,8 @@ val syncPojoModelsToSrc = tasks.register("syncPojoModelsToSrc") {
   val modelSrcDir = File(projectDir, "src/main/java")
   doLast {
     val modelDir = File(modelSrcDir, modelPackage.replace('.', '/'))
-    // Delete only @Generated files so hand-written files (ModelMapper, ExtensionPropertyUtil)
-    // in model.internal survive the regeneration cycle.
+    // Delete only @Generated files so hand-written files (ExtensionPropertyUtil) in model.internal
+    // survive the regeneration cycle.
     modelDir.walkTopDown()
       .filter { it.isFile && it.extension == "java" }
       .filter { it.readText().contains("@Generated(") }
