@@ -5,13 +5,13 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
+import io.opentelemetry.api.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.sdk.autoconfigure.spi.declarativeconfig.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.io.Closeable;
@@ -139,7 +139,7 @@ class DeclarativeConfigContext implements ComponentLoader {
    * @throws DeclarativeConfigException if no matching providers are found, or if multiple are found
    *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties)} throws
    */
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings({"unchecked", "deprecation"})
   <T> T loadComponent(Class<T> type, ConfigKeyValue configKeyValue) {
     String name = configKeyValue.getKey();
     ExtendedDeclarativeConfigProperties config =
@@ -148,7 +148,20 @@ class DeclarativeConfigContext implements ComponentLoader {
             configProvider == null ? ConfigProvider.noop() : configProvider);
 
     if (componentProviders == null) {
-      componentProviders = ComponentLoader.loadList(this, ComponentProvider.class);
+      List<ComponentProvider> providers =
+          new ArrayList<>(ComponentLoader.loadList(this, ComponentProvider.class));
+      for (io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider legacyProvider :
+          ComponentLoader.loadList(
+              this, io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class)) {
+        if (providers.stream()
+            .noneMatch(
+                p ->
+                    p.getType() == legacyProvider.getType()
+                        && p.getName().equals(legacyProvider.getName()))) {
+          providers.add(legacyProvider);
+        }
+      }
+      componentProviders = providers;
     }
     List<ComponentProvider> matchedProviders =
         componentProviders.stream()
@@ -218,8 +231,10 @@ class DeclarativeConfigContext implements ComponentLoader {
     return Collections.unmodifiableSet(listeners);
   }
 
+  @SuppressWarnings("deprecation")
   private static class ExtendedDeclarativeConfigPropertiesImpl
-      implements ExtendedDeclarativeConfigProperties {
+      implements ExtendedDeclarativeConfigProperties,
+          io.opentelemetry.api.incubator.config.DeclarativeConfigProperties {
 
     private final DeclarativeConfigProperties delegate;
     private final ConfigProvider configProvider;

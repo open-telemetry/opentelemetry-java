@@ -11,4 +11,5 @@ otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 dependencies {
   api(project(":sdk:all"))
   compileOnly(project(":api:incubator"))
+  testImplementation(project(":api:incubator"))
 }

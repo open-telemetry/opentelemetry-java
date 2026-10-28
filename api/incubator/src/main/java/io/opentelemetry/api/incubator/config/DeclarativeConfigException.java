@@ -5,8 +5,14 @@
 
 package io.opentelemetry.api.incubator.config;
 
-/** An exception that is thrown when errors occur with declarative configuration. */
-public final class DeclarativeConfigException extends RuntimeException {
+/**
+ * An exception that is thrown when errors occur with declarative configuration.
+ *
+ * @deprecated Use {@link io.opentelemetry.api.config.DeclarativeConfigException} instead.
+ */
+@Deprecated
+public class DeclarativeConfigException
+    extends io.opentelemetry.api.config.DeclarativeConfigException {
 
   private static final long serialVersionUID = 3036584181551130522L;
 

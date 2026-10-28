@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.incubator.config;
 
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
