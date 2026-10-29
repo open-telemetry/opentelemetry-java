@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -42,8 +41,6 @@ class SpanExporterConfigurationTest {
         .isInstanceOf(OtlpJsonLoggingSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("otlp", spiExportersManager))
         .isInstanceOf(OtlpGrpcSpanExporter.class);
-    assertThat(SpanExporterConfiguration.configureExporter("zipkin", spiExportersManager))
-        .isInstanceOf(ZipkinSpanExporter.class);
   }
 
   @Test

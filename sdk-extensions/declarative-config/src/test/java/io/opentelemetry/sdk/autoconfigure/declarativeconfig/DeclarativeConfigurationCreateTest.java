@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryC
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -68,6 +69,7 @@ class DeclarativeConfigurationCreateTest {
   @ParameterizedTest
   @MethodSource("exampleFiles")
   @SuppressLogger(ParentBasedSamplerBuilder.class)
+  @SuppressLogger(ResourceBuilder.class)
   void parseAndCreate_Examples(File example, @TempDir Path tempDir)
       throws IOException, CertificateEncodingException {
     // Write certificates to temp files
@@ -96,6 +98,11 @@ class DeclarativeConfigurationCreateTest {
                 "cert_file: "
                     + clientCertificatePath.replace("\\", "\\\\")
                     + System.lineSeparator())
+            // Snippets write to file:///var/log/*.jsonl, which is not writable in tests. The
+            // value can be the last line of the file, so the line terminator is not matched.
+            .replaceAll(
+                "output_stream: file:.*",
+                "output_stream: " + tempDir.resolve("output.jsonl").toUri())
             // A snippet references a custom id generator named my_custom_id_generator. Replace with
             // one named test, which we provide via SPI
             .replace("my_custom_id_generator", "test");
@@ -125,7 +132,7 @@ class DeclarativeConfigurationCreateTest {
     // exporter with OTLP exporter, following by invalid batch exporter which references invalid
     // exporter "foo".
     String yaml =
-        "file_format: \"1.1\"\n"
+        "file_format: \"1.2\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -152,7 +159,7 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void parseAndCreate_EmptyComponentProviderConfig() {
     String yaml =
-        "file_format: \"1.1\"\n"
+        "file_format: \"1.2\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - test:\n"
@@ -170,12 +177,12 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void create_ModelCustomizer() {
     OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
-    model.withFileFormat("1.1");
-    model.withTracerProvider(
+    model.setFileFormat("1.2");
+    model.setTracerProvider(
         new TracerProviderModel()
-            .withProcessors(
+            .setProcessors(
                 Collections.singletonList(
-                    new SpanProcessorModel().withAdditionalProperty("test", null))));
+                    new SpanProcessorModel().setExtensionProperty("test", null))));
     ExtendedOpenTelemetrySdk sdk =
         DeclarativeConfiguration.create(
                 model,
@@ -183,15 +190,13 @@ class DeclarativeConfigurationCreateTest {
                 ComponentLoader.forClassLoader(
                     DeclarativeConfigurationCreateTest.class.getClassLoader()))
             .getSdk();
-    assertThat(sdk.toString())
-        .contains(
-            "resource=Resource{schemaUrl=null, attributes={"
-                + "color=\"blue\", "
-                + "foo=\"bar\", "
-                + "service.name=\"unknown_service:java\", "
-                + "telemetry.sdk.language=\"java\", "
-                + "telemetry.sdk.name=\"opentelemetry\", "
-                + "telemetry.sdk.version=\"");
+    String sdkStr = sdk.toString();
+    assertThat(sdkStr).contains("color=\"blue\"");
+    assertThat(sdkStr).contains("foo=\"bar\"");
+    assertThat(sdkStr).contains("service.name=\"unknown_service:java\"");
+    assertThat(sdkStr).contains("telemetry.sdk.language=\"java\"");
+    assertThat(sdkStr).contains("telemetry.sdk.name=\"opentelemetry\"");
+    assertThat(sdkStr).contains("telemetry.sdk.version=\"");
   }
 
   @Test

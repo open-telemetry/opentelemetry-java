@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.common.testing.EqualsTester;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,5 +26,15 @@ class ReadOnlyArrayMapTest {
         .addEqualityGroup(three)
         .addEqualityGroup(empty, empty)
         .testEquals();
+  }
+
+  @Test
+  void containsValueNull() {
+    Map<String, String> map = ReadOnlyArrayMap.wrap(Arrays.asList("a", null));
+    Map<String, String> mapWithoutNull = ReadOnlyArrayMap.wrap(Arrays.asList("a", "b"));
+
+    assertThat(map.containsValue(null)).isTrue();
+    assertThat(map.containsValue("b")).isFalse();
+    assertThat(mapWithoutNull.containsValue(null)).isFalse();
   }
 }

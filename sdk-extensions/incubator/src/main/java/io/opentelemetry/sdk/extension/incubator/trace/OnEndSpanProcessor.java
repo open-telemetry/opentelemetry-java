@@ -18,7 +18,7 @@ public final class OnEndSpanProcessor implements SpanProcessor {
     this.onEnd = onEnd;
   }
 
-  static SpanProcessor create(OnEnd onEnd) {
+  public static SpanProcessor create(OnEnd onEnd) {
     return new OnEndSpanProcessor(onEnd);
   }
 

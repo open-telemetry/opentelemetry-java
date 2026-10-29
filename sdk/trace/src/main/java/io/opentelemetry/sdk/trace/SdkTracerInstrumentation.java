@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN;
-import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT;
+import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_SPAN_PARENT_ORIGIN;
+import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_SPAN_SAMPLING_RESULT;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -14,6 +14,7 @@ import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -167,9 +168,9 @@ final class SdkTracerInstrumentation {
         if (startedSpans == null) {
           startedSpans =
               meter()
-                  .counterBuilder("otel.sdk.span.started")
-                  .setUnit("{span}")
-                  .setDescription("The number of created spans.")
+                  .counterBuilder(SemConvConstants.OTEL_SDK_SPAN_STARTED_NAME)
+                  .setUnit(SemConvConstants.OTEL_SDK_SPAN_STARTED_UNIT)
+                  .setDescription(SemConvConstants.OTEL_SDK_SPAN_STARTED_DESCRIPTION)
                   .build();
           this.startedSpans = startedSpans;
         }
@@ -186,10 +187,9 @@ final class SdkTracerInstrumentation {
         if (liveSpans == null) {
           liveSpans =
               meter()
-                  .upDownCounterBuilder("otel.sdk.span.live")
-                  .setUnit("{span}")
-                  .setDescription(
-                      "The number of created spans with recording=true for which the end operation has not been called yet.")
+                  .upDownCounterBuilder(SemConvConstants.OTEL_SDK_SPAN_LIVE_NAME)
+                  .setUnit(SemConvConstants.OTEL_SDK_SPAN_LIVE_UNIT)
+                  .setDescription(SemConvConstants.OTEL_SDK_SPAN_LIVE_DESCRIPTION)
                   .build();
           this.liveSpans = liveSpans;
         }

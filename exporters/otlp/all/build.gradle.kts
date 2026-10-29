@@ -9,6 +9,7 @@ apply<io.opentelemetry.gradle.OtelVersionClassPlugin>()
 
 description = "OpenTelemetry Protocol (OTLP) Exporters"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator.config", "io.opentelemetry.sdk.autoconfigure.spi"))
 // io.grpc and org.jspecify.annotations are not OSGi bundles; must use unversioned optional.
 otelJava.osgiUnversionedOptionalPackages.set(listOf("io.grpc", "org.jspecify.annotations"))

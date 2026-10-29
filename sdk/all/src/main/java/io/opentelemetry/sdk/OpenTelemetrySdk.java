@@ -202,7 +202,7 @@ public class OpenTelemetrySdk implements OpenTelemetry, Closeable {
    *
    * <p>Static global providers are obfuscated when they are returned from the API to prevent users
    * from casting them to their SDK specific implementation. For example, we do not want users to
-   * use patterns like {@code (SdkMeterProvider) openTelemetry.getMeterProvider()}.
+   * use patterns like {@code (SdkLoggerProvider) openTelemetry.getLogsBridge()}.
    */
   @ThreadSafe
   // Visible for testing

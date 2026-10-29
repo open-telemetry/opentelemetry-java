@@ -39,23 +39,23 @@ class SpanLimitsFactoryTest {
             "attribute limits only",
             SpanLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
-                    .withAttributeCountLimit(1)
-                    .withAttributeValueLengthLimit(2),
+                    .setAttributeCountLimit(1)
+                    .setAttributeValueLengthLimit(2),
                 new SpanLimitsModel()),
             SpanLimits.builder().setMaxNumberOfAttributes(1).setMaxAttributeValueLength(2).build()),
         Arguments.argumentSet(
             "span limits override attribute limits",
             SpanLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
-                    .withAttributeCountLimit(1)
-                    .withAttributeValueLengthLimit(2),
+                    .setAttributeCountLimit(1)
+                    .setAttributeValueLengthLimit(2),
                 new SpanLimitsModel()
-                    .withAttributeCountLimit(3)
-                    .withAttributeValueLengthLimit(4)
-                    .withEventCountLimit(5)
-                    .withLinkCountLimit(6)
-                    .withEventAttributeCountLimit(7)
-                    .withLinkAttributeCountLimit(8)),
+                    .setAttributeCountLimit(3)
+                    .setAttributeValueLengthLimit(4)
+                    .setEventCountLimit(5)
+                    .setLinkCountLimit(6)
+                    .setEventAttributeCountLimit(7)
+                    .setLinkAttributeCountLimit(8)),
             SpanLimits.builder()
                 .setMaxNumberOfAttributes(3)
                 .setMaxAttributeValueLength(4)

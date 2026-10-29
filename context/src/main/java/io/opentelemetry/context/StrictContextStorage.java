@@ -22,6 +22,7 @@ package io.opentelemetry.context;
 
 import static java.lang.Thread.currentThread;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import java.lang.ref.Reference;
 import java.util.Arrays;
@@ -63,6 +64,11 @@ final class StrictContextStorage implements ContextStorage, AutoCloseable {
 
   @Override
   public Scope attach(Context context) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(ContextStorage.class, "attach", "context");
+      return Scope.noop();
+    }
+
     Scope scope = delegate.attach(context);
 
     CallerStackTrace caller = new CallerStackTrace(context);

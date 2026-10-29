@@ -5,8 +5,8 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.impl.TemporaryBuffers;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
-import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.Immutable;
 
@@ -59,8 +59,11 @@ public final class TraceId {
    * @return {@code true} if the {@code TraceId} is valid.
    */
   public static boolean isValid(CharSequence traceId) {
-    return traceId != null
-        && traceId.length() == HEX_LENGTH
+    if (traceId == null) {
+      ApiUsageLogger.logNullParam(TraceId.class, "isValid", "traceId");
+      return false;
+    }
+    return traceId.length() == HEX_LENGTH
         && !INVALID.contentEquals(traceId)
         && OtelEncodingUtils.isValidBase16String(traceId);
   }
@@ -70,14 +73,18 @@ public final class TraceId {
    * given bytes representation, or {@link #getInvalid()} if input is {@code null} or the given byte
    * array is too short.
    *
-   * <p>It converts the first 26 bytes of the given byte array.
+   * <p>It converts the first 16 bytes of the given byte array.
    *
    * @param traceIdBytes the bytes (16-byte array) representation of the {@code TraceId}.
    * @return the lowercase hex (base16) representation of the {@code TraceId}.
    */
   public static String fromBytes(byte[] traceIdBytes) {
-    if (traceIdBytes == null || traceIdBytes.length < BYTES_LENGTH) {
-      ApiUsageLogger.logUsageIssue(TraceId.class, "fromBytes", "traceIdBytes is null or too short");
+    if (traceIdBytes == null) {
+      ApiUsageLogger.logNullParam(TraceId.class, "fromBytes", "traceIdBytes");
+      return INVALID;
+    }
+    if (traceIdBytes.length < BYTES_LENGTH) {
+      ApiUsageLogger.logUsageIssue(TraceId.class, "fromBytes", "traceIdBytes is too short");
       return INVALID;
     }
     char[] result = TemporaryBuffers.chars(HEX_LENGTH);
@@ -86,7 +93,7 @@ public final class TraceId {
   }
 
   /**
-   * Returns the bytes (16-byte array) representation of the {@code TraceId} converted from the
+   * Returns the lowercase hex (base16) representation of the {@code TraceId} converted from the
    * given two {@code long} values representing the lower and higher parts.
    *
    * <p>There is no restriction on the specified values, other than the already established validity

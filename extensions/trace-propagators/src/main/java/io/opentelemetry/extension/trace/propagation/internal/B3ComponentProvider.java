@@ -11,7 +11,7 @@ import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 
 /**
- * Declarative configuration SPI implementation for {@link B3Propagator} which allows enables the
+ * Declarative configuration SPI implementation for {@link B3Propagator} which allows enabling
  * {@link B3Propagator#injectingSingleHeader()}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change

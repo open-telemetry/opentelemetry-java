@@ -1,10 +1,14 @@
+import org.gradle.api.JavaVersion
+
 plugins {
   id("otel.java-conventions")
 }
 
 description = "OpenTelemetry All"
 otelJava.moduleName.set("io.opentelemetry.all")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiEnabled.set(false)
+otelJava.minJavaVersionSupported.set(JavaVersion.VERSION_25)
 
 // Skip ossIndexAudit on test module
 tasks.named("ossIndexAudit") {
@@ -72,16 +76,7 @@ val writeArtifactsAndJars = tasks.register<WriteArtifactsAndJars>("writeArtifact
 }
 
 tasks {
-  // This module depends on all published subprojects (for JaCoCo coverage aggregation and
-  // arch tests). Since :exporters:http-sender:jdk targets Java 11, the compiler needs
-  // release 11 to resolve its classes on the classpath.
-  withType(JavaCompile::class) {
-    options.release.set(11)
-  }
-
-  val testJavaVersion = project.findProperty("testJavaVersion") as String?
   test {
-    enabled = testJavaVersion != "8"
     dependsOn(writeArtifactsAndJars)
     environment("ARTIFACTS_AND_JARS", artifactsAndJarsFile.get().asFile.absolutePath)
   }

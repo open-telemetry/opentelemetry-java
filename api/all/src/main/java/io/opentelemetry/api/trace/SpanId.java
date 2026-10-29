@@ -5,8 +5,8 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.impl.TemporaryBuffers;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
-import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.Immutable;
 
@@ -55,8 +55,11 @@ public final class SpanId {
    * @return {@code true} if the span identifier is valid.
    */
   public static boolean isValid(CharSequence spanId) {
-    return spanId != null
-        && spanId.length() == HEX_LENGTH
+    if (spanId == null) {
+      ApiUsageLogger.logNullParam(SpanId.class, "isValid", "spanId");
+      return false;
+    }
+    return spanId.length() == HEX_LENGTH
         && !INVALID.contentEquals(spanId)
         && OtelEncodingUtils.isValidBase16String(spanId);
   }
@@ -72,9 +75,13 @@ public final class SpanId {
    * @return the lowercase hex (base16) representation of the {@code SpanId}.
    */
   public static String fromBytes(byte[] spanIdBytes) {
-    if (spanIdBytes == null || spanIdBytes.length < BYTES_LENGTH) {
-      ApiUsageLogger.logUsageIssue(SpanId.class, "fromBytes", "spanIdBytes is null or too short");
-      return INVALID;
+    if (spanIdBytes == null) {
+      ApiUsageLogger.logNullParam(SpanId.class, "fromBytes", "spanIdBytes");
+      return getInvalid();
+    }
+    if (spanIdBytes.length < BYTES_LENGTH) {
+      ApiUsageLogger.logUsageIssue(SpanId.class, "fromBytes", "spanIdBytes is too short");
+      return getInvalid();
     }
     char[] result = TemporaryBuffers.chars(HEX_LENGTH);
     OtelEncodingUtils.bytesToBase16(spanIdBytes, result, BYTES_LENGTH);

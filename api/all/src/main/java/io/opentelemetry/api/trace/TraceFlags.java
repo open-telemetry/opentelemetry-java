@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -54,6 +55,10 @@ public interface TraceFlags {
    * @return the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
    */
   static TraceFlags fromHex(CharSequence src, int srcOffset) {
+    if (src == null) {
+      ApiUsageLogger.logNullParam(TraceFlags.class, "fromHex", "src");
+      return getDefault();
+    }
     return ImmutableTraceFlags.fromHex(src, srcOffset);
   }
 
@@ -71,7 +76,7 @@ public interface TraceFlags {
    * Returns {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code
    * false}.
    *
-   * @return {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code *
+   * @return {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code
    *     false}.
    */
   boolean isSampled();
@@ -92,7 +97,7 @@ public interface TraceFlags {
   /**
    * Returns the lowercase hex (base16) representation of this {@link TraceFlags}.
    *
-   * @return the byte representation of the {@link TraceFlags}.
+   * @return the lowercase hex (base16) representation of the {@link TraceFlags}.
    */
   String asHex();
 

@@ -40,19 +40,19 @@ class LogLimitsFactoryTest {
             "attribute limits only",
             LogRecordLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
-                    .withAttributeValueLengthLimit(1)
-                    .withAttributeCountLimit(2),
+                    .setAttributeValueLengthLimit(1)
+                    .setAttributeCountLimit(2),
                 new LogRecordLimitsModel()),
             LogLimits.builder().setMaxAttributeValueLength(1).setMaxNumberOfAttributes(2).build()),
         Arguments.argumentSet(
             "log record limits override attribute limits",
             LogRecordLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
-                    .withAttributeValueLengthLimit(1)
-                    .withAttributeCountLimit(2),
+                    .setAttributeValueLengthLimit(1)
+                    .setAttributeCountLimit(2),
                 new LogRecordLimitsModel()
-                    .withAttributeValueLengthLimit(3)
-                    .withAttributeCountLimit(4)),
+                    .setAttributeValueLengthLimit(3)
+                    .setAttributeCountLimit(4)),
             LogLimits.builder().setMaxAttributeValueLength(3).setMaxNumberOfAttributes(4).build()));
   }
 }

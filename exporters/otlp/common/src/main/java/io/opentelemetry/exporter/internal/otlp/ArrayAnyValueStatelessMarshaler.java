@@ -14,7 +14,7 @@ import io.opentelemetry.proto.common.v1.internal.ArrayValue;
 import java.io.IOException;
 import java.util.List;
 
-/** A Marshaler of key value pairs. See {@link ArrayAnyValueMarshaler}. */
+/** A Marshaler of array values. See {@link ArrayAnyValueMarshaler}. */
 final class ArrayAnyValueStatelessMarshaler implements StatelessMarshaler<List<Value<?>>> {
 
   static final ArrayAnyValueStatelessMarshaler INSTANCE = new ArrayAnyValueStatelessMarshaler();

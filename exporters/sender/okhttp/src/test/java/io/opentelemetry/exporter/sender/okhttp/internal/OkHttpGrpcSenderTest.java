@@ -6,6 +6,8 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -17,6 +19,7 @@ import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
+import java.security.Security;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
@@ -27,6 +30,9 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -38,8 +44,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class OkHttpGrpcSenderTest {
 
-  private static final String GRPC_STATUS = "grpc-status";
-  private static final MediaType TEXT_PLAIN = MediaType.get("text/plain");
+  private static final MediaType GRPC_MEDIA_TYPE = MediaType.get("application/grpc");
 
   static Set<String> provideRetryableGrpcStatusCodes() {
     return RetryUtil.retryableGrpcStatusCodes();
@@ -48,7 +53,11 @@ class OkHttpGrpcSenderTest {
   @ParameterizedTest(name = "isRetryable should return true for GRPC status code: {0}")
   @MethodSource("provideRetryableGrpcStatusCodes")
   void isRetryable_RetryableGrpcStatus(String retryableGrpcStatus) {
-    Response response = createResponse(503, retryableGrpcStatus, "Retryable");
+    GrpcResponse response =
+        ImmutableGrpcResponse.create(
+            GrpcStatusCode.fromValue(Integer.parseInt(retryableGrpcStatus)),
+            "Retryable",
+            new byte[0]);
     boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
     assertTrue(isRetryable);
   }
@@ -57,9 +66,51 @@ class OkHttpGrpcSenderTest {
   void isRetryable_NonRetryableGrpcStatus() {
     String nonRetryableGrpcStatus =
         Integer.valueOf(GrpcStatusCode.UNKNOWN.getValue()).toString(); // INVALID_ARGUMENT
-    Response response = createResponse(503, nonRetryableGrpcStatus, "Non-retryable");
+    GrpcResponse response =
+        ImmutableGrpcResponse.create(
+            GrpcStatusCode.fromValue(Integer.parseInt(nonRetryableGrpcStatus)),
+            "Non-retryable",
+            new byte[0]);
     boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
     assertFalse(isRetryable);
+  }
+
+  @Test
+  void handleResponse_resolvesTrailerStatusAndMessageAfterConsumingBody() {
+    OkHttpGrpcSender sender = createSender(Long.MAX_VALUE);
+    AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
+    byte[] frame = new byte[] {0, 0, 0, 0, 3, 'o', 'k', '!'};
+    Response response =
+        new Response.Builder()
+            .request(new Request.Builder().url("http://localhost/").build())
+            .protocol(Protocol.HTTP_2)
+            .code(200)
+            .body(ResponseBody.create(frame, GRPC_MEDIA_TYPE))
+            .message("HTTP message")
+            .trailers(() -> Headers.of("grpc-status", "14", "grpc-message", "retry%20me"))
+            .build();
+
+    sender.handleResponse(response, responseRef::set);
+
+    assertThat(responseRef.get().getStatusCode()).isEqualTo(GrpcStatusCode.UNAVAILABLE);
+    assertThat(responseRef.get().getStatusDescription()).isEqualTo("retry me");
+    assertThat(responseRef.get().getResponseMessage())
+        .containsExactly((byte) 'o', (byte) 'k', (byte) '!');
+  }
+
+  private static OkHttpGrpcSender createSender(long maxResponseBodySize) {
+    return new OkHttpGrpcSender(
+        "http://localhost",
+        null,
+        Duration.ofSeconds(10),
+        Duration.ofSeconds(10),
+        Collections::emptyMap,
+        null,
+        null,
+        null,
+        null,
+        maxResponseBodySize,
+        null);
   }
 
   @Test
@@ -79,7 +130,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             executor,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
     AtomicReference<Throwable> errorRef = new AtomicReference<>();
@@ -87,18 +139,8 @@ class OkHttpGrpcSenderTest {
     sender.send(new TestMessageWriter(), responseRef::set, errorRef::set);
 
     assertThat(errorRef.get()).isNotNull();
+    assertThat(errorRef.get()).hasMessageContaining("executor rejected");
     assertThat(responseRef.get()).isNull();
-  }
-
-  private static Response createResponse(int httpCode, String grpcStatus, String message) {
-    return new Response.Builder()
-        .request(new Request.Builder().url("http://localhost/").build())
-        .protocol(Protocol.HTTP_2)
-        .code(httpCode)
-        .body(ResponseBody.create("body", TEXT_PLAIN))
-        .message(message)
-        .header(GRPC_STATUS, grpcStatus)
-        .build();
   }
 
   @Test
@@ -123,7 +165,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     CompletableResultCode sendResult = new CompletableResultCode();
     sender.send(
@@ -167,7 +210,8 @@ class OkHttpGrpcSenderTest {
               null,
               null,
               customExecutor, // Pass custom executor -> managedExecutor = false
-              Long.MAX_VALUE);
+              Long.MAX_VALUE,
+              null);
 
       CompletableResultCode shutdownResult = sender.shutdown();
 
@@ -205,7 +249,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             null, // null executor = managed
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     // Start multiple requests to ensure threads are busy
     CountDownLatch blockCallbacks = new CountDownLatch(1);
@@ -268,7 +313,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     // Trigger some activity
     sender.send(new TestMessageWriter(), response -> {}, error -> {});
@@ -298,6 +344,61 @@ class OkHttpGrpcSenderTest {
     assertTrue(
         shutdownResult.join(10, TimeUnit.SECONDS).isSuccess(),
         "Shutdown should succeed even when interrupted");
+  }
+
+  @Test
+  void constructor_usesDefaultTrustManagerWhenTrustManagerIsNull() throws Exception {
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(null, null, null);
+
+    assertThatCode(
+            () ->
+                new OkHttpGrpcSender(
+                    "https://localhost",
+                    null,
+                    Duration.ofSeconds(10),
+                    Duration.ofSeconds(10),
+                    Collections::emptyMap,
+                    null,
+                    sslContext,
+                    null,
+                    null,
+                    Long.MAX_VALUE,
+                    null))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void constructor_wrapsDefaultTrustManagerFailure() throws Exception {
+    String originalAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
+
+    try {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", "invalid");
+
+      SSLContext sslContext = SSLContext.getInstance("TLS");
+      sslContext.init(null, null, null);
+
+      assertThatThrownBy(
+              () ->
+                  new OkHttpGrpcSender(
+                      "https://localhost",
+                      null,
+                      Duration.ofSeconds(10),
+                      Duration.ofSeconds(10),
+                      Collections::emptyMap,
+                      null,
+                      sslContext,
+                      null,
+                      null,
+                      Long.MAX_VALUE,
+                      null))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessage("Unable to initialize default trust manager")
+          .hasCauseInstanceOf(SSLException.class);
+
+    } finally {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
+    }
   }
 
   /** Simple test marshaler for testing purposes. */

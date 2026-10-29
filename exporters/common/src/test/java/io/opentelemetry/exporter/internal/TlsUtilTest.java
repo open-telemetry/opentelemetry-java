@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.linecorp.armeria.internal.common.util.SelfSignedCertificate;
@@ -15,13 +16,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.KeyFactory;
+import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Stream;
+import javax.net.ssl.ManagerFactoryParameters;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.TrustManagerFactorySpi;
+import javax.net.ssl.X509TrustManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -77,6 +84,41 @@ class TlsUtilTest {
                     keySpec, Collections.singletonList(KeyFactory.getInstance("EC"))))
         .isInstanceOf(SSLException.class)
         .hasMessage("Unable to generate key from supported algorithms: [EC]");
+  }
+
+  @Test
+  void defaultTrustManager() {
+    assertThatCode(TlsUtil::defaultTrustManager).doesNotThrowAnyException();
+  }
+
+  @Test
+  void defaultTrustManager_returnsX509TrustManager() throws Exception {
+    assertThat(TlsUtil.defaultTrustManager()).isInstanceOf(X509TrustManager.class);
+  }
+
+  private static TrustManagerFactory trustManagerFactory(TrustManager[] trustManagers) {
+    return new TrustManagerFactory(
+        new TrustManagerFactorySpi() {
+          @Override
+          protected void engineInit(KeyStore keyStore) {}
+
+          @Override
+          protected void engineInit(ManagerFactoryParameters spec) {}
+
+          @Override
+          protected TrustManager[] engineGetTrustManagers() {
+            return trustManagers;
+          }
+        },
+        null,
+        "test") {};
+  }
+
+  @Test
+  void defaultTrustManager_NoX509TrustManagerFound() {
+    assertThatCode(() -> TlsUtil.defaultTrustManager(trustManagerFactory(new TrustManager[0])))
+        .isInstanceOf(SSLException.class)
+        .hasMessage("No X509TrustManager found");
   }
 
   /**

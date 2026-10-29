@@ -47,6 +47,7 @@ import javax.net.ssl.X509TrustManager;
 public class GrpcExporterBuilder {
 
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
+  public static final long DEFAULT_MAX_REQUEST_MESSAGE_SIZE = 64 * 1024L * 1024L;
 
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
@@ -68,6 +69,8 @@ public class GrpcExporterBuilder {
   private ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(GrpcExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
+  private long maxRequestMessageSize = DEFAULT_MAX_REQUEST_MESSAGE_SIZE;
+  @Nullable private List<String> enabledProtocols;
 
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
@@ -170,6 +173,16 @@ public class GrpcExporterBuilder {
     return this;
   }
 
+  public GrpcExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSize) {
+    this.maxRequestMessageSize = maxRequestMessageSize;
+    return this;
+  }
+
+  public GrpcExporterBuilder setEnabledProtocols(@Nullable List<String> enabledProtocols) {
+    this.enabledProtocols = enabledProtocols;
+    return this;
+  }
+
   @SuppressWarnings("BuilderReturnThis")
   public GrpcExporterBuilder copy() {
     GrpcExporterBuilder copy =
@@ -189,6 +202,8 @@ public class GrpcExporterBuilder {
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.grpcChannel = grpcChannel;
     copy.componentLoader = componentLoader;
+    copy.maxRequestMessageSize = maxRequestMessageSize;
+    copy.enabledProtocols = enabledProtocols;
     return copy;
   }
 
@@ -232,7 +247,8 @@ public class GrpcExporterBuilder {
                 grpcChannel,
                 // 4mb to align with spec guidance - even though we don't do anything with the
                 // response today, we will so better to have future-looking memory profile
-                4 * 1024L * 1024L));
+                4 * 1024L * 1024L,
+                enabledProtocols));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter(
@@ -240,7 +256,8 @@ public class GrpcExporterBuilder {
         internalTelemetryVersion,
         ComponentId.generateLazy(exporterType),
         meterProviderSupplier,
-        endpoint);
+        endpoint,
+        maxRequestMessageSize);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -265,6 +282,9 @@ public class GrpcExporterBuilder {
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
     }
+    if (enabledProtocols != null) {
+      joiner.add("enabledProtocols=" + enabledProtocols);
+    }
     if (grpcChannel != null) {
       joiner.add("grpcChannel=" + grpcChannel);
     }
@@ -272,6 +292,7 @@ public class GrpcExporterBuilder {
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
+    joiner.add("maxRequestMessageSize=" + maxRequestMessageSize);
     joiner.add("exporterType=" + exporterType.toString());
     joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way

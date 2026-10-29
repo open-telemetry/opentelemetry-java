@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Arrays;
 import java.util.List;
@@ -23,20 +24,21 @@ final class TracerSharedState {
   private final IdGenerator idGenerator;
   // tracks whether it is safe to skip id validation on ids from the above generator
   private final boolean idGeneratorSafeToSkipIdValidation;
-  private final Resource resource;
+  private final SdkResourceProvider resourceProvider;
 
   private final Supplier<SpanLimits> spanLimitsSupplier;
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
   private final SdkTracerInstrumentation tracerInstrumentation;
+  private final boolean noSpanProcessor;
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   TracerSharedState(
       Clock clock,
       IdGenerator idGenerator,
-      Resource resource,
+      SdkResourceProvider resourceProvider,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
@@ -45,12 +47,16 @@ final class TracerSharedState {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
-    this.resource = resource;
+    this.resourceProvider = resourceProvider;
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.tracerInstrumentation = tracerInstrumentation;
+    // Note: This relies on SpanProcessor.composite(..) returning NoopSpanProcessor unwrapped
+    // when given an empty list. If SpanProcessor.composite(..) behavior changes, this instanceof
+    // check must change too
+    this.noSpanProcessor = activeSpanProcessor instanceof NoopSpanProcessor;
   }
 
   Clock getClock() {
@@ -66,7 +72,7 @@ final class TracerSharedState {
   }
 
   Resource getResource() {
-    return resource;
+    return resourceProvider.getResource();
   }
 
   /** Returns the current {@link SpanLimits}. */
@@ -95,6 +101,10 @@ final class TracerSharedState {
    */
   boolean hasBeenShutdown() {
     return shutdownResult != null;
+  }
+
+  boolean hasNoSpanProcessor() {
+    return noSpanProcessor;
   }
 
   /** Return the {@link ExceptionAttributeResolver}. */

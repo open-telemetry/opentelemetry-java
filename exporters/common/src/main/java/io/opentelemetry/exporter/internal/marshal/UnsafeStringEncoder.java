@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import sun.misc.Unsafe;
 
 /**
- * StringEncoder implementation using sun.misc.Unsafe for high performance on Java 8+.
+ * StringEncoder implementation using sun.misc.Unsafe for high performance on Java 9+.
  *
  * <p>This implementation provides optimized string operations by directly accessing String internal
  * fields using Unsafe operations. It's only created if Unsafe is available and all required field

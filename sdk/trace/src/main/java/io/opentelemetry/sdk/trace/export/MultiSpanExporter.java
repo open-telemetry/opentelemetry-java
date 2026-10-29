@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
@@ -43,9 +44,10 @@ final class MultiSpanExporter implements SpanExporter {
       CompletableResultCode exportResult;
       try {
         exportResult = spanExporter.export(spans);
-      } catch (RuntimeException e) {
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
         // If an exception was thrown by the exporter
-        logger.log(Level.WARNING, "Exception thrown by the export.", e);
+        logger.log(Level.WARNING, "Exception thrown by the export.", t);
         results.add(CompletableResultCode.ofFailure());
         continue;
       }
@@ -66,9 +68,10 @@ final class MultiSpanExporter implements SpanExporter {
       CompletableResultCode flushResult;
       try {
         flushResult = spanExporter.flush();
-      } catch (RuntimeException e) {
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
         // If an exception was thrown by the exporter
-        logger.log(Level.WARNING, "Exception thrown by the flush.", e);
+        logger.log(Level.WARNING, "Exception thrown by the flush.", t);
         results.add(CompletableResultCode.ofFailure());
         continue;
       }
@@ -84,9 +87,10 @@ final class MultiSpanExporter implements SpanExporter {
       CompletableResultCode shutdownResult;
       try {
         shutdownResult = spanExporter.shutdown();
-      } catch (RuntimeException e) {
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
         // If an exception was thrown by the exporter
-        logger.log(Level.WARNING, "Exception thrown by the shutdown.", e);
+        logger.log(Level.WARNING, "Exception thrown by the shutdown.", t);
         results.add(CompletableResultCode.ofFailure());
         continue;
       }

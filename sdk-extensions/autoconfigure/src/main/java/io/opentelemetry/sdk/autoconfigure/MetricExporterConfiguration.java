@@ -11,9 +11,11 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.HashMap;
@@ -33,6 +35,8 @@ final class MetricExporterConfiguration {
     EXPORTER_ARTIFACT_ID_BY_NAME.put("console", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
+    EXPORTER_ARTIFACT_ID_BY_NAME.put(
+        "experimental-otlp/stdout", "opentelemetry-exporter-logging-otlp");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
 
     READER_ARTIFACT_ID_BY_NAME = new HashMap<>();
@@ -80,10 +84,17 @@ final class MetricExporterConfiguration {
     if (customizedMetricExporter != metricExporter) {
       closeables.add(customizedMetricExporter);
     }
-    MetricReader reader =
+    InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
+    PeriodicMetricReaderBuilder readerBuilder =
         PeriodicMetricReader.builder(customizedMetricExporter)
-            .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
-            .build();
+            .setInternalTelemetryVersion(telemetryVersion)
+            .setInterval(
+                config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL));
+    Integer maxExportBatchSize = config.getInt("otel.metric.export.max.batch.size");
+    if (maxExportBatchSize != null) {
+      readerBuilder.setMaxExportBatchSize(maxExportBatchSize);
+    }
+    MetricReader reader = readerBuilder.build();
     closeables.add(reader);
     MetricReader customizedMetricReader = metricReaderCustomizer.apply(reader, config);
     if (customizedMetricReader != reader) {

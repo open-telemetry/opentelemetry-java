@@ -1,5 +1,11 @@
 # OpenTelemetry OpenCensus Shim
 
+> [!WARNING]
+> OpenCensus compatibility is deprecated in the OpenTelemetry specification, and this shim is
+> deprecated accordingly. It remains available for legacy compatibility, but users should migrate
+> OpenCensus instrumentation to the OpenTelemetry APIs. See the
+> [OpenTelemetry specification guidance on OpenCensus compatibility](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/opencensus.md).
+
 The OpenCensus shim allows applications and libraries that are instrumented
 with OpenTelemetry, but depend on other libraries instrumented with OpenCensus,
 to export trace spans from both OpenTelemetry and OpenCensus with the correct
@@ -20,13 +26,14 @@ Applications only need to set up OpenTelemetry exporters, not OpenCensus.
 
 To allow the shim to work for metrics, add the shim as a dependency.
 
-Applications also need to attach OpenCensus metrics to their metric readers on registration.
+Applications also need to register the OpenCensus metric producer with the meter provider.
 
 ```java
 PeriodicMetricReader reader = ...
 SdkMeterProvider.builder()
-    .registerMetricReader(OpenCensusMetrics.attachTo(reader))
-    .buildAndRegisterGlobal();
+    .registerMetricReader(reader)
+    .registerMetricProducer(OpenCensusMetricProducer.create())
+    .build();
 ```
 
 For example, if a logging exporter were configured, the following would be
@@ -35,11 +42,7 @@ added:
 ```java
 LoggingMetricExporter metricExporter = LoggingMetricExporter.create();
 SdkMeterProvider.builder()
-    .registerMetricReader(OpenCensusMetrics.attachTo(PeriodicMetricReader.create(metricExporter)))
+    .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+    .registerMetricProducer(OpenCensusMetricProducer.create())
     .build();
 ```
-
-## Known Problems
-
-* OpenCensus links added after an OpenCensus span is created will not be
-exported, as OpenTelemetry only supports links added when a span is created.

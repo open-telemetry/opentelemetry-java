@@ -10,7 +10,6 @@ import static io.opentelemetry.extension.trace.propagation.Common.MAX_TRACE_ID_L
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
-import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -109,6 +108,7 @@ public final class OtTracePropagator implements TextMapPropagator {
   }
 
   @Override
+  @SuppressWarnings("deprecation") // Legacy baggage headers require key enumeration.
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
       return Context.root();
@@ -146,7 +146,8 @@ public final class OtTracePropagator implements TextMapPropagator {
           break;
         }
         String lowercaseKey = key.toLowerCase(Locale.ROOT);
-        if (!lowercaseKey.startsWith(PREFIX_BAGGAGE_HEADER)) {
+        if (!lowercaseKey.startsWith(PREFIX_BAGGAGE_HEADER)
+            || lowercaseKey.length() == PREFIX_BAGGAGE_HEADER.length()) {
           continue;
         }
         String value = getter.get(carrier, key);

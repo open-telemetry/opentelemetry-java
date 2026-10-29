@@ -5,8 +5,10 @@
 
 package io.opentelemetry.context;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
+
 /**
- * Key for indexing values of type {@link T} stored in a {@link Context}. {@link ContextKey} are
+ * Key for indexing values of type {@code T} stored in a {@link Context}. {@link ContextKey} are
  * compared by reference, so it is expected that only one {@link ContextKey} is created for a
  * particular type of context value.
  *
@@ -16,7 +18,7 @@ package io.opentelemetry.context;
  *   private static final ContextKey<MyState> KEY = ContextKey.named("MyState");
  *
  *   public Context startWork() {
- *     return Context.with(KEY, new MyState());
+ *     return Context.current().with(KEY, new MyState());
  *   }
  *
  *   public void continueWork(Context context) {
@@ -39,6 +41,10 @@ public interface ContextKey<T> {
    * keys.
    */
   static <T> ContextKey<T> named(String name) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(ContextKey.class, "named", "name");
+      return new DefaultContextKey<>("<unnamed>");
+    }
     return new DefaultContextKey<>(name);
   }
 }

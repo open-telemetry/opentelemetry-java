@@ -30,8 +30,8 @@ import javax.annotation.concurrent.ThreadSafe;
  *     // Inject the span's SpanContext and other available concerns (such as correlations)
  *     // contained in the specified Context.
  *     Map<String, String> map = new HashMap<>();
- *     textMapPropagator.inject(Context.current(), map, new Setter<String, String>() {
- *       public void put(Map<String, String> map, String key, String value) {
+ *     textMapPropagator.inject(Context.current(), map, new TextMapSetter<Map<String, String>>() {
+ *       public void set(Map<String, String> map, String key, String value) {
  *         map.put(key, value);
  *       }
  *     });
@@ -50,10 +50,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   // Extract and store the propagated span's SpanContext and other available concerns
  *   // in the specified Context.
- *   Context context = textMapPropagator.extract(Context.current(), request,
- *     new Getter<String, String>() {
- *       public String get(Object request, String key) {
- *         // Return the value associated to the key, if available.
+ *   Context context = textMapPropagator.extract(Context.current(), headers,
+ *     new TextMapGetter<Map<String, String>>() {
+ *       public Iterable<String> keys(Map<String, String> carrier) {
+ *         return carrier.keySet();
+ *       }
+ *       public String get(Map<String, String> carrier, String key) {
+ *         return carrier.get(key);
  *       }
  *     }
  *   );
@@ -80,7 +83,7 @@ public interface ContextPropagators {
    * <pre>{@code
    * ContextPropagators propagators = ContextPropagators.create(
    *   TextMapPropagator.composite(
-   *     HttpTraceContext.getInstance(),
+   *     W3CTraceContextPropagator.getInstance(),
    *     W3CBaggagePropagator.getInstance(),
    *     new MyCustomContextPropagator()));
    * }</pre>

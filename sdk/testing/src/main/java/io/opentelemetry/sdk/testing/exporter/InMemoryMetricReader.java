@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *   private final InMemoryMetricReader reader = InMemoryMetricReader.create();
  *   private final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
  *   private final Meter meter = sdkMeterProvider.get("example");
- *   private final LongCounter metricCallCount = meter.counterBuilder("num_collects");
+ *   private final LongCounter metricCallCount = meter.counterBuilder("num_collects").build();
  *
  *   public void printMetrics() {
  *     metricCallCount.add(1);

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.export;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import java.time.Duration;
 import java.util.concurrent.Executors;
@@ -26,7 +27,11 @@ public final class PeriodicMetricReaderBuilder {
 
   private final MetricExporter metricExporter;
 
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LATEST;
+
   private long intervalNanos = TimeUnit.MINUTES.toNanos(DEFAULT_SCHEDULE_DELAY_MINUTES);
+
+  @Nullable private Long exporterTimeoutNanos;
 
   @Nullable private ScheduledExecutorService executor;
 
@@ -54,6 +59,33 @@ public final class PeriodicMetricReaderBuilder {
     return setInterval(interval.toNanos(), TimeUnit.NANOSECONDS);
   }
 
+  /**
+   * Sets the maximum time an export will be allowed to run before being reported as failed. If
+   * unset, defaults to the configured interval. A timeout of {@code 0} disables the timeout.
+   *
+   * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
+   * individual export(batch) invocation, not the aggregate export cycle.
+   */
+  public PeriodicMetricReaderBuilder setExporterTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    exporterTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time an export will be allowed to run before being reported as failed. If
+   * unset, defaults to the configured interval. A {@link Duration#ZERO zero} timeout disables the
+   * timeout.
+   *
+   * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
+   * individual export(batch) invocation, not the aggregate export cycle.
+   */
+  public PeriodicMetricReaderBuilder setExporterTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setExporterTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
   /** Sets the {@link ScheduledExecutorService} to schedule reads on. */
   public PeriodicMetricReaderBuilder setExecutor(ScheduledExecutorService executor) {
     requireNonNull(executor, "executor");
@@ -68,8 +100,9 @@ public final class PeriodicMetricReaderBuilder {
    *
    * @param maxExportBatchSize The maximum number of data points to include in a single export
    *     batch.
+   * @since 1.67.0
    */
-  PeriodicMetricReaderBuilder setMaxExportBatchSize(int maxExportBatchSize) {
+  public PeriodicMetricReaderBuilder setMaxExportBatchSize(int maxExportBatchSize) {
     checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive");
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
@@ -82,6 +115,23 @@ public final class PeriodicMetricReaderBuilder {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    return new PeriodicMetricReader(metricExporter, intervalNanos, executor, maxExportBatchSize);
+    return new PeriodicMetricReader(
+        metricExporter,
+        intervalNanos,
+        exporterTimeoutNanos != null ? exporterTimeoutNanos : intervalNanos,
+        executor,
+        maxExportBatchSize,
+        internalTelemetryVersion);
+  }
+
+  /**
+   * Sets the internal telemetry version used to control self-observability metrics.
+   *
+   * @since 1.65.0
+   */
+  public PeriodicMetricReaderBuilder setInternalTelemetryVersion(InternalTelemetryVersion version) {
+    requireNonNull(version, "version");
+    this.internalTelemetryVersion = version;
+    return this;
   }
 }

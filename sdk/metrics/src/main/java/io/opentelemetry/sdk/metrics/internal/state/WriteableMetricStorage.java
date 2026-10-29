@@ -24,6 +24,13 @@ public interface WriteableMetricStorage {
   void recordDouble(double value, Attributes attributes, Context context);
 
   /**
+   * Binds the given {@code attributes}, returning a {@link BoundStorageHandle} that records to the
+   * corresponding timeseries directly. The series is resolved once here, so subsequent records via
+   * the returned handle skip per-recording attribute processing and series lookup.
+   */
+  BoundStorageHandle bind(Attributes attributes);
+
+  /**
    * Returns {@code true} if the storage is actively recording measurements, and {@code false}
    * otherwise (i.e. noop / empty metric storage is installed).
    */

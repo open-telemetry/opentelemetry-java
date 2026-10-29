@@ -6,6 +6,7 @@ plugins {
 
 description = "OpenTelemetry W3C Context Propagation Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.tracecontext.integration.tests")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 dependencies {
   implementation(project(":sdk:all"))
@@ -21,6 +22,7 @@ dependencies {
 tasks {
   val shadowJar = named<Jar>("shadowJar") {
     archiveFileName.set("tracecontext-tests.jar")
+    exclude("META-INF/*.kotlin_module") // not needed at runtime. avoids KotlinModuleMetadataTransformer warning
 
     manifest {
       attributes("Main-Class" to "io.opentelemetry.Application")

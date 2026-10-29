@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.ATTRIBUTE_PROPERTY;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.createEnvironmentResource;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ResourceModelAccessor;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
@@ -35,7 +35,7 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
   public Resource create(ResourceModel model, DeclarativeConfigContext context) {
     ResourceBuilder builder = Resource.getDefault().toBuilder();
 
-    ExperimentalResourceDetectionModel detectionModel = model.getDetectionDevelopment();
+    ExperimentalResourceDetectionModel detectionModel = ResourceModelAccessor.getDetection(model);
     if (detectionModel != null) {
       ResourceBuilder detectedResourceBuilder = Resource.builder();
 
@@ -52,12 +52,12 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
           attributesIncludeExcludeModel == null
               ? ResourceFactory::matchAll
               : IncludeExcludeFactory.getInstance().create(attributesIncludeExcludeModel, context);
-      Attributes filteredDetectedAttributes =
-          detectedResourceBuilder.build().getAttributes().toBuilder()
+      Resource filteredDetectedResource =
+          detectedResourceBuilder
               .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
               .build();
 
-      builder.putAll(filteredDetectedAttributes);
+      builder.putAll(filteredDetectedResource);
     }
 
     String attributeList = model.getAttributesList();

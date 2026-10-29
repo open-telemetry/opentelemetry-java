@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.baggage;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
+
 /**
  * A builder of {@link Baggage}.
  *
@@ -14,6 +16,10 @@ public interface BaggageBuilder {
 
   /**
    * Adds the key/value pair and metadata regardless of whether the key is present.
+   *
+   * <p>Per the <a href="https://www.w3.org/TR/baggage/#definition">W3C Baggage spec</a>, a
+   * baggage-name must be a non-empty token. Calls with a {@code null} or empty {@code key}, a
+   * {@code null} {@code value}, or a {@code null} {@code entryMetadata} are silently ignored.
    *
    * @param key the {@code String} key which will be set.
    * @param value the {@code String} value to set for the given key.
@@ -30,6 +36,14 @@ public interface BaggageBuilder {
    * @return this
    */
   default BaggageBuilder put(String key, String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(BaggageBuilder.class, "put", "key");
+      return this;
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(BaggageBuilder.class, "put", "value");
+      return this;
+    }
     return put(key, value, BaggageEntryMetadata.empty());
   }
 

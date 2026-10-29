@@ -5,15 +5,17 @@
 
 package io.opentelemetry.sdk.profiles.jfr;
 
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.profiles.ProfilesDictionaryCompositor;
 import io.opentelemetry.sdk.profiles.SampleCompositionBuilder;
 import io.opentelemetry.sdk.profiles.SampleCompositionKey;
+import io.opentelemetry.sdk.profiles.data.KeyValueAndUnitData;
 import io.opentelemetry.sdk.profiles.data.SampleData;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jdk.jfr.consumer.RecordedEvent;
+import jdk.jfr.consumer.RecordedThread;
 
 /**
  * Converter for batching a stream of recorded jfr.ExecutionSample events into a format suitable for
@@ -68,8 +70,20 @@ public class JfrExecutionSampleEventConverter {
       return;
     }
 
+    RecordedThread recordedThread = recordedEvent.getValue("sampledThread");
+    if (recordedThread == null) {
+      // just skip these - it would be spec valid, but practically without Thread metadata
+      // the receiving backend likely won't group and render properly them anyhow.
+      return;
+    }
+
+    String threadName = recordedThread.getJavaName();
+    int threadNameIndex = profilesDictionaryCompositor.putIfAbsent("thread.name");
+    KeyValueAndUnitData threadNameData =
+        KeyValueAndUnitData.create(threadNameIndex, Value.of(threadName), 0);
+    int attribIndex = profilesDictionaryCompositor.putIfAbsent(threadNameData);
     int stackIndex = locationCompositor.putIfAbsent(recordedEvent.getStackTrace().getFrames());
-    SampleCompositionKey key = new SampleCompositionKey(stackIndex, Collections.emptyList(), 0);
+    SampleCompositionKey key = new SampleCompositionKey(stackIndex, List.of(attribIndex), 0);
     Instant instant = recordedEvent.getStartTime();
     long epochNanos = TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
     sampleCompositionBuilder.add(key, null, epochNanos);

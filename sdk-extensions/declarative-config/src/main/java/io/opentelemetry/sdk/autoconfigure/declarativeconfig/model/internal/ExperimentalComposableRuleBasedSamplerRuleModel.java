@@ -8,19 +8,14 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKind;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKindModel;
 import java.util.List;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
-/**
- * A rule for ExperimentalComposableRuleBasedSampler. A rule can have multiple match conditions -
- * the sampler will be applied if all match. If no conditions are specified, the rule matches all
- * spans that reach it.
- */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"attribute_values", "attribute_patterns", "span_kinds", "parent", "sampler"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalComposableRuleBasedSamplerRuleModel {
 
   @Nullable private ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues;
@@ -28,8 +23,8 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   @Nullable
   private ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatterns;
 
-  @Nullable private List<SpanKind> spanKinds;
-  @Nullable private List<ExperimentalSpanParent> parent;
+  @Nullable private List<SpanKindModel> spanKinds;
+  @Nullable private List<ExperimentalSpanParentModel> parent;
   @Nullable private ExperimentalComposableSamplerModel sampler;
 
   /**
@@ -50,7 +45,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   @JsonProperty("attribute_values")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withAttributeValues(
+  public ExperimentalComposableRuleBasedSamplerRuleModel setAttributeValues(
       ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues) {
     this.attributeValues = attributeValues;
     return this;
@@ -74,7 +69,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   @JsonProperty("attribute_patterns")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withAttributePatterns(
+  public ExperimentalComposableRuleBasedSamplerRuleModel setAttributePatterns(
       ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatterns) {
     this.attributePatterns = attributePatterns;
     return this;
@@ -99,12 +94,13 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
    */
   @JsonProperty("span_kinds")
   @Nullable
-  public List<SpanKind> getSpanKinds() {
+  public List<SpanKindModel> getSpanKinds() {
     return spanKinds;
   }
 
   @JsonProperty("span_kinds")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withSpanKinds(List<SpanKind> spanKinds) {
+  public ExperimentalComposableRuleBasedSamplerRuleModel setSpanKinds(
+      List<SpanKindModel> spanKinds) {
     this.spanKinds = spanKinds;
     return this;
   }
@@ -124,13 +120,13 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
    */
   @JsonProperty("parent")
   @Nullable
-  public List<ExperimentalSpanParent> getParent() {
+  public List<ExperimentalSpanParentModel> getParent() {
     return parent;
   }
 
   @JsonProperty("parent")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withParent(
-      List<ExperimentalSpanParent> parent) {
+  public ExperimentalComposableRuleBasedSamplerRuleModel setParent(
+      List<ExperimentalSpanParentModel> parent) {
     this.parent = parent;
     return this;
   }
@@ -147,7 +143,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   @JsonProperty("sampler")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withSampler(
+  public ExperimentalComposableRuleBasedSamplerRuleModel setSampler(
       ExperimentalComposableSamplerModel sampler) {
     this.sampler = sampler;
     return this;

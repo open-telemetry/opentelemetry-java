@@ -8,6 +8,7 @@ plugins {
 
 description = "OpenTelemetry SDK"
 otelJava.moduleName.set("io.opentelemetry.sdk")
+otelJava.requireSuppressWarningsExplanation.set(false)
 base.archivesName.set("opentelemetry-sdk")
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 
@@ -28,4 +29,21 @@ dependencies {
 
   jmh(project(":sdk:testing"))
   jmh(project(":api:incubator"))
+}
+
+testing {
+  suites {
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":api:incubator"))
+        implementation(project(":sdk:testing"))
+      }
+    }
+  }
+}
+
+tasks {
+  check {
+    dependsOn(testing.suites)
+  }
 }

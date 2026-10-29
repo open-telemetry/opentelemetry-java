@@ -24,18 +24,24 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>Specific concern values (traces, correlations, etc) will be read from the specified {@code
  * Context}, and resulting values will be stored in a new {@code Context} upon extraction. It is
- * recommended to use a single {@code Context.Key} to store the entire concern data:
+ * recommended to use a single {@code ContextKey} to store the entire concern data:
  *
  * <pre>{@code
- * public static final Context.Key CONCERN_KEY = Context.key("my-concern-key");
- * public MyConcernPropagator implements TextMapPropagator {
- *   public <C> void inject(Context context, C carrier, Setter<C> setter) {
- *     Object concern = CONCERN_KEY.get(context);
+ * public class MyConcernPropagator implements TextMapPropagator {
+ *   private static final ContextKey<Object> CONCERN_KEY = ContextKey.named("my-concern-key");
+ *
+ *   public Collection<String> fields() {
+ *     return Collections.singletonList("my-concern-header");
+ *   }
+ *
+ *   public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
+ *     Object concern = context.get(CONCERN_KEY);
  *     // Use concern in the specified context to propagate data.
  *   }
- *   public <C> Context extract(Context context, C carrier, Getter<C> getter) {
- *     // Use getter to get the data from the carrier.
- *     return context.withValue(CONCERN_KEY, concern);
+ *
+ *   public <C> Context extract(Context context, C carrier, TextMapGetter<C> getter) {
+ *     Object concern = getter.get(carrier, "my-concern-header");
+ *     return context.with(CONCERN_KEY, concern);
  *   }
  * }
  * }</pre>

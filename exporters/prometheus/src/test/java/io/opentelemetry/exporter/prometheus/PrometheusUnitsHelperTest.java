@@ -5,9 +5,11 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.google.common.base.Strings;
 import io.prometheus.metrics.model.snapshots.Unit;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,6 +40,43 @@ class PrometheusUnitsHelperTest {
     }
   }
 
+  @ParameterizedTest
+  @MethodSource("annotationUnitArgs")
+  void convertUnit_annotations(String otlpUnit, String expectedPrometheusUnit) {
+    Unit actualPrometheusUnit = PrometheusUnitsHelper.convertUnit(otlpUnit);
+    if (expectedPrometheusUnit == null) {
+      assertThat(actualPrometheusUnit).isNull();
+    } else {
+      assertThat(actualPrometheusUnit).hasToString(expectedPrometheusUnit);
+    }
+  }
+
+  private static Stream<Arguments> annotationUnitArgs() {
+    String openingBraces = Strings.repeat("{", 8000);
+    return Stream.of(
+        Arguments.argumentSet("empty annotation", "s{}", "seconds"),
+        Arguments.argumentSet("annotation only", "{objects}", null),
+        Arguments.argumentSet("unitless after annotation removal", "1{objects}", null),
+        Arguments.argumentSet("multiple annotations", "{first}s{second}", "seconds"),
+        Arguments.argumentSet("trim after annotation removal", " \ts{objects} \n", "seconds"),
+        Arguments.argumentSet("annotation containing slash", "s{objects/s}", "seconds"),
+        Arguments.argumentSet("annotation before denominator", "m{objects}/s", "meters_per_second"),
+        Arguments.argumentSet("nested opening braces", "s{outer{inner}", "seconds"),
+        Arguments.argumentSet(
+            "first closing brace ends annotation", "s{outer{inner}tail}", "stail"),
+        Arguments.argumentSet("unmatched closing brace retained", "s}m{objects}", "s_m"),
+        Arguments.argumentSet("unterminated annotation retained", "s{tail", "s_tail"),
+        Arguments.argumentSet("valid then unterminated annotation", "s{objects}{tail", "s_tail"),
+        Arguments.argumentSet(
+            "repeated unterminated opening braces",
+            "s" + openingBraces + "s",
+            "s" + Strings.repeat("_", 8000) + "s"),
+        Arguments.argumentSet(
+            "repeated opening braces with closing brace", "s" + openingBraces + "}", "seconds"),
+        Arguments.argumentSet(
+            "repeated complete annotations", Strings.repeat("{objects}", 1000) + "s", "seconds"));
+  }
+
   private static Stream<Arguments> reservedSuffixUnitArgs() {
     return Stream.of(
         Arguments.argumentSet("reserved suffix only", "total", null),
@@ -56,14 +95,15 @@ class PrometheusUnitsHelperTest {
   private static Stream<Arguments> providePrometheusOTelUnitEquivalentPairs() {
     return Stream.of(
         Arguments.argumentSet("bytes", "By", "bytes"),
-        Arguments.argumentSet("kilobytes", "KBy", "kilobytes"),
+        Arguments.argumentSet("upper case KBy not converted", "KBy", "KBy"),
+        Arguments.argumentSet("kilobytes lowercase k", "kBy", "kilobytes"),
         Arguments.argumentSet("megabytes", "MBy", "megabytes"),
         Arguments.argumentSet("gigabytes", "GBy", "gigabytes"),
         Arguments.argumentSet("terabytes", "TBy", "terabytes"),
         Arguments.argumentSet("kibibytes", "KiBy", "kibibytes"),
         Arguments.argumentSet("mebibytes", "MiBy", "mebibytes"),
         Arguments.argumentSet("gibibytes", "GiBy", "gibibytes"),
-        Arguments.argumentSet("tibibytes", "TiBy", "tibibytes"),
+        Arguments.argumentSet("tebibytes", "TiBy", "tebibytes"),
         Arguments.argumentSet("days", "d", "days"),
         Arguments.argumentSet("hours", "h", "hours"),
         Arguments.argumentSet("seconds", "s", "seconds"),

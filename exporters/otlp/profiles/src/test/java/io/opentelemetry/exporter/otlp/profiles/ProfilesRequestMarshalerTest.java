@@ -472,7 +472,7 @@ public class ProfilesRequestMarshalerTest {
     return Collections.unmodifiableList(list);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // The prototype's builder produces the same message type T.
   private static <T extends Message> T parse(T prototype, Marshaler marshaler) {
     byte[] serialized = toByteArray(marshaler);
     T result;

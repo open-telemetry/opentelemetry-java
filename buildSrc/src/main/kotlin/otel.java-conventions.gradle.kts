@@ -1,4 +1,6 @@
 import io.opentelemetry.gradle.OtelJavaExtension
+import net.ltgt.gradle.errorprone.CheckSeverity
+import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.JavaVersion
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
@@ -35,7 +37,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(21))
+    languageVersion.set(JavaLanguageVersion.of(25))
   }
 
   withJavadocJar()
@@ -44,7 +46,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "13.8.0"
+  toolVersion = "14.3.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -62,6 +64,13 @@ val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersi
 tasks {
   withType<JavaCompile>().configureEach {
     with(options) {
+      errorprone.check(
+        "SuppressWarningsWithoutExplanation",
+        otelJava.requireSuppressWarningsExplanation.map {
+          if (it) CheckSeverity.ERROR else CheckSeverity.OFF
+        },
+      )
+
       release.set(otelJava.minJavaVersionSupported.map { it.majorVersion.toInt() })
 
       if (name != "jmhCompileGeneratedClasses") {
@@ -117,6 +126,13 @@ tasks {
       showStandardStreams = true
     }
     maxHeapSize = "1500m"
+
+    doFirst {
+      // Test dependencies (mockito and assertj) still use Unsafe memory-access methods deprecated by JEP 498.
+      if (javaLauncher.get().metadata.languageVersion.asInt() >= 24) {
+        jvmArgs("--sun-misc-unsafe-memory-access=allow")
+      }
+    }
   }
 
   withType<Javadoc>().configureEach {
@@ -289,8 +305,6 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   compileOnly("com.google.code.findbugs:jsr305")
 
-  annotationProcessor("com.google.guava:guava-beta-checker")
-
   // Workaround for @javax.annotation.Generated
   // see: https://github.com/grpc/grpc-java/issues/3633
   compileOnly("javax.annotation:javax.annotation-api")
@@ -334,6 +348,10 @@ testing {
           systemProperty("java.util.logging.config.class", "io.opentelemetry.internal.testing.slf4j.JulBridgeInitializer")
           systemProperty("org.slf4j.simpleLogger.log.io.micrometer.core.instrument.MeterRegistry", "error")
           systemProperty("org.slf4j.simpleLogger.log.tc", "error")
+          // Silence ApiUsageLogger output in tests. Includes the one-shot WARNING that fires on
+          // first misuse plus the per-event FINEST logs. Tests that intentionally exercise API
+          // misuse can re-enable this logger locally with @SuppressLogger or a Handler override.
+          systemProperty("org.slf4j.simpleLogger.log.io.opentelemetry.usage", "off")
 
           // Starting in java 21, dynamically attaching agents triggers warnings. Mockito depends on
           // agents to redefine classes. Hence, on java 21+ we get warnings of the form:
@@ -344,8 +362,10 @@ testing {
           // To remove these warnings, we attach the byte-buddy-agent used by mockito directly.
           val mockitoAgent: FileCollection = mockitoAgent
           doFirst {
+            // -Xshare:off: the agent appends to the bootstrap classpath, which disables CDS and
+            // causes a warning in every test process without it.
             val mockitoAgentJar = mockitoAgent.files.single { it.name.contains("byte-buddy-agent")}
-            jvmArgs("-javaagent:${mockitoAgentJar}")
+            jvmArgs("-Xshare:off", "-javaagent:${mockitoAgentJar}")
           }
         }
       }

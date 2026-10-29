@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.baggage;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
 import java.util.Map;
@@ -52,6 +53,10 @@ public interface Baggage extends ImplicitContextKeyed {
    * Baggage} if there is no baggage in the context.
    */
   static Baggage fromContext(Context context) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Baggage.class, "fromContext", "context");
+      return empty();
+    }
     Baggage baggage = context.get(BaggageContextKey.KEY);
     return baggage != null ? baggage : empty();
   }
@@ -62,11 +67,19 @@ public interface Baggage extends ImplicitContextKeyed {
    */
   @Nullable
   static Baggage fromContextOrNull(Context context) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Baggage.class, "fromContextOrNull", "context");
+      return null;
+    }
     return context.get(BaggageContextKey.KEY);
   }
 
   @Override
   default Context storeInContext(Context context) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Baggage.class, "storeInContext", "context");
+      return Context.root();
+    }
     return context.with(BaggageContextKey.KEY, this);
   }
 
@@ -109,6 +122,10 @@ public interface Baggage extends ImplicitContextKeyed {
    */
   @Nullable
   default BaggageEntry getEntry(String entryKey) {
+    if (entryKey == null) {
+      ApiUsageLogger.logNullParam(Baggage.class, "getEntry", "entryKey");
+      return null;
+    }
     BaggageEntry[] result = new BaggageEntry[] {null};
     forEach(
         (key, entry) -> {

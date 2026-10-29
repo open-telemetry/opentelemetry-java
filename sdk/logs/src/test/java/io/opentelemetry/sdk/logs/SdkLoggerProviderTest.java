@@ -227,6 +227,12 @@ class SdkLoggerProviderTest {
   }
 
   @Test
+  void get_NoProcessor_UsesNoop() {
+    assertThat(SdkLoggerProvider.builder().build().get("test"))
+        .isSameAs(LoggerProvider.noop().get("test"));
+  }
+
+  @Test
   void loggerBuilder_WithLogRecordProcessor() {
     Resource resource = Resource.builder().put("r1", "v1").build();
     AtomicReference<LogRecordData> logRecordData = new AtomicReference<>();
@@ -344,14 +350,12 @@ class SdkLoggerProviderTest {
   void toString_Valid() {
     when(logRecordProcessor.toString()).thenReturn("MockLogRecordProcessor");
     assertThat(sdkLoggerProvider.toString())
-        .isEqualTo(
-            "SdkLoggerProvider{"
-                + "clock=SystemClock{}, "
-                + "resource=Resource{schemaUrl=null, attributes={key=\"value\"}}, "
-                + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
+        .matches(
+            "SdkLoggerProvider\\{clock=SystemClock\\{\\}, "
+                + "resource=Resource\\{schemaUrl=null, entities=\\[\\], attributes=\\{key=\"value\"\\}\\}, "
+                + "logLimits=LogLimits\\{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647\\}, "
                 + "logRecordProcessor=MockLogRecordProcessor, "
-                + "loggerConfigurator=ScopeConfiguratorImpl{conditions=[]}"
-                + "}");
+                + "loggerConfigurator=ScopeConfiguratorImpl\\{conditions=\\[\\]\\}\\}");
   }
 
   private static ScopeConfigurator<LoggerConfig> flipConfigurator(boolean enabled) {

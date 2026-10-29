@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,14 +46,19 @@ public final class JaegerRemoteSampler implements Sampler {
   private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final GrpcSender grpcSender;
+  private final URI endpoint;
+  private final int pollingIntervalMs;
 
   JaegerRemoteSampler(
       GrpcSender grpcSender,
+      URI endpoint,
       @Nullable String serviceName,
       int pollingIntervalMs,
       Sampler initialSampler) {
     this.serviceName = serviceName != null ? serviceName : "";
     this.grpcSender = grpcSender;
+    this.endpoint = endpoint;
+    this.pollingIntervalMs = pollingIntervalMs;
     this.sampler = initialSampler;
     pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     pollFuture =
@@ -76,7 +82,7 @@ public final class JaegerRemoteSampler implements Sampler {
         SamplingStrategyParametersMarshaler.create(this.serviceName);
     try {
       MessageWriter messageWriter = marshaler.toBinaryMessageWriter();
-      grpcSender.send(messageWriter, this::onResponse, JaegerRemoteSampler::onError);
+      grpcSender.send(messageWriter, this::onResponse, this::onError);
     } catch (Throwable e) { // Catch all to ensure scheduled task continues
       logger.log(Level.WARNING, "Failed to update sampler", e);
     }
@@ -86,6 +92,9 @@ public final class JaegerRemoteSampler implements Sampler {
     GrpcStatusCode statusCode = grpcResponse.getStatusCode();
 
     if (statusCode == GrpcStatusCode.OK) {
+      if (isShutdown.get()) {
+        return;
+      }
       try {
         SamplingStrategyResponse strategyResponse =
             SamplingStrategyResponseUnMarshaler.read(grpcResponse.getResponseMessage());
@@ -99,7 +108,7 @@ public final class JaegerRemoteSampler implements Sampler {
     switch (statusCode) {
       case UNIMPLEMENTED:
         logger.log(
-            Level.SEVERE,
+            levelOnFailure(Level.SEVERE),
             "Failed to execute "
                 + TYPE
                 + "s. Server responded with UNIMPLEMENTED. "
@@ -108,7 +117,7 @@ public final class JaegerRemoteSampler implements Sampler {
         break;
       case UNAVAILABLE:
         logger.log(
-            Level.SEVERE,
+            levelOnFailure(Level.SEVERE),
             "Failed to execute "
                 + TYPE
                 + "s. Server is UNAVAILABLE. "
@@ -118,7 +127,7 @@ public final class JaegerRemoteSampler implements Sampler {
         break;
       default:
         logger.log(
-            Level.WARNING,
+            levelOnFailure(Level.WARNING),
             "Failed to execute "
                 + TYPE
                 + "s. Server responded with gRPC status code "
@@ -129,12 +138,20 @@ public final class JaegerRemoteSampler implements Sampler {
     }
   }
 
-  private static void onError(Throwable e) {
+  private void onError(Throwable e) {
     logger.log(
-        Level.SEVERE, "Failed to execute " + TYPE + "s. The request could not be executed.", e);
+        levelOnFailure(Level.SEVERE),
+        "Failed to execute " + TYPE + "s. The request could not be executed.",
+        e);
     if (logger.isLoggable(Level.FINEST)) {
       logger.log(Level.FINEST, "Failed to execute " + TYPE + "s. Details follow:", e);
     }
+  }
+
+  // Failures after shutdown are typically caused by in-flight requests being cancelled by
+  // shutdown() and are not actionable, so demote them to FINE.
+  private Level levelOnFailure(Level defaultLevel) {
+    return isShutdown.get() ? Level.FINE : defaultLevel;
   }
 
   private static Sampler updateSampler(SamplingStrategyResponse response) throws IOException {
@@ -161,7 +178,13 @@ public final class JaegerRemoteSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return String.format("JaegerRemoteSampler{%s}", this.sampler);
+    return "JaegerRemoteSampler{sampler="
+        + this.sampler
+        + ", endpoint="
+        + this.endpoint
+        + ", pollingIntervalMs="
+        + this.pollingIntervalMs
+        + "}";
   }
 
   @Override
@@ -178,6 +201,11 @@ public final class JaegerRemoteSampler implements Sampler {
     return new JaegerRemoteSamplerBuilder();
   }
 
+  /**
+   * Shuts down the sampler, cancelling the polling task and shutting down the gRPC sender.
+   *
+   * @since 1.65.0
+   */
   @Override
   @SuppressWarnings("Interruption")
   public CompletableResultCode shutdown() {

@@ -80,7 +80,7 @@ class SdkMeterTest {
     assertThat(sdkMeter.histogramBuilder("1").ofLongs().build())
         .isSameAs(NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME).ofLongs().build());
 
-    // Gauage
+    // Gauge
     assertThat(sdkMeter.gaugeBuilder("1").buildWithCallback(unused -> {}))
         .isSameAs(NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME).buildWithCallback(unused -> {}));
     assertThat(sdkMeter.gaugeBuilder("1").ofLongs().buildWithCallback(unused -> {}))

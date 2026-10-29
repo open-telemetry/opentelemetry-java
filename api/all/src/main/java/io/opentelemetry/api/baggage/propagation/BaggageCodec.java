@@ -84,8 +84,14 @@ class BaggageCodec {
   private static int digit16(byte b) {
     int i = Character.digit((char) b, RADIX);
     if (i == -1) {
-      throw new IllegalArgumentException( // FIXME
-          "Invalid URL encoding: not a valid digit (radix " + RADIX + "): " + b);
+      throw new NumberFormatException(
+          "Invalid URL encoding: not a valid digit (radix "
+              + RADIX
+              + "): byte="
+              + b
+              + ", char='"
+              + (char) (b & 0xff)
+              + "'");
     }
     return i;
   }

@@ -8,6 +8,7 @@ plugins {
 
 description = "OpenTelemetry API"
 otelJava.moduleName.set("io.opentelemetry.api")
+otelJava.requireSuppressWarningsExplanation.set(false)
 base.archivesName.set("opentelemetry-api")
 // These packages cannot be compileOnly dependencies (api:incubator depends on api:all, creating a
 // circular dependency; sdk:autoconfigure is in a different module family). Declare them as optional
@@ -23,9 +24,4 @@ dependencies {
 
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("com.google.guava:guava-testlib")
-}
-
-tasks.test {
-  // Configure environment variable for ConfigUtilTest
-  environment("CONFIG_KEY", "environment")
 }

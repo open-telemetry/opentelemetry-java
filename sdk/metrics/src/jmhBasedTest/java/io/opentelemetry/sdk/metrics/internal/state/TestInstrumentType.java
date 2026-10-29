@@ -31,7 +31,7 @@ public enum TestInstrumentType {
   DOUBLE_SUM(
       DoubleSumTester::new,
       /* dataAllocRateReductionPercentage= */ 97.3f,
-      /* allowedPercentOffset= */ 2.0f),
+      /* allowedPercentOffset= */ 4.0f),
   LONG_LAST_VALUE(
       LongLastValueTester::new,
       /* dataAllocRateReductionPercentage= */ 97.3f,

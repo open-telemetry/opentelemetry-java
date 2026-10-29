@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalComposableSamplerPropertyModel {
 
   private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
@@ -27,7 +27,7 @@ public class ExperimentalComposableSamplerPropertyModel {
   }
 
   @JsonAnySetter
-  public ExperimentalComposableSamplerPropertyModel withAdditionalProperty(
+  public ExperimentalComposableSamplerPropertyModel setAdditionalProperty(
       String name, Object value) {
     this.additionalProperties.put(name, value);
     return this;

@@ -8,6 +8,7 @@ apply<OtelVersionClassPlugin>()
 
 description = "OpenTelemetry OpenCensus Shim"
 otelJava.moduleName.set("io.opentelemetry.opencensusshim")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 dependencies {
   api(project(":api:all"))

@@ -12,10 +12,13 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearSystemProperty;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 class ServiceResourceDetectorTest {
 
@@ -28,37 +31,41 @@ class ServiceResourceDetectorTest {
   }
 
   @Test
-  @ClearSystemProperty(key = "otel.service.name")
+  @SetSystemProperty(key = "otel.service.name", value = "test")
   void create_SystemPropertySet() {
-    System.setProperty("otel.service.name", "test");
-
-    assertThat(new ServiceResourceDetector().create(DeclarativeConfigProperties.empty()))
-        .satisfies(
-            resource -> {
-              Attributes attributes = resource.getAttributes();
-              assertThat(attributes.get(AttributeKey.stringKey("service.name"))).isEqualTo("test");
-              assertThatCode(
-                      () ->
-                          UUID.fromString(
-                              Objects.requireNonNull(
-                                  attributes.get(AttributeKey.stringKey("service.instance.id")))))
-                  .doesNotThrowAnyException();
-            });
+    Resource resource = new ServiceResourceDetector().create(DeclarativeConfigProperties.empty());
+    Attributes attributes = resource.getAttributes();
+    assertThat(attributes.get(AttributeKey.stringKey("service.name"))).isEqualTo("test");
+    String serviceInstanceId =
+        Objects.requireNonNull(attributes.get(AttributeKey.stringKey("service.instance.id")));
+    assertThatCode(() -> UUID.fromString(serviceInstanceId)).doesNotThrowAnyException();
+    assertThat(EntityUtil.getEntities(resource))
+        .containsExactlyInAnyOrder(
+            Entity.builder("service", Attributes.of(AttributeKey.stringKey("service.name"), "test"))
+                .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+                .build(),
+            Entity.builder(
+                    "service.instance",
+                    Attributes.of(AttributeKey.stringKey("service.instance.id"), serviceInstanceId))
+                .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+                .build());
   }
 
   @Test
+  @ClearSystemProperty(key = "otel.service.name")
   void create_NoSystemProperty() {
-    assertThat(new ServiceResourceDetector().create(DeclarativeConfigProperties.empty()))
-        .satisfies(
-            resource -> {
-              Attributes attributes = resource.getAttributes();
-              assertThat(attributes.get(AttributeKey.stringKey("service.name"))).isNull();
-              assertThatCode(
-                      () ->
-                          UUID.fromString(
-                              Objects.requireNonNull(
-                                  attributes.get(AttributeKey.stringKey("service.instance.id")))))
-                  .doesNotThrowAnyException();
-            });
+    Resource resource = new ServiceResourceDetector().create(DeclarativeConfigProperties.empty());
+    Attributes attributes = resource.getAttributes();
+    assertThat(attributes.get(AttributeKey.stringKey("service.name"))).isNull();
+    String serviceInstanceId =
+        Objects.requireNonNull(attributes.get(AttributeKey.stringKey("service.instance.id")));
+    assertThatCode(() -> UUID.fromString(serviceInstanceId)).doesNotThrowAnyException();
+    assertThat(EntityUtil.getEntities(resource))
+        .containsExactly(
+            Entity.builder(
+                    "service.instance",
+                    Attributes.of(AttributeKey.stringKey("service.instance.id"), serviceInstanceId))
+                .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+                .build());
   }
 }

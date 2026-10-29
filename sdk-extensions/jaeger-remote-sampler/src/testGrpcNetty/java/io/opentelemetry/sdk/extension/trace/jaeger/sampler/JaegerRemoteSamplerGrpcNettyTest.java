@@ -159,7 +159,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       assertThat(sampler.getDescription())
-          .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+          .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -178,7 +178,8 @@ class JaegerRemoteSamplerGrpcNettyTest {
             .build()) {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
-      assertThat(sampler.getDescription()).startsWith("JaegerRemoteSampler{AlwaysOnSampler}");
+      assertThat(sampler.getDescription())
+          .startsWith("JaegerRemoteSampler{sampler=AlwaysOnSampler");
     }
   }
 
@@ -277,7 +278,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
               () -> {
                 assertThat(sampler.getDescription())
                     .startsWith(
-                        "JaegerRemoteSampler{ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
+                        "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
                 assertThat(sampler.getDescription()).contains("bar");
               });
     }
@@ -297,7 +298,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       assertThat(sampler.getDescription())
-          .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+          .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
           .untilAsserted(
@@ -323,7 +324,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       assertThat(sampler.getDescription())
-          .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+          .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
           .untilAsserted(
@@ -348,7 +349,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       assertThat(sampler.getDescription())
-          .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+          .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
           .untilAsserted(

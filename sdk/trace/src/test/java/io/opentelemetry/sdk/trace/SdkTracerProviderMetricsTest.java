@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.sdk.common.internal.SemConvAttributes.ERROR_TYPE;
-import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_COMPONENT_NAME;
-import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_COMPONENT_TYPE;
-import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN;
-import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT;
+import static io.opentelemetry.sdk.common.internal.SemConvConstants.ERROR_TYPE;
+import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_COMPONENT_NAME;
+import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_COMPONENT_TYPE;
+import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_SPAN_PARENT_ORIGIN;
+import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_SPAN_SAMPLING_RESULT;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -58,10 +58,11 @@ class SdkTracerProviderMetricsTest {
         SdkMeterProvider.builder().registerMetricReader(metricReader).build();
 
     InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    TracerProvider tracerProvider =
+    SimpleSpanProcessor processor =
+        SimpleSpanProcessor.builder(exporter).setMeterProvider(() -> meterProvider).build();
+    SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
-            .addSpanProcessor(
-                SimpleSpanProcessor.builder(exporter).setMeterProvider(() -> meterProvider).build())
+            .addSpanProcessor(processor)
             .setMeterProvider(() -> meterProvider)
             .setSampler(sampler)
             .build();
@@ -103,6 +104,7 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
+                    .hasUnit("{span}")
                     .hasLongSumSatisfying(
                         s ->
                             s.hasPointsSatisfying(
@@ -706,6 +708,99 @@ class SdkTracerProviderMetricsTest {
                                         .hasAttributes(
                                             Attributes.of(
                                                 OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+
+    // Spans rejected after the call to shutdown, regardless of completion so no join.
+    processor.shutdown();
+    tracer.spanBuilder("span").startSpan().end();
+
+    assertThat(metricReader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.processor.span.processed")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(2)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "simple_span_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "simple_span_processor")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "simple_span_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "simple_span_processor",
+                                                ERROR_TYPE,
+                                                "already_shutdown")))),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.span.started")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(2)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_SPAN_PARENT_ORIGIN,
+                                                "none",
+                                                OTEL_SPAN_SAMPLING_RESULT,
+                                                "RECORD_AND_SAMPLE")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_SPAN_PARENT_ORIGIN,
+                                                "remote",
+                                                OTEL_SPAN_SAMPLING_RESULT,
+                                                "RECORD_AND_SAMPLE")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_SPAN_PARENT_ORIGIN,
+                                                "none",
+                                                OTEL_SPAN_SAMPLING_RESULT,
+                                                "RECORD_ONLY")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_SPAN_PARENT_ORIGIN,
+                                                "none",
+                                                OTEL_SPAN_SAMPLING_RESULT,
+                                                "DROP")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_SPAN_PARENT_ORIGIN,
+                                                "local",
+                                                OTEL_SPAN_SAMPLING_RESULT,
+                                                "DROP")))),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.span.live")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(0)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                                p ->
+                                    p.hasValue(0)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
   }
 
   @Test
@@ -745,11 +840,13 @@ class SdkTracerProviderMetricsTest {
     // Queue is full, this span is dropped.
     tracer.spanBuilder("span").startSpan().end();
 
+    // Export hasn't finished but processed metric is incremented
     assertThat(metricReader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.capacity")
+                    .hasUnit("{span}")
                     .hasLongSumSatisfying(
                         s ->
                             s.hasPointsSatisfying(
@@ -764,6 +861,7 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.size")
+                    .hasUnit("{span}")
                     .hasLongSumSatisfying(
                         s ->
                             s.hasPointsSatisfying(
@@ -778,9 +876,18 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
+                    .hasUnit("{span}")
                     .hasLongSumSatisfying(
                         s ->
                             s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_span_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_span_processor")),
                                 p ->
                                     p.hasValue(1)
                                         .hasAttributes(
@@ -858,23 +965,13 @@ class SdkTracerProviderMetricsTest {
                         s ->
                             s.hasPointsSatisfying(
                                 p ->
-                                    p.hasValue(1)
+                                    p.hasValue(2)
                                         .hasAttributes(
                                             Attributes.of(
                                                 OTEL_COMPONENT_NAME,
                                                 "batching_span_processor/0",
                                                 OTEL_COMPONENT_TYPE,
                                                 "batching_span_processor")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor",
-                                                ERROR_TYPE,
-                                                "export_failed")),
                                 p ->
                                     p.hasValue(1)
                                         .hasAttributes(
@@ -912,7 +1009,99 @@ class SdkTracerProviderMetricsTest {
                                                 OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
 
     lenient().when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    // Spans rejected after the call to shutdown, regardless of completion so no join.
     processor.shutdown();
+
+    tracer.spanBuilder("span").startSpan().end();
+    assertThat(metricReader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.processor.span.queue.capacity")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_span_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_span_processor")))),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.processor.span.queue.size")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(0)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_span_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_span_processor")))),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.processor.span.processed")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(2)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_span_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_span_processor")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_span_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_span_processor",
+                                                ERROR_TYPE,
+                                                "already_shutdown")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_span_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_span_processor",
+                                                ERROR_TYPE,
+                                                "queue_full")))),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.span.started")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(4)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_SPAN_PARENT_ORIGIN,
+                                                "none",
+                                                OTEL_SPAN_SAMPLING_RESULT,
+                                                "RECORD_AND_SAMPLE")))),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.span.live")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(0)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
   }
 
   @Test
@@ -952,9 +1141,7 @@ class SdkTracerProviderMetricsTest {
                                                 OTEL_COMPONENT_NAME,
                                                 "simple_span_processor/0",
                                                 OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor",
-                                                ERROR_TYPE,
-                                                "export_failed")))),
+                                                "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")

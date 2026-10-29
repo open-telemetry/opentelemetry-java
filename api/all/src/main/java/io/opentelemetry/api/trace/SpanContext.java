@@ -7,13 +7,14 @@ package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.internal.ImmutableSpanContext;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * A class that represents a span context. A span context contains the state that must propagate to
  * child {@link Span}s and across process boundaries. It contains the identifiers (a {@link TraceId
  * trace_id} and {@link SpanId span_id}) associated with the {@link Span}, {@link TraceFlags}, as
- * well as the {@link TraceState traceState} and the {@link boolean remote} flag.
+ * well as the {@link TraceState traceState} and the {@code remote} flag.
  *
  * <p>Implementations of this interface *must* be immutable and have well-defined value-based
  * equals/hashCode implementations. If an implementation does not strictly conform to these
@@ -50,6 +51,22 @@ public interface SpanContext {
    */
   static SpanContext create(
       String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
+    if (traceIdHex == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "create", "traceIdHex");
+      return SpanContext.getInvalid();
+    }
+    if (spanIdHex == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "create", "spanIdHex");
+      return SpanContext.getInvalid();
+    }
+    if (traceFlags == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "create", "traceFlags");
+      return SpanContext.getInvalid();
+    }
+    if (traceState == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "create", "traceState");
+      return SpanContext.getInvalid();
+    }
     return ImmutableSpanContext.create(
         traceIdHex,
         spanIdHex,
@@ -76,6 +93,22 @@ public interface SpanContext {
    */
   static SpanContext createFromRemoteParent(
       String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
+    if (traceIdHex == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "createFromRemoteParent", "traceIdHex");
+      return SpanContext.getInvalid();
+    }
+    if (spanIdHex == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "createFromRemoteParent", "spanIdHex");
+      return SpanContext.getInvalid();
+    }
+    if (traceFlags == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "createFromRemoteParent", "traceFlags");
+      return SpanContext.getInvalid();
+    }
+    if (traceState == null) {
+      ApiUsageLogger.logNullParam(SpanContext.class, "createFromRemoteParent", "traceState");
+      return SpanContext.getInvalid();
+    }
     return ImmutableSpanContext.create(
         traceIdHex,
         spanIdHex,

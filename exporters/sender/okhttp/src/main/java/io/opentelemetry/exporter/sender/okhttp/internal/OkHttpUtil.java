@@ -30,7 +30,11 @@ public final class OkHttpUtil {
     OkHttpUtil.propagateContextForTestingInDispatcher = propagateContextForTestingInDispatcher;
   }
 
-  /** Returns a {@link Dispatcher} using daemon threads, otherwise matching the OkHttp default. */
+  /**
+   * Returns a {@link Dispatcher} using daemon threads, with both the maximum number of concurrent
+   * requests and the maximum size of the backing thread pool bounded to {@code
+   * max(availableProcessors, 5)}, matching the bound used by {@code JdkHttpSender}.
+   */
   public static Dispatcher newDispatcher() {
     int maxRequests = Math.max(Runtime.getRuntime().availableProcessors(), 5);
     Dispatcher dispatcher =

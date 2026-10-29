@@ -30,6 +30,7 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
         httpSenderConfig.getProxyOptions(),
         httpSenderConfig.getSslContext(),
         httpSenderConfig.getExecutorService(),
-        httpSenderConfig.getMaxResponseBodySize());
+        httpSenderConfig.getMaxResponseBodySize(),
+        httpSenderConfig.getEnabledProtocols());
   }
 }

@@ -46,7 +46,9 @@ final class Propagation {
 
     Span span = Span.fromContext(context);
     Baggage baggage = Baggage.fromContext(context);
-    if (!span.getSpanContext().isValid() && baggage.isEmpty()) {
+    if (!span.getSpanContext().isValid()
+        && !span.getSpanContext().isSampled()
+        && baggage.isEmpty()) {
       return null;
     }
 

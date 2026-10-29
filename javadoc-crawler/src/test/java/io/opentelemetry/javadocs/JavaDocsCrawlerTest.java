@@ -7,6 +7,8 @@ package io.opentelemetry.javadocs;
 
 import static io.opentelemetry.javadocs.JavaDocsCrawler.JAVA_DOC_DOWNLOADED_TEXT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -32,8 +34,43 @@ class JavaDocsCrawlerTest {
   @Mock HttpResponse<Object> mockJavaDocResponse;
 
   @Test
-  void testGetArtifactsHandlesPagination() throws IOException, InterruptedException {
-    String page1Response =
+  void testGetArtifactsUsesASingleRequest() throws IOException, InterruptedException {
+    String response =
+        """
+            {
+              "response": {
+                "numFound": 2,
+                "docs": [
+                  {"g": "group", "a": "artifact1", "latestVersion": "1.0"},
+                  {"g": "group", "a": "artifact2", "latestVersion": "1.1"}
+                ]
+              }
+            }
+        """;
+    ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
+
+    when(mockMavenCentralRequest1.body()).thenReturn(response);
+    when(mockMavenCentralRequest1.statusCode()).thenReturn(200);
+
+    when(mockClient.send(any(), any())).thenReturn(mockMavenCentralRequest1);
+
+    List<Artifact> artifacts = JavaDocsCrawler.getArtifacts(mockClient, "io.opentelemetry");
+
+    verify(mockClient, times(1)).send(requestCaptor.capture(), any());
+
+    String uri = requestCaptor.getValue().uri().toString();
+    assertThat(uri)
+        .startsWith("https://central.sonatype.com/solrsearch/select?q=g:io.opentelemetry");
+    assertThat(uri).contains("rows=500");
+    assertThat(uri).doesNotContain("start=");
+    assertThat(artifacts)
+        .extracting(Artifact::getGroup, Artifact::getName, Artifact::getVersion)
+        .containsExactly(tuple("group", "artifact1", "1.0"), tuple("group", "artifact2", "1.1"));
+  }
+
+  @Test
+  void testGetArtifactsFailsOnIncompleteResponse() throws IOException, InterruptedException {
+    String response =
         """
             {
               "response": {
@@ -45,32 +82,39 @@ class JavaDocsCrawlerTest {
               }
             }
         """;
-    String page2Response =
+
+    when(mockMavenCentralRequest2.body()).thenReturn(response);
+    when(mockMavenCentralRequest2.statusCode()).thenReturn(200);
+
+    when(mockClient.send(any(), any())).thenReturn(mockMavenCentralRequest2);
+
+    assertThatThrownBy(() -> JavaDocsCrawler.getArtifacts(mockClient, "io.opentelemetry"))
+        .isInstanceOf(IOException.class)
+        .hasMessageContaining("io.opentelemetry");
+  }
+
+  @Test
+  void testGetArtifactsFailsWithoutNumFound() throws IOException, InterruptedException {
+    String response =
         """
             {
               "response": {
-                "numFound": 40,
                 "docs": [
-                  {"g": "group", "a": "artifact3", "latestVersion": "2.0"}
+                  {"g": "group", "a": "artifact1", "latestVersion": "1.0"}
                 ]
               }
             }
         """;
 
-    when(mockMavenCentralRequest1.body()).thenReturn(page1Response);
+    when(mockMavenCentralRequest1.body()).thenReturn(response);
     when(mockMavenCentralRequest1.statusCode()).thenReturn(200);
-    when(mockMavenCentralRequest2.body()).thenReturn(page2Response);
-    when(mockMavenCentralRequest2.statusCode()).thenReturn(200);
 
-    when(mockClient.send(any(), any()))
-        .thenReturn(mockMavenCentralRequest1)
-        .thenReturn(mockMavenCentralRequest2);
+    when(mockClient.send(any(), any())).thenReturn(mockMavenCentralRequest1);
 
-    List<Artifact> artifacts = JavaDocsCrawler.getArtifacts(mockClient, "io.opentelemetry");
-
-    // 2 calls for the pagination
-    verify(mockClient, times(2)).send(any(), any());
-    assertThat(artifacts.size()).isEqualTo(3);
+    assertThatThrownBy(() -> JavaDocsCrawler.getArtifacts(mockClient, "io.opentelemetry"))
+        .isInstanceOf(IOException.class)
+        .hasMessageContaining("numFound")
+        .hasMessageContaining("io.opentelemetry");
   }
 
   @Test

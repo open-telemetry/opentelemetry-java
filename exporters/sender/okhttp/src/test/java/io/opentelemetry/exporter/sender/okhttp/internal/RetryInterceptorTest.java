@@ -31,6 +31,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -92,16 +93,22 @@ class RetryInterceptorTest {
 
     retrier =
         new RetryInterceptor(
-            retryPolicy, r -> !r.isSuccessful(), retryExceptionPredicate, sleeper, random);
+            retryPolicy,
+            r -> !r.isSuccessful(),
+            response -> OptionalLong.empty(),
+            retryExceptionPredicate,
+            sleeper,
+            random);
     client = new OkHttpClient.Builder().addInterceptor(retrier).build();
   }
 
   @Test
   void noRetryOnNullResponse() throws IOException {
     Interceptor.Chain chain = mock(Interceptor.Chain.class);
+    Request request = new Request.Builder().url(server.httpUri().toString()).build();
     when(chain.proceed(any())).thenReturn(null);
-    when(chain.request())
-        .thenReturn(new Request.Builder().url(server.httpUri().toString()).build());
+    when(chain.request()).thenReturn(request);
+    when(chain.call()).thenReturn(client.newCall(request));
     assertThatThrownBy(
             () -> {
               retrier.intercept(chain);
@@ -124,6 +131,25 @@ class RetryInterceptorTest {
 
     verifyNoInteractions(random);
     verifyNoInteractions(sleeper);
+  }
+
+  @Test
+  void backoffResetsForEachCall() throws Exception {
+    server.enqueue(HttpResponse.of(HttpStatus.INTERNAL_SERVER_ERROR));
+    server.enqueue(HttpResponse.of(HttpStatus.OK));
+    server.enqueue(HttpResponse.of(HttpStatus.INTERNAL_SERVER_ERROR));
+    server.enqueue(HttpResponse.of(HttpStatus.OK));
+    when(random.get()).thenReturn(1.0d);
+    doNothing().when(sleeper).sleep(anyLong());
+
+    try (Response first = sendRequest();
+        Response second = sendRequest()) {
+      assertThat(first.isSuccessful()).isTrue();
+      assertThat(second.isSuccessful()).isTrue();
+    }
+
+    verify(sleeper, times(2)).sleep(TimeUnit.SECONDS.toNanos(1));
+    verify(sleeper, never()).sleep(TimeUnit.MILLISECONDS.toNanos(1600));
   }
 
   @ParameterizedTest
@@ -176,6 +202,35 @@ class RetryInterceptorTest {
     for (int i = 0; i < 2; i++) {
       server.takeRequest(0, TimeUnit.NANOSECONDS);
     }
+  }
+
+  @Test
+  void retryDelayOverride() throws Exception {
+    succeedOnAttempt(2);
+    doNothing().when(sleeper).sleep(anyLong());
+
+    RetryInterceptor retryInterceptor =
+        new RetryInterceptor(
+            RetryPolicy.builder()
+                .setBackoffMultiplier(1.6)
+                .setInitialBackoff(Duration.ofSeconds(1))
+                .setMaxBackoff(Duration.ofSeconds(2))
+                .setMaxAttempts(5)
+                .setRetryExceptionPredicate(retryExceptionPredicate)
+                .build(),
+            r -> !r.isSuccessful(),
+            response -> OptionalLong.of(123L),
+            retryExceptionPredicate,
+            sleeper,
+            random);
+    client = new OkHttpClient.Builder().addInterceptor(retryInterceptor).build();
+
+    try (Response response = sendRequest()) {
+      assertThat(response.isSuccessful()).isTrue();
+    }
+
+    verify(sleeper).sleep(123L);
+    verifyNoInteractions(random);
   }
 
   @Test
@@ -289,7 +344,10 @@ class RetryInterceptorTest {
   @Test
   void isRetryableExceptionDefaultBehaviour() {
     RetryInterceptor retryInterceptor =
-        new RetryInterceptor(RetryPolicy.getDefault(), OkHttpHttpSender::isRetryable);
+        new RetryInterceptor(
+            RetryPolicy.getDefault(),
+            OkHttpHttpSender::isRetryable,
+            response -> OptionalLong.empty());
     assertThat(
             retryInterceptor.shouldRetryOnException(
                 new SocketTimeoutException("Connect timed out")))
@@ -305,7 +363,8 @@ class RetryInterceptorTest {
             RetryPolicy.builder()
                 .setRetryExceptionPredicate((IOException e) -> e.getMessage().equals("retry"))
                 .build(),
-            OkHttpHttpSender::isRetryable);
+            OkHttpHttpSender::isRetryable,
+            response -> OptionalLong.empty());
 
     assertThat(retryInterceptor.shouldRetryOnException(new IOException("some message"))).isFalse();
     assertThat(retryInterceptor.shouldRetryOnException(new IOException("retry"))).isTrue();

@@ -10,7 +10,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
-import java.util.function.Function;
 
 final class ComposableProbabilitySampler implements ComposableSampler {
   private static long calculateThreshold(double ratio) {
@@ -35,7 +34,7 @@ final class ComposableProbabilitySampler implements ComposableSampler {
               ImmutableSamplingIntent.INVALID_THRESHOLD,
               /* adjustedCountReliable= */ false,
               Attributes.empty(),
-              Function.identity());
+              ImmutableSamplingIntent.NO_TRACE_STATE_UPDATE);
     } else {
       StringBuilder sb = new StringBuilder();
       OtelTraceState.serializeTh(threshold, sb);
@@ -46,10 +45,10 @@ final class ComposableProbabilitySampler implements ComposableSampler {
               threshold,
               /* adjustedCountReliable= */ true,
               Attributes.empty(),
-              Function.identity());
+              ImmutableSamplingIntent.NO_TRACE_STATE_UPDATE);
     }
     this.description =
-        "ComposableTraceIdRatioBasedSampler{threshold=" + thresholdStr + ", ratio=" + ratio + "}";
+        "ComposableProbabilitySampler{threshold=" + thresholdStr + ", ratio=" + ratio + "}";
   }
 
   @Override

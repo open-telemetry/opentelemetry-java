@@ -10,7 +10,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -27,7 +27,8 @@ final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrume
 
   private final Supplier<MeterProvider> meterProvider;
   private final Attributes standardAttrs;
-  private final Attributes droppedAttrs;
+  private final Attributes queueFullAttrs;
+  private final Attributes shutdownAttrs;
 
   @Nullable private Meter meter;
   @Nullable private volatile LongCounter processedSpans;
@@ -38,35 +39,41 @@ final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrume
 
     standardAttrs =
         Attributes.of(
-            SemConvAttributes.OTEL_COMPONENT_TYPE,
+            SemConvConstants.OTEL_COMPONENT_TYPE,
             componentId.getTypeName(),
-            SemConvAttributes.OTEL_COMPONENT_NAME,
+            SemConvConstants.OTEL_COMPONENT_NAME,
             componentId.getComponentName());
-    droppedAttrs =
+    queueFullAttrs =
         Attributes.of(
-            SemConvAttributes.OTEL_COMPONENT_TYPE,
+            SemConvConstants.OTEL_COMPONENT_TYPE,
             componentId.getTypeName(),
-            SemConvAttributes.OTEL_COMPONENT_NAME,
+            SemConvConstants.OTEL_COMPONENT_NAME,
             componentId.getComponentName(),
-            SemConvAttributes.ERROR_TYPE,
+            SemConvConstants.ERROR_TYPE,
             "queue_full");
+    shutdownAttrs =
+        Attributes.of(
+            SemConvConstants.OTEL_COMPONENT_TYPE,
+            componentId.getTypeName(),
+            SemConvConstants.OTEL_COMPONENT_NAME,
+            componentId.getComponentName(),
+            SemConvConstants.ERROR_TYPE,
+            "already_shutdown");
   }
 
   @Override
-  public void dropSpans(int count) {
-    processedSpans().add(count, droppedAttrs);
+  public void dropSpansQueueFull(int count) {
+    processedSpans().add(count, queueFullAttrs);
   }
 
   @Override
-  public void finishSpans(int count, @Nullable String error) {
-    if (error == null) {
-      processedSpans().add(count, standardAttrs);
-      return;
-    }
+  public void dropSpansAlreadyShutdown(int count) {
+    processedSpans().add(count, shutdownAttrs);
+  }
 
-    Attributes attributes =
-        standardAttrs.toBuilder().put(SemConvAttributes.ERROR_TYPE, error).build();
-    processedSpans().add(count, attributes);
+  @Override
+  public void finishSpans(int count) {
+    processedSpans().add(count, standardAttrs);
   }
 
   @Override
@@ -75,16 +82,14 @@ final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrume
       return;
     }
     meter()
-        .upDownCounterBuilder("otel.sdk.processor.span.queue.capacity")
-        .setUnit("span")
-        .setDescription(
-            "The maximum number of spans the queue of a given instance of an SDK span processor can hold. ")
+        .upDownCounterBuilder(SemConvConstants.OTEL_SDK_PROCESSOR_SPAN_QUEUE_CAPACITY_NAME)
+        .setUnit(SemConvConstants.OTEL_SDK_PROCESSOR_SPAN_QUEUE_CAPACITY_UNIT)
+        .setDescription(SemConvConstants.OTEL_SDK_PROCESSOR_SPAN_QUEUE_CAPACITY_DESCRIPTION)
         .buildWithCallback(m -> m.record(capacity, standardAttrs));
     meter()
-        .upDownCounterBuilder("otel.sdk.processor.span.queue.size")
-        .setUnit("span")
-        .setDescription(
-            "The number of spans in the queue of a given instance of an SDK span processor.")
+        .upDownCounterBuilder(SemConvConstants.OTEL_SDK_PROCESSOR_SPAN_QUEUE_SIZE_NAME)
+        .setUnit(SemConvConstants.OTEL_SDK_PROCESSOR_SPAN_QUEUE_SIZE_UNIT)
+        .setDescription(SemConvConstants.OTEL_SDK_PROCESSOR_SPAN_QUEUE_SIZE_DESCRIPTION)
         .buildWithCallback(m -> m.record(getSize.get(), standardAttrs));
   }
 
@@ -96,10 +101,9 @@ final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrume
         if (processedSpans == null) {
           processedSpans =
               meter()
-                  .counterBuilder("otel.sdk.processor.span.processed")
-                  .setUnit("span")
-                  .setDescription(
-                      "The number of spans for which the processing has finished, either successful or failed.")
+                  .counterBuilder(SemConvConstants.OTEL_SDK_PROCESSOR_SPAN_PROCESSED_NAME)
+                  .setUnit(SemConvConstants.OTEL_SDK_PROCESSOR_SPAN_PROCESSED_UNIT)
+                  .setDescription(SemConvConstants.OTEL_SDK_PROCESSOR_SPAN_PROCESSED_DESCRIPTION)
                   .build();
           this.processedSpans = processedSpans;
         }

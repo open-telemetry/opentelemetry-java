@@ -5,7 +5,6 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
-import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
@@ -34,14 +33,16 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
   private static <C> Optional<Context> extractSpanContextFromSingleHeader(
       Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, B3Propagator.COMBINED_HEADER);
-    if (StringUtils.isNullOrEmpty(value)) {
+    if (value == null || value.isEmpty()) {
       return Optional.empty();
     }
 
     // must have between 2 and 4 hyphen delimited parts:
     //   traceId-spanId-sampled-parentSpanId (last two are optional)
     // NOTE: we do not use parentSpanId
-    String[] parts = value.split(B3Propagator.COMBINED_HEADER_DELIMITER);
+    // Bound the split so a header full of delimiters cannot force allocation of an arbitrarily
+    // large token array before the length check below.
+    String[] parts = value.split(B3Propagator.COMBINED_HEADER_DELIMITER, 5);
     if (parts.length < 2 || parts.length > 4) {
       logger.fine(
           "Invalid combined header '"
