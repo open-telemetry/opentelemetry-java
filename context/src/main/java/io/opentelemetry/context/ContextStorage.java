@@ -22,6 +22,7 @@
 
 package io.opentelemetry.context;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
@@ -86,6 +87,10 @@ public interface ContextStorage {
    * main class.
    */
   static void addWrapper(Function<? super ContextStorage, ? extends ContextStorage> wrapper) {
+    if (wrapper == null) {
+      ApiUsageLogger.logNullParam(ContextStorage.class, "addWrapper", "wrapper");
+      return;
+    }
     ContextStorageWrappers.addWrapper(wrapper);
   }
 

@@ -16,7 +16,7 @@ jobs:
     name: Benchmark SDK
     runs-on: oracle-bare-metal-64cpu-1024gb-x86-64-ubuntu-24
     container:
-      image: ubuntu:26.04@sha256:f144425ff09be612d6d9ad965196e9cdc23dae1f42110a8a11a3e9a8198759f7
+      image: ubuntu:26.04@sha256:19fcd1bf268f02b60aca3bd30bd8a6d9a11759a430e32921833e65f16d87348a
     timeout-minutes: 120 # since there is only a single bare metal runner across all repos
     steps:
       - name: Install Git
@@ -33,7 +33,7 @@ jobs:
 
       - id: setup-java
         name: Set up Java for build
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           java-version: 25
@@ -76,6 +76,6 @@ jobs:
     needs:
       - sdk-benchmark
     if: always()
-    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@cb9f45f0b1ec545091caca504fc3e9b073284325 # v0.20.0
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@efc55838c9769c5476e0a5cf7183a8c5b4ae70a5 # v0.24.0
     with:
       success: ${{ needs.sdk-benchmark.result == 'success' }}
