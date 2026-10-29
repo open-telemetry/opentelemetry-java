@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -185,7 +186,14 @@ public final class JdkHttpSender implements HttpSender {
                     .whenComplete(
                         (httpResponse, throwable) -> {
                           if (throwable != null) {
-                            onError.accept(throwable);
+                            Throwable unwrapped = throwable;
+                            if (unwrapped instanceof CompletionException && unwrapped.getCause() != null) {
+                              unwrapped = unwrapped.getCause();
+                            }
+                            if (unwrapped instanceof UncheckedIOException && unwrapped.getCause() != null) {
+                              unwrapped = unwrapped.getCause();
+                            }
+                            onError.accept(unwrapped);
                             return;
                           }
                           onResponse.accept(httpResponse);
