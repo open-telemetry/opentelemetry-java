@@ -43,6 +43,7 @@ public final class OnStartSpanProcessor implements SpanProcessor {
     return false;
   }
 
+  /** Callback invoked when a span starts. */
   @FunctionalInterface
   public interface OnStart {
     void apply(Context context, ReadWriteSpan span);

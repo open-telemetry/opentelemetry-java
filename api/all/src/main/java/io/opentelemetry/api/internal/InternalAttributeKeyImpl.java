@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.internal;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import java.nio.charset.StandardCharsets;
@@ -25,14 +27,8 @@ public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
   @Nullable private byte[] keyUtf8;
 
   private InternalAttributeKeyImpl(AttributeType type, String key) {
-    if (type == null) {
-      throw new NullPointerException("Null type");
-    }
-    this.type = type;
-    if (key == null) {
-      throw new NullPointerException("Null key");
-    }
-    this.key = key;
+    this.type = requireNonNull(type, "Null type");
+    this.key = requireNonNull(key, "Null key");
     this.hashCode = buildHashCode(type, key);
   }
 

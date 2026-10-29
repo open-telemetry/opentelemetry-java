@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.lang.model.element.Modifier;
 
+/** Enforces API stability disclaimers on public types in internal packages. */
 @BugPattern(
     summary =
         "This public internal class doesn't contain any of the applicable javadoc disclaimers: \""

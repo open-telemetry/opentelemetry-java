@@ -66,9 +66,9 @@ public final class OtlpDeclarativeConfigUtil {
       boolean isHttpProtobuf,
       Consumer<InternalTelemetryVersion> internalTelemetryVersionConsumer,
       Runnable setNoopMeterProvider) {
-    if (!(baseConfig instanceof ExtendedDeclarativeConfigProperties)) {
-      throw new IllegalArgumentException("Expected ExtendedDeclarativeConfigProperties");
-    }
+    checkArgument(
+        baseConfig instanceof ExtendedDeclarativeConfigProperties,
+        "Expected ExtendedDeclarativeConfigProperties");
     ExtendedDeclarativeConfigProperties config = (ExtendedDeclarativeConfigProperties) baseConfig;
 
     setComponentLoader.accept(config.getComponentLoader());
@@ -160,6 +160,12 @@ public final class OtlpDeclarativeConfigUtil {
       default:
         throw new DeclarativeConfigException(
             "Invalid sdk telemetry version: " + internalTelemetryVersion);
+    }
+  }
+
+  private static void checkArgument(boolean isValid, String message) {
+    if (!isValid) {
+      throw new IllegalArgumentException(message);
     }
   }
 

@@ -16,6 +16,7 @@ import com.google.errorprone.bugpatterns.PrivateConstructorForUtilityClass;
 import com.google.errorprone.matchers.Description;
 import com.sun.source.tree.ClassTree;
 
+/** Enforces private constructors on utility classes, including classes with a main method. */
 @BugPattern(
     summary =
         "Classes which are not intended to be instantiated should be made non-instantiable with a private constructor. This includes utility classes (classes with only static members), and the main class.",

@@ -22,6 +22,7 @@ public @interface SuppressLogger {
   /** The names of {@link java.util.logging.Logger}s to be suppressed. */
   String loggerName() default "";
 
+  /** Container for repeated {@link SuppressLogger} annotations. */
   @Retention(RetentionPolicy.RUNTIME)
   @interface SuppressLoggers {
     SuppressLogger[] value();
