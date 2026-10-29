@@ -46,7 +46,7 @@ dependencies {
   implementation("com.google.protobuf:protobuf-gradle-plugin:0.10.0")
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.6")
-  implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
+  implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.4")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:5.1.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:3.3.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.21")
