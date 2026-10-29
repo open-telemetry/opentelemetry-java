@@ -404,8 +404,8 @@ class JdkHttpSenderTest {
 
       assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
       assertThat(errorRef.get()).isNotNull();
-      assertThat(errorRef.get()).hasRootCauseInstanceOf(IOException.class);
-      assertThat(errorRef.get()).hasRootCauseMessage("send failed");
+      assertThat(errorRef.get()).isInstanceOf(IOException.class);
+      assertThat(errorRef.get()).hasMessage("send failed");
       assertThat(responseRef.get()).isNull();
     } finally {
       testSender.shutdown();
