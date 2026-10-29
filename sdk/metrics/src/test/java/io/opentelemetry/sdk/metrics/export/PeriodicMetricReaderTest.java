@@ -91,7 +91,6 @@ class PeriodicMetricReaderTest {
   void setup() {
     when(collectionRegistration.collectAllMetrics())
         .thenReturn(Collections.singletonList(METRIC_DATA));
-    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
   }
 
   @Test
@@ -299,7 +298,6 @@ class PeriodicMetricReaderTest {
   @SuppressLogger(PeriodicMetricReader.class)
   void forceflush_callsFlush() {
     MetricExporter metricExporter = mock(MetricExporter.class);
-    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
     when(metricExporter.export(any()))
         .thenReturn(CompletableResultCode.ofSuccess())
         .thenReturn(CompletableResultCode.ofSuccess())
@@ -480,7 +478,6 @@ class PeriodicMetricReaderTest {
   @Test
   void periodicExport_SequentialBatches() throws Exception {
     MetricExporter mockExporter = mock(MetricExporter.class);
-    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockExporter.getAggregationTemporality(any()))
         .thenReturn(AggregationTemporality.CUMULATIVE);
     when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
@@ -521,7 +518,6 @@ class PeriodicMetricReaderTest {
   @SuppressLogger(PeriodicMetricReader.class)
   void periodicExport_SequentialBatches_PartialFailure() throws Exception {
     MetricExporter mockExporter = mock(MetricExporter.class);
-    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockExporter.getAggregationTemporality(any()))
         .thenReturn(AggregationTemporality.CUMULATIVE);
     when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
@@ -572,7 +568,6 @@ class PeriodicMetricReaderTest {
   @Test
   void periodicExport_SequentialBatches_PurelySynchronous() throws Exception {
     MetricExporter mockExporter = mock(MetricExporter.class);
-    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockExporter.getAggregationTemporality(any()))
         .thenReturn(AggregationTemporality.CUMULATIVE);
     when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
@@ -606,7 +601,6 @@ class PeriodicMetricReaderTest {
   @Test
   void periodicExport_SequentialBatches_PurelyAsynchronous() throws Exception {
     MetricExporter mockExporter = mock(MetricExporter.class);
-    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockExporter.getAggregationTemporality(any()))
         .thenReturn(AggregationTemporality.CUMULATIVE);
     when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
@@ -653,29 +647,7 @@ class PeriodicMetricReaderTest {
 
   @Test
   @Timeout(5)
-  void exporterConcurrencyLimitAllowsConcurrentExports() throws Exception {
-    ConcurrentMetricExporter exporter = new ConcurrentMetricExporter();
-    PeriodicMetricReader reader =
-        PeriodicMetricReader.builder(exporter)
-            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
-            .setMaxExportBatchSize(3)
-            .build();
-    reader.register(collectionRegistration);
-
-    AtomicReference<CompletableResultCode> flushResult = new AtomicReference<>();
-    Thread flushThread = new Thread(() -> flushResult.set(reader.forceFlush()));
-    flushThread.start();
-    assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
-    assertThat(exporter.maxConcurrent.get()).isEqualTo(2);
-    exporter.release.countDown();
-    flushThread.join(1000);
-    assertThat(flushResult.get().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
-    reader.shutdown();
-  }
-
-  @Test
-  @Timeout(5)
-  void exporterConcurrencyLimitWaitsForAsyncExports() throws Exception {
+  void exporterBackpressureWaitsForAsyncExports() throws Exception {
     AsyncMetricExporter exporter = new AsyncMetricExporter();
     AtomicBoolean firstCollection = new AtomicBoolean(true);
     when(collectionRegistration.collectAllMetrics())
@@ -697,22 +669,6 @@ class PeriodicMetricReaderTest {
     exporter.results.get(0).succeed();
     assertThat(flushResult.join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
     reader.shutdown();
-  }
-
-  @Test
-  void rejectsZeroExporterConcurrencyLimit() {
-    when(metricExporter.getConcurrencyLimit()).thenReturn(0);
-    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).build())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("metric exporter concurrency limit must be positive");
-  }
-
-  @Test
-  void rejectsNegativeExporterConcurrencyLimit() {
-    when(metricExporter.getConcurrencyLimit()).thenReturn(-1);
-    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).build())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("metric exporter concurrency limit must be positive");
   }
 
   @Test
@@ -923,10 +879,8 @@ class PeriodicMetricReaderTest {
   }
 
   private static final class ConcurrentMetricExporter implements MetricExporter {
-    private final CountDownLatch entered = new CountDownLatch(2);
+    private final CountDownLatch entered = new CountDownLatch(1);
     private final CountDownLatch release = new CountDownLatch(1);
-    private final AtomicInteger active = new AtomicInteger();
-    private final AtomicInteger maxConcurrent = new AtomicInteger();
     private final boolean fail;
 
     private ConcurrentMetricExporter() {
@@ -938,8 +892,8 @@ class PeriodicMetricReaderTest {
     }
 
     @Override
-    public int getConcurrencyLimit() {
-      return 2;
+    public boolean supportsExportBackpressure() {
+      return true;
     }
 
     @Override
@@ -949,15 +903,11 @@ class PeriodicMetricReaderTest {
 
     @Override
     public CompletableResultCode export(Collection<MetricData> metrics) {
-      int current = active.incrementAndGet();
-      maxConcurrent.accumulateAndGet(current, Math::max);
       entered.countDown();
       try {
         release.await();
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-      } finally {
-        active.decrementAndGet();
       }
       return fail ? CompletableResultCode.ofFailure() : CompletableResultCode.ofSuccess();
     }
@@ -978,8 +928,8 @@ class PeriodicMetricReaderTest {
     private final List<CompletableResultCode> results = new ArrayList<>();
 
     @Override
-    public int getConcurrencyLimit() {
-      return 2;
+    public boolean supportsExportBackpressure() {
+      return true;
     }
 
     @Override

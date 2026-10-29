@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,7 +72,6 @@ class BatchSpanProcessorTest {
   void setUp() {
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(mockSpanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
-    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(1);
 
     when(mockSampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
@@ -544,7 +542,6 @@ class BatchSpanProcessorTest {
     CountDownLatch exportedAgain = new CountDownLatch(1);
     reset(mockSpanExporter);
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(1);
     when(mockSpanExporter.export(
             argThat(
                 spans -> {
@@ -557,6 +554,33 @@ class BatchSpanProcessorTest {
     createEndedSpan(SPAN_NAME_2);
     exported.await();
     await().untilAsserted(() -> assertThat(bsp.getBatch()).isEmpty());
+  }
+
+  @Test
+  @Timeout(5)
+  void exporterBackpressureAllowsConcurrentExportsAndFlushWaits() {
+    when(mockSpanExporter.supportsExportBackpressure()).thenReturn(true);
+    CompletableResultCode firstExport = new CompletableResultCode();
+    CompletableResultCode secondExport = new CompletableResultCode();
+    when(mockSpanExporter.export(anyList())).thenReturn(firstExport, secondExport);
+
+    BatchSpanProcessor processor =
+        BatchSpanProcessor.builder(mockSpanExporter)
+            .setScheduleDelay(1, TimeUnit.MILLISECONDS)
+            .setMaxExportBatchSize(1)
+            .build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(processor).build();
+
+    createEndedSpan(SPAN_NAME_1);
+    createEndedSpan(SPAN_NAME_2);
+
+    await().untilAsserted(() -> verify(mockSpanExporter, times(2)).export(anyList()));
+
+    CompletableResultCode flush = processor.forceFlush();
+    assertThat(flush.isDone()).isFalse();
+    firstExport.succeed();
+    secondExport.succeed();
+    assertThat(flush.join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
 
   @Test
@@ -696,33 +720,8 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  @Timeout(5)
-  void exporterConcurrencyLimitAllowsConcurrentExports() throws InterruptedException {
-    ConcurrentSpanExporter exporter = new ConcurrentSpanExporter();
-    sdkTracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(
-                BatchSpanProcessor.builder(exporter)
-                    .setMaxExportBatchSize(1)
-                    .setScheduleDelay(1, TimeUnit.HOURS)
-                    .build())
-            .build();
-
-    createEndedSpan(SPAN_NAME_1);
-    createEndedSpan(SPAN_NAME_2);
-    CompletableResultCode shutdown = sdkTracerProvider.shutdown();
-
-    assertThat(exporter.entered.await(1, TimeUnit.SECONDS)).isTrue();
-    assertThat(exporter.maxConcurrent.get()).isEqualTo(2);
-    exporter.release.countDown();
-    shutdown.join(1, TimeUnit.SECONDS);
-    assertThat(shutdown.isSuccess()).isTrue();
-  }
-
-  @Test
   @SuppressLogger(BatchSpanProcessor.class)
-  void exporterConcurrencyLimitHandlesExporterException() {
-    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(2);
+  void exporterBackpressureHandlesExporterException() {
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockSpanExporter)
         .export(anyList());
@@ -738,22 +737,6 @@ class BatchSpanProcessorTest {
     createEndedSpan(SPAN_NAME_1);
 
     assertThat(sdkTracerProvider.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
-  }
-
-  @Test
-  void rejectsNegativeExporterConcurrencyLimit() {
-    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(-1);
-    assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).build())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("span exporter concurrency limit must be positive");
-  }
-
-  @Test
-  void rejectsZeroExporterConcurrencyLimit() {
-    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(0);
-    assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).build())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("span exporter concurrency limit must be positive");
   }
 
   @Test
@@ -858,43 +841,6 @@ class BatchSpanProcessorTest {
         state = State.UNBLOCKED;
         monitor.notifyAll();
       }
-    }
-  }
-
-  private static final class ConcurrentSpanExporter implements SpanExporter {
-    private final CountDownLatch entered = new CountDownLatch(2);
-    private final CountDownLatch release = new CountDownLatch(1);
-    private final AtomicInteger active = new AtomicInteger();
-    private final AtomicInteger maxConcurrent = new AtomicInteger();
-
-    @Override
-    public int getConcurrencyLimit() {
-      return 2;
-    }
-
-    @Override
-    public CompletableResultCode export(Collection<SpanData> spans) {
-      int current = active.incrementAndGet();
-      maxConcurrent.accumulateAndGet(current, Math::max);
-      entered.countDown();
-      try {
-        release.await();
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      } finally {
-        active.decrementAndGet();
-      }
-      return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode flush() {
-      return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode shutdown() {
-      return CompletableResultCode.ofSuccess();
     }
   }
 

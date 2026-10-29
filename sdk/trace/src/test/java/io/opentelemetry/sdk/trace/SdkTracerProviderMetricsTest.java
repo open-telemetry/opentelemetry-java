@@ -810,7 +810,6 @@ class SdkTracerProviderMetricsTest {
     MeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(metricReader).build();
 
-    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     BatchSpanProcessor processor =
         BatchSpanProcessor.builder(mockExporter)
             .setMaxQueueSize(1)

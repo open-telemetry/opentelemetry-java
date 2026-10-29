@@ -146,7 +146,6 @@ class SdkLoggerProviderMetricsTest {
     MeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(metricReader).build();
 
-    when(mockExporter.getConcurrencyLimit()).thenReturn(1);
     BatchLogRecordProcessor processor =
         BatchLogRecordProcessor.builder(mockExporter)
             .setMaxQueueSize(1)
