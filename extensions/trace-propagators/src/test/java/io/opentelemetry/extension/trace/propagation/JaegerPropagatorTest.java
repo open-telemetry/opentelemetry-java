@@ -348,19 +348,27 @@ class JaegerPropagatorTest {
                 TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
   }
 
-  @Test
-  void extract_SampledDebugFirehoseContext() {
+  @ParameterizedTest
+  @MethodSource
+  void extract_HexadecimalFlags(byte flags, String encodedFlags, TraceFlags expectedTraceFlags) {
     Map<String, String> carrier = new LinkedHashMap<>();
     JaegerSpanContext context =
         new JaegerSpanContext(
-            TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, (byte) 0x0b);
+            TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, flags);
     carrier.put(PROPAGATION_HEADER, TextMapCodec.contextAsString(context));
 
-    assertThat(carrier.get(PROPAGATION_HEADER)).endsWith(":b");
+    assertThat(carrier.get(PROPAGATION_HEADER)).endsWith(":" + encodedFlags);
     assertThat(getSpanContext(jaegerPropagator.extract(Context.root(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
+                TRACE_ID, SPAN_ID, expectedTraceFlags, TraceState.getDefault()));
+  }
+
+  static Stream<Arguments> extract_HexadecimalFlags() {
+    return Stream.of(
+        Arguments.argumentSet("sampled debug firehose", (byte) 0x0b, "b", TraceFlags.getSampled()),
+        Arguments.argumentSet("unsampled hex", (byte) 0x0a, "a", TraceFlags.getDefault()),
+        Arguments.argumentSet("two-digit hex", (byte) 0xff, "ff", TraceFlags.getSampled()));
   }
 
   @Test
