@@ -62,7 +62,7 @@ Configuration is part of our public API surface area, subject to our
 
 Prefer `0` to mean "no limit" for optional upper bounds, such as export timeouts
 and maximum request sizes, when disabling the bound has well-defined semantics
-and does not require allocating storage proportional to an infinity sentinel.
+and does not trigger a large up-front memory allocation.
 
 The litmus test is: "Can we disable this bound coherently without treating
 infinity as an allocation size or changing the component's operating model?"
