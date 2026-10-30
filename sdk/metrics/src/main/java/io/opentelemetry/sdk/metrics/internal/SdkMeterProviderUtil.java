@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -99,6 +100,18 @@ public final class SdkMeterProviderUtil {
           "Error calling addMeterConfiguratorCondition on SdkMeterProviderBuilder", e);
     }
     return sdkMeterProviderBuilder;
+  }
+
+  /** Reflectively set {@code enabled} on the {@link ViewBuilder}. */
+  public static ViewBuilder setEnabled(ViewBuilder viewBuilder, boolean enabled) {
+    try {
+      Method method = ViewBuilder.class.getDeclaredMethod("setEnabled", boolean.class);
+      method.setAccessible(true);
+      method.invoke(viewBuilder, enabled);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException("Error calling setEnabled on ViewBuilder", e);
+    }
+    return viewBuilder;
   }
 
   /** Reflectively reset the {@link SdkMeterProvider}, clearing all registered instruments. */

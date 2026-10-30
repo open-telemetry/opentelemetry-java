@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
@@ -28,6 +29,7 @@ public final class ViewBuilder {
   private Aggregation aggregation = Aggregation.defaultAggregation();
   private Predicate<String> attributeFilter = StringPredicates.ALL;
   private int cardinalityLimit = MetricStorage.DEFAULT_MAX_CARDINALITY;
+  @Nullable private Boolean enabled;
 
   ViewBuilder() {}
 
@@ -125,8 +127,21 @@ public final class ViewBuilder {
     return this;
   }
 
+  /**
+   * Sets whether the metric stream from the view is produced.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#setEnabled(ViewBuilder, boolean)}.
+   *
+   * @param enabled whether the metric stream from the view is produced
+   */
+  ViewBuilder setEnabled(boolean enabled) {
+    this.enabled = enabled;
+    return this;
+  }
+
   /** Returns a {@link View} with the configuration of this builder. */
   public View build() {
-    return View.create(name, description, aggregation, attributeFilter, cardinalityLimit);
+    return View.create(name, description, aggregation, attributeFilter, cardinalityLimit, enabled);
   }
 }
