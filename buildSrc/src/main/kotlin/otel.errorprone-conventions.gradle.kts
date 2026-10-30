@@ -31,6 +31,7 @@ tasks {
         excludedPaths.set(".*/build/generated/.*|.*/internal/shaded/.*")
 
         // Still Java 8
+        disable("TraditionalJavadocToMarkdown")
         disable("Varifier")
 
         // Doesn't currently use Var annotations.
@@ -91,6 +92,8 @@ tasks {
           disable("MemberName")
           // Internal javadoc not needed for test or jmh classes
           disable("OtelInternalJavadoc")
+          // Javadoc not required for test or jmh classes
+          disable("MissingJavadoc")
         }
 
         option("NullAway:CustomContractAnnotations", "io.opentelemetry.api.internal.Contract")

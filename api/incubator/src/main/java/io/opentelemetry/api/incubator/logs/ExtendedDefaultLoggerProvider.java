@@ -9,6 +9,7 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
 
+/** A no-op logger provider supporting the incubating logs API. */
 public class ExtendedDefaultLoggerProvider implements LoggerProvider {
 
   private static final LoggerProvider INSTANCE = new ExtendedDefaultLoggerProvider();

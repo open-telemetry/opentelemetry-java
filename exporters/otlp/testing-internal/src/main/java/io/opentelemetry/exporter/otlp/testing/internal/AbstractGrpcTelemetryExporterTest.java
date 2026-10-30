@@ -115,6 +115,7 @@ import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
+/** Shared OTLP gRPC exporter tests for all telemetry signals. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 

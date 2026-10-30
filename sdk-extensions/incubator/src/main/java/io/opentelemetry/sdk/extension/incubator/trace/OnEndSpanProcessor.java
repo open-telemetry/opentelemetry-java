@@ -42,6 +42,7 @@ public final class OnEndSpanProcessor implements SpanProcessor {
     return false;
   }
 
+  /** Callback invoked when a span ends. */
   @FunctionalInterface
   public interface OnEnd {
     void apply(ReadableSpan span);

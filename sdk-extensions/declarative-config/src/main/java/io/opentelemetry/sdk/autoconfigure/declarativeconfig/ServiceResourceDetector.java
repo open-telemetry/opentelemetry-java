@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.Collections;
 import java.util.UUID;
 
+/** Detects the service name and generates a service instance ID for declarative configuration. */
 public class ServiceResourceDetector implements ComponentProvider {
 
   // multiple calls to this resource provider should return the same value
