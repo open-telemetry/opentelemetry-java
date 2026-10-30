@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.component;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.impl.ComponentProvider;
 import io.opentelemetry.sdk.resources.Resource;
 
 public class ResourceComponentProvider implements ComponentProvider {

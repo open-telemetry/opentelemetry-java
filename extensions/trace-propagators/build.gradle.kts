@@ -12,7 +12,7 @@ otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator", "io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider",
-  "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.impl.ComponentProvider",
 ))
 
 dependencies {

@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.impl.ComponentProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +30,7 @@ class DeclarativeConfigContextTest {
   private final DeclarativeConfigContext context = new DeclarativeConfigContext(componentLoader);
 
   @Test
+  @SuppressWarnings("deprecation")
   void componentProvidersCached() {
     // First loadComponent call should load providers
     assertThatThrownBy(
@@ -57,6 +58,8 @@ class DeclarativeConfigContextTest {
 
     // Verify spiHelper.load() was only called once
     verify(componentLoader, times(1)).load(ComponentProvider.class);
+    verify(componentLoader, times(1))
+        .load(io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class);
   }
 
   @Test
@@ -102,5 +105,100 @@ class DeclarativeConfigContextTest {
     assertThat(config.isLong("int_key")).isTrue();
     assertThat(config.isDouble("double_key")).isTrue();
     assertThat(config.isString("int_key")).isFalse();
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  void legacyComponentProviderLoaded() {
+    Resource expectedResource = Resource.builder().put("source", "legacy").build();
+    io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider legacyProvider =
+        new io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider() {
+          @Override
+          public Class<?> getType() {
+            return Resource.class;
+          }
+
+          @Override
+          public String getName() {
+            return "legacy-test";
+          }
+
+          @Override
+          public Object create(DeclarativeConfigProperties config) {
+            return expectedResource;
+          }
+        };
+
+    doReturn(Collections.singletonList(legacyProvider))
+        .when(componentLoader)
+        .load(io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class);
+
+    Resource resource =
+        context.loadComponent(
+            Resource.class,
+            ConfigKeyValue.of(
+                "legacy-test",
+                YamlDeclarativeConfigProperties.create(Collections.emptyMap(), componentLoader)));
+
+    assertThat(resource).isSameAs(expectedResource);
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  void legacyComponentProviderDeduplicatedWhenModernProviderExists() {
+    Resource modernResource = Resource.builder().put("source", "modern").build();
+    Resource legacyResource = Resource.builder().put("source", "legacy").build();
+
+    ComponentProvider modernProvider =
+        new ComponentProvider() {
+          @Override
+          public Class<?> getType() {
+            return Resource.class;
+          }
+
+          @Override
+          public String getName() {
+            return "duplicate-test";
+          }
+
+          @Override
+          public Object create(DeclarativeConfigProperties config) {
+            return modernResource;
+          }
+        };
+
+    io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider legacyProvider =
+        new io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider() {
+          @Override
+          public Class<?> getType() {
+            return Resource.class;
+          }
+
+          @Override
+          public String getName() {
+            return "duplicate-test";
+          }
+
+          @Override
+          public Object create(DeclarativeConfigProperties config) {
+            return legacyResource;
+          }
+        };
+
+    doReturn(Collections.singletonList(modernProvider))
+        .when(componentLoader)
+        .load(ComponentProvider.class);
+    doReturn(Collections.singletonList(legacyProvider))
+        .when(componentLoader)
+        .load(io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class);
+
+    Resource resource =
+        context.loadComponent(
+            Resource.class,
+            ConfigKeyValue.of(
+                "duplicate-test",
+                YamlDeclarativeConfigProperties.create(Collections.emptyMap(), componentLoader)));
+
+    assertThat(resource).isSameAs(modernResource);
   }
 }

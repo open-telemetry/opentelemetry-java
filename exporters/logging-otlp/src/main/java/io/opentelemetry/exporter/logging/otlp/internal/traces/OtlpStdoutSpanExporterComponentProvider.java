@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.logging.otlp.internal.traces;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.exporter.logging.otlp.internal.OutputStreamConfigUtil;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.impl.ComponentProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**

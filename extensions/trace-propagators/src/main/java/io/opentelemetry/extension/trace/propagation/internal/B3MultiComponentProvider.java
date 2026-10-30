@@ -8,7 +8,7 @@ package io.opentelemetry.extension.trace.propagation.internal;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.impl.ComponentProvider;
 
 /**
  * Declarative configuration SPI implementation for {@link B3Propagator} which allows enabling

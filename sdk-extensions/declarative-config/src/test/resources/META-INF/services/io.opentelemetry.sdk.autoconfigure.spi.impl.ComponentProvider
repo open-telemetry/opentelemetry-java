@@ -9,3 +9,4 @@ io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ResourceComponent
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ResourceFirstComponentProvider
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ResourceSecondComponentProvider
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.IdGeneratorComponentProvider
+
