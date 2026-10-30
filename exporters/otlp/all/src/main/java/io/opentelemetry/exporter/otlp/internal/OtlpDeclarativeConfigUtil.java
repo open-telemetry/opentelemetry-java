@@ -111,7 +111,8 @@ public final class OtlpDeclarativeConfigUtil {
 
     Integer maxRequestSize = config.getInt("max_request_size");
     if (maxRequestSize != null) {
-      setMaxRequestSize.accept(maxRequestSize.longValue());
+      // The declarative config schema defines 0 as no limit
+      setMaxRequestSize.accept(maxRequestSize == 0 ? Long.MAX_VALUE : maxRequestSize.longValue());
     }
 
     DeclarativeConfigProperties tls =

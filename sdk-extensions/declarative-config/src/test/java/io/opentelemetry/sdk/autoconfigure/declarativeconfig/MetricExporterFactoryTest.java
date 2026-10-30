@@ -141,6 +141,14 @@ class MetricExporterFactoryTest {
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
+            "otlp_http max_request_size 0",
+            new PushMetricExporterModel()
+                .setOtlpHttp(new OtlpHttpMetricExporterModel().setMaxRequestSize(0)),
+            OtlpHttpMetricExporter.getDefault().toBuilder()
+                .setMaxRequestBodySize(Long.MAX_VALUE)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
             "otlp_grpc default",
             new PushMetricExporterModel().setOtlpGrpc(new OtlpGrpcMetricExporterModel()),
             OtlpGrpcMetricExporter.getDefault().toBuilder().setComponentLoader(context).build()),
@@ -179,6 +187,14 @@ class MetricExporterFactoryTest {
                         .with(
                             InstrumentType.HISTOGRAM,
                             Aggregation.base2ExponentialBucketHistogram()))
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
+            "otlp_grpc max_request_size 0",
+            new PushMetricExporterModel()
+                .setOtlpGrpc(new OtlpGrpcMetricExporterModel().setMaxRequestSize(0)),
+            OtlpGrpcMetricExporter.getDefault().toBuilder()
+                .setMaxRequestMessageSize(Long.MAX_VALUE)
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
