@@ -56,7 +56,6 @@ class ModelPackageBoundaryTest {
               // Internal utility classes are exempt from the Experimental prefix requirement.
               boolean isInfrastructure =
                   clazz.getSimpleName().endsWith("Accessor")
-                      || clazz.getSimpleName().equals("ModelMapper")
                       || clazz.getSimpleName().equals("ExtensionPropertyUtil");
               assertThat(experimental || isInfrastructure)
                   .as(

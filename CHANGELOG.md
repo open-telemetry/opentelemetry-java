@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### SDK
+
+#### Extensions
+
+* Declarative config: Add parser and mapper SPIs in a dedicated artifact for issue
+  [#8820](https://github.com/open-telemetry/opentelemetry-java/issues/8820). Include the Jackson 2
+  mapper by default through a runtime adapter that can be excluded to register a custom mapper such
+  as one based on Jackson 3.
+
 ## Version 1.67.0 (2026-10-09)
 
 ### API

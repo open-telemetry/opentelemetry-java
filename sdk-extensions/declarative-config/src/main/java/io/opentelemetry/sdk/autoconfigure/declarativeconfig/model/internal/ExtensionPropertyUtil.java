@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.DeclarativeConfigurationMapperUtil;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -48,7 +49,8 @@ public final class ExtensionPropertyUtil {
         LOGGER.warning(
             "Property '" + name + "' has been stabilized. Use '" + candidate + "' instead.");
         extensionProperties.put(
-            name, value == null ? null : ModelMapper.MAPPER.convertValue(value, stableType));
+            name,
+            value == null ? null : DeclarativeConfigurationMapperUtil.convert(value, stableType));
         return;
       }
     }
@@ -56,7 +58,10 @@ public final class ExtensionPropertyUtil {
     Class<?> experimentalType = experimentalPropertyTypes.get(name);
     if (experimentalType != null) {
       extensionProperties.put(
-          name, value == null ? null : ModelMapper.MAPPER.convertValue(value, experimentalType));
+          name,
+          value == null
+              ? null
+              : DeclarativeConfigurationMapperUtil.convert(value, experimentalType));
       return;
     }
 
@@ -72,7 +77,7 @@ public final class ExtensionPropertyUtil {
    * Returns the extension property value for {@code key}, cast to {@code type}.
    *
    * <p>Values are guaranteed to be the correct type at store time: {@link #handleAnySetter}
-   * converts known experimental properties via {@code ModelMapper} before storing, and the
+   * converts known experimental properties via the configured mapper before storing, and the
    * generated accessor builders enforce the type at the call site. A {@link ClassCastException}
    * here indicates a contract violation (e.g. writing directly to the extension properties map with
    * the wrong type).
