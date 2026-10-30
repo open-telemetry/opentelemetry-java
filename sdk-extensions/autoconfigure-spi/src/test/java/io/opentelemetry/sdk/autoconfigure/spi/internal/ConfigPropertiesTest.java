@@ -20,7 +20,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
+/**
+ * Relies on environment configuration in {@code
+ * ./sdk-extensions/autoconfigure-spi/build.gradle.kts}.
+ */
 class ConfigPropertiesTest {
 
   private static final ComponentLoader COMPONENT_LOADER =
@@ -286,6 +291,28 @@ class ConfigPropertiesTest {
     assertThat(properties.getMap("foo", defaultMap))
         .containsExactly(entry("one", "1"), entry("two", "2"));
     assertThat(properties.getMap("foo")).isEmpty();
+  }
+
+  @Test
+  void environmentVariableForKeyWithUnderscore() {
+    ConfigProperties properties = DefaultConfigProperties.create(emptyMap(), COMPONENT_LOADER);
+    assertThat(properties.getString("otel.java.exporter.memory_mode")).isEqualTo("immutable_data");
+  }
+
+  @Test
+  void environmentVariableTakesPriorityOverDefaultForKeyWithUnderscore() {
+    ConfigProperties properties =
+        DefaultConfigProperties.create(
+            Collections.singletonMap("otel.java.exporter.memory_mode", "reusable_data"),
+            COMPONENT_LOADER);
+    assertThat(properties.getString("otel.java.exporter.memory_mode")).isEqualTo("immutable_data");
+  }
+
+  @Test
+  @SetSystemProperty(key = "otel.java.exporter.memory_mode", value = "reusable_data")
+  void systemPropertyTakesPriorityOverEnvironmentVariableForKeyWithUnderscore() {
+    ConfigProperties properties = DefaultConfigProperties.create(emptyMap(), COMPONENT_LOADER);
+    assertThat(properties.getString("otel.java.exporter.memory_mode")).isEqualTo("reusable_data");
   }
 
   private static Map<String, String> makeTestProps() {
