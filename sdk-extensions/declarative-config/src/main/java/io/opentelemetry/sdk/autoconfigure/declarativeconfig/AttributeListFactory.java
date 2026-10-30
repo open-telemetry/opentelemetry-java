@@ -30,16 +30,24 @@ final class AttributeListFactory implements Factory<List<AttributeNameValueModel
   public Attributes create(List<AttributeNameValueModel> model, DeclarativeConfigContext context) {
     AttributesBuilder builder = Attributes.builder();
 
-    for (AttributeNameValueModel nameValueModel : model) {
-      addToBuilder(nameValueModel, builder);
+    for (int i = 0; i < model.size(); i++) {
+      AttributeNameValueModel nameValueModel = model.get(i);
+      context.pushConfigPath("attributes[" + i + "]");
+      try {
+        addToBuilder(nameValueModel, builder, context);
+      } finally {
+        context.popConfigPath();
+      }
     }
 
     return builder.build();
   }
 
   private static void addToBuilder(
-      AttributeNameValueModel nameValueModel, AttributesBuilder builder) {
-    String name = FileConfigUtil.requireNonNull(nameValueModel.getName(), "attribute name");
+      AttributeNameValueModel nameValueModel,
+      AttributesBuilder builder,
+      DeclarativeConfigContext context) {
+    String name = FileConfigUtil.requireNonNull(context, nameValueModel.getName(), "name");
     Object value = nameValueModel.getValue();
     if (value == null) {
       // Per the configuration schema, an entry with a null value is ignored
