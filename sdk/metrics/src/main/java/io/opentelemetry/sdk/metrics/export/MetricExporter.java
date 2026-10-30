@@ -52,13 +52,30 @@ public interface MetricExporter
   }
 
   /**
-   * Exports the {@code metrics}. The caller (i.e. {@link PeriodicMetricReader} will not call export
-   * until the previous call completes.
+   * Exports the {@code metrics}. The caller (i.e. {@link PeriodicMetricReader}) will not call
+   * export until the previous call completes unless {@link #supportsExportBackpressure()} returns
+   * {@code true}.
    *
    * @param metrics the metrics to export.
    * @return the result of the export, which is often an asynchronous operation.
    */
   CompletableResultCode export(Collection<MetricData> metrics);
+
+  /**
+   * Returns whether this exporter applies backpressure to callers of {@link #export(Collection)}.
+   *
+   * <p>When {@code true}, the exporter may block the export call while its own capacity is
+   * exhausted. The periodic metric reader will not wait for the returned result before submitting
+   * the next batch, allowing the exporter to control concurrency and capacity dynamically.
+   *
+   * <p>The default is {@code false}, preserving serialized export behavior.
+   *
+   * @return whether this exporter controls export backpressure
+   * @since 1.68.0
+   */
+  default boolean supportsExportBackpressure() {
+    return false;
+  }
 
   /**
    * A hint that any metrics previously {@link #export(Collection)}ed should be completed.

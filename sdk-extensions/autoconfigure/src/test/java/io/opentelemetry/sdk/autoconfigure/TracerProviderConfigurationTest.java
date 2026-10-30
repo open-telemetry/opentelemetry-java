@@ -60,6 +60,7 @@ class TracerProviderConfigurationTest {
   @BeforeEach
   void setUp() {
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockSpanExporter.getConcurrencyLimit()).thenReturn(1);
   }
 
   @Test

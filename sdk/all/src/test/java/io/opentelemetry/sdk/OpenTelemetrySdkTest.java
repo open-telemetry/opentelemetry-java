@@ -215,6 +215,7 @@ class OpenTelemetrySdkTest {
 
   @Test
   void meterBuilder() {
+    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
     when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
@@ -229,6 +230,7 @@ class OpenTelemetrySdkTest {
 
   @Test
   void meterBuilder_ViaProvider() {
+    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
     when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
@@ -257,6 +259,7 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void fullOpenTelemetrySdkConfigurationDemo() {
+    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
     when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk.builder()
         .setMeterProvider(
@@ -294,6 +297,7 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void trivialOpenTelemetrySdkConfigurationDemo() {
+    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
     when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk.builder()
         .setMeterProvider(
@@ -312,6 +316,7 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void minimalOpenTelemetrySdkConfigurationDemo() {
+    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
     when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     OpenTelemetrySdk.builder()
         .setMeterProvider(
@@ -384,6 +389,7 @@ class OpenTelemetrySdkTest {
   void stringRepresentation() {
     SpanExporter spanExporter = mock(SpanExporter.class);
     when(spanExporter.toString()).thenReturn("MockSpanExporter{}");
+    when(metricExporter.getConcurrencyLimit()).thenReturn(1);
     when(metricExporter.getDefaultAggregation(any())).thenCallRealMethod();
     when(metricExporter.toString()).thenReturn("MockMetricExporter{}");
     LogRecordExporter logRecordExporter = mock(LogRecordExporter.class);

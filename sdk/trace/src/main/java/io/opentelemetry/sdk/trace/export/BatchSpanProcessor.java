@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -201,6 +203,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final ArrayList<SpanData> batch;
     private final long maxQueueSize;
     private final AtomicInteger droppedSpanCount = new AtomicInteger(0);
+    private final Set<CompletableResultCode> pendingExports =
+        Collections.newSetFromMap(new ConcurrentHashMap<CompletableResultCode, Boolean>());
 
     private Worker(
         SpanExporter spanExporter,
@@ -287,9 +291,14 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
       }
       exportCurrentBatch();
+      boolean success = waitForExports();
       CompletableResultCode flushResult = flushRequested.get();
       if (flushResult != null) {
-        flushResult.succeed();
+        if (success) {
+          flushResult.succeed();
+        } else {
+          flushResult.fail();
+        }
         flushRequested.set(null);
       }
     }
@@ -353,20 +362,45 @@ public final class BatchSpanProcessor implements SpanProcessor {
       }
 
       try {
+        exportBatch(batch);
+      } finally {
+        batch.clear();
+      }
+    }
+
+    private void exportBatch(List<SpanData> exportBatch) {
+      try {
         // We always increment for every export invocation, so we increment before the export call
         // to make sure thrown errors don't affect it.
-        spanProcessorInstrumentation.finishSpans(batch.size());
-        CompletableResultCode result = spanExporter.export(Collections.unmodifiableList(batch));
-        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
-        if (!result.isSuccess()) {
+        spanProcessorInstrumentation.finishSpans(exportBatch.size());
+        CompletableResultCode result =
+            spanExporter.export(Collections.unmodifiableList(exportBatch));
+        if (spanExporter.supportsExportBackpressure()) {
+          pendingExports.add(result);
+          result.whenComplete(() -> pendingExports.remove(result));
+        } else {
+          result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        }
+        if (!spanExporter.supportsExportBackpressure() && !result.isSuccess()) {
           logger.log(Level.FINE, "Exporter failed");
         }
       } catch (Throwable t) {
         ThrowableUtil.propagateIfFatal(t);
         logger.log(Level.WARNING, "Exporter threw an Exception", t);
-      } finally {
-        batch.clear();
       }
+    }
+
+    private boolean waitForExports() {
+      boolean success = true;
+      for (CompletableResultCode pendingExport :
+          pendingExports.toArray(new CompletableResultCode[0])) {
+        CompletableResultCode result =
+            pendingExport.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        if (!result.isSuccess()) {
+          success = false;
+        }
+      }
+      return success;
     }
   }
 }

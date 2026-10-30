@@ -66,13 +66,31 @@ public interface SpanExporter extends Closeable {
 
   /**
    * Called to export sampled {@code Span}s. Note that export operations can be performed
-   * simultaneously depending on the type of span processor being used. However, the {@link
-   * BatchSpanProcessor} will ensure that only one export can occur at a time.
+   * simultaneously depending on the type of span processor being used. The {@link
+   * BatchSpanProcessor} serializes exports unless {@link #supportsExportBackpressure()} returns
+   * {@code true}.
    *
    * @param spans the collection of sampled Spans to be exported.
    * @return the result of the export, which is often an asynchronous operation.
    */
   CompletableResultCode export(Collection<SpanData> spans);
+
+  /**
+   * Returns whether this exporter applies backpressure to callers of {@link #export(Collection)}.
+   *
+   * <p>When {@code true}, the exporter may block the export call while its own capacity is
+   * exhausted. The batch span processor will not wait for the returned result before submitting the
+   * next batch, allowing the exporter to control concurrency and capacity dynamically.
+   *
+   * <p>The default is {@code false}, preserving the serialized export behavior of the batch span
+   * processor.
+   *
+   * @return whether this exporter controls export backpressure
+   * @since 1.68.0
+   */
+  default boolean supportsExportBackpressure() {
+    return false;
+  }
 
   /**
    * Exports the collection of sampled {@code Span}s that have not yet been exported. Note that

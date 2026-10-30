@@ -19,7 +19,10 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -69,6 +72,9 @@ public final class PeriodicMetricReader implements MetricReader {
 
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
+  private final boolean supportsExportBackpressure;
+  private final Set<CompletableResultCode> pendingExports =
+      Collections.newSetFromMap(new ConcurrentHashMap<CompletableResultCode, Boolean>());
 
   private volatile MetricReaderInstrumentation instrumentation =
       new MetricReaderInstrumentation(COMPONENT_ID, MeterProvider.noop());
@@ -99,6 +105,7 @@ public final class PeriodicMetricReader implements MetricReader {
     this.scheduler = scheduler;
     this.maxExportBatchSize = maxExportBatchSize;
     this.internalTelemetryVersion = internalTelemetryVersion;
+    this.supportsExportBackpressure = exporter.supportsExportBackpressure();
     this.worker =
         new DaemonThreadFactory("PeriodicMetricReader-worker").newThread(this::workerLoop);
   }
@@ -129,21 +136,8 @@ public final class PeriodicMetricReader implements MetricReader {
     if (shutdown.get()) {
       return CompletableResultCode.ofSuccess();
     }
-    CompletableResultCode collectExport = new CompletableResultCode();
-    signals.offer(Signal.flush(collectExport));
     CompletableResultCode result = new CompletableResultCode();
-    collectExport.whenComplete(
-        () -> {
-          CompletableResultCode flushResult = exporter.flush();
-          flushResult.whenComplete(
-              () -> {
-                if (collectExport.isSuccess() && flushResult.isSuccess()) {
-                  result.succeed();
-                } else {
-                  result.fail();
-                }
-              });
-        });
+    signals.offer(Signal.flush(result));
     return result;
   }
 
@@ -161,7 +155,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
     // Final flush + poison. Worker drains the flush signal, completes it, then exits on POISON.
     CompletableResultCode finalFlush = new CompletableResultCode();
-    signals.offer(Signal.flush(finalFlush));
+    signals.offer(Signal.flush(finalFlush, /* callExporterFlush= */ false));
     signals.offer(Signal.poison());
 
     // Block until the worker drains the final flush and terminates. This preserves the
@@ -257,7 +251,10 @@ public final class PeriodicMetricReader implements MetricReader {
       try {
         boolean success = runCycle();
         if (signal.flushResult != null) {
-          if (success) {
+          success = success && awaitPendingExports();
+          CompletableResultCode flushResult =
+              signal.callExporterFlush ? exporter.flush() : CompletableResultCode.ofSuccess();
+          if (success && flushResult.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS).isSuccess()) {
             signal.flushResult.succeed();
           } else {
             signal.flushResult.fail();
@@ -304,9 +301,10 @@ public final class PeriodicMetricReader implements MetricReader {
     if (maxExportBatchSize == 0) {
       return exportOne(metricData);
     }
+    Collection<Collection<MetricData>> batches =
+        MetricExportBatcher.batchMetrics(metricData, maxExportBatchSize);
     boolean anyFailed = false;
-    for (Collection<MetricData> batch :
-        MetricExportBatcher.batchMetrics(metricData, maxExportBatchSize)) {
+    for (Collection<MetricData> batch : batches) {
       if (!exportOne(batch)) {
         anyFailed = true;
       }
@@ -316,6 +314,31 @@ public final class PeriodicMetricReader implements MetricReader {
 
   private boolean exportOne(Collection<MetricData> batch) {
     CompletableResultCode result = exporter.export(batch);
+    if (supportsExportBackpressure) {
+      pendingExports.add(result);
+      result.whenComplete(
+          () -> {
+            pendingExports.remove(result);
+            if (!result.isSuccess()) {
+              logger.log(Level.WARNING, "Exporter failed");
+            }
+          });
+      return !result.isDone() || result.isSuccess();
+    }
+    return waitForExport(result);
+  }
+
+  private boolean awaitPendingExports() {
+    boolean success = true;
+    for (CompletableResultCode result : pendingExports.toArray(new CompletableResultCode[0])) {
+      if (!waitForExport(result)) {
+        success = false;
+      }
+    }
+    return success;
+  }
+
+  private boolean waitForExport(CompletableResultCode result) {
     // Block until the exporter completes or the timeout elapses. Safe because the worker thread
     // is dedicated to exports; no scheduler thread is held while we wait.
     result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
@@ -335,17 +358,25 @@ public final class PeriodicMetricReader implements MetricReader {
    * final flush on shutdown), and poison pill (from shutdown to terminate the worker).
    */
   private static final class Signal {
-    private static final Signal TICK = new Signal(null, /* poison= */ false, /* isTick= */ true);
-    private static final Signal POISON = new Signal(null, /* poison= */ true, /* isTick= */ false);
+    private static final Signal TICK =
+        new Signal(null, /* poison= */ false, /* isTick= */ true, /* callExporterFlush= */ false);
+    private static final Signal POISON =
+        new Signal(null, /* poison= */ true, /* isTick= */ false, /* callExporterFlush= */ false);
 
     @Nullable final CompletableResultCode flushResult;
     final boolean poison;
     final boolean isTick;
+    final boolean callExporterFlush;
 
-    private Signal(@Nullable CompletableResultCode flushResult, boolean poison, boolean isTick) {
+    private Signal(
+        @Nullable CompletableResultCode flushResult,
+        boolean poison,
+        boolean isTick,
+        boolean callExporterFlush) {
       this.flushResult = flushResult;
       this.poison = poison;
       this.isTick = isTick;
+      this.callExporterFlush = callExporterFlush;
     }
 
     static Signal tick() {
@@ -353,7 +384,11 @@ public final class PeriodicMetricReader implements MetricReader {
     }
 
     static Signal flush(CompletableResultCode flushResult) {
-      return new Signal(flushResult, /* poison= */ false, /* isTick= */ false);
+      return flush(flushResult, /* callExporterFlush= */ true);
+    }
+
+    static Signal flush(CompletableResultCode flushResult, boolean callExporterFlush) {
+      return new Signal(flushResult, /* poison= */ false, /* isTick= */ false, callExporterFlush);
     }
 
     static Signal poison() {
