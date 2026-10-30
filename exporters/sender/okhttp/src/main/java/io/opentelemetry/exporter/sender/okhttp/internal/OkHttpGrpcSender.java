@@ -220,10 +220,21 @@ public final class OkHttpGrpcSender implements GrpcSender {
                 new Callback() {
                   @Override
                   public void onFailure(Call call, IOException e) {
+                    boolean retryable = retryState != null && retryState.shouldRetryOnException(e);
+                    if (retryState != null && logger.isLoggable(Level.FINER)) {
+                      logger.log(
+                          Level.FINER,
+                          "Attempt "
+                              + attempt
+                              + " failed with "
+                              + (retryable ? "retryable" : "non-retryable")
+                              + " exception",
+                          e);
+                    }
                     if (!call.isCanceled()
                         && retryState != null
                         && retryState.canRetry(attempt)
-                        && retryState.shouldRetryOnException(e)
+                        && retryable
                         && retryState.backoff(OptionalLong.empty())) {
                       sendAttempt(
                           requestBuilder,
@@ -242,10 +253,22 @@ public final class OkHttpGrpcSender implements GrpcSender {
                     handleResponse(
                         response,
                         (resolvedResponse, canRetry) -> {
+                          boolean retryable = canRetry && isRetryable(resolvedResponse);
+                          if (retryState != null && logger.isLoggable(Level.FINER)) {
+                            logger.log(
+                                Level.FINER,
+                                "Attempt "
+                                    + attempt
+                                    + " returned "
+                                    + (retryable ? "retryable" : "non-retryable")
+                                    + " response: grpc-status="
+                                    + resolvedResponse.getStatusCode()
+                                    + ", grpc-message="
+                                    + resolvedResponse.getStatusDescription());
+                          }
                           if (retryState != null
                               && retryState.canRetry(attempt)
-                              && canRetry
-                              && isRetryable(resolvedResponse)
+                              && retryable
                               && retryState.backoff(OptionalLong.empty())) {
                             sendAttempt(
                                 requestBuilder,
