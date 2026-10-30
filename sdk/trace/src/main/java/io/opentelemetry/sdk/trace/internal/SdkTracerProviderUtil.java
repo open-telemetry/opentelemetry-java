@@ -117,4 +117,22 @@ public final class SdkTracerProviderUtil {
           "Error calling setExceptionAttributeResolver on SdkTracerProviderBuilder", e);
     }
   }
+
+  /**
+   * Reflectively set whether context-scoped attributes are enabled on the {@link
+   * SdkTracerProviderBuilder}.
+   */
+  public static void setContextScopedAttributesEnabled(
+      SdkTracerProviderBuilder sdkTracerProviderBuilder, boolean contextScopedAttributesEnabled) {
+    try {
+      Method method =
+          SdkTracerProviderBuilder.class.getDeclaredMethod(
+              "setContextScopedAttributesEnabled", boolean.class);
+      method.setAccessible(true);
+      method.invoke(sdkTracerProviderBuilder, contextScopedAttributesEnabled);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setContextScopedAttributesEnabled on SdkTracerProviderBuilder", e);
+    }
+  }
 }

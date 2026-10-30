@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 class SdkLogger implements Logger {
 
   private static final Logger NOOP_LOGGER = LoggerProvider.noop().get("noop");
-  private static final boolean INCUBATOR_AVAILABLE;
+  static final boolean INCUBATOR_AVAILABLE;
 
   static {
     boolean incubatorAvailable = false;

@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.common.ContextAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 
@@ -29,5 +32,9 @@ final class IncubatingUtil {
       InstrumentationScopeInfo instrumentationScopeInfo,
       SdkLogger logger) {
     return new ExtendedSdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo, logger);
+  }
+
+  static Attributes getContextAttributes(Context context) {
+    return ContextAttributes.get(context);
   }
 }

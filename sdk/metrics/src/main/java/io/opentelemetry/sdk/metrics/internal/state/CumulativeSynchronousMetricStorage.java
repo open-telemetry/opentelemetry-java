@@ -42,8 +42,16 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
       Clock clock,
       int maxCardinality,
       boolean enabled,
+      boolean contextScopedAttributesEnabled,
       MemoryMode memoryMode) {
-    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+    super(
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesEnabled);
     this.memoryMode = memoryMode;
   }
 
