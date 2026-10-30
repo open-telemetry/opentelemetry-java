@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -19,6 +20,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -48,6 +50,11 @@ public final class JaegerRemoteSampler implements Sampler {
   private final GrpcSender grpcSender;
   private final URI endpoint;
   private final int pollingIntervalMs;
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
+  @Nullable
+  private byte[] lastResponseMessage;
 
   JaegerRemoteSampler(
       GrpcSender grpcSender,
@@ -95,10 +102,19 @@ public final class JaegerRemoteSampler implements Sampler {
       if (isShutdown.get()) {
         return;
       }
+      byte[] responseMessage = grpcResponse.getResponseMessage();
       try {
-        SamplingStrategyResponse strategyResponse =
-            SamplingStrategyResponseUnMarshaler.read(grpcResponse.getResponseMessage());
-        sampler = updateSampler(strategyResponse);
+        synchronized (lock) {
+          // Keep the current sampler when the strategy hasn't changed, so stateful samplers such
+          // as RateLimitingSampler don't lose their state on every poll.
+          if (Arrays.equals(responseMessage, lastResponseMessage)) {
+            return;
+          }
+          SamplingStrategyResponse strategyResponse =
+              SamplingStrategyResponseUnMarshaler.read(responseMessage);
+          sampler = updateSampler(strategyResponse);
+          lastResponseMessage = responseMessage;
+        }
       } catch (IOException e) {
         logger.log(Level.WARNING, "Failed to unmarshal strategy response", e);
       }
