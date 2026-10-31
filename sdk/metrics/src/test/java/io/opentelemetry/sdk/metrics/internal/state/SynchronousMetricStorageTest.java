@@ -45,6 +45,7 @@ import io.opentelemetry.sdk.testing.assertj.DoubleSumAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.time.Instant;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -75,7 +76,7 @@ public class SynchronousMetricStorageTest {
 
   private RegisteredReader deltaReader;
   private RegisteredReader cumulativeReader;
-  private final TestClock testClock = TestClock.create();
+  private final TestClock testClock = TestClock.create(Instant.EPOCH);
   private Aggregator<LongPointData> aggregator;
 
   private void initialize(MemoryMode memoryMode) {
@@ -260,6 +261,66 @@ public class SynchronousMetricStorageTest {
                                 .hasEpochNanos(30)
                                 .hasValue(7)
                                 .hasAttributes(Attributes.builder().put("series", "B").build())));
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void recordAndCollect_DeltaInstrumentCreatedAfterPreviousCollection(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?> existingStorage =
+        DefaultSynchronousMetricStorage.create(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            AttributesFilters.ALLOW_ALL,
+            CARDINALITY_LIMIT,
+            testClock,
+            /* enabled= */ true);
+    existingStorage.recordDouble(1, Attributes.empty(), Context.current());
+    testClock.advance(Duration.ofSeconds(10));
+    existingStorage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, testClock.now());
+    deltaReader.setLastCollectEpochNanos(testClock.now());
+
+    testClock.advance(Duration.ofSeconds(5));
+    long creationEpochNanos = testClock.now();
+    DefaultSynchronousMetricStorage<?> newStorage =
+        DefaultSynchronousMetricStorage.create(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            AttributesFilters.ALLOW_ALL,
+            CARDINALITY_LIMIT,
+            testClock,
+            /* enabled= */ true);
+
+    testClock.advance(Duration.ofSeconds(5));
+    newStorage.recordDouble(3, Attributes.empty(), Context.current());
+    assertThat(newStorage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, testClock.now()))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(creationEpochNanos)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(3)));
+    long firstNewCollectionEpochNanos = testClock.now();
+    deltaReader.setLastCollectEpochNanos(firstNewCollectionEpochNanos);
+
+    testClock.advance(Duration.ofSeconds(5));
+    newStorage.recordDouble(4, Attributes.empty(), Context.current());
+    assertThat(newStorage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, testClock.now()))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isDelta()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(firstNewCollectionEpochNanos)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(4)));
   }
 
   @Test
