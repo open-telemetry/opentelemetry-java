@@ -92,6 +92,23 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
   <E extends Throwable> void startAndRun(
       SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E;
 
+  /**
+   * Sets the span type, which identifies the class of spans this span belongs to, such as HTTP
+   * client requests or database calls, as defined by semantic conventions. The span type can't be
+   * changed after the span is started.
+   *
+   * <p>The span type is a case-sensitive ASCII string of at most 255 characters. It starts with a
+   * letter and contains only letters, digits, {@code _}, {@code .}, {@code -}, and {@code /}.
+   * Implementations may ignore span types that don't conform to this syntax. An empty span type is
+   * equivalent to an unset one.
+   *
+   * @param type the span type.
+   * @return this.
+   */
+  default ExtendedSpanBuilder setType(String type) {
+    return this;
+  }
+
   /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder setParent(Context context);

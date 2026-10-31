@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.trace.data.ExceptionEventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.internal.ExtendedReadableSpan;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-final class SdkSpan implements ReadWriteSpan {
+final class SdkSpan implements ReadWriteSpan, ExtendedReadableSpan {
 
   private static final Logger logger = Logger.getLogger(SdkSpan.class.getName());
 
@@ -54,6 +55,7 @@ final class SdkSpan implements ReadWriteSpan {
   private final ExceptionAttributeResolver exceptionAttributeResolver;
   // The kind of the span.
   private final SpanKind kind;
+  @Nullable private final String type;
   // The clock used to get the time.
   private final AnchoredClock clock;
   // The resource associated with this span.
@@ -127,6 +129,7 @@ final class SdkSpan implements ReadWriteSpan {
       String name,
       InstrumentationScopeInfo instrumentationScopeInfo,
       SpanKind kind,
+      @Nullable String type,
       SpanContext parentSpanContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
@@ -145,6 +148,7 @@ final class SdkSpan implements ReadWriteSpan {
     this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
     this.kind = kind;
+    this.type = type;
     this.spanProcessor = spanProcessor;
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.resource = resource;
@@ -162,6 +166,7 @@ final class SdkSpan implements ReadWriteSpan {
    * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
    * @param kind the span kind.
+   * @param type the validated span type, or {@code null} if not set.
    * @param parentSpan the parent span, or {@link Span#getInvalid()} if this span is a root span.
    * @param spanLimits limits applied to this span.
    * @param spanProcessor handler called when the span starts and ends.
@@ -177,6 +182,7 @@ final class SdkSpan implements ReadWriteSpan {
       String name,
       InstrumentationScopeInfo instrumentationScopeInfo,
       SpanKind kind,
+      @Nullable String type,
       Span parentSpan,
       Context parentContext,
       SpanLimits spanLimits,
@@ -218,6 +224,7 @@ final class SdkSpan implements ReadWriteSpan {
             name,
             instrumentationScopeInfo,
             kind,
+            type,
             parentSpan.getSpanContext(),
             spanLimits,
             spanProcessor,
@@ -603,6 +610,12 @@ final class SdkSpan implements ReadWriteSpan {
     return kind;
   }
 
+  @Override
+  @Nullable
+  public String getType() {
+    return type;
+  }
+
   long getStartEpochNanos() {
     return startEpochNanos;
   }
@@ -670,6 +683,8 @@ final class SdkSpan implements ReadWriteSpan {
         + name
         + ", kind="
         + kind
+        + ", type="
+        + type
         + ", attributes="
         + attributes
         + ", status="

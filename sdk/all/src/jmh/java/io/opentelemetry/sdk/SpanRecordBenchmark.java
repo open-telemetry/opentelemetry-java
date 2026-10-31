@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.incubator.trace.ExtendedSpanBuilder;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -39,6 +41,7 @@ import org.openjdk.jmh.annotations.Warmup;
  * <ul>
  *   <li>{@link BenchmarkState#spanSize}: the size of the span, which is a composite of the number
  *       of attributes, events, and links attached to the span.
+ *   <li>{@link BenchmarkState#withType}: whether the span type is set.
  * </ul>
  *
  * <p>Each operation consists of recording {@link SpanRecordBenchmark#RECORDS_PER_INVOCATION} spans.
@@ -54,6 +57,8 @@ public class SpanRecordBenchmark {
   private static final int RECORDS_PER_INVOCATION = BenchmarkUtils.RECORDS_PER_INVOCATION;
   private static final int MAX_THREADS = 4;
   private static final int QUEUE_SIZE = RECORDS_PER_INVOCATION * MAX_THREADS;
+  // Longest span type in semantic conventions.
+  private static final String SPAN_TYPE = "dotnet.http.request.wait_for_connection.internal";
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
@@ -61,6 +66,9 @@ public class SpanRecordBenchmark {
     // Encode a variety of dimensions (# attributes, # events, # links) into a single enum to
     // benchmark various shapes of spans without combinatorial explosion.
     @Param SpanSize spanSize;
+
+    @Param({"false", "true"})
+    boolean withType;
 
     SdkTracerProvider tracerProvider;
     Tracer tracer;
@@ -144,7 +152,11 @@ public class SpanRecordBenchmark {
 
   private static void record(BenchmarkState benchmarkState) {
     for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
-      Span span = benchmarkState.tracer.spanBuilder("test span name").startSpan();
+      SpanBuilder builder = benchmarkState.tracer.spanBuilder("test span name");
+      if (benchmarkState.withType) {
+        ((ExtendedSpanBuilder) builder).setType(SPAN_TYPE);
+      }
+      Span span = builder.startSpan();
       for (int j = 0; j < benchmarkState.attributeKeys.size(); j++) {
         span.setAttribute(
             benchmarkState.attributeKeys.get(j), benchmarkState.attributeValues.get(j));
