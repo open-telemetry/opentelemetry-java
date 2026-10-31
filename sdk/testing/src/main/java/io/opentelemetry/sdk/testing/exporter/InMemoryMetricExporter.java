@@ -9,11 +9,13 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -47,11 +49,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public final class InMemoryMetricExporter implements MetricExporter {
   private final Queue<MetricData> finishedMetricItems = new ConcurrentLinkedQueue<>();
-  private final AggregationTemporality aggregationTemporality;
+  private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private boolean isStopped = false;
 
-  private InMemoryMetricExporter(AggregationTemporality aggregationTemporality) {
-    this.aggregationTemporality = aggregationTemporality;
+  private InMemoryMetricExporter(AggregationTemporalitySelector aggregationTemporalitySelector) {
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
   }
 
   /**
@@ -64,7 +66,24 @@ public final class InMemoryMetricExporter implements MetricExporter {
 
   /** Returns a new {@link InMemoryMetricExporter} with the given {@code aggregationTemporality}. */
   public static InMemoryMetricExporter create(AggregationTemporality aggregationTemporality) {
-    return new InMemoryMetricExporter(aggregationTemporality);
+    return create(unused -> aggregationTemporality);
+  }
+
+  /**
+   * Returns a new {@link InMemoryMetricExporter} with the given {@link
+   * AggregationTemporalitySelector}.
+   *
+   * <p>For example, {@code
+   * InMemoryMetricExporter.create(AggregationTemporalitySelector.deltaPreferred())} uses delta
+   * temporality for counters and histograms, and cumulative temporality for up-down counters.
+   *
+   * @param aggregationTemporalitySelector selects the aggregation temporality for each instrument
+   *     type
+   */
+  public static InMemoryMetricExporter create(
+      AggregationTemporalitySelector aggregationTemporalitySelector) {
+    Objects.requireNonNull(aggregationTemporalitySelector, "aggregationTemporalitySelector");
+    return new InMemoryMetricExporter(aggregationTemporalitySelector);
   }
 
   /**
@@ -87,7 +106,7 @@ public final class InMemoryMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return aggregationTemporality;
+    return aggregationTemporalitySelector.getAggregationTemporality(instrumentType);
   }
 
   /**
