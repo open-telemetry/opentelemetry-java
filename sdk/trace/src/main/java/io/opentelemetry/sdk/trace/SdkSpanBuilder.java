@@ -21,10 +21,12 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributeUtil;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -32,10 +34,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** {@link SdkSpanBuilder} is SDK implementation of {@link SpanBuilder}. */
 class SdkSpanBuilder implements SpanBuilder {
+
+  private static final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(SdkSpanBuilder.class.getName()));
+
+  private static final int MAX_TYPE_LENGTH = 255;
 
   private static final Span RANDOM_TRACE_ID_PRIMORDIAL_SPAN =
       Span.wrap(
@@ -56,6 +65,7 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Nullable private Context parent; // null means: Use current context.
   private SpanKind spanKind = SpanKind.INTERNAL;
+  @Nullable private String type;
   @Nullable private AttributesMap attributes;
   @Nullable private List<LinkData> links;
   private int totalNumberOfLinksAdded = 0;
@@ -93,6 +103,18 @@ class SdkSpanBuilder implements SpanBuilder {
       return this;
     }
     this.spanKind = spanKind;
+    return this;
+  }
+
+  public SpanBuilder setType(String type) {
+    if (type == null) {
+      ApiUsageLogger.logNullParam(SpanBuilder.class, "setType", "type");
+      return this;
+    }
+    if (type.isEmpty()) {
+      return this;
+    }
+    this.type = type;
     return this;
   }
 
@@ -219,6 +241,20 @@ class SdkSpanBuilder implements SpanBuilder {
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
     Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
+    String validatedType = type;
+    if (validatedType != null && !isValidType(validatedType)) {
+      if (logger.isLoggable(Level.WARNING)) {
+        logger.log(
+            Level.WARNING,
+            "Span type \""
+                + validatedType
+                + "\" is invalid, creating span without a type. Span types must consist of "
+                + MAX_TYPE_LENGTH
+                + " or fewer characters including alphanumeric, _, ., -, /, and start with a"
+                + " letter.");
+      }
+      validatedType = null;
+    }
     SamplingResult samplingResult =
         tracerSharedState
             .getSampler()
@@ -266,6 +302,7 @@ class SdkSpanBuilder implements SpanBuilder {
         spanName,
         instrumentationScopeInfo,
         spanKind,
+        validatedType,
         parentSpan,
         parentContext,
         spanLimits,
@@ -289,6 +326,28 @@ class SdkSpanBuilder implements SpanBuilder {
       attributes = this.attributes;
     }
     return attributes;
+  }
+
+  // Visible for testing
+  static boolean isValidType(String type) {
+    int length = type.length();
+    if (length > MAX_TYPE_LENGTH) {
+      return false;
+    }
+    for (int i = 0; i < length; i++) {
+      char c = type.charAt(i);
+      if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+        continue;
+      }
+      if (i == 0) {
+        return false;
+      }
+      if ((c >= '0' && c <= '9') || c == '_' || c == '.' || c == '-' || c == '/') {
+        continue;
+      }
+      return false;
+    }
+    return true;
   }
 
   // Visible for testing

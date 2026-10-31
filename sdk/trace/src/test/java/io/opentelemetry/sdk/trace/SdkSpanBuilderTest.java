@@ -1270,6 +1270,7 @@ class SdkSpanBuilderTest {
                 + "name=SpanBuilderSdkTest, version=null, schemaUrl=null, attributes=\\{}}, "
                 + "name=span_name, "
                 + "kind=INTERNAL, "
+                + "type=null, "
                 + "startEpochNanos=[0-9]+, "
                 + "endEpochNanos=[0-9]+, "
                 + "attributes=AttributesMap\\{data=\\{[^}]*}, capacity=128, totalAddedValues=2}, "

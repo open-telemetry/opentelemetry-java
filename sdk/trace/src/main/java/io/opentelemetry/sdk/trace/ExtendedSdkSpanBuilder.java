@@ -54,6 +54,12 @@ final class ExtendedSdkSpanBuilder extends SdkSpanBuilder implements ExtendedSpa
   }
 
   @Override
+  public ExtendedSpanBuilder setType(String type) {
+    super.setType(type);
+    return this;
+  }
+
+  @Override
   public ExtendedSpanBuilder addLink(SpanContext spanContext) {
     super.addLink(spanContext);
     return this;

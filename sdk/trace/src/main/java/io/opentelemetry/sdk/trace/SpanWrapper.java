@@ -17,7 +17,9 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.internal.ExtendedSpanData;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -31,7 +33,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-abstract class SpanWrapper implements SpanData {
+abstract class SpanWrapper implements ExtendedSpanData {
   abstract SdkSpan delegate();
 
   abstract List<LinkData> resolvedLinks();
@@ -122,6 +124,12 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
+  @Nullable
+  public String getType() {
+    return delegate().getType();
+  }
+
+  @Override
   public long getStartEpochNanos() {
     return delegate().getStartEpochNanos();
   }
@@ -191,6 +199,9 @@ abstract class SpanWrapper implements SpanData {
         + ", "
         + "kind="
         + getKind()
+        + ", "
+        + "type="
+        + getType()
         + ", "
         + "startEpochNanos="
         + getStartEpochNanos()
