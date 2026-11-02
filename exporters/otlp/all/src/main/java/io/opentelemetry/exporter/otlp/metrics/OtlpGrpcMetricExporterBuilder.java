@@ -85,7 +85,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+   * Sets the managed channel to use when communicating with the backend. Takes precedence over
    * {@link #setEndpoint(String)} if both are called.
    *
    * <p>Note: calling this overrides the spec compliant {@code User-Agent} header. To ensure spec
@@ -190,7 +190,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   * Sets the client key and the certificate chain to use for verifying client when TLS is enabled.
    * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpGrpcMetricExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
