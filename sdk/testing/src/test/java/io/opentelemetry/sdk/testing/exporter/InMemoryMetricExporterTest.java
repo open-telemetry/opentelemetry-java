@@ -62,6 +62,8 @@ class InMemoryMetricExporterTest {
   void getAggregationTemporality(InstrumentType instrumentType) {
     assertThat(InMemoryMetricExporter.create().getAggregationTemporality(instrumentType))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(InMemoryMetricExporter.builder().build().getAggregationTemporality(instrumentType))
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(
             InMemoryMetricExporter.create(AggregationTemporality.DELTA)
                 .getAggregationTemporality(instrumentType))
@@ -76,7 +78,9 @@ class InMemoryMetricExporterTest {
   @EnumSource(InstrumentType.class)
   void getAggregationTemporality_deltaPreferred(InstrumentType instrumentType) {
     assertThat(
-            InMemoryMetricExporter.create(AggregationTemporalitySelector.deltaPreferred())
+            InMemoryMetricExporter.builder()
+                .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
+                .build()
                 .getAggregationTemporality(instrumentType))
         .isEqualTo(
             instrumentType == InstrumentType.UP_DOWN_COUNTER
@@ -86,16 +90,34 @@ class InMemoryMetricExporterTest {
   }
 
   @Test
-  void create_nullSelector() {
-    assertThatThrownBy(() -> InMemoryMetricExporter.create((AggregationTemporalitySelector) null))
+  void setAggregationTemporalitySelector_null() {
+    assertThatThrownBy(
+            () -> InMemoryMetricExporter.builder().setAggregationTemporalitySelector(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("aggregationTemporalitySelector");
   }
 
   @Test
+  void builder_reusable() {
+    InMemoryMetricExporterBuilder builder = InMemoryMetricExporter.builder();
+    InMemoryMetricExporter cumulativeExporter = builder.build();
+    InMemoryMetricExporter deltaExporter =
+        builder
+            .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
+            .build();
+
+    assertThat(cumulativeExporter.getAggregationTemporality(InstrumentType.COUNTER))
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(deltaExporter.getAggregationTemporality(InstrumentType.COUNTER))
+        .isEqualTo(AggregationTemporality.DELTA);
+  }
+
+  @Test
   void export_deltaPreferred() {
     InMemoryMetricExporter deltaExporter =
-        InMemoryMetricExporter.create(AggregationTemporalitySelector.deltaPreferred());
+        InMemoryMetricExporter.builder()
+            .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
+            .build();
     TestClock clock = TestClock.create();
     PeriodicMetricReader reader =
         PeriodicMetricReader.builder(deltaExporter).setInterval(Duration.ofDays(1)).build();
@@ -158,7 +180,9 @@ class InMemoryMetricExporterTest {
   @Test
   void export_preservesMetricData() {
     InMemoryMetricExporter deltaExporter =
-        InMemoryMetricExporter.create(AggregationTemporalitySelector.deltaPreferred());
+        InMemoryMetricExporter.builder()
+            .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
+            .build();
     MetricData metric = generateFakeMetric();
 
     assertThat(deltaExporter.export(Collections.singletonList(metric)).isSuccess()).isTrue();
