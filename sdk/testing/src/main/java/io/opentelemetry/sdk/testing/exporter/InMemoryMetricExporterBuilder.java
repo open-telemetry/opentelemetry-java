@@ -20,7 +20,7 @@ public final class InMemoryMetricExporterBuilder {
    * Sets the {@link AggregationTemporalitySelector} used by {@link
    * InMemoryMetricExporter#getAggregationTemporality(InstrumentType)}.
    *
-   * <p>The default is {@link AggregationTemporalitySelector#alwaysCumulative()}.
+   * <p>If unset, defaults to {@link AggregationTemporalitySelector#alwaysCumulative()}.
    *
    * @param aggregationTemporalitySelector the {@link AggregationTemporalitySelector} to set
    * @return this {@link InMemoryMetricExporterBuilder}

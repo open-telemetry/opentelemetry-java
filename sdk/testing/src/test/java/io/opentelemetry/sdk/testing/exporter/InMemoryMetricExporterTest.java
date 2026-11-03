@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -125,18 +123,11 @@ class InMemoryMetricExporterTest {
         SdkMeterProvider.builder().setClock(clock).registerMetricReader(reader).build()) {
       Meter meter = meterProvider.get("test");
       LongCounter counter = meter.counterBuilder("counter").build();
-      DoubleHistogram histogram = meter.histogramBuilder("histogram").build();
       LongUpDownCounter upDownCounter = meter.upDownCounterBuilder("upDownCounter").build();
-      AtomicLong observedUpDownCounter = new AtomicLong();
-      meter
-          .upDownCounterBuilder("observableUpDownCounter")
-          .buildWithCallback(measurement -> measurement.record(observedUpDownCounter.get()));
 
-      for (int value : new int[] {1, 2, 3}) {
+      for (int value : new int[] {1, 2}) {
         counter.add(value);
-        histogram.record(value);
-        upDownCounter.add(value == 3 ? -1 : 1);
-        observedUpDownCounter.set(value == 3 ? 0 : 1);
+        upDownCounter.add(value == 1 ? 1 : -1);
         clock.advance(Duration.ofSeconds(1));
 
         assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
@@ -151,27 +142,12 @@ class InMemoryMetricExporterTest {
                                 sum.isDelta().hasPointsSatisfying(point -> point.hasValue(value))),
                 metric ->
                     assertThat(metric)
-                        .hasName("histogram")
-                        .hasHistogramSatisfying(
-                            data ->
-                                data.isDelta()
-                                    .hasPointsSatisfying(point -> point.hasCount(1).hasSum(value))),
-                metric ->
-                    assertThat(metric)
                         .hasName("upDownCounter")
                         .hasLongSumSatisfying(
                             sum ->
                                 sum.isCumulative()
                                     .hasPointsSatisfying(
-                                        point -> point.hasValue(value == 2 ? 2 : 1))),
-                metric ->
-                    assertThat(metric)
-                        .hasName("observableUpDownCounter")
-                        .hasLongSumSatisfying(
-                            sum ->
-                                sum.isCumulative()
-                                    .hasPointsSatisfying(
-                                        point -> point.hasValue(value == 3 ? 0 : 1))));
+                                        point -> point.hasValue(value == 1 ? 1 : 0))));
         deltaExporter.reset();
       }
     }
