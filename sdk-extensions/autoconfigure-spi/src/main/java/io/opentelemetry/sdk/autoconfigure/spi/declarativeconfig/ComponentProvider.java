@@ -24,9 +24,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
  * used, and {@link #create(DeclarativeConfigProperties)} is (currently) called with an empty {@link
  * DeclarativeConfigProperties}.
  *
- * <p>This class is not intended for use by application developers. Its API is stable and will not
- * be changed or removed in a backwards-incompatible manner.
- *
  * <p>Supported component types include: {@link SpanExporter}, {@link MetricExporter}, {@link
  * LogRecordExporter}, {@link SpanProcessor}, {@link LogRecordProcessor}, {@link TextMapPropagator},
  * {@link Sampler}, {@link Resource}.
@@ -56,7 +53,5 @@ public interface ComponentProvider {
    *     file.
    * @return an instance the SDK extension component
    */
-  // TODO (jack-berg): consider dynamic configuration use case before stabilizing in case that
-  // affects any API decisions
   Object create(DeclarativeConfigProperties config);
 }

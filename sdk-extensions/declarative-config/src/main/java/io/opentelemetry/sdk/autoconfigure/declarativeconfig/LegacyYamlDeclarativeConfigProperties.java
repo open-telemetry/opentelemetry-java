@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.spi.internal;
+package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
@@ -12,13 +12,21 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+/**
+ * Temporary adapter of declarative config properties implementing the legacy incubator interface
+ * {@link io.opentelemetry.api.incubator.config.DeclarativeConfigProperties} for backwards
+ * compatibility with legacy {@link
+ * io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider}.
+ *
+ * <p>Scheduled for removal after 1.68.0.
+ */
 @SuppressWarnings("deprecation")
-final class IncubatorDeclarativeConfigPropertiesAdapter
+final class LegacyYamlDeclarativeConfigProperties
     implements io.opentelemetry.api.incubator.config.DeclarativeConfigProperties {
 
   private final DeclarativeConfigProperties delegate;
 
-  IncubatorDeclarativeConfigPropertiesAdapter(DeclarativeConfigProperties delegate) {
+  LegacyYamlDeclarativeConfigProperties(DeclarativeConfigProperties delegate) {
     this.delegate = delegate;
   }
 
@@ -52,6 +60,12 @@ final class IncubatorDeclarativeConfigPropertiesAdapter
     return delegate.getDouble(name);
   }
 
+  @Nullable
+  @Override
+  public <T> List<T> getScalarList(String name, Class<T> scalarType) {
+    return delegate.getScalarList(name, scalarType);
+  }
+
   @Override
   public boolean isString(String name) {
     return delegate.isString(name);
@@ -79,29 +93,26 @@ final class IncubatorDeclarativeConfigPropertiesAdapter
 
   @Nullable
   @Override
-  public <T> List<T> getScalarList(String name, Class<T> scalarType) {
-    return delegate.getScalarList(name, scalarType);
-  }
-
-  @Nullable
-  @Override
-  public DeclarativeConfigProperties getStructured(String name) {
+  public io.opentelemetry.api.incubator.config.DeclarativeConfigProperties getStructured(
+      String name) {
     DeclarativeConfigProperties structured = delegate.getStructured(name);
-    return structured == null ? null : new IncubatorDeclarativeConfigPropertiesAdapter(structured);
+    return structured == null ? null : new LegacyYamlDeclarativeConfigProperties(structured);
   }
 
   @Nullable
   @Override
-  public List<DeclarativeConfigProperties> getStructuredList(String name) {
+  public List<io.opentelemetry.api.incubator.config.DeclarativeConfigProperties> getStructuredList(
+      String name) {
     List<DeclarativeConfigProperties> list = delegate.getStructuredList(name);
     if (list == null) {
       return null;
     }
-    List<DeclarativeConfigProperties> adapted = new ArrayList<>(list.size());
+    List<io.opentelemetry.api.incubator.config.DeclarativeConfigProperties> result =
+        new ArrayList<>(list.size());
     for (DeclarativeConfigProperties item : list) {
-      adapted.add(new IncubatorDeclarativeConfigPropertiesAdapter(item));
+      result.add(new LegacyYamlDeclarativeConfigProperties(item));
     }
-    return adapted;
+    return result;
   }
 
   @Override
@@ -116,6 +127,6 @@ final class IncubatorDeclarativeConfigPropertiesAdapter
 
   @Override
   public String toString() {
-    return "IncubatorDeclarativeConfigPropertiesAdapter{" + delegate + '}';
+    return "LegacyYamlDeclarativeConfigProperties{" + delegate + '}';
   }
 }

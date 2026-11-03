@@ -43,6 +43,12 @@ class DeclarativeConfigContext implements ComponentLoader {
   @Nullable private volatile MeterProvider meterProvider;
   @Nullable private ConfigProvider configProvider;
   @Nullable private List<ComponentProvider> componentProviders = null;
+
+  @Nullable
+  @SuppressWarnings("deprecation")
+  private List<io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider>
+      legacyComponentProviders = null;
+
   @Nullable private DeclarativeConfigurationBuilder builder;
 
   DeclarativeConfigContext(ComponentLoader componentLoader) {
@@ -147,48 +153,62 @@ class DeclarativeConfigContext implements ComponentLoader {
             configKeyValue.getValue(),
             configProvider == null ? ConfigProvider.noop() : configProvider);
 
-    if (componentProviders == null) {
-      List<ComponentProvider> providers =
-          new ArrayList<>(ComponentLoader.loadList(this, ComponentProvider.class));
-      for (io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider legacyProvider :
+    List<ComponentProvider> providers = this.componentProviders;
+    List<io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider> legacyProviders =
+        this.legacyComponentProviders;
+    if (providers == null || legacyProviders == null) {
+      providers = ComponentLoader.loadList(this, ComponentProvider.class);
+      legacyProviders =
           ComponentLoader.loadList(
-              this, io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class)) {
-        if (providers.stream()
-            .noneMatch(
-                p ->
-                    p.getType() == legacyProvider.getType()
-                        && p.getName().equals(legacyProvider.getName()))) {
-          providers.add(legacyProvider);
-        }
-      }
-      componentProviders = providers;
+              this, io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class);
+      this.componentProviders = providers;
+      this.legacyComponentProviders = legacyProviders;
     }
     List<ComponentProvider> matchedProviders =
-        componentProviders.stream()
+        providers.stream()
             .filter(
                 componentProvider ->
                     componentProvider.getType() == type && name.equals(componentProvider.getName()))
             .collect(Collectors.toList());
-    if (matchedProviders.isEmpty()) {
+    List<io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider> matchedLegacyProviders =
+        legacyProviders.stream()
+            .filter(
+                componentProvider ->
+                    componentProvider.getType() == type && name.equals(componentProvider.getName()))
+            .collect(Collectors.toList());
+
+    int totalMatches = matchedProviders.size() + matchedLegacyProviders.size();
+    if (totalMatches == 0) {
       throw new DeclarativeConfigException(
           "No component provider detected for " + type.getName() + " with name \"" + name + "\".");
     }
-    if (matchedProviders.size() > 1) {
+    if (totalMatches > 1) {
+      List<String> providerClassNames = new ArrayList<>();
+      matchedProviders.forEach(provider -> providerClassNames.add(provider.getClass().getName()));
+      matchedLegacyProviders.forEach(
+          provider -> providerClassNames.add(provider.getClass().getName()));
       throw new DeclarativeConfigException(
           "Component provider conflict. Multiple providers detected for "
               + type.getName()
               + " with name \""
               + name
               + "\": "
-              + componentProviders.stream()
-                  .map(provider -> provider.getClass().getName())
-                  .collect(Collectors.joining(",", "[", "]")));
+              + providerClassNames.stream().collect(Collectors.joining(",", "[", "]")));
     }
-    // Exactly one matching component provider
-    ComponentProvider provider = matchedProviders.get(0);
 
+    Object component;
+    String providerClassName;
     try {
-      Object component = provider.create(config);
+      if (!matchedProviders.isEmpty()) {
+        ComponentProvider provider = matchedProviders.get(0);
+        providerClassName = provider.getClass().getName();
+        component = provider.create(config);
+      } else {
+        io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider provider =
+            matchedLegacyProviders.get(0);
+        providerClassName = provider.getClass().getName();
+        component = provider.create(new LegacyYamlDeclarativeConfigProperties(config));
+      }
       if (component instanceof Closeable) {
         closeables.add((Closeable) component);
       }
@@ -199,7 +219,7 @@ class DeclarativeConfigContext implements ComponentLoader {
                 + " with name \""
                 + name
                 + "\". Component provider "
-                + provider.getClass().getName()
+                + providerClassName
                 + " returned an unexpected component type: "
                 + component.getClass().getName());
       }
@@ -231,10 +251,8 @@ class DeclarativeConfigContext implements ComponentLoader {
     return Collections.unmodifiableSet(listeners);
   }
 
-  @SuppressWarnings("deprecation")
   private static class ExtendedDeclarativeConfigPropertiesImpl
-      implements ExtendedDeclarativeConfigProperties,
-          io.opentelemetry.api.incubator.config.DeclarativeConfigProperties {
+      implements ExtendedDeclarativeConfigProperties {
 
     private final DeclarativeConfigProperties delegate;
     private final ConfigProvider configProvider;
