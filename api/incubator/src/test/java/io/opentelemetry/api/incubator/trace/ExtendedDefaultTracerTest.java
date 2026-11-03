@@ -44,6 +44,8 @@ class ExtendedDefaultTracerTest extends AbstractDefaultTracerTest {
     ExtendedSpanBuilder spanBuilder =
         (ExtendedSpanBuilder) ExtendedDefaultTracer.getNoop().spanBuilder("test");
     assertThat(spanBuilder.setParentFrom(null, null)).isSameAs(spanBuilder);
+    assertThat(spanBuilder.setType("http.client.request")).isSameAs(spanBuilder);
+    assertThat(spanBuilder.setType(null)).isSameAs(spanBuilder);
 
     SpanRunnable<RuntimeException> spanRunnable = Mockito.mock(SpanRunnable.class);
 
