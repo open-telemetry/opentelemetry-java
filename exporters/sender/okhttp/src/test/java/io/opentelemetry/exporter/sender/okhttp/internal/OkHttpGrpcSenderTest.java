@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
@@ -42,10 +43,16 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.event.Level;
+import org.slf4j.event.LoggingEvent;
 
 class OkHttpGrpcSenderTest {
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcSender.class, Level.TRACE);
 
   private static final MediaType GRPC_MEDIA_TYPE = MediaType.get("application/grpc");
 
@@ -443,6 +450,45 @@ class OkHttpGrpcSenderTest {
     } finally {
       Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
     }
+  }
+
+  @Test
+  void send_retryEnabled_logsEachFailedAttempt() throws Exception {
+    // Allocate an ephemeral port and immediately close it to get a port with nothing listening
+    int port;
+    try (ServerSocket socket = new ServerSocket(0)) {
+      port = socket.getLocalPort();
+    }
+
+    OkHttpGrpcSender sender =
+        new OkHttpGrpcSender(
+            "http://localhost:" + port,
+            null,
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
+            null,
+            null,
+            null,
+            Long.MAX_VALUE,
+            null);
+
+    CompletableResultCode sendResult = new CompletableResultCode();
+    try {
+      sender.send(
+          new TestMessageWriter(), response -> sendResult.succeed(), error -> sendResult.fail());
+      sendResult.join(10, TimeUnit.SECONDS);
+    } finally {
+      sender.shutdown().join(10, TimeUnit.SECONDS);
+    }
+
+    assertThat(sendResult.isSuccess()).isFalse();
+    assertThat(logs.getEvents())
+        .extracting(LoggingEvent::getMessage)
+        .containsExactly(
+            "Attempt 0 failed with retryable exception",
+            "Attempt 1 failed with retryable exception");
   }
 
   /** Simple test marshaler for testing purposes. */
