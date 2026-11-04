@@ -197,7 +197,15 @@ class SpanExporterFactoryTest {
             "unknown component provider",
             new SpanExporterModel()
                 .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
-            "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"unknown_key\"."));
+            "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"unknown_key\"."),
+        Arguments.argumentSet(
+            "otlp_http negative max_request_size",
+            new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.trace.export.SpanExporter with name \"otlp_http\""),
+        Arguments.argumentSet(
+            "otlp_grpc negative max_request_size",
+            new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.trace.export.SpanExporter with name \"otlp_grpc\""));
   }
 
   @Test

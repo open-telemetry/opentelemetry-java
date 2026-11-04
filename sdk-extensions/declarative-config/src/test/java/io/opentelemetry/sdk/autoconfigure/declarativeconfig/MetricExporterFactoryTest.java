@@ -222,7 +222,17 @@ class MetricExporterFactoryTest {
             "unknown component provider",
             new PushMetricExporterModel()
                 .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
-            "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\"."));
+            "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\"."),
+        Arguments.argumentSet(
+            "otlp_http negative max_request_size",
+            new PushMetricExporterModel()
+                .setOtlpHttp(new OtlpHttpMetricExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.metrics.export.MetricExporter with name \"otlp_http\""),
+        Arguments.argumentSet(
+            "otlp_grpc negative max_request_size",
+            new PushMetricExporterModel()
+                .setOtlpGrpc(new OtlpGrpcMetricExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.metrics.export.MetricExporter with name \"otlp_grpc\""));
   }
 
   @Test
