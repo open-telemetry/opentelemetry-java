@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### SDK
+
+#### Traces
+
+* Add `SpanProcessor.noop()`. `SdkTracerProvider` now hands out no-op tracers only when no span
+  processors are registered; explicitly registering `SpanProcessor.noop()` (or
+  `SpanProcessor.composite()` with no arguments) now keeps tracers real, producing valid,
+  recording, propagating spans that are never exported.
+
+#### Extensions
+
+* Autoconfigure: add `otel.traces.exporter=noop`, which creates and propagates spans without
+  exporting them. `otel.traces.exporter=none` continues to disable tracing entirely.
+
 ## Version 1.67.0 (2026-10-09)
 
 ### API
