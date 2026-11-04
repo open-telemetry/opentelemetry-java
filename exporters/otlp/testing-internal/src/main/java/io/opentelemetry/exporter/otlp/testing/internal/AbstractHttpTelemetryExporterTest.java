@@ -104,6 +104,7 @@ import org.mockserver.integration.ClientAndServer;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
+/** Shared OTLP HTTP exporter tests for all telemetry signals. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 

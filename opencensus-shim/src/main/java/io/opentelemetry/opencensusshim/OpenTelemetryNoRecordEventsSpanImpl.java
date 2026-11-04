@@ -22,7 +22,6 @@
 
 package io.opentelemetry.opencensusshim;
 
-import com.google.common.base.Preconditions;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.EndSpanOptions;
@@ -37,6 +36,7 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -55,39 +55,39 @@ final class OpenTelemetryNoRecordEventsSpanImpl extends Span
 
   @Override
   public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
-    Preconditions.checkNotNull(description, "description");
-    Preconditions.checkNotNull(attributes, "attribute");
+    Objects.requireNonNull(description, "description");
+    Objects.requireNonNull(attributes, "attribute");
   }
 
   @Override
   public void addAnnotation(Annotation annotation) {
-    Preconditions.checkNotNull(annotation, "annotation");
+    Objects.requireNonNull(annotation, "annotation");
   }
 
   @Override
   public void putAttribute(String key, AttributeValue value) {
-    Preconditions.checkNotNull(key, "key");
-    Preconditions.checkNotNull(value, "value");
+    Objects.requireNonNull(key, "key");
+    Objects.requireNonNull(value, "value");
   }
 
   @Override
   public void putAttributes(Map<String, AttributeValue> attributes) {
-    Preconditions.checkNotNull(attributes, "attributes");
+    Objects.requireNonNull(attributes, "attributes");
   }
 
   @Override
   public void addMessageEvent(MessageEvent messageEvent) {
-    Preconditions.checkNotNull(messageEvent, "messageEvent");
+    Objects.requireNonNull(messageEvent, "messageEvent");
   }
 
   @Override
   public void addLink(Link link) {
-    Preconditions.checkNotNull(link, "link");
+    Objects.requireNonNull(link, "link");
   }
 
   @Override
   public void setStatus(Status status) {
-    Preconditions.checkNotNull(status, "status");
+    Objects.requireNonNull(status, "status");
   }
 
   @Override
@@ -102,7 +102,7 @@ final class OpenTelemetryNoRecordEventsSpanImpl extends Span
 
   @Override
   public void end(EndSpanOptions options) {
-    Preconditions.checkNotNull(options, "options");
+    Objects.requireNonNull(options, "options");
   }
 
   @Override

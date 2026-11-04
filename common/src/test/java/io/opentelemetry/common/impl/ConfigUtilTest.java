@@ -40,6 +40,7 @@ class ConfigUtilTest {
   @Test
   void getString_EnvironmentVariable() {
     assertThat(ConfigUtil.getString("config.key", "default")).isEqualTo("environment");
+    assertThat(ConfigUtil.getString("config_key", "default")).isEqualTo("environment");
     assertThat(ConfigUtil.getString("other.config.key", "default")).isEqualTo("default");
   }
 

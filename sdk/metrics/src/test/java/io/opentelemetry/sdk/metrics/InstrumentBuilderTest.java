@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ class InstrumentBuilderTest {
   public static final MeterProviderSharedState PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(
           TestClock.create(),
-          Resource.getDefault(),
+          SdkResourceProvider.create(Resource.getDefault()),
           asExemplarFilterInternal(ExemplarFilter.alwaysOff()));
   static final InstrumentationScopeInfo SCOPE = InstrumentationScopeInfo.create("scope-name");
   public static final SdkMeter SDK_METER =

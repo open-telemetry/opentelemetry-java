@@ -13,7 +13,9 @@ import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.common.internal.Signal;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -55,10 +57,22 @@ public class ExporterInstrumentation {
   static Attributes extractServerAttributes(URI httpEndpoint) {
     AttributesBuilder builder = Attributes.builder();
     String host = httpEndpoint.getHost();
+    int port = httpEndpoint.getPort();
+    if (host == null) {
+      // URI.getHost() returns null for some valid DNS names (JDK-8188305); URL accepts them.
+      try {
+        URL url = httpEndpoint.toURL();
+        if (!url.getHost().isEmpty()) {
+          host = url.getHost();
+        }
+        port = url.getPort();
+      } catch (MalformedURLException e) {
+        // Not a URL either, leave host unset.
+      }
+    }
     if (host != null) {
       builder.put(SemConvConstants.SERVER_ADDRESS, host);
     }
-    int port = httpEndpoint.getPort();
     if (port == -1) {
       String scheme = httpEndpoint.getScheme();
       if ("https".equals(scheme)) {

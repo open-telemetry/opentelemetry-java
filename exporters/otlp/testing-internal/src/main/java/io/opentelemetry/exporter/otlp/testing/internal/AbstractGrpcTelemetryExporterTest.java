@@ -115,6 +115,7 @@ import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
+/** Shared OTLP gRPC exporter tests for all telemetry signals. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
@@ -1057,6 +1058,24 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         exporterBuilder()
             .setEndpoint(server.httpUri().toString())
             .addHeader("host", "opentelemetry")
+            .build()) {
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    }
+    List<U> expectedResourceTelemetry = toProto(telemetry);
+    assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+
+    assertThat(httpRequests)
+        .singleElement()
+        .satisfies(req -> assertThat(req.authority()).isEqualTo("opentelemetry"));
+  }
+
+  @Test
+  void overrideHostMixedCase() {
+    List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri().toString())
+            .addHeader("Host", "opentelemetry")
             .build()) {
       assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     }

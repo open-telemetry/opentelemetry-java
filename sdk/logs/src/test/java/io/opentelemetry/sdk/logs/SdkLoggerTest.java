@@ -17,12 +17,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Strings;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -76,7 +76,7 @@ class SdkLoggerTest {
             .setLogLimits(() -> LogLimits.builder().setMaxAttributeValueLength(maxLength).build())
             .build();
     LogRecordBuilder logRecordBuilder = loggerProvider.get("test").logRecordBuilder();
-    String strVal = StringUtils.padLeft("", maxLength);
+    String strVal = Strings.repeat("0", maxLength);
     String tooLongStrVal = strVal + strVal;
 
     logRecordBuilder

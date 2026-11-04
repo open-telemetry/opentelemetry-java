@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 
+/** Detects entities set from {@code OTEL_ENTITIES} for declarative configuration. */
 public class EntitiesEnvResourceDetector implements ComponentProvider {
 
   @Override

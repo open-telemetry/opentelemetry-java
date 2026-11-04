@@ -37,7 +37,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(21))
+    languageVersion.set(JavaLanguageVersion.of(25))
   }
 
   withJavadocJar()
@@ -126,6 +126,13 @@ tasks {
       showStandardStreams = true
     }
     maxHeapSize = "1500m"
+
+    doFirst {
+      // Test dependencies (mockito and assertj) still use Unsafe memory-access methods deprecated by JEP 498.
+      if (javaLauncher.get().metadata.languageVersion.asInt() >= 24) {
+        jvmArgs("--sun-misc-unsafe-memory-access=allow")
+      }
+    }
   }
 
   withType<Javadoc>().configureEach {
@@ -297,8 +304,6 @@ dependencies {
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   compileOnly("com.google.code.findbugs:jsr305")
-
-  annotationProcessor("com.google.guava:guava-beta-checker")
 
   // Workaround for @javax.annotation.Generated
   // see: https://github.com/grpc/grpc-java/issues/3633

@@ -19,7 +19,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.Base16EncodingUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
@@ -505,6 +505,37 @@ class TraceRequestMarshalerTest {
                 .build());
   }
 
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoSpanLink_WithInvalidContext(MarshalerSource marshalerSource) {
+    SpanContext context =
+        SpanContext.createFromRemoteParent(
+            TraceId.getInvalid(),
+            SpanId.getInvalid(),
+            TraceFlags.getSampled(),
+            TraceState.builder().put("vendor", "value").build());
+    assertThat(context.isValid()).isFalse();
+    assertThat(
+            parse(
+                Span.Link.getDefaultInstance(),
+                marshalerSource.create(
+                    LinkData.create(context, Attributes.of(stringKey("message.id"), "123"), 2))))
+        .isEqualTo(
+            Span.Link.newBuilder()
+                .setTraceId(ByteString.copyFrom(new byte[16]))
+                .setSpanId(ByteString.copyFrom(new byte[8]))
+                .setFlags(
+                    (TraceFlags.getSampled().asByte() & 0xff) | SpanFlags.getParentIsRemoteMask())
+                .setTraceState("vendor=value")
+                .addAttributes(
+                    KeyValue.newBuilder()
+                        .setKey("message.id")
+                        .setValue(AnyValue.newBuilder().setStringValue("123").build())
+                        .build())
+                .setDroppedAttributesCount(1)
+                .build());
+  }
+
   @SuppressWarnings("unchecked")
   private static <T extends Message> T parse(T prototype, Marshaler marshaler) {
     byte[] serialized = toByteArray(marshaler);
@@ -576,7 +607,7 @@ class TraceRequestMarshalerTest {
   private static ByteString toHex(ByteString hexReadAsBase64) {
     String hex =
         Base64.getEncoder().encodeToString(hexReadAsBase64.toByteArray()).toLowerCase(Locale.ROOT);
-    return ByteString.copyFrom(OtelEncodingUtils.bytesFromBase16(hex, hex.length()));
+    return ByteString.copyFrom(Base16EncodingUtils.bytesFromBase16(hex, hex.length()));
   }
 
   private static byte[] toByteArray(Marshaler marshaler) {

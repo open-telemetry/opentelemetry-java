@@ -98,7 +98,7 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext) {
-    if (spanContext == null || !spanContext.isValid()) {
+    if (spanContext == null || (!spanContext.isValid() && spanContext.getTraceState().isEmpty())) {
       return this;
     }
     addLink(LinkData.create(spanContext));
@@ -107,11 +107,14 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
-    if (spanContext == null || !spanContext.isValid()) {
+    if (spanContext == null) {
       return this;
     }
     if (attributes == null) {
       attributes = Attributes.empty();
+    }
+    if (!spanContext.isValid() && attributes.isEmpty() && spanContext.getTraceState().isEmpty()) {
+      return this;
     }
     int totalAttributeCount = attributes.size();
     addLink(

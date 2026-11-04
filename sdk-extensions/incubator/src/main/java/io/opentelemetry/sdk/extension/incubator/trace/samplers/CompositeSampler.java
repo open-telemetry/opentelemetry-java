@@ -6,12 +6,10 @@
 package io.opentelemetry.sdk.extension.incubator.trace.samplers;
 
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.INVALID_THRESHOLD;
-import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidRandomValue;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidThreshold;
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.OtelTraceState.OTEL_TRACE_STATE_KEY;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
@@ -61,12 +59,7 @@ public final class CompositeSampler implements Sampler {
       adjustedCountReliable = intent.isAdjustedCountReliable();
       long randomValue;
       if (adjustedCountReliable) {
-        if (isValidRandomValue(otelTraceState.getRandomValue())) {
-          randomValue = otelTraceState.getRandomValue();
-        } else {
-          // Use last 56 bits of trace ID as random value.
-          randomValue = OtelEncodingUtils.longFromBase16String(traceId, 16) & 0x00FFFFFFFFFFFFFFL;
-        }
+        randomValue = otelTraceState.getRandomValueOrFromTraceId(traceId);
       } else {
         randomValue = RandomSupplier.platformDefault().get().nextLong() & 0x00FFFFFFFFFFFFFFL;
       }
@@ -99,10 +92,12 @@ public final class CompositeSampler implements Sampler {
 
       @Override
       public TraceState getUpdatedTraceState(TraceState parentTraceState) {
-        TraceState newTraceState = intent.getTraceStateUpdater().apply(traceState);
+        TraceState newTraceState = intent.getTraceStateUpdater().apply(traceState, decision);
         if (!serializedState.isEmpty()) {
           newTraceState =
               newTraceState.toBuilder().put(OTEL_TRACE_STATE_KEY, serializedState).build();
+        } else if (newTraceState.get(OTEL_TRACE_STATE_KEY) != null) {
+          newTraceState = newTraceState.toBuilder().remove(OTEL_TRACE_STATE_KEY).build();
         }
         return newTraceState;
       }

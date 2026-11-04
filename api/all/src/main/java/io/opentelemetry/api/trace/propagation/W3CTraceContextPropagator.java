@@ -8,14 +8,15 @@ package io.opentelemetry.api.trace.propagation;
 import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.decodeTraceState;
 import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
 
+import io.opentelemetry.api.impl.TemporaryBuffers;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
-import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -94,7 +95,12 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
-    if (context == null || setter == null) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(TextMapPropagator.class, "inject", "context");
+      return;
+    }
+    if (setter == null) {
+      ApiUsageLogger.logNullParam(TextMapPropagator.class, "inject", "setter");
       return;
     }
 
@@ -132,9 +138,11 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
+      ApiUsageLogger.logNullParam(TextMapPropagator.class, "extract", "context");
       return Context.root();
     }
     if (getter == null) {
+      ApiUsageLogger.logNullParam(TextMapPropagator.class, "extract", "getter");
       return context;
     }
 

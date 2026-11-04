@@ -172,15 +172,14 @@ public final class UpstreamGrpcSender implements GrpcSender {
         metadata.put(
             Metadata.Key.of(entry.getKey(), Metadata.ASCII_STRING_MARSHALLER),
             String.join(",", entry.getValue()));
+        // Header names are case-insensitive, so "Host" must override the authority too.
+        if (entry.getKey().equalsIgnoreCase("host") && !entry.getValue().isEmpty()) {
+          requestCallOptions = requestCallOptions.withAuthority(entry.getValue().get(0));
+        }
       }
       requestChannel =
           ClientInterceptors.intercept(
               requestChannel, MetadataUtils.newAttachHeadersInterceptor(metadata));
-
-      List<String> hostHeaders = headers.get("host");
-      if (hostHeaders != null && !hostHeaders.isEmpty()) {
-        requestCallOptions = requestCallOptions.withAuthority(hostHeaders.get(0));
-      }
     }
     if (this.compressorName != null) {
       requestCallOptions = requestCallOptions.withCompression(compressorName);

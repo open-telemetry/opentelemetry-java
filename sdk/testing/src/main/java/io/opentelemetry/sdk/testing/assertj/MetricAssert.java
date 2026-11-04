@@ -123,6 +123,26 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   }
 
   /**
+   * Asserts this {@link MetricData} is a double gauge with points matching all of the given
+   * assertions and no more, in any order.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final MetricAssert hasDoubleGaugePointsSatisfying(
+      Consumer<DoublePointAssert>... assertions) {
+    return hasDoubleGaugeSatisfying(gauge -> gauge.hasPointsSatisfying(assertions));
+  }
+
+  /**
+   * Asserts this {@link MetricData} is a double gauge with points matching all of the given
+   * assertions and no more, in any order.
+   */
+  public MetricAssert hasDoubleGaugePointsSatisfying(
+      Iterable<? extends Consumer<DoublePointAssert>> assertions) {
+    return hasDoubleGaugeSatisfying(gauge -> gauge.hasPointsSatisfying(assertions));
+  }
+
+  /**
    * Asserts this {@link MetricData} is a {@code LongGauge} that satisfies the provided assertion.
    */
   public MetricAssert hasLongGaugeSatisfying(Consumer<LongGaugeAssert> assertion) {
@@ -137,6 +157,25 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
     }
     assertion.accept(new LongGaugeAssert(actual.getLongGaugeData()));
     return this;
+  }
+
+  /**
+   * Asserts this {@link MetricData} is a long gauge with points matching all of the given
+   * assertions and no more, in any order.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final MetricAssert hasLongGaugePointsSatisfying(Consumer<LongPointAssert>... assertions) {
+    return hasLongGaugeSatisfying(gauge -> gauge.hasPointsSatisfying(assertions));
+  }
+
+  /**
+   * Asserts this {@link MetricData} is a long gauge with points matching all of the given
+   * assertions and no more, in any order.
+   */
+  public MetricAssert hasLongGaugePointsSatisfying(
+      Iterable<? extends Consumer<LongPointAssert>> assertions) {
+    return hasLongGaugeSatisfying(gauge -> gauge.hasPointsSatisfying(assertions));
   }
 
   /** Asserts this {@link MetricData} is a double sum that satisfies the provided assertion. */
@@ -154,6 +193,26 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
     return this;
   }
 
+  /**
+   * Asserts this {@link MetricData} is a double sum with points matching all of the given
+   * assertions and no more, in any order.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final MetricAssert hasDoubleSumPointsSatisfying(
+      Consumer<DoublePointAssert>... assertions) {
+    return hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(assertions));
+  }
+
+  /**
+   * Asserts this {@link MetricData} is a double sum with points matching all of the given
+   * assertions and no more, in any order.
+   */
+  public MetricAssert hasDoubleSumPointsSatisfying(
+      Iterable<? extends Consumer<DoublePointAssert>> assertions) {
+    return hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(assertions));
+  }
+
   /** Asserts this {@link MetricData} is a long sum that satisfies the provided assertion. */
   public MetricAssert hasLongSumSatisfying(Consumer<LongSumAssert> assertion) {
     isNotNull();
@@ -169,6 +228,25 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
     return this;
   }
 
+  /**
+   * Asserts this {@link MetricData} is a long sum with points matching all of the given assertions
+   * and no more, in any order.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final MetricAssert hasLongSumPointsSatisfying(Consumer<LongPointAssert>... assertions) {
+    return hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(assertions));
+  }
+
+  /**
+   * Asserts this {@link MetricData} is a long sum with points matching all of the given assertions
+   * and no more, in any order.
+   */
+  public MetricAssert hasLongSumPointsSatisfying(
+      Iterable<? extends Consumer<LongPointAssert>> assertions) {
+    return hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(assertions));
+  }
+
   /** Asserts this {@link MetricData} is a histogram that satisfies the provided assertion. */
   public MetricAssert hasHistogramSatisfying(Consumer<HistogramAssert> assertion) {
     isNotNull();
@@ -182,6 +260,26 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
     }
     assertion.accept(new HistogramAssert(actual.getHistogramData()));
     return this;
+  }
+
+  /**
+   * Asserts this {@link MetricData} is a histogram with points matching all of the given assertions
+   * and no more, in any order.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final MetricAssert hasHistogramPointsSatisfying(
+      Consumer<HistogramPointAssert>... assertions) {
+    return hasHistogramSatisfying(histogram -> histogram.hasPointsSatisfying(assertions));
+  }
+
+  /**
+   * Asserts this {@link MetricData} is a histogram with points matching all of the given assertions
+   * and no more, in any order.
+   */
+  public MetricAssert hasHistogramPointsSatisfying(
+      Iterable<? extends Consumer<HistogramPointAssert>> assertions) {
+    return hasHistogramSatisfying(histogram -> histogram.hasPointsSatisfying(assertions));
   }
 
   /**
@@ -205,6 +303,28 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
     return this;
   }
 
+  /**
+   * Asserts this {@link MetricData} is an exponential histogram with points matching all of the
+   * given assertions and no more, in any order.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final MetricAssert hasExponentialHistogramPointsSatisfying(
+      Consumer<ExponentialHistogramPointAssert>... assertions) {
+    return hasExponentialHistogramSatisfying(
+        histogram -> histogram.hasPointsSatisfying(assertions));
+  }
+
+  /**
+   * Asserts this {@link MetricData} is an exponential histogram with points matching all of the
+   * given assertions and no more, in any order.
+   */
+  public MetricAssert hasExponentialHistogramPointsSatisfying(
+      Iterable<? extends Consumer<ExponentialHistogramPointAssert>> assertions) {
+    return hasExponentialHistogramSatisfying(
+        histogram -> histogram.hasPointsSatisfying(assertions));
+  }
+
   /** Asserts this {@link MetricData} is a summary that satisfies the provided assertion. */
   public MetricAssert hasSummarySatisfying(Consumer<SummaryAssert> assertion) {
     isNotNull();
@@ -218,5 +338,24 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
     }
     assertion.accept(new SummaryAssert(actual.getSummaryData()));
     return this;
+  }
+
+  /**
+   * Asserts this {@link MetricData} is a summary with points matching all of the given assertions
+   * and no more, in any order.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final MetricAssert hasSummaryPointsSatisfying(Consumer<SummaryPointAssert>... assertions) {
+    return hasSummarySatisfying(summary -> summary.hasPointsSatisfying(assertions));
+  }
+
+  /**
+   * Asserts this {@link MetricData} is a summary with points matching all of the given assertions
+   * and no more, in any order.
+   */
+  public MetricAssert hasSummaryPointsSatisfying(
+      Iterable<? extends Consumer<SummaryPointAssert>> assertions) {
+    return hasSummarySatisfying(summary -> summary.hasPointsSatisfying(assertions));
   }
 }

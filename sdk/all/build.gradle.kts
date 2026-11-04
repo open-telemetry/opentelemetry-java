@@ -30,3 +30,20 @@ dependencies {
   jmh(project(":sdk:testing"))
   jmh(project(":api:incubator"))
 }
+
+testing {
+  suites {
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":api:incubator"))
+        implementation(project(":sdk:testing"))
+      }
+    }
+  }
+}
+
+tasks {
+  check {
+    dependsOn(testing.suites)
+  }
+}

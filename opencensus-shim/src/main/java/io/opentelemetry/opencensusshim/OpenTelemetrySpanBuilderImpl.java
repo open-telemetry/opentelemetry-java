@@ -22,8 +22,8 @@
 
 package io.opentelemetry.opencensusshim;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static io.opentelemetry.opencensusshim.SpanConverter.mapKind;
+import static java.util.Objects.requireNonNull;
 
 import io.opencensus.implcore.trace.internal.RandomHandler;
 import io.opencensus.trace.Sampler;
@@ -73,7 +73,7 @@ final class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
       @Nullable SpanContext ocRemoteParentSpanContext,
       @Nullable Span ocParent,
       OpenTelemetrySpanBuilderImpl.Options options) {
-    this.name = checkNotNull(name, "name");
+    this.name = requireNonNull(name, "name");
     this.ocParent = ocParent;
     this.ocRemoteParentSpanContext = ocRemoteParentSpanContext;
     this.options = options;
@@ -93,13 +93,13 @@ final class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
 
   @Override
   public SpanBuilder setSampler(Sampler sampler) {
-    this.ocSampler = checkNotNull(sampler, "sampler");
+    this.ocSampler = requireNonNull(sampler, "sampler");
     return this;
   }
 
   @Override
   public SpanBuilder setParentLinks(List<Span> parentLinks) {
-    this.ocParentLinks = checkNotNull(parentLinks, "parentLinks");
+    this.ocParentLinks = requireNonNull(parentLinks, "parentLinks");
     for (Span parent : parentLinks) {
       this.otelParentLinks.add(SpanConverter.mapSpanContext(parent.getContext()));
     }
@@ -220,8 +220,8 @@ final class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
     private final TraceConfig traceConfig;
 
     Options(RandomHandler randomHandler, TraceConfig traceConfig) {
-      this.randomHandler = checkNotNull(randomHandler, "randomHandler");
-      this.traceConfig = checkNotNull(traceConfig, "traceConfig");
+      this.randomHandler = requireNonNull(randomHandler, "randomHandler");
+      this.traceConfig = requireNonNull(traceConfig, "traceConfig");
     }
   }
 }

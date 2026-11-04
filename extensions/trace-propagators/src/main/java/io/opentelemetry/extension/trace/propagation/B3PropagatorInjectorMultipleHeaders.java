@@ -5,6 +5,7 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
+import static io.opentelemetry.extension.trace.propagation.B3Propagator.DEBUG_HEADER;
 import static io.opentelemetry.extension.trace.propagation.B3Propagator.SAMPLED_HEADER;
 import static io.opentelemetry.extension.trace.propagation.B3Propagator.SPAN_ID_HEADER;
 import static io.opentelemetry.extension.trace.propagation.B3Propagator.TRACE_ID_HEADER;
@@ -22,7 +23,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector {
   private static final Collection<String> FIELDS =
-      Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));
+      Collections.unmodifiableList(
+          Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER, DEBUG_HEADER));
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {

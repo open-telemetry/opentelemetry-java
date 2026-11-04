@@ -24,8 +24,13 @@ import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.OptionalLong;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class CompositeSamplerTest {
   private static class Input {
@@ -274,5 +279,117 @@ class CompositeSamplerTest {
     assertThat(output.samplingResult.getDecision()).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
     assertThat(output.getThreshold()).hasValue(0x0L);
     assertThat(output.getRandomValue()).hasValue(0x80000000000000L);
+  }
+
+  // The trace ID used here has randomness 0, so th:8 is inconsistent with a sampled flag.
+  @ParameterizedTest
+  @MethodSource("parentThresholdTraceStateCases")
+  void parentThresholdTraceState(
+      boolean parentSampled,
+      TraceState parentTraceState,
+      SamplingDecision expectedDecision,
+      TraceState expectedTraceState) {
+    TraceFlags traceFlags = parentSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
+    Context parentContext =
+        Span.wrap(
+                SpanContext.create(
+                    Input.getTraceId(), "0123456789abcdef", traceFlags, parentTraceState))
+            .storeInContext(Context.root());
+
+    Sampler sampler =
+        CompositeSampler.wrap(ComposableSampler.parentThreshold(ComposableSampler.alwaysOn()));
+    SamplingResult result =
+        sampler.shouldSample(
+            parentContext,
+            Input.getTraceId(),
+            Input.getName(),
+            Input.getSpanKind(),
+            Input.getAttributes(),
+            Input.getParentLinks());
+
+    assertThat(result.getDecision()).isEqualTo(expectedDecision);
+    assertThat(result.getUpdatedTraceState(parentTraceState).asMap())
+        .isEqualTo(expectedTraceState.asMap());
+  }
+
+  private static Stream<Arguments> parentThresholdTraceStateCases() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "dropped, only th",
+            false,
+            TraceState.builder().put("ot", "th:f").build(),
+            SamplingDecision.DROP,
+            TraceState.getDefault()),
+        Arguments.argumentSet(
+            "dropped, other vendor",
+            false,
+            TraceState.builder().put("ot", "th:8").put("vendor", "x").build(),
+            SamplingDecision.DROP,
+            TraceState.builder().put("vendor", "x").build()),
+        Arguments.argumentSet(
+            "dropped, keeps rv",
+            false,
+            TraceState.builder().put("ot", "th:8;rv:7fffffffffffff").build(),
+            SamplingDecision.DROP,
+            TraceState.builder().put("ot", "rv:7fffffffffffff").build()),
+        Arguments.argumentSet(
+            "sampled, consistent",
+            true,
+            TraceState.builder().put("ot", "th:8;rv:80000000000000").build(),
+            SamplingDecision.RECORD_AND_SAMPLE,
+            TraceState.builder().put("ot", "th:8;rv:80000000000000").build()),
+        Arguments.argumentSet(
+            "sampled, inconsistent with trace ID",
+            true,
+            TraceState.builder().put("ot", "th:8").build(),
+            SamplingDecision.RECORD_AND_SAMPLE,
+            TraceState.getDefault()),
+        Arguments.argumentSet(
+            "sampled, inconsistent with rv",
+            true,
+            TraceState.builder().put("ot", "th:8;rv:7fffffffffffff").build(),
+            SamplingDecision.RECORD_AND_SAMPLE,
+            TraceState.builder().put("ot", "rv:7fffffffffffff").build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("traceStateUpdaterCases")
+  void traceStateUpdaterReceivesDecision(long threshold, SamplingDecision expectedDecision) {
+    ComposableSampler delegate =
+        new ComposableSampler() {
+          @Override
+          public SamplingIntent getSamplingIntent(
+              Context parentContext,
+              String name,
+              SpanKind spanKind,
+              Attributes attributes,
+              List<LinkData> parentLinks) {
+            return SamplingIntent.create(
+                threshold,
+                /* adjustedCountReliable= */ true,
+                Attributes.empty(),
+                (traceState, decision) ->
+                    traceState.toBuilder()
+                        .put("decision", decision.name().toLowerCase(Locale.ROOT))
+                        .build());
+          }
+
+          @Override
+          public String getDescription() {
+            return "DecisionRecordingSampler";
+          }
+        };
+
+    Output output = sample(new Input(), CompositeSampler.wrap(delegate));
+
+    assertThat(output.samplingResult.getDecision()).isEqualTo(expectedDecision);
+    assertThat(output.samplingResult.getUpdatedTraceState(TraceState.getDefault()).get("decision"))
+        .isEqualTo(expectedDecision.name().toLowerCase(Locale.ROOT));
+  }
+
+  private static Stream<Arguments> traceStateUpdaterCases() {
+    return Stream.of(
+        Arguments.argumentSet("sampled", 0L, SamplingDecision.RECORD_AND_SAMPLE),
+        Arguments.argumentSet("dropped", INVALID_THRESHOLD, SamplingDecision.DROP));
   }
 }

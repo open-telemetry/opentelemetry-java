@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+/** A signal-independent exporter interface for shared OTLP exporter tests. */
 public interface TelemetryExporter<T> extends AutoCloseable {
 
   /** Wraps a SpanExporter. */
