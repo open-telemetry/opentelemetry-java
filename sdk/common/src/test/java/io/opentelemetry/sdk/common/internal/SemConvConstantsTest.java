@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 class SemConvConstantsTest {
 
   @Test
+  @SuppressWarnings("deprecation") // Retain rpc.response.status_code until a separate migration.
   void attributeKeys() {
     assertThat(SemConvConstants.SCHEMA_URL_V1_40_0).isEqualTo(SchemaUrls.V1_40_0);
 
