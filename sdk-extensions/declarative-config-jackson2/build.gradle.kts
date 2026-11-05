@@ -8,7 +8,7 @@ description = "OpenTelemetry SDK Declarative Config Jackson 2 Mapper"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2")
 otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiServiceLoaderProvides.set(listOf(
-  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper",
+  "io.opentelemetry.sdk.autoconfigure.spi.DeclarativeConfigurationMapper",
 ))
 
 dependencies {

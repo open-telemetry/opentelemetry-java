@@ -1,2 +1,13 @@
 Comparing source compatibility of opentelemetry-sdk-extension-autoconfigure-spi-1.68.0-SNAPSHOT.jar against opentelemetry-sdk-extension-autoconfigure-spi-1.67.0.jar
-No changes.
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.DeclarativeConfigurationMapper  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object convert(java.lang.Object, java.lang.Class<T>)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Map<java.lang.String,java.lang.Object> toMap(java.lang.Object)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.DeclarativeConfigurationYamlParser  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.Ordered
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object parse(java.io.InputStream, java.util.Map<java.lang.String,java.lang.String>, java.util.Map<java.lang.Object,java.lang.Object>)
