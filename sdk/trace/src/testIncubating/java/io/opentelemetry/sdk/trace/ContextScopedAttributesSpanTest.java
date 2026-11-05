@@ -5,9 +5,11 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.common.ContextAttributes;
 import io.opentelemetry.api.trace.Span;
@@ -208,9 +210,10 @@ class ContextScopedAttributesSpanTest {
   }
 
   @Test
-  void contextScopedAttributes_setNoParent_preservesContextForSamplerAndProcessor() {
+  void contextScopedAttributes_setNoParent_doesNotLeakBaggageOrContextToSamplerOrProcessor() {
     InMemorySpanExporter exporter = InMemorySpanExporter.create();
     AtomicReference<Context> samplerParentContext = new AtomicReference<>();
+    AtomicReference<Attributes> samplerAttributes = new AtomicReference<>();
     AtomicReference<Context> processorParentContext = new AtomicReference<>();
 
     Sampler testSampler =
@@ -224,6 +227,7 @@ class ContextScopedAttributesSpanTest {
               Attributes attributes,
               List<LinkData> parentLinks) {
             samplerParentContext.set(parentContext);
+            samplerAttributes.set(attributes);
             return SamplingResult.recordAndSample();
           }
 
@@ -267,6 +271,7 @@ class ContextScopedAttributesSpanTest {
     try (Scope parentScope = parent.makeCurrent()) {
       Context currentCtx =
           ContextAttributes.add(Context.current(), Attributes.of(stringKey("tenant.id"), "acme"));
+      currentCtx = currentCtx.with(Baggage.builder().put("baggage.key", "baggage.value").build());
 
       try (Scope ignored = currentCtx.makeCurrent()) {
         Span span = tracer.spanBuilder("span").setNoParent().startSpan();
@@ -278,14 +283,18 @@ class ContextScopedAttributesSpanTest {
 
     Context capturedSamplerCtx = samplerParentContext.get();
     assertThat(capturedSamplerCtx).isNotNull();
-    assertThat(ContextAttributes.get(capturedSamplerCtx))
-        .isEqualTo(Attributes.of(stringKey("tenant.id"), "acme"));
+    // Ambient Baggage is detached from parentContext per review comment A
+    assertThat(Baggage.fromContext(capturedSamplerCtx).isEmpty()).isTrue();
     assertThat(Span.fromContext(capturedSamplerCtx).getSpanContext().isValid()).isFalse();
+
+    // But sampler receives inherited context attributes in its Attributes parameter
+    assertThat(samplerAttributes.get().asMap())
+        .isEqualTo(Attributes.of(stringKey("tenant.id"), "acme").asMap());
 
     Context capturedProcessorCtx = processorParentContext.get();
     assertThat(capturedProcessorCtx).isNotNull();
-    assertThat(ContextAttributes.get(capturedProcessorCtx))
-        .isEqualTo(Attributes.of(stringKey("tenant.id"), "acme"));
+    // Ambient Baggage is detached from processor parentContext
+    assertThat(Baggage.fromContext(capturedProcessorCtx).isEmpty()).isTrue();
     assertThat(Span.fromContext(capturedProcessorCtx).getSpanContext().isValid()).isFalse();
 
     List<SpanData> spans = exporter.getFinishedSpanItems();
@@ -295,5 +304,64 @@ class ContextScopedAttributesSpanTest {
     assertThat(child.getParentSpanContext().isValid()).isFalse();
     assertThat(child.getSpanContext().getTraceId())
         .isNotEqualTo(parent.getSpanContext().getTraceId());
+  }
+
+  @Test
+  void contextScopedAttributes_sameNameDifferentType_explicitWins() {
+    InMemorySpanExporter exporter = InMemorySpanExporter.create();
+    SdkTracerProviderBuilder builder =
+        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
+    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProvider provider = builder.build();
+    Tracer tracer = provider.get("test");
+
+    Context ctx =
+        ContextAttributes.add(
+            Context.current(), Attributes.of(stringKey("collision"), "contextString"));
+    try (Scope ignored = ctx.makeCurrent()) {
+      Span span = tracer.spanBuilder("span").setAttribute(longKey("collision"), 12345L).startSpan();
+      span.end();
+    }
+
+    List<SpanData> spans = exporter.getFinishedSpanItems();
+    assertThat(spans).hasSize(1);
+    assertThat(spans.get(0)).hasAttributes(Attributes.of(longKey("collision"), 12345L));
+  }
+
+  @Test
+  void contextScopedAttributes_filterPredicate_filtersByScopeAndKey() {
+    InMemorySpanExporter exporter = InMemorySpanExporter.create();
+    SdkTracerProviderBuilder builder =
+        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
+    SdkTracerProviderUtil.setContextScopedAttributesFilter(
+        builder,
+        (scope, key) ->
+            scope.getName().equals("allowed-scope") && key.getKey().startsWith("allowed."));
+    SdkTracerProvider provider = builder.build();
+
+    Tracer allowedTracer = provider.get("allowed-scope");
+    Tracer otherTracer = provider.get("other-scope");
+
+    Context ctx =
+        ContextAttributes.add(
+            Context.current(),
+            Attributes.of(
+                stringKey("allowed.key"), "val1",
+                stringKey("denied.key"), "val2"));
+
+    try (Scope ignored = ctx.makeCurrent()) {
+      Span s1 = allowedTracer.spanBuilder("s1").startSpan();
+      s1.end();
+      Span s2 = otherTracer.spanBuilder("s2").startSpan();
+      s2.end();
+    }
+
+    List<SpanData> spans = exporter.getFinishedSpanItems();
+    assertThat(spans).hasSize(2);
+    SpanData s1Data = spans.get(0);
+    SpanData s2Data = spans.get(1);
+
+    assertThat(s1Data).hasAttributes(Attributes.of(stringKey("allowed.key"), "val1"));
+    assertThat(s2Data.getAttributes()).isEmpty();
   }
 }

@@ -242,4 +242,40 @@ class ContextScopedAttributesIntegrationTest {
                             sum.hasPointsSatisfying(
                                 point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
   }
+
+  @Test
+  void multiSignalPropagation_setReplacesAndClearsAcrossAllSignals() {
+    Context initial =
+        ContextAttributes.set(Context.current(), Attributes.of(stringKey("initial.key"), "val1"));
+    try (Scope ignored1 = initial.makeCurrent()) {
+      // replace with new attributes
+      Context replaced =
+          ContextAttributes.set(
+              Context.current(), Attributes.of(stringKey("replaced.key"), "val2"));
+      try (Scope ignored2 = replaced.makeCurrent()) {
+        tracer.spanBuilder("replaced-span").startSpan().end();
+        logger.logRecordBuilder().setBody("replaced-log").emit();
+        counter.add(1);
+
+        // clear attributes completely
+        Context cleared = ContextAttributes.set(Context.current(), Attributes.empty());
+        try (Scope ignored3 = cleared.makeCurrent()) {
+          tracer.spanBuilder("cleared-span").startSpan().end();
+          logger.logRecordBuilder().setBody("cleared-log").emit();
+          counter.add(2);
+        }
+      }
+    }
+
+    List<SpanData> spans = spanExporter.getFinishedSpanItems();
+    assertThat(spans).hasSize(2);
+    assertThat(spans.get(0)).hasAttributes(Attributes.of(stringKey("replaced.key"), "val2"));
+    assertThat(spans.get(1).getAttributes()).isEmpty();
+
+    List<LogRecordData> logs = logExporter.getFinishedLogRecordItems();
+    assertThat(logs).hasSize(2);
+    assertThat(logs.get(0).getAttributes())
+        .isEqualTo(Attributes.of(stringKey("replaced.key"), "val2"));
+    assertThat(logs.get(1).getAttributes()).isEmpty();
+  }
 }

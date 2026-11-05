@@ -24,12 +24,51 @@ class ContextAttributesTest {
   }
 
   @Test
-  void addNullOrEmptyAttributes_returnsSameContext() {
+  void addNullValidation() {
     Context root = Context.root();
-    assertThat(ContextAttributes.add(root, null)).isSameAs(root);
-    assertThat(ContextAttributes.add(root, Attributes.empty())).isSameAs(root);
     assertThatThrownBy(() -> ContextAttributes.add(null, Attributes.of(stringKey("k"), "v")))
-        .isInstanceOf(NullPointerException.class);
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("context");
+    assertThatThrownBy(() -> ContextAttributes.add(root, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("attributes");
+  }
+
+  @Test
+  void addEmptyAttributes_returnsSameContext() {
+    Context root = Context.root();
+    assertThat(ContextAttributes.add(root, Attributes.empty())).isSameAs(root);
+  }
+
+  @Test
+  void setNullValidation() {
+    Context root = Context.root();
+    assertThatThrownBy(() -> ContextAttributes.set(null, Attributes.of(stringKey("k"), "v")))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("context");
+    assertThatThrownBy(() -> ContextAttributes.set(root, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("attributes");
+  }
+
+  @Test
+  void setReplacesExistingAndClearsWithEmpty() {
+    Context ctx1 =
+        ContextAttributes.set(
+            Context.root(), Attributes.of(stringKey("k1"), "v1", longKey("k2"), 2L));
+    assertThat(ContextAttributes.get(ctx1))
+        .isEqualTo(Attributes.of(stringKey("k1"), "v1", longKey("k2"), 2L));
+
+    // set() completely replaces previous attributes
+    Context ctx2 = ContextAttributes.set(ctx1, Attributes.of(stringKey("k3"), "v3"));
+    assertThat(ContextAttributes.get(ctx2)).isEqualTo(Attributes.of(stringKey("k3"), "v3"));
+
+    // set() with empty clears attributes
+    Context ctxCleared = ContextAttributes.set(ctx2, Attributes.empty());
+    assertThat(ContextAttributes.get(ctxCleared)).isEqualTo(Attributes.empty());
+
+    // set() with empty on already empty returns same context
+    assertThat(ContextAttributes.set(Context.root(), Attributes.empty())).isSameAs(Context.root());
   }
 
   @Test
@@ -56,6 +95,14 @@ class ContextAttributesTest {
         .isEqualTo(
             Attributes.of(
                 stringKey("k1"), "v1", stringKey("k2"), "v2-override", stringKey("k3"), "v3"));
+  }
+
+  @Test
+  void addWithSameNameDifferentType_overwritesExisting() {
+    Context ctx1 =
+        ContextAttributes.add(Context.root(), Attributes.of(stringKey("foo"), "stringVal"));
+    Context ctx2 = ContextAttributes.add(ctx1, Attributes.of(longKey("foo"), 42L));
+    assertThat(ContextAttributes.get(ctx2)).isEqualTo(Attributes.of(longKey("foo"), 42L));
   }
 
   @Test

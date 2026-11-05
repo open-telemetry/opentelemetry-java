@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
 
 /** {@link SdkSpanBuilder} is SDK implementation of {@link SpanBuilder}. */
@@ -187,14 +188,8 @@ class SdkSpanBuilder implements SpanBuilder {
   @SuppressWarnings({"rawtypes", "ReferenceEquality"})
   public Span startSpan() {
     Context parentContext = parent == null ? Context.current() : parent;
-    if (noParent
-        && tracerSharedState.isContextScopedAttributesEnabled()
-        && SdkTracer.INCUBATOR_AVAILABLE) {
-      Context current = Context.current();
-      parentContext =
-          Span.fromContext(current) == Span.getInvalid()
-              ? current
-              : current.with(Span.getInvalid());
+    if (noParent) {
+      parentContext = Context.root();
     }
     Span parentSpan = Span.fromContext(parentContext);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
@@ -230,13 +225,16 @@ class SdkSpanBuilder implements SpanBuilder {
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
-    if (tracerSharedState.isContextScopedAttributesEnabled() && SdkTracer.INCUBATOR_AVAILABLE) {
-      Attributes contextAttributes = IncubatingUtil.getContextAttributes(parentContext);
+    BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter =
+        tracerSharedState.getContextScopedAttributesFilter();
+    if (filter != null && SdkTracer.INCUBATOR_AVAILABLE) {
+      Context contextForAttributes = noParent ? Context.current() : parentContext;
+      Attributes contextAttributes = IncubatingUtil.getContextAttributes(contextForAttributes);
       if (!contextAttributes.isEmpty()) {
         AttributesMap spanAttributes = attributes();
         contextAttributes.forEach(
             (key, value) -> {
-              if (spanAttributes.get(key) == null) {
+              if (filter.test(instrumentationScopeInfo, key) && !spanAttributes.contains(key)) {
                 spanAttributes.put((AttributeKey) key, value);
               }
             });

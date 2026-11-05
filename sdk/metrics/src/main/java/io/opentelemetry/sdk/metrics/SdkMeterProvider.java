@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static java.util.stream.Collectors.toList;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
@@ -39,7 +40,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiPredicate;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * SDK implementation for {@link MeterProvider}.
@@ -74,7 +77,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       SdkResourceProvider resourceProvider,
       ExemplarFilterInternal exemplarFilter,
       ScopeConfigurator<MeterConfig> meterConfigurator,
-      boolean contextScopedAttributesEnabled) {
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
     this.resourceProvider = resourceProvider;
     this.registeredViews = registeredViews;
     this.registeredReaders =
@@ -88,7 +92,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     this.metricProducers = metricProducers;
     this.sharedState =
         MeterProviderSharedState.create(
-            clock, resourceProvider, exemplarFilter, contextScopedAttributesEnabled);
+            clock, resourceProvider, exemplarFilter, contextScopedAttributesFilter);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->

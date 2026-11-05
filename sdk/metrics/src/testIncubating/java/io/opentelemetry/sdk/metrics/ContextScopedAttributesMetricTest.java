@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
@@ -478,5 +479,84 @@ class ContextScopedAttributesMetricTest {
                                     point
                                         .hasValue(1)
                                         .hasAttributes(attributeEntry("pool", "shared-infra")))));
+  }
+
+  @Test
+  void contextScopedAttributes_sameNameDifferentType_explicitWins() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProvider provider = builder.build();
+    Meter meter = provider.get("test");
+
+    LongCounter counter = meter.counterBuilder("collision_counter").build();
+    Context ctx =
+        ContextAttributes.add(Context.current(), Attributes.of(stringKey("code"), "context_ok"));
+
+    try (Scope ignored = ctx.makeCurrent()) {
+      counter.add(1, Attributes.of(longKey("code"), 200L));
+    }
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("collision_counter")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(1)
+                                        .hasAttributes(attributeEntry("code", 200L)))));
+  }
+
+  @Test
+  void contextScopedAttributes_filterPredicate_filtersByScopeAndKey() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(
+        builder,
+        (scope, key) ->
+            scope.getName().equals("allowed-meter") && key.getKey().startsWith("allowed."));
+    SdkMeterProvider provider = builder.build();
+
+    Meter allowedMeter = provider.get("allowed-meter");
+    Meter otherMeter = provider.get("other-meter");
+
+    LongCounter allowedCounter = allowedMeter.counterBuilder("m1").build();
+    LongCounter otherCounter = otherMeter.counterBuilder("m2").build();
+
+    Context ctx =
+        ContextAttributes.add(
+            Context.current(),
+            Attributes.of(
+                stringKey("allowed.k"), "v1",
+                stringKey("denied.k"), "v2"));
+
+    try (Scope ignored = ctx.makeCurrent()) {
+      allowedCounter.add(1);
+      otherCounter.add(1);
+    }
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metric ->
+                assertThat(metric)
+                    .hasName("m1")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(1)
+                                        .hasAttributes(attributeEntry("allowed.k", "v1")))),
+            metric ->
+                assertThat(metric)
+                    .hasName("m2")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
   }
 }

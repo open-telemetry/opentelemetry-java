@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
 import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.DELTA;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
@@ -55,7 +57,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       Clock clock,
       int maxCardinality,
       boolean enabled,
-      boolean contextScopedAttributesEnabled) {
+      @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter) {
     super(
         metricDescriptor,
         aggregator,
@@ -63,10 +65,30 @@ class DeltaSynchronousMetricStorage<T extends PointData>
         clock,
         maxCardinality,
         enabled,
-        contextScopedAttributesEnabled);
+        contextScopedAttributesFilter);
     this.instrumentCreationEpochNanos = clock.now();
     this.registeredReader = registeredReader;
     this.memoryMode = registeredReader.getReader().getMemoryMode();
+  }
+
+  DeltaSynchronousMetricStorage(
+      RegisteredReader registeredReader,
+      MetricDescriptor metricDescriptor,
+      Aggregator<T> aggregator,
+      UnaryOperator<Attributes> attributesFilter,
+      Clock clock,
+      int maxCardinality,
+      boolean enabled,
+      boolean contextScopedAttributesEnabled) {
+    this(
+        registeredReader,
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesEnabled ? key -> true : null);
   }
 
   @Override

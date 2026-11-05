@@ -34,7 +34,7 @@ class LoggerSharedStateTest {
             Clock.getDefault(),
             ExceptionAttributeResolver.getDefault(),
             new SdkLoggerInstrumentation(MeterProvider::noop),
-            /* contextScopedAttributesEnabled= */ false);
+            /* contextScopedAttributesFilter= */ null);
     state.shutdown();
     state.shutdown();
     verify(logRecordProcessor, times(1)).shutdown();
@@ -50,8 +50,9 @@ class LoggerSharedStateTest {
             Clock.getDefault(),
             ExceptionAttributeResolver.getDefault(),
             new SdkLoggerInstrumentation(MeterProvider::noop),
-            /* contextScopedAttributesEnabled= */ true);
+            (scope, key) -> true);
     assertThat(stateEnabled.isContextScopedAttributesEnabled()).isTrue();
+    assertThat(stateEnabled.getContextScopedAttributesFilter()).isNotNull();
 
     LoggerSharedState stateDisabled =
         new LoggerSharedState(
@@ -61,7 +62,8 @@ class LoggerSharedStateTest {
             Clock.getDefault(),
             ExceptionAttributeResolver.getDefault(),
             new SdkLoggerInstrumentation(MeterProvider::noop),
-            /* contextScopedAttributesEnabled= */ false);
+            /* contextScopedAttributesFilter= */ null);
     assertThat(stateDisabled.isContextScopedAttributesEnabled()).isFalse();
+    assertThat(stateDisabled.getContextScopedAttributesFilter()).isNull();
   }
 }

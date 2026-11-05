@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -24,6 +25,7 @@ import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -46,7 +48,9 @@ public final class SdkLoggerProviderBuilder {
   private ExceptionAttributeResolver exceptionAttributeResolver =
       ExceptionAttributeResolver.getDefault();
   private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
-  private boolean contextScopedAttributesEnabled;
+
+  @Nullable
+  private BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter;
 
   SdkLoggerProviderBuilder() {}
 
@@ -248,7 +252,22 @@ public final class SdkLoggerProviderBuilder {
    */
   SdkLoggerProviderBuilder setContextScopedAttributesEnabled(
       boolean contextScopedAttributesEnabled) {
-    this.contextScopedAttributesEnabled = contextScopedAttributesEnabled;
+    this.contextScopedAttributesFilter =
+        contextScopedAttributesEnabled ? (scope, key) -> true : null;
+    return this;
+  }
+
+  /**
+   * Sets the filter predicate to determine which context-scoped attributes are inherited by log
+   * records.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setContextScopedAttributesFilter(SdkLoggerProviderBuilder, BiPredicate)}.
+   */
+  SdkLoggerProviderBuilder setContextScopedAttributesFilter(
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
     return this;
   }
 
@@ -268,6 +287,6 @@ public final class SdkLoggerProviderBuilder {
         loggerConfiguratorBuilder.build(),
         exceptionAttributeResolver,
         meterProvider,
-        contextScopedAttributesEnabled);
+        contextScopedAttributesFilter);
   }
 }

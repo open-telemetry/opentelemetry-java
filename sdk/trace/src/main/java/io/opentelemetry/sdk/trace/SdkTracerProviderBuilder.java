@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -44,7 +46,9 @@ public final class SdkTracerProviderBuilder {
   private ExceptionAttributeResolver exceptionAttributeResolver =
       ExceptionAttributeResolver.getDefault();
   private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
-  private boolean contextScopedAttributesEnabled;
+
+  @Nullable
+  private BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter;
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link Span} is started, ended
@@ -294,7 +298,21 @@ public final class SdkTracerProviderBuilder {
    */
   SdkTracerProviderBuilder setContextScopedAttributesEnabled(
       boolean contextScopedAttributesEnabled) {
-    this.contextScopedAttributesEnabled = contextScopedAttributesEnabled;
+    this.contextScopedAttributesFilter =
+        contextScopedAttributesEnabled ? (scope, key) -> true : null;
+    return this;
+  }
+
+  /**
+   * Sets the filter predicate to determine which context-scoped attributes are inherited by spans.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setContextScopedAttributesFilter(SdkTracerProviderBuilder, BiPredicate)}.
+   */
+  SdkTracerProviderBuilder setContextScopedAttributesFilter(
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
     return this;
   }
 
@@ -316,7 +334,7 @@ public final class SdkTracerProviderBuilder {
         tracerConfiguratorBuilder.build(),
         exceptionAttributeResolver,
         meterProvider,
-        contextScopedAttributesEnabled);
+        contextScopedAttributesFilter);
   }
 
   SdkTracerProviderBuilder() {}

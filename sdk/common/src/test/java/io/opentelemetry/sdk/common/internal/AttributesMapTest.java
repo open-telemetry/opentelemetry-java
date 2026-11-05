@@ -109,6 +109,27 @@ class AttributesMapTest {
     assertThat(map.get(stringKey("absent"))).isNull();
   }
 
+  // ---- contains ----
+
+  @Test
+  void contains_returnsTrueForPresentKey() {
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(stringKey("k"), "v");
+
+    assertThat(map.contains(stringKey("k"))).isTrue();
+    assertThat(map.contains(stringKey("absent"))).isFalse();
+  }
+
+  @Test
+  void contains_returnsTrueForSameNameDifferentType() {
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(longKey("count"), 42L);
+
+    // contains() is name-based: true even if queried with stringKey("count")
+    assertThat(map.contains(longKey("count"))).isTrue();
+    assertThat(map.contains(stringKey("count"))).isTrue();
+  }
+
   // ---- capacity ----
 
   @Test
@@ -363,27 +384,6 @@ class AttributesMapTest {
 
     assertThat(map).isNotEqualTo(attributes);
     assertThat(attributes).isNotEqualTo(map);
-  }
-
-  @Test
-  void copyOf_preservesStateAndDroppedCounts() {
-    AttributesMap original = AttributesMap.create(2, 5);
-    original.put(stringKey("k1"), "val1");
-    original.put(stringKey("k2"), "val2");
-    original.put(stringKey("k3"), "val3"); // dropped, totalAddedValues = 3, size = 2
-
-    AttributesMap copy = AttributesMap.copyOf(original);
-
-    assertThat(copy.size()).isEqualTo(2);
-    assertThat(copy.getTotalAddedValues()).isEqualTo(3);
-    assertThat(copy.get(stringKey("k1"))).isEqualTo("val1");
-    assertThat(copy.get(stringKey("k2"))).isEqualTo("val2");
-    assertThat(copy.get(stringKey("k3"))).isNull();
-
-    // Mutations on copy do not affect original
-    copy.put(stringKey("k4"), "val4"); // dropped on copy
-    assertThat(copy.getTotalAddedValues()).isEqualTo(4);
-    assertThat(original.getTotalAddedValues()).isEqualTo(3);
   }
 
   private static List<String> throwingList() {

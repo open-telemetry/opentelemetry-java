@@ -103,11 +103,6 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
           ExemplarFilterFactory.getInstance().create(exemplarFilterModel, context));
     }
 
-    Boolean contextScopedAttributes = MeterProviderModelAccessor.getContextScopedAttributes(model);
-    if (contextScopedAttributes != null) {
-      SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, contextScopedAttributes);
-    }
-
     return builder;
   }
 

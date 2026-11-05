@@ -91,12 +91,6 @@ final class LoggerProviderFactory
       SdkLoggerProviderUtil.setLoggerConfigurator(builder, configuratorBuilder.build());
     }
 
-    Boolean contextScopedAttributes =
-        LoggerProviderModelAccessor.getContextScopedAttributes(loggerProviderModel);
-    if (contextScopedAttributes != null) {
-      SdkLoggerProviderUtil.setContextScopedAttributesEnabled(builder, contextScopedAttributes);
-    }
-
     return builder;
   }
 

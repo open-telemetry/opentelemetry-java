@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.logs;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.common.ContextAttributes;
-import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -103,7 +103,7 @@ class ContextScopedAttributesLogTest {
   }
 
   @Test
-  void contextScopedAttributes_reemitDoesNotRetainStaleContextAttributes() {
+  void contextScopedAttributes_sameNameDifferentType_explicitWins() {
     InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
     SdkLoggerProviderBuilder builder =
         SdkLoggerProvider.builder()
@@ -112,20 +112,56 @@ class ContextScopedAttributesLogTest {
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
-    Context ctx1 = ContextAttributes.add(Context.root(), Attributes.of(stringKey("scope"), "ctx1"));
-    Context ctx2 = ContextAttributes.add(Context.root(), Attributes.of(stringKey("scope"), "ctx2"));
+    Context ctx =
+        ContextAttributes.add(
+            Context.current(), Attributes.of(stringKey("collision"), "contextString"));
+    try (Scope ignored = ctx.makeCurrent()) {
+      logger
+          .logRecordBuilder()
+          .setAttribute(longKey("collision"), 999L)
+          .setBody("collision test")
+          .emit();
+    }
 
-    LogRecordBuilder logBuilder =
-        logger.logRecordBuilder().setAttribute(stringKey("explicit"), "val");
-    logBuilder.setContext(ctx1).emit();
-    logBuilder.setContext(ctx2).emit();
+    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
+    assertThat(logs).hasSize(1);
+    assertThat(logs.get(0).getAttributes()).isEqualTo(Attributes.of(longKey("collision"), 999L));
+  }
+
+  @Test
+  void contextScopedAttributes_filterPredicate_filtersByScopeAndKey() {
+    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
+    SdkLoggerProviderBuilder builder =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter));
+    SdkLoggerProviderUtil.setContextScopedAttributesFilter(
+        builder,
+        (scope, key) ->
+            scope.getName().equals("allowed-logger") && key.getKey().startsWith("allowed."));
+    SdkLoggerProvider provider = builder.build();
+
+    Logger allowedLogger = provider.get("allowed-logger");
+    Logger otherLogger = provider.get("other-logger");
+
+    Context ctx =
+        ContextAttributes.add(
+            Context.current(),
+            Attributes.of(
+                stringKey("allowed.k"), "v1",
+                stringKey("denied.k"), "v2"));
+
+    try (Scope ignored = ctx.makeCurrent()) {
+      allowedLogger.logRecordBuilder().setBody("msg1").emit();
+      otherLogger.logRecordBuilder().setBody("msg2").emit();
+    }
 
     List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
     assertThat(logs).hasSize(2);
-    assertThat(logs.get(0).getAttributes())
-        .isEqualTo(Attributes.of(stringKey("explicit"), "val", stringKey("scope"), "ctx1"));
-    assertThat(logs.get(1).getAttributes())
-        .isEqualTo(Attributes.of(stringKey("explicit"), "val", stringKey("scope"), "ctx2"));
+    LogRecordData log1 = logs.get(0);
+    LogRecordData log2 = logs.get(1);
+
+    assertThat(log1.getAttributes()).isEqualTo(Attributes.of(stringKey("allowed.k"), "v1"));
+    assertThat(log2.getAttributes()).isEmpty();
   }
 
   @Test

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
@@ -23,6 +24,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +61,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       ScopeConfigurator<TracerConfig> tracerConfigurator,
       ExceptionAttributeResolver exceptionAttributeResolver,
       Supplier<MeterProvider> meterProvider,
-      boolean contextScopedAttributesEnabled) {
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
     this.resourceProvider = resourceProvider;
     this.sharedState =
         new TracerSharedState(
@@ -71,7 +74,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             spanProcessors,
             exceptionAttributeResolver,
             new SdkTracerInstrumentation(meterProvider),
-            contextScopedAttributesEnabled);
+            contextScopedAttributesFilter);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->
