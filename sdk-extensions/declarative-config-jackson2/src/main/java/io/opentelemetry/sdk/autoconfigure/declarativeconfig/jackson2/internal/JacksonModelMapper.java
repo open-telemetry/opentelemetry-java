@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson.internal;
+package io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2.internal;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;

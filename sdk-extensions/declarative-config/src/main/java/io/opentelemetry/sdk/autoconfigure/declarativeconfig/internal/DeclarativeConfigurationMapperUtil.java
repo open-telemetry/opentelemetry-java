@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationMapper;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -17,8 +17,10 @@ import javax.annotation.Nullable;
 public final class DeclarativeConfigurationMapperUtil {
 
   private static final DeclarativeConfigurationMapper MAPPER =
-      DeclarativeConfigProviderLoader.load(
-          DeclarativeConfigurationMapper.class, MissingMapper::new);
+      DeclarativeConfigProviderLoader.loadFirstOrConfigured(
+          DeclarativeConfigurationMapper.class,
+          MissingMapper::new,
+          DeclarativeConfigurationMapper.class.getName());
 
   private DeclarativeConfigurationMapperUtil() {}
 
@@ -61,7 +63,7 @@ public final class DeclarativeConfigurationMapperUtil {
     private static DeclarativeConfigException missingMapperException() {
       return new DeclarativeConfigException(
           "No DeclarativeConfigurationMapper provider is available. Add the optional "
-              + "opentelemetry-sdk-extension-declarative-config-jackson artifact or register a "
+              + "opentelemetry-sdk-extension-declarative-config-jackson2 artifact or register a "
               + "custom mapper provider.");
     }
   }

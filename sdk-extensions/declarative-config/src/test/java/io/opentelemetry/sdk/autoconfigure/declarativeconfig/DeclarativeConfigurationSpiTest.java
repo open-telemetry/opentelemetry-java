@@ -8,11 +8,12 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.DeclarativeConfigProviderLoader;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.SnakeYamlDeclarativeConfigurationParser;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationMapper;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationYamlParser;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -32,9 +33,8 @@ class DeclarativeConfigurationSpiTest {
     DeclarativeConfigurationMapper mapper = loadMapper();
     assertThat(mapper.getClass().getName())
         .isEqualTo(
-            "io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson.internal."
+            "io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2.internal."
                 + "JacksonDeclarativeConfigurationMapper");
-    assertThat(mapper.order()).isEqualTo(Integer.MIN_VALUE);
   }
 
   @Test
@@ -96,10 +96,11 @@ class DeclarativeConfigurationSpiTest {
   }
 
   private static DeclarativeConfigurationMapper loadMapper() {
-    return DeclarativeConfigProviderLoader.load(
-        DeclarativeConfigurationMapper.class,
-        () -> {
-          throw new AssertionError("Expected a mapper provider to be registered");
-        });
+    return ComponentLoader.loadList(
+            ComponentLoader.forClassLoader(DeclarativeConfigurationSpiTest.class.getClassLoader()),
+            DeclarativeConfigurationMapper.class)
+        .stream()
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("Expected a mapper provider to be registered"));
   }
 }

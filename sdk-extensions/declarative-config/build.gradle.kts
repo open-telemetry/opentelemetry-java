@@ -13,23 +13,23 @@ plugins {
 description = "OpenTelemetry SDK Declarative Config"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig")
 otelJava.requireSuppressWarningsExplanation.set(false)
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
-  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationYamlParser",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser",
 ))
 // declarative-config discovers these providers at runtime via ServiceLoader
 otelJava.osgiServiceLoaderRequires.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",
-  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationYamlParser",
-  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.spi.DeclarativeConfigurationMapper",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper",
 ))
 
 dependencies {
   api(project(":sdk:all"))
   api(project(":api:incubator"))
   api(project(":sdk-extensions:autoconfigure-spi"))
-  api(project(":sdk-extensions:declarative-config-spi"))
-  runtimeOnly(project(":sdk-extensions:declarative-config-jackson"))
+  runtimeOnly(project(":sdk-extensions:declarative-config-jackson2"))
   // Needed for composable samplers
   implementation(project(":sdk-extensions:incubator"))
 
