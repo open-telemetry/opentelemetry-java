@@ -48,8 +48,10 @@ public final class DeclarativeConfiguration {
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
   private static final DeclarativeConfigurationYamlParser YAML_PARSER =
-      DeclarativeConfigProviderLoader.load(
-          DeclarativeConfigurationYamlParser.class, SnakeYamlDeclarativeConfigurationParser::new);
+      DeclarativeConfigProviderLoader.loadFirstOrConfigured(
+          DeclarativeConfigurationYamlParser.class,
+          SnakeYamlDeclarativeConfigurationParser::new,
+          DeclarativeConfigurationYamlParser.class.getName());
 
   private DeclarativeConfiguration() {}
 

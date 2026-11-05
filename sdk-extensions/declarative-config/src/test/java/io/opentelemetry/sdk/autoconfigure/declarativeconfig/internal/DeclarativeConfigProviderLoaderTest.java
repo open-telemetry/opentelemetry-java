@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,50 +22,24 @@ class DeclarativeConfigProviderLoaderTest {
   LogCapturer logs = LogCapturer.create().captureForType(DeclarativeConfigProviderLoader.class);
 
   @Test
-  void loadSelectsHighestOrderedProvider() {
-    TestProvider lowerOrder = new TestProvider(1);
-    TestProvider higherOrder = new TestProvider(2);
-    ComponentLoader componentLoader = componentLoader(lowerOrder, higherOrder);
-
-    TestSpi selected =
-        DeclarativeConfigProviderLoader.load(
-            TestSpi.class, () -> new TestProvider(Integer.MIN_VALUE), componentLoader);
-
-    assertThat(selected).isSameAs(higherOrder);
-  }
-
-  @Test
-  void loadUsesDefaultWhenNoProvidersAreRegistered() {
+  void loadFirstOrConfiguredUsesDefaultWhenNoProvidersAreRegistered() {
     AtomicBoolean defaultProviderCalled = new AtomicBoolean();
-    Supplier<TestSpi> defaultProvider =
+    Supplier<SelectionTestSpi> defaultProvider =
         () -> {
           defaultProviderCalled.set(true);
-          return new TestProvider(Integer.MIN_VALUE);
+          return new FirstSelectionTestProvider();
         };
 
-    TestSpi selected =
-        DeclarativeConfigProviderLoader.load(TestSpi.class, defaultProvider, componentLoader());
+    SelectionTestSpi selected =
+        DeclarativeConfigProviderLoader.loadFirstOrConfigured(
+            SelectionTestSpi.class,
+            defaultProvider,
+            SelectionTestSpi.class.getName(),
+            componentLoader(),
+            "");
 
     assertThat(defaultProviderCalled).isTrue();
-    assertThat(selected).isInstanceOf(TestProvider.class);
-  }
-
-  @Test
-  void loadDoesNotCreateDefaultWhenProviderIsRegistered() {
-    AtomicBoolean defaultProviderCalled = new AtomicBoolean();
-    TestProvider provider = new TestProvider(0);
-
-    TestSpi selected =
-        DeclarativeConfigProviderLoader.load(
-            TestSpi.class,
-            () -> {
-              defaultProviderCalled.set(true);
-              return new TestProvider(Integer.MIN_VALUE);
-            },
-            componentLoader(provider));
-
-    assertThat(selected).isSameAs(provider);
-    assertThat(defaultProviderCalled).isFalse();
+    assertThat(selected).isInstanceOf(FirstSelectionTestProvider.class);
   }
 
   @Test
@@ -130,25 +103,9 @@ class DeclarativeConfigProviderLoaderTest {
     };
   }
 
-  private interface TestSpi extends Ordered {}
-
   private interface SelectionTestSpi {}
 
   private static final class FirstSelectionTestProvider implements SelectionTestSpi {}
 
   private static final class SecondSelectionTestProvider implements SelectionTestSpi {}
-
-  private static final class TestProvider implements TestSpi {
-
-    private final int order;
-
-    private TestProvider(int order) {
-      this.order = order;
-    }
-
-    @Override
-    public int order() {
-      return order;
-    }
-  }
 }

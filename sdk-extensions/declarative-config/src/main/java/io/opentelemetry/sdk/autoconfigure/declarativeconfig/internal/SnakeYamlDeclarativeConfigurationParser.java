@@ -43,11 +43,6 @@ public final class SnakeYamlDeclarativeConfigurationParser
   private static final char ESCAPE_SEQUENCE_REPLACEMENT = '$';
 
   @Override
-  public int order() {
-    return Integer.MIN_VALUE;
-  }
-
-  @Override
   public Object parse(
       InputStream configuration,
       Map<String, String> environmentVariables,

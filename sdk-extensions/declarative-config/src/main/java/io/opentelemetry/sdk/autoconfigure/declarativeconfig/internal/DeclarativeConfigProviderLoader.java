@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.common.impl.ConfigUtil;
-import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.function.Supplier;
@@ -30,24 +29,6 @@ public final class DeclarativeConfigProviderLoader {
   private DeclarativeConfigProviderLoader() {}
 
   /**
-   * Load the highest-ordered implementation of {@code spiClass}, or create its default.
-   *
-   * @param spiClass the SPI type
-   * @param defaultProvider supplies the default provider when none are registered
-   * @param <T> the SPI type
-   * @return the selected provider
-   */
-  public static <T extends Ordered> T load(Class<T> spiClass, Supplier<T> defaultProvider) {
-    return load(spiClass, defaultProvider, COMPONENT_LOADER);
-  }
-
-  static <T extends Ordered> T load(
-      Class<T> spiClass, Supplier<T> defaultProvider, ComponentLoader componentLoader) {
-    List<T> providers = Ordered.loadOrderedList(componentLoader, spiClass);
-    return providers.isEmpty() ? defaultProvider.get() : providers.get(providers.size() - 1);
-  }
-
-  /**
    * Load the first discovered implementation of {@code spiClass}, or the configured implementation
    * if multiple are registered. Create the default provider when none are registered.
    *
@@ -57,7 +38,7 @@ public final class DeclarativeConfigProviderLoader {
    * @param <T> the SPI type
    * @return the selected provider
    */
-  static <T> T loadFirstOrConfigured(
+  public static <T> T loadFirstOrConfigured(
       Class<T> spiClass, Supplier<T> defaultProvider, String configProperty) {
     return loadFirstOrConfigured(
         spiClass,

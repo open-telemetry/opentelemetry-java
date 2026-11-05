@@ -22,8 +22,10 @@ Notes:
   `opentelemetry-sdk-extension-autoconfigure-spi` artifact, which is included transitively. These
   interfaces are internal and unstable, so their APIs can change at any time. Custom providers can
   implement them, but should account for compatibility changes.
-  Providers are discovered with `ServiceLoader`; the YAML parser with the highest `order()` is
-  selected. Mapper selection is described below.
+  Providers are discovered with `ServiceLoader`. If exactly one provider is present, it is used.
+  If multiple providers are present, the first discovered provider is used with a warning unless a
+  provider is selected through a system property or environment variable. See the selection
+  sections below.
 * The built-in SnakeYAML parser and Jackson 2 mapper work by default. The mapper is supplied by
   the `declarative-config-jackson2` module (`opentelemetry-sdk-extension-declarative-config-jackson2`
   artifact). If you exclude that module, register a mapper provider of your own; otherwise,
@@ -89,6 +91,33 @@ qualified class name:
 | --- | --- |
 | System property | `io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper` |
 | Environment variable | `IO_OPENTELEMETRY_SDK_AUTOCONFIGURE_SPI_INTERNAL_DECLARATIVECONFIGURATIONMAPPER` |
+
+When multiple providers are present and neither setting is set, the first discovered provider is
+used and a warning is logged. If the setting names a provider that is not present, declarative
+configuration fails with an `IllegalStateException`.
+
+## Use a custom YAML parser
+
+Implement `DeclarativeConfigurationYamlParser` and register it with `ServiceLoader` by adding this
+file to your application or parser module:
+
+```text
+META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser
+```
+
+Put your parser's fully qualified class name in the service file. The parser receives the YAML
+stream and the environment variables and system properties to use for substitution.
+
+## Select a YAML parser
+
+If exactly one YAML parser provider is on the classpath, it is used. If multiple providers are
+present, select one by setting the following system property or environment variable to the
+provider's fully qualified class name:
+
+| Configuration source | Name |
+| --- | --- |
+| System property | `io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser` |
+| Environment variable | `IO_OPENTELEMETRY_SDK_AUTOCONFIGURE_SPI_INTERNAL_DECLARATIVECONFIGURATIONYAMLPARSER` |
 
 When multiple providers are present and neither setting is set, the first discovered provider is
 used and a warning is logged. If the setting names a provider that is not present, declarative

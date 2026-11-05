@@ -5,16 +5,18 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
-import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import java.io.InputStream;
 import java.util.Map;
 
 /**
  * Parses a declarative configuration YAML stream into generic Java objects.
  *
- * <p>Implementations are discovered with {@link java.util.ServiceLoader}. The implementation with
- * the highest {@link #order()} is used. The built-in parser has the lowest possible order and is
- * used when no other implementation is registered.
+ * <p>Implementations are discovered with {@link java.util.ServiceLoader}. If exactly one
+ * implementation is available, it is used. If multiple implementations are available, set a system
+ * property or environment variable whose name is this interface's fully qualified class name and
+ * whose value is the fully qualified class name of the desired implementation. If no implementation
+ * is selected, the first discovered implementation is used and a warning is logged. The built-in
+ * parser is used if no implementation is registered.
  *
  * <p>Implementations must apply environment variable and system property substitution according to
  * the OpenTelemetry Configuration Data Model specification. Substitution is performed on scalar
@@ -24,7 +26,7 @@ import java.util.Map;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public interface DeclarativeConfigurationYamlParser extends Ordered {
+public interface DeclarativeConfigurationYamlParser {
 
   /**
    * Parse a YAML stream.

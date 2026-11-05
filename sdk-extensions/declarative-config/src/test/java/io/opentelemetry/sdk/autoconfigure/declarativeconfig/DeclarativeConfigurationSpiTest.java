@@ -26,9 +26,10 @@ class DeclarativeConfigurationSpiTest {
   @Test
   void defaultProvidersAreRegisteredWithServiceLoader() {
     assertThat(
-            DeclarativeConfigProviderLoader.load(
+            DeclarativeConfigProviderLoader.loadFirstOrConfigured(
                 DeclarativeConfigurationYamlParser.class,
-                SnakeYamlDeclarativeConfigurationParser::new))
+                SnakeYamlDeclarativeConfigurationParser::new,
+                DeclarativeConfigurationYamlParser.class.getName()))
         .isInstanceOf(SnakeYamlDeclarativeConfigurationParser.class);
     DeclarativeConfigurationMapper mapper = loadMapper();
     assertThat(mapper.getClass().getName())
