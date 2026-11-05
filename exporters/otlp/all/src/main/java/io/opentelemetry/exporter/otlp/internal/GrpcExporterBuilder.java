@@ -174,7 +174,8 @@ public class GrpcExporterBuilder {
   }
 
   public GrpcExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSize) {
-    this.maxRequestMessageSize = maxRequestMessageSize;
+    this.maxRequestMessageSize =
+        maxRequestMessageSize == 0 ? Long.MAX_VALUE : maxRequestMessageSize;
     return this;
   }
 
