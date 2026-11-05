@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.spi;
+package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -20,6 +20,9 @@ import javax.annotation.Nullable;
  * runtime adapter, which is included by default with declarative config and can be excluded when
  * using a custom mapper. Implementations must preserve the mapping behavior of the declarative
  * configuration models, including extension properties and null values.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public interface DeclarativeConfigurationMapper {
 

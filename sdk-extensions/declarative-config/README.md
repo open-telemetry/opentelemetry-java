@@ -17,11 +17,11 @@ Notes:
 * Environment variable substitution is supported as [defined in the spec](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#environment-variable-substitution)
 * Customization is limited to customizing the in-memory config model, or exporters. See `DeclarativeConfigurationCustomizer` SPI for details.
 * YAML parsing and model mapping can be replaced with `DeclarativeConfigurationYamlParser` and
-  `DeclarativeConfigurationMapper` implementations. Both interfaces are in the
-  public `io.opentelemetry.sdk.autoconfigure.spi` package in the
-  `opentelemetry-sdk-extension-autoconfigure-spi` artifact, which is included transitively. This
-  lets provider implementations in separate artifacts implement the SPIs without depending on
-  another artifact's internal code.
+  `DeclarativeConfigurationMapper` implementations. Both interfaces are in the internal
+  `io.opentelemetry.sdk.autoconfigure.spi.internal` package in the
+  `opentelemetry-sdk-extension-autoconfigure-spi` artifact, which is included transitively. These
+  interfaces are internal and unstable, so their APIs can change at any time. Custom providers can
+  implement them, but should account for compatibility changes.
   Providers are discovered with `ServiceLoader`; the YAML parser with the highest `order()` is
   selected. Mapper selection is described below.
 * The built-in SnakeYAML parser and Jackson 2 mapper work by default. The mapper is supplied by
@@ -68,7 +68,7 @@ Configure your mapper to preserve the null and extension-property behavior expec
 Register the class with `ServiceLoader` by adding this file to your application or mapper module:
 
 ```text
-META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.DeclarativeConfigurationMapper
+META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper
 ```
 
 Put your provider's fully qualified class name in that file:
@@ -87,8 +87,8 @@ qualified class name:
 
 | Configuration source | Name |
 | --- | --- |
-| System property | `io.opentelemetry.sdk.autoconfigure.spi.DeclarativeConfigurationMapper` |
-| Environment variable | `IO_OPENTELEMETRY_SDK_AUTOCONFIGURE_SPI_DECLARATIVECONFIGURATIONMAPPER` |
+| System property | `io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper` |
+| Environment variable | `IO_OPENTELEMETRY_SDK_AUTOCONFIGURE_SPI_INTERNAL_DECLARATIVECONFIGURATIONMAPPER` |
 
 When multiple providers are present and neither setting is set, the first discovered provider is
 used and a warning is logged. If the setting names a provider that is not present, declarative

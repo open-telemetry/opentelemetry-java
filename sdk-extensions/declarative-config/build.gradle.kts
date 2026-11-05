@@ -16,13 +16,13 @@ otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
-  "io.opentelemetry.sdk.autoconfigure.spi.DeclarativeConfigurationYamlParser",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser",
 ))
 // declarative-config discovers these providers at runtime via ServiceLoader
 otelJava.osgiServiceLoaderRequires.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",
-  "io.opentelemetry.sdk.autoconfigure.spi.DeclarativeConfigurationYamlParser",
-  "io.opentelemetry.sdk.autoconfigure.spi.DeclarativeConfigurationMapper",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper",
 ))
 
 dependencies {

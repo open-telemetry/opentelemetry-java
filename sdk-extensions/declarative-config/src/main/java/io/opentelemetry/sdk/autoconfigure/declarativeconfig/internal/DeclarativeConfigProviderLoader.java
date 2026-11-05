@@ -83,11 +83,9 @@ public final class DeclarativeConfigProviderLoader {
     if (configuredProvider.isEmpty()) {
       LOGGER.log(
           Level.WARNING,
-          "Multiple "
-              + spiClass.getSimpleName()
-              + " providers found. Please include only one, or specify preference setting "
-              + configProperty
-              + " to the FQCN of the preferred provider.");
+          "Multiple {0} providers found. Please include only one, or specify preference setting "
+              + "{1} to the FQCN of the preferred provider.",
+          new Object[] {spiClass.getSimpleName(), configProperty});
       return providers.get(0);
     }
 
