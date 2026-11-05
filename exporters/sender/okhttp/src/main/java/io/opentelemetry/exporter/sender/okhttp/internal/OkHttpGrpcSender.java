@@ -207,60 +207,54 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable RetryState retryState) {
 
     try {
-      InstrumentationUtil.suppressInstrumentation(
-          () -> {
-            Call call = client.newCall(requestBuilder.build());
-            if (retryState != null && !retryState.configureCallTimeout(call)) {
-              onError.accept(new SocketTimeoutException("Call timed out"));
-              return;
-            }
-            startCall(
-                call,
-                attempt,
-                new Callback() {
-                  @Override
-                  public void onFailure(Call call, IOException e) {
-                    if (!call.isCanceled()
-                        && retryState != null
-                        && retryState.canRetry(attempt)
-                        && retryState.shouldRetryOnException(e)
-                        && retryState.backoff(OptionalLong.empty())) {
-                      sendAttempt(
-                          requestBuilder,
-                          messageWriter,
-                          onResponse,
-                          onError,
-                          attempt + 1,
-                          retryState);
-                    } else {
-                      onError.accept(e);
-                    }
-                  }
+      InstrumentationUtil.suppressInstrumentation(() -> {
+        Call call = client.newCall(requestBuilder.build());
+        if (retryState != null && !retryState.configureCallTimeout(call)) {
+          onError.accept(new SocketTimeoutException("Call timed out"));
+          return;
+        }
+        startCall(
+            call,
+            attempt,
+            new Callback() {
+              @Override
+              public void onFailure(Call call, IOException e) {
+                if (!call.isCanceled()
+                    && retryState != null
+                    && retryState.canRetry(attempt)
+                    && retryState.shouldRetryOnException(e)
+                    && retryState.backoff(OptionalLong.empty())) {
+                  sendAttempt(
+                      requestBuilder, messageWriter, onResponse, onError, attempt + 1, retryState);
+                } else {
+                  onError.accept(e);
+                }
+              }
 
-                  @Override
-                  public void onResponse(Call call, Response response) {
-                    handleResponse(
-                        response,
-                        (resolvedResponse, canRetry) -> {
-                          if (retryState != null
-                              && retryState.canRetry(attempt)
-                              && canRetry
-                              && isRetryable(resolvedResponse)
-                              && retryState.backoff(OptionalLong.empty())) {
-                            sendAttempt(
-                                requestBuilder,
-                                messageWriter,
-                                onResponse,
-                                onError,
-                                attempt + 1,
-                                retryState);
-                          } else {
-                            onResponse.accept(resolvedResponse);
-                          }
-                        });
-                  }
-                });
-          });
+              @Override
+              public void onResponse(Call call, Response response) {
+                handleResponse(
+                    response,
+                    (resolvedResponse, canRetry) -> {
+                      if (retryState != null
+                          && retryState.canRetry(attempt)
+                          && canRetry
+                          && isRetryable(resolvedResponse)
+                          && retryState.backoff(OptionalLong.empty())) {
+                        sendAttempt(
+                            requestBuilder,
+                            messageWriter,
+                            onResponse,
+                            onError,
+                            attempt + 1,
+                            retryState);
+                      } else {
+                        onResponse.accept(resolvedResponse);
+                      }
+                    });
+              }
+            });
+      });
     } catch (RejectedExecutionException e) {
       onError.accept(e);
     }

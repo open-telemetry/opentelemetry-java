@@ -80,9 +80,8 @@ public class GrpcGzipBenchmark {
         .setDescription("gauge description")
         .setUnit("unit")
         .ofLongs()
-        .buildWithCallback(
-            measurement ->
-                measurement.record(5, Attributes.of(AttributeKey.stringKey("key"), "value")));
+        .buildWithCallback(measurement ->
+            measurement.record(5, Attributes.of(AttributeKey.stringKey("key"), "value")));
     LongCounter longCounter =
         meter1
             .counterBuilder("counter")
@@ -125,16 +124,15 @@ public class GrpcGzipBenchmark {
 
     List<ResourceMetrics> resourceMetrics =
         Arrays.stream(ResourceMetricsMarshaler.create(metricData))
-            .map(
-                marshaler -> {
-                  ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                  try {
-                    marshaler.writeBinaryTo(bos);
-                    return ResourceMetrics.parseFrom(bos.toByteArray());
-                  } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                  }
-                })
+            .map(marshaler -> {
+              ByteArrayOutputStream bos = new ByteArrayOutputStream();
+              try {
+                marshaler.writeBinaryTo(bos);
+                return ResourceMetrics.parseFrom(bos.toByteArray());
+              } catch (IOException e) {
+                throw new UncheckedIOException(e);
+              }
+            })
             .collect(Collectors.toList());
     METRICS_REQUEST =
         ExportMetricsServiceRequest.newBuilder().addAllResourceMetrics(resourceMetrics).build();

@@ -127,12 +127,11 @@ public interface Baggage extends ImplicitContextKeyed {
       return null;
     }
     BaggageEntry[] result = new BaggageEntry[] {null};
-    forEach(
-        (key, entry) -> {
-          if (entryKey.equals(key)) {
-            result[0] = entry;
-          }
-        });
+    forEach((key, entry) -> {
+      if (entryKey.equals(key)) {
+        result[0] = entry;
+      }
+    });
     return result[0];
   }
 }

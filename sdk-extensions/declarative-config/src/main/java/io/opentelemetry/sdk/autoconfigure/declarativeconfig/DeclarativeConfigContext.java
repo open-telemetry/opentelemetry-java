@@ -152,9 +152,8 @@ class DeclarativeConfigContext implements ComponentLoader {
     }
     List<ComponentProvider> matchedProviders =
         componentProviders.stream()
-            .filter(
-                componentProvider ->
-                    componentProvider.getType() == type && name.equals(componentProvider.getName()))
+            .filter(componentProvider ->
+                componentProvider.getType() == type && name.equals(componentProvider.getName()))
             .collect(Collectors.toList());
     if (matchedProviders.isEmpty()) {
       throw new DeclarativeConfigException(
@@ -205,12 +204,11 @@ class DeclarativeConfigContext implements ComponentLoader {
   @Override
   public <T> Iterable<T> load(Class<T> spiClass) {
     List<T> result = ComponentLoader.loadList(componentLoader, spiClass);
-    result.forEach(
-        entry -> {
-          if (entry instanceof AutoConfigureListener) {
-            listeners.add((AutoConfigureListener) entry);
-          }
-        });
+    result.forEach(entry -> {
+      if (entry instanceof AutoConfigureListener) {
+        listeners.add((AutoConfigureListener) entry);
+      }
+    });
     return result;
   }
 

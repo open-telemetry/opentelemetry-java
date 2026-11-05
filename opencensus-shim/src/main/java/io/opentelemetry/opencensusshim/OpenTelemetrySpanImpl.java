@@ -168,13 +168,12 @@ class OpenTelemetrySpanImpl extends Span
 
   private static void mapAttributes(
       Map<String, AttributeValue> attributes, AttributesBuilder attributesBuilder) {
-    attributes.forEach(
-        (s, attributeValue) ->
-            attributeValue.match(
-                setStringAttribute(attributesBuilder, s),
-                setBooleanAttribute(attributesBuilder, s),
-                setLongAttribute(attributesBuilder, s),
-                setDoubleAttribute(attributesBuilder, s),
-                arg -> null));
+    attributes.forEach((s, attributeValue) ->
+        attributeValue.match(
+            setStringAttribute(attributesBuilder, s),
+            setBooleanAttribute(attributesBuilder, s),
+            setLongAttribute(attributesBuilder, s),
+            setDoubleAttribute(attributesBuilder, s),
+            arg -> null));
   }
 }

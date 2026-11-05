@@ -78,22 +78,20 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     this.registeredViews = registeredViews;
     this.registeredReaders =
         metricReaders.entrySet().stream()
-            .map(
-                entry ->
-                    RegisteredReader.create(
-                        entry.getKey(),
-                        ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
+            .map(entry ->
+                RegisteredReader.create(
+                    entry.getKey(),
+                    ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
             .collect(toList());
     this.metricProducers = metricProducers;
     this.sharedState = MeterProviderSharedState.create(clock, resourceProvider, exemplarFilter);
     this.registry =
-        new ComponentRegistry<>(
-            instrumentationLibraryInfo ->
-                new SdkMeter(
-                    sharedState,
-                    instrumentationLibraryInfo,
-                    registeredReaders,
-                    getMeterConfig(instrumentationLibraryInfo)));
+        new ComponentRegistry<>(instrumentationLibraryInfo ->
+            new SdkMeter(
+                sharedState,
+                instrumentationLibraryInfo,
+                registeredReaders,
+                getMeterConfig(instrumentationLibraryInfo)));
     this.meterConfigurator = meterConfigurator;
     for (RegisteredReader registeredReader : registeredReaders) {
       List<MetricProducer> readerMetricProducers = new ArrayList<>(metricProducers);
@@ -126,9 +124,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     this.meterConfigurator = meterConfigurator;
     this.registry
         .getComponents()
-        .forEach(
-            sdkMeter ->
-                sdkMeter.updateMeterConfig(getMeterConfig(sdkMeter.getInstrumentationScopeInfo())));
+        .forEach(sdkMeter ->
+            sdkMeter.updateMeterConfig(getMeterConfig(sdkMeter.getInstrumentationScopeInfo())));
   }
 
   @Override

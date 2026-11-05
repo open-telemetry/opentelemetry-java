@@ -190,13 +190,10 @@ class SdkLogRecordBuilderTest {
         .emit();
 
     assertThat(emittedLog.get().toLogRecordData())
-        .hasAttributesSatisfying(
-            attributes -> {
-              assertThat(attributes.get(stringKey("exception.type")))
-                  .isEqualTo("java.lang.Exception");
-              assertThat(attributes.get(stringKey("exception.message")))
-                  .isEqualTo("custom message");
-              assertThat(attributes.get(stringKey("exception.stacktrace"))).isNotNull();
-            });
+        .hasAttributesSatisfying(attributes -> {
+          assertThat(attributes.get(stringKey("exception.type"))).isEqualTo("java.lang.Exception");
+          assertThat(attributes.get(stringKey("exception.message"))).isEqualTo("custom message");
+          assertThat(attributes.get(stringKey("exception.stacktrace"))).isNotNull();
+        });
   }
 }

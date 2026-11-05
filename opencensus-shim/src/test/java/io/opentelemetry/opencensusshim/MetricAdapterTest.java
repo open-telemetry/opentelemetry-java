@@ -78,15 +78,13 @@ class MetricAdapterTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasLongGaugeSatisfying(
-            gauge ->
-                gauge.hasPointsSatisfying(
-                    point ->
-                        point
-                            .hasValue(4)
-                            .hasStartEpochNanos(1000000000)
-                            .hasEpochNanos(2000000000)
-                            .hasAttributes(attributeEntry("key1", "value1"))));
+        .hasLongGaugeSatisfying(gauge ->
+            gauge.hasPointsSatisfying(point ->
+                point
+                    .hasValue(4)
+                    .hasStartEpochNanos(1000000000)
+                    .hasEpochNanos(2000000000)
+                    .hasAttributes(attributeEntry("key1", "value1"))));
   }
 
   @Test
@@ -111,15 +109,13 @@ class MetricAdapterTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasDoubleGaugeSatisfying(
-            gauge ->
-                gauge.hasPointsSatisfying(
-                    point ->
-                        point
-                            .hasStartEpochNanos(1000000000)
-                            .hasEpochNanos(2000000000)
-                            .hasAttributes(attributeEntry("key1", "value1"))
-                            .hasValue(4)));
+        .hasDoubleGaugeSatisfying(gauge ->
+            gauge.hasPointsSatisfying(point ->
+                point
+                    .hasStartEpochNanos(1000000000)
+                    .hasEpochNanos(2000000000)
+                    .hasAttributes(attributeEntry("key1", "value1"))
+                    .hasValue(4)));
   }
 
   @Test
@@ -144,17 +140,15 @@ class MetricAdapterTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasLongSumSatisfying(
-            sum ->
-                sum.isCumulative()
-                    .isMonotonic()
-                    .hasPointsSatisfying(
-                        point ->
-                            point
-                                .hasStartEpochNanos(1000000000)
-                                .hasEpochNanos(2000000000)
-                                .hasAttributes(attributeEntry("key1", "value1"))
-                                .hasValue(4)));
+        .hasLongSumSatisfying(sum ->
+            sum.isCumulative()
+                .isMonotonic()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasStartEpochNanos(1000000000)
+                        .hasEpochNanos(2000000000)
+                        .hasAttributes(attributeEntry("key1", "value1"))
+                        .hasValue(4)));
   }
 
   @Test
@@ -179,17 +173,15 @@ class MetricAdapterTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasDoubleSumSatisfying(
-            sum ->
-                sum.isCumulative()
-                    .isMonotonic()
-                    .hasPointsSatisfying(
-                        point ->
-                            point
-                                .hasStartEpochNanos(1000000000)
-                                .hasEpochNanos(2000000000)
-                                .hasAttributes(attributeEntry("key1", "value1"))
-                                .hasValue(4)));
+        .hasDoubleSumSatisfying(sum ->
+            sum.isCumulative()
+                .isMonotonic()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasStartEpochNanos(1000000000)
+                        .hasEpochNanos(2000000000)
+                        .hasAttributes(attributeEntry("key1", "value1"))
+                        .hasValue(4)));
   }
 
   @Test
@@ -237,31 +229,29 @@ class MetricAdapterTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasHistogramSatisfying(
-            histogram ->
-                histogram
-                    .isCumulative()
-                    .hasPointsSatisfying(
-                        point ->
-                            point
-                                .hasStartEpochNanos(1000000000)
-                                .hasEpochNanos(2000000000)
-                                .hasSum(5)
-                                .hasCount(10)
-                                .hasBucketBoundaries(2.0, 5.0)
-                                .hasBucketCounts(2, 6, 2)
-                                .hasExemplars(
-                                    ImmutableDoubleExemplarData.create(
-                                        Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
-                                    ImmutableDoubleExemplarData.create(
-                                        Attributes.empty(),
-                                        1000000,
-                                        SpanContext.create(
-                                            "00000000000000000000000000000001",
-                                            "0000000000000002",
-                                            TraceFlags.getDefault(),
-                                            TraceState.getDefault()),
-                                        4.0))));
+        .hasHistogramSatisfying(histogram ->
+            histogram
+                .isCumulative()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasStartEpochNanos(1000000000)
+                        .hasEpochNanos(2000000000)
+                        .hasSum(5)
+                        .hasCount(10)
+                        .hasBucketBoundaries(2.0, 5.0)
+                        .hasBucketCounts(2, 6, 2)
+                        .hasExemplars(
+                            ImmutableDoubleExemplarData.create(
+                                Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
+                            ImmutableDoubleExemplarData.create(
+                                Attributes.empty(),
+                                1000000,
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
+                                4.0))));
   }
 
   @Test
@@ -296,17 +286,15 @@ class MetricAdapterTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasSummarySatisfying(
-            summary ->
-                summary.hasPointsSatisfying(
-                    point ->
-                        point
-                            .hasStartEpochNanos(1000000000)
-                            .hasEpochNanos(2000000000)
-                            .hasAttributes(attributeEntry("key1", "value1"))
-                            .hasCount(10)
-                            .hasSum(5)
-                            .hasValuesSatisfying(value -> value.hasValue(200.0).hasQuantile(1.0))));
+        .hasSummarySatisfying(summary ->
+            summary.hasPointsSatisfying(point ->
+                point
+                    .hasStartEpochNanos(1000000000)
+                    .hasEpochNanos(2000000000)
+                    .hasAttributes(attributeEntry("key1", "value1"))
+                    .hasCount(10)
+                    .hasSum(5)
+                    .hasValuesSatisfying(value -> value.hasValue(200.0).hasQuantile(1.0))));
   }
 
   @Test
@@ -353,30 +341,28 @@ class MetricAdapterTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasHistogramSatisfying(
-            histogram ->
-                histogram
-                    .isDelta()
-                    .hasPointsSatisfying(
-                        point ->
-                            point
-                                .hasStartEpochNanos(2000000000)
-                                .hasEpochNanos(2000000000)
-                                .hasSum(5)
-                                .hasCount(10)
-                                .hasBucketBoundaries(2.0, 5.0)
-                                .hasBucketCounts(2, 6, 2)
-                                .hasExemplars(
-                                    ImmutableDoubleExemplarData.create(
-                                        Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
-                                    ImmutableDoubleExemplarData.create(
-                                        Attributes.empty(),
-                                        1000000,
-                                        SpanContext.create(
-                                            "00000000000000000000000000000001",
-                                            "0000000000000002",
-                                            TraceFlags.getDefault(),
-                                            TraceState.getDefault()),
-                                        4.0))));
+        .hasHistogramSatisfying(histogram ->
+            histogram
+                .isDelta()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasStartEpochNanos(2000000000)
+                        .hasEpochNanos(2000000000)
+                        .hasSum(5)
+                        .hasCount(10)
+                        .hasBucketBoundaries(2.0, 5.0)
+                        .hasBucketCounts(2, 6, 2)
+                        .hasExemplars(
+                            ImmutableDoubleExemplarData.create(
+                                Attributes.empty(), 2000000, SpanContext.getInvalid(), 1.0),
+                            ImmutableDoubleExemplarData.create(
+                                Attributes.empty(),
+                                1000000,
+                                SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
+                                4.0))));
   }
 }

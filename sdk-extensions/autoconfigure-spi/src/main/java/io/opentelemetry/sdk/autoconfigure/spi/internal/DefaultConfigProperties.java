@@ -75,9 +75,8 @@ public final class DefaultConfigProperties implements ConfigProperties {
         (name, value) -> config.put(ConfigUtil.normalizePropertyKey(name), value));
     environmentVariables.forEach(
         (name, value) -> config.put(ConfigUtil.normalizeEnvironmentVariableKey(name), value));
-    systemProperties.forEach(
-        (key, value) ->
-            config.put(ConfigUtil.normalizePropertyKey(key.toString()), value.toString()));
+    systemProperties.forEach((key, value) ->
+        config.put(ConfigUtil.normalizePropertyKey(key.toString()), value.toString()));
 
     this.config = config;
     this.componentLoader = componentLoader;
@@ -220,20 +219,18 @@ public final class DefaultConfigProperties implements ConfigProperties {
   @Override
   public Map<String, String> getMap(String name) {
     return getList(ConfigUtil.normalizePropertyKey(name)).stream()
-        .map(
-            entry -> {
-              String[] split = entry.split("=", 2);
-              if (split.length != 2 || split[0].isEmpty()) {
-                throw new ConfigurationException("Invalid map property: " + name);
-              }
-              return filterBlanksAndNulls(split);
-            })
+        .map(entry -> {
+          String[] split = entry.split("=", 2);
+          if (split.length != 2 || split[0].isEmpty()) {
+            throw new ConfigurationException("Invalid map property: " + name);
+          }
+          return filterBlanksAndNulls(split);
+        })
         // Filter entries with an empty value, i.e. "foo="
         .filter(splitKeyValuePairs -> splitKeyValuePairs.size() == 2)
-        .map(
-            splitKeyValuePairs ->
-                new AbstractMap.SimpleImmutableEntry<>(
-                    splitKeyValuePairs.get(0), splitKeyValuePairs.get(1)))
+        .map(splitKeyValuePairs ->
+            new AbstractMap.SimpleImmutableEntry<>(
+                splitKeyValuePairs.get(0), splitKeyValuePairs.get(1)))
         // If duplicate keys, prioritize later ones similar to duplicate system properties on a
         // Java command line.
         .collect(

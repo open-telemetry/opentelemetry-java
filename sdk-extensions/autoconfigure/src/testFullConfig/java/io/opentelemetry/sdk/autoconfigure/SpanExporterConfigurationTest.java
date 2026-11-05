@@ -48,10 +48,9 @@ class SpanExporterConfigurationTest {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             ImmutableMap.of("otel.exporter.otlp.protocol", "foo"));
-    assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureExporter(
-                    "otlp", SpanExporterConfiguration.spanExporterSpiManager(config, spiHelper)))
+    assertThatThrownBy(() ->
+            SpanExporterConfiguration.configureExporter(
+                "otlp", SpanExporterConfiguration.spanExporterSpiManager(config, spiHelper)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP traces protocol: foo");
   }

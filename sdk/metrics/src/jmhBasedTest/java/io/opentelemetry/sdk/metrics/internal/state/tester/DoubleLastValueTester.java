@@ -30,12 +30,11 @@ public class DoubleLastValueTester implements TestInstrumentType.InstrumentTeste
     Meter meter = sdkMeterProvider.meterBuilder("meter").build();
     meter
         .gaugeBuilder("test.double.last.value")
-        .buildWithCallback(
-            observableDoubleMeasurement -> {
-              for (int j = 0; j < attributesList.size(); j++) {
-                observableDoubleMeasurement.record(1.2f, attributesList.get(j));
-              }
-            });
+        .buildWithCallback(observableDoubleMeasurement -> {
+          for (int j = 0; j < attributesList.size(); j++) {
+            observableDoubleMeasurement.record(1.2f, attributesList.get(j));
+          }
+        });
 
     return new TestInstrumentType.EmptyInstrumentsState();
   }

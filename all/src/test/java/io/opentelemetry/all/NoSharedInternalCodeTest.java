@@ -110,10 +110,9 @@ class NoSharedInternalCodeTest {
   private static Stream<Arguments> artifactsAndJars() throws IOException {
     List<String> lines = Files.readAllLines(Path.of(System.getenv("ARTIFACTS_AND_JARS")));
     return lines.stream()
-        .map(
-            line -> {
-              String[] parts = line.split(":", 2);
-              return Arguments.argumentSet(parts[0], parts[0], parts[1]);
-            });
+        .map(line -> {
+          String[] parts = line.split(":", 2);
+          return Arguments.argumentSet(parts[0], parts[0], parts[1]);
+        });
   }
 }

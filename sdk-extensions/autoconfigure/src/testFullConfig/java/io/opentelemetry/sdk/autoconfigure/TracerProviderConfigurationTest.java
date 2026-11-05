@@ -46,22 +46,20 @@ public class TracerProviderConfigurationTest {
   void emptyClassLoader() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(ImmutableMap.of("test.option", "true"));
-    assertThatThrownBy(
-            () ->
-                TracerProviderConfiguration.configureSampler(
-                    "testSampler", config, SpiHelper.create(new URLClassLoader(new URL[0], null))))
+    assertThatThrownBy(() ->
+            TracerProviderConfiguration.configureSampler(
+                "testSampler", config, SpiHelper.create(new URLClassLoader(new URL[0], null))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testSampler");
   }
 
   @Test
   void samplerNotFound() {
-    assertThatThrownBy(
-            () ->
-                TracerProviderConfiguration.configureSampler(
-                    "catSampler",
-                    DefaultConfigProperties.createFromMap(Collections.emptyMap()),
-                    spiHelper))
+    assertThatThrownBy(() ->
+            TracerProviderConfiguration.configureSampler(
+                "catSampler",
+                DefaultConfigProperties.createFromMap(Collections.emptyMap()),
+                spiHelper))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catSampler");
   }

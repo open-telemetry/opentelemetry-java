@@ -25,12 +25,11 @@ class OkHttpUtilTest {
       assertThat(dispatcher.getMaxRequestsPerHost()).isEqualTo(5);
       assertThat(dispatcher.executorService())
           .asInstanceOf(type(ThreadPoolExecutor.class))
-          .satisfies(
-              executor -> {
-                assertThat(executor.getMaximumPoolSize()).isEqualTo(EXPECTED_MAX_REQUESTS);
-                assertThat(executor.getRejectedExecutionHandler())
-                    .isInstanceOf(ThreadPoolExecutor.AbortPolicy.class);
-              });
+          .satisfies(executor -> {
+            assertThat(executor.getMaximumPoolSize()).isEqualTo(EXPECTED_MAX_REQUESTS);
+            assertThat(executor.getRejectedExecutionHandler())
+                .isInstanceOf(ThreadPoolExecutor.AbortPolicy.class);
+          });
     } finally {
       dispatcher.executorService().shutdownNow();
     }

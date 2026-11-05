@@ -242,157 +242,140 @@ class LowAllocationMetricsRequestMarshalerTest {
           arguments(
               named(
                   "long gauge",
-                  metrics(
-                      meterProvider ->
-                          meterProvider
-                              .get("long gauge")
-                              .gaugeBuilder("gauge")
-                              .setDescription("gauge description")
-                              .setUnit("unit")
-                              .ofLongs()
-                              .buildWithCallback(
-                                  measurement ->
-                                      measurement.record(
-                                          5,
-                                          Attributes.of(
-                                              AttributeKey.stringKey("key"), "value")))))),
+                  metrics(meterProvider ->
+                      meterProvider
+                          .get("long gauge")
+                          .gaugeBuilder("gauge")
+                          .setDescription("gauge description")
+                          .setUnit("unit")
+                          .ofLongs()
+                          .buildWithCallback(measurement ->
+                              measurement.record(
+                                  5, Attributes.of(AttributeKey.stringKey("key"), "value")))))),
           arguments(
               named(
                   "long counter",
-                  metrics(
-                      meterProvider -> {
-                        LongCounter longCounter =
-                            meterProvider
-                                .get("long counter")
-                                .counterBuilder("counter")
-                                .setDescription("counter description")
-                                .setUnit("unit")
-                                .build();
-                        longCounter.add(1);
-                        longCounter.add(2, Attributes.of(AttributeKey.longKey("lives"), 9L));
-                        longCounter.add(3);
-                      }))),
+                  metrics(meterProvider -> {
+                    LongCounter longCounter =
+                        meterProvider
+                            .get("long counter")
+                            .counterBuilder("counter")
+                            .setDescription("counter description")
+                            .setUnit("unit")
+                            .build();
+                    longCounter.add(1);
+                    longCounter.add(2, Attributes.of(AttributeKey.longKey("lives"), 9L));
+                    longCounter.add(3);
+                  }))),
           arguments(
               named(
                   "long updowncounter",
-                  metrics(
-                      meterProvider -> {
-                        LongUpDownCounter longUpDownCounter =
-                            meterProvider
-                                .get("long updowncounter")
-                                .upDownCounterBuilder("updowncounter")
-                                .setDescription("updowncounter description")
-                                .setUnit("unit")
-                                .build();
-                        longUpDownCounter.add(1);
-                        longUpDownCounter.add(
-                            -1, Attributes.of(AttributeKey.booleanKey("on"), true));
-                        longUpDownCounter.add(1);
-                      }))),
+                  metrics(meterProvider -> {
+                    LongUpDownCounter longUpDownCounter =
+                        meterProvider
+                            .get("long updowncounter")
+                            .upDownCounterBuilder("updowncounter")
+                            .setDescription("updowncounter description")
+                            .setUnit("unit")
+                            .build();
+                    longUpDownCounter.add(1);
+                    longUpDownCounter.add(-1, Attributes.of(AttributeKey.booleanKey("on"), true));
+                    longUpDownCounter.add(1);
+                  }))),
           arguments(
               named(
                   "double gauge",
-                  metrics(
-                      meterProvider ->
-                          meterProvider
-                              .get("double gauge")
-                              .gaugeBuilder("doublegauge")
-                              .setDescription("doublegauge")
-                              .setUnit("unit")
-                              .buildWithCallback(measurement -> measurement.record(5.0))))),
+                  metrics(meterProvider ->
+                      meterProvider
+                          .get("double gauge")
+                          .gaugeBuilder("doublegauge")
+                          .setDescription("doublegauge")
+                          .setUnit("unit")
+                          .buildWithCallback(measurement -> measurement.record(5.0))))),
           arguments(
               named(
                   "double counter",
-                  metrics(
-                      meterProvider -> {
-                        DoubleCounter doubleCounter =
-                            meterProvider
-                                .get("double counter")
-                                .counterBuilder("doublecounter")
-                                .ofDoubles()
-                                .build();
-                        doubleCounter.add(1.0);
-                        doubleCounter.add(2.0);
-                      }))),
+                  metrics(meterProvider -> {
+                    DoubleCounter doubleCounter =
+                        meterProvider
+                            .get("double counter")
+                            .counterBuilder("doublecounter")
+                            .ofDoubles()
+                            .build();
+                    doubleCounter.add(1.0);
+                    doubleCounter.add(2.0);
+                  }))),
           arguments(
               named(
                   "double updowncounter",
-                  metrics(
-                      meterProvider -> {
-                        DoubleUpDownCounter doubleUpDownCounter =
-                            meterProvider
-                                .get("double updowncounter")
-                                .upDownCounterBuilder("doubleupdown")
-                                .ofDoubles()
-                                .build();
-                        doubleUpDownCounter.add(1.0);
-                        doubleUpDownCounter.add(-1.0);
-                      }))),
+                  metrics(meterProvider -> {
+                    DoubleUpDownCounter doubleUpDownCounter =
+                        meterProvider
+                            .get("double updowncounter")
+                            .upDownCounterBuilder("doubleupdown")
+                            .ofDoubles()
+                            .build();
+                    doubleUpDownCounter.add(1.0);
+                    doubleUpDownCounter.add(-1.0);
+                  }))),
           arguments(
               named(
                   "double histogram",
-                  metrics(
-                      meterProvider -> {
-                        DoubleHistogram histogram =
-                            meterProvider
-                                .get("double histogram")
-                                .histogramBuilder("histogram")
-                                .build();
-                        histogram.record(1.0);
-                        histogram.record(2.0);
-                        histogram.record(3.0);
-                        histogram.record(4.0);
-                        histogram.record(5.0);
-                      }))),
+                  metrics(meterProvider -> {
+                    DoubleHistogram histogram =
+                        meterProvider.get("double histogram").histogramBuilder("histogram").build();
+                    histogram.record(1.0);
+                    histogram.record(2.0);
+                    histogram.record(3.0);
+                    histogram.record(4.0);
+                    histogram.record(5.0);
+                  }))),
           arguments(
               named(
                   "long histogram",
-                  metrics(
-                      meterProvider -> {
-                        LongHistogram histogram =
-                            meterProvider
-                                .get("long histogram")
-                                .histogramBuilder("histogram")
-                                .ofLongs()
-                                .build();
-                        histogram.record(1);
-                        histogram.record(2);
-                        histogram.record(3);
-                        histogram.record(4);
-                        histogram.record(5);
-                      }))),
+                  metrics(meterProvider -> {
+                    LongHistogram histogram =
+                        meterProvider
+                            .get("long histogram")
+                            .histogramBuilder("histogram")
+                            .ofLongs()
+                            .build();
+                    histogram.record(1);
+                    histogram.record(2);
+                    histogram.record(3);
+                    histogram.record(4);
+                    histogram.record(5);
+                  }))),
           arguments(
               named(
                   "double exponential histogram",
-                  metrics(
-                      meterProvider -> {
-                        DoubleHistogram histogram =
-                            meterProvider
-                                .get("double exponential histogram")
-                                .histogramBuilder("exponentialhistogram")
-                                .build();
-                        histogram.record(1.0);
-                        histogram.record(2.0);
-                        histogram.record(3.0);
-                        histogram.record(4.0);
-                        histogram.record(5.0);
-                      }))),
+                  metrics(meterProvider -> {
+                    DoubleHistogram histogram =
+                        meterProvider
+                            .get("double exponential histogram")
+                            .histogramBuilder("exponentialhistogram")
+                            .build();
+                    histogram.record(1.0);
+                    histogram.record(2.0);
+                    histogram.record(3.0);
+                    histogram.record(4.0);
+                    histogram.record(5.0);
+                  }))),
           arguments(
               named(
                   "long exponential histogram",
-                  metrics(
-                      meterProvider -> {
-                        DoubleHistogram histogram =
-                            meterProvider
-                                .get("long exponential histogram")
-                                .histogramBuilder("exponentialhistogram")
-                                .build();
-                        histogram.record(1);
-                        histogram.record(2);
-                        histogram.record(3);
-                        histogram.record(4);
-                        histogram.record(5);
-                      }))));
+                  metrics(meterProvider -> {
+                    DoubleHistogram histogram =
+                        meterProvider
+                            .get("long exponential histogram")
+                            .histogramBuilder("exponentialhistogram")
+                            .build();
+                    histogram.record(1);
+                    histogram.record(2);
+                    histogram.record(3);
+                    histogram.record(4);
+                    histogram.record(5);
+                  }))));
     }
   }
 

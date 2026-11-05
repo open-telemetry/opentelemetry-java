@@ -74,9 +74,8 @@ public class MetricsRequestMarshalerBenchmark {
         .setDescription("gauge description")
         .setUnit("unit")
         .ofLongs()
-        .buildWithCallback(
-            measurement ->
-                measurement.record(5, Attributes.of(AttributeKey.stringKey("key"), "value")));
+        .buildWithCallback(measurement ->
+            measurement.record(5, Attributes.of(AttributeKey.stringKey("key"), "value")));
     LongCounter longCounter =
         meter1
             .counterBuilder("counter")

@@ -139,12 +139,11 @@ class FilteredAttributesTest {
     Set<AttributeKey<?>> allKeys = new HashSet<>();
     AttributesBuilder allAttributesBuilder = Attributes.builder();
     IntStream.range(0, 100)
-        .forEach(
-            i -> {
-              AttributeKey<String> key = stringKey("key" + i);
-              allKeys.add(key);
-              allAttributesBuilder.put(key, "value" + i);
-            });
+        .forEach(i -> {
+          AttributeKey<String> key = stringKey("key" + i);
+          allKeys.add(key);
+          allAttributesBuilder.put(key, "value" + i);
+        });
     Attributes allAttributes = allAttributesBuilder.build();
 
     Attributes empty = FilteredAttributes.create(allAttributes, Collections.emptySet());
@@ -156,28 +155,26 @@ class FilteredAttributesTest {
     assertThat(one.size()).isEqualTo(1);
     assertThat(one.isEmpty()).isFalse();
     allKeys.stream()
-        .forEach(
-            key -> {
-              if (oneKey.contains(key)) {
-                assertThat(one.get(key)).isNotNull();
-              } else {
-                assertThat(one.get(key)).isNull();
-              }
-            });
+        .forEach(key -> {
+          if (oneKey.contains(key)) {
+            assertThat(one.get(key)).isNotNull();
+          } else {
+            assertThat(one.get(key)).isNull();
+          }
+        });
 
     Set<AttributeKey<?>> tenKeys = allKeys.stream().limit(10).collect(Collectors.toSet());
     Attributes ten = FilteredAttributes.create(allAttributes, tenKeys);
     assertThat(ten.size()).isEqualTo(10);
     assertThat(ten.isEmpty()).isFalse();
     allKeys.stream()
-        .forEach(
-            key -> {
-              if (tenKeys.contains(key)) {
-                assertThat(ten.get(key)).isNotNull();
-              } else {
-                assertThat(ten.get(key)).isNull();
-              }
-            });
+        .forEach(key -> {
+          if (tenKeys.contains(key)) {
+            assertThat(ten.get(key)).isNotNull();
+          } else {
+            assertThat(ten.get(key)).isNull();
+          }
+        });
   }
 
   @Test

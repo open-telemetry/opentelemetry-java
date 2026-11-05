@@ -91,50 +91,44 @@ class ConfigPropertiesTest {
 
   @Test
   void invalidInt() {
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(Collections.singletonMap("int", "bar"))
-                    .getInt("int"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("int", "bar"))
+                .getInt("int"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property int=bar. Must be a integer.");
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(
-                        Collections.singletonMap("int", "999999999999999"))
-                    .getInt("int"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(
+                    Collections.singletonMap("int", "999999999999999"))
+                .getInt("int"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property int=999999999999999. Must be a integer.");
   }
 
   @Test
   void invalidLong() {
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(Collections.singletonMap("long", "bar"))
-                    .getLong("long"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("long", "bar"))
+                .getLong("long"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property long=bar. Must be a long.");
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(
-                        Collections.singletonMap("long", "99223372036854775807"))
-                    .getLong("long"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(
+                    Collections.singletonMap("long", "99223372036854775807"))
+                .getLong("long"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property long=99223372036854775807. Must be a long.");
   }
 
   @Test
   void invalidDouble() {
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(Collections.singletonMap("double", "bar"))
-                    .getDouble("double"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("double", "bar"))
+                .getDouble("double"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property double=bar. Must be a double.");
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(Collections.singletonMap("double", "1.0.1"))
-                    .getDouble("double"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("double", "1.0.1"))
+                .getDouble("double"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property double=1.0.1. Must be a double.");
   }
@@ -159,33 +153,29 @@ class ConfigPropertiesTest {
 
   @Test
   void invalidMap() {
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(
-                        Collections.singletonMap("map", "authorization=Bearer s3cr3t,malformed"))
-                    .getMap("map"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(
+                    Collections.singletonMap("map", "authorization=Bearer s3cr3t,malformed"))
+                .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: map");
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(Collections.singletonMap("map", "a=1,=b"))
-                    .getMap("map"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("map", "a=1,=b"))
+                .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: map");
   }
 
   @Test
   void invalidDuration() {
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "1a1ms"))
-                    .getDuration("duration"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "1a1ms"))
+                .getDuration("duration"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid duration property duration=1a1ms. Expected number, found: 1a1");
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "9mm"))
-                    .getDuration("duration"))
+    assertThatThrownBy(() ->
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "9mm"))
+                .getDuration("duration"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid duration property duration=9mm. Invalid duration string, found: mm");
   }

@@ -425,11 +425,10 @@ class PeriodicMetricReaderTest {
     // Shutdown in background — should block waiting for in-flight export
     CountDownLatch shutdownDone = new CountDownLatch(1);
     Thread shutdownThread =
-        new Thread(
-            () -> {
-              reader.shutdown();
-              shutdownDone.countDown();
-            });
+        new Thread(() -> {
+          reader.shutdown();
+          shutdownDone.countDown();
+        });
     shutdownThread.setDaemon(true);
     shutdownThread.start();
 
@@ -461,9 +460,8 @@ class PeriodicMetricReaderTest {
     assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setInterval(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
-    assertThatThrownBy(
-            () ->
-                PeriodicMetricReader.builder(metricExporter).setInterval(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(() ->
+            PeriodicMetricReader.builder(metricExporter).setInterval(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("interval must be positive");
     assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setInterval(null))
@@ -705,10 +703,8 @@ class PeriodicMetricReaderTest {
 
   @Test
   void setExporterTimeout_negativeThrows() {
-    assertThatThrownBy(
-            () ->
-                PeriodicMetricReader.builder(metricExporter)
-                    .setExporterTimeout(Duration.ofSeconds(-1)))
+    assertThatThrownBy(() ->
+            PeriodicMetricReader.builder(metricExporter).setExporterTimeout(Duration.ofSeconds(-1)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("timeout must be non-negative");
   }

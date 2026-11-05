@@ -556,11 +556,9 @@ final class Otel2PrometheusConverter {
       }
       scope
           .getAttributes()
-          .forEach(
-              (key, value) ->
-                  labelNameToValue.putIfAbsent(
-                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(),
-                      toLabelValue(key.getType(), value)));
+          .forEach((key, value) ->
+              labelNameToValue.putIfAbsent(
+                  OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(), toLabelValue(key.getType(), value)));
     }
 
     if (resource != null) {
@@ -570,12 +568,11 @@ final class Otel2PrometheusConverter {
     String[] names = new String[labelNameToValue.size()];
     String[] values = new String[labelNameToValue.size()];
     int[] pos = new int[] {0};
-    labelNameToValue.forEach(
-        (name, value) -> {
-          names[pos[0]] = name;
-          values[pos[0]] = value;
-          pos[0] += 1;
-        });
+    labelNameToValue.forEach((name, value) -> {
+      names[pos[0]] = name;
+      values[pos[0]] = value;
+      pos[0] += 1;
+    });
 
     return Labels.of(names, values);
   }
@@ -590,27 +587,25 @@ final class Otel2PrometheusConverter {
   private Map<String, String> buildAttributeLabels(Attributes attributes) {
     Map<String, String> labels = new LinkedHashMap<>();
     if (!shouldEscape(translationStrategy)) {
-      attributes.forEach(
-          (key, value) ->
-              labels.put(convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
+      attributes.forEach((key, value) ->
+          labels.put(convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
       return labels;
     }
 
     // Fast path: insert directly. Stop inserting on first detected collision but finish
     // iterating so forEach can complete.
     boolean[] hasCollision = {false};
-    attributes.forEach(
-        (key, value) -> {
-          if (hasCollision[0]) {
-            return;
-          }
-          String labelName = convertLabelName(key.getKey());
-          if (labels.containsKey(labelName)) {
-            hasCollision[0] = true;
-          } else {
-            labels.put(labelName, toLabelValue(key.getType(), value));
-          }
-        });
+    attributes.forEach((key, value) -> {
+      if (hasCollision[0]) {
+        return;
+      }
+      String labelName = convertLabelName(key.getKey());
+      if (labels.containsKey(labelName)) {
+        hasCollision[0] = true;
+      } else {
+        labels.put(labelName, toLabelValue(key.getType(), value));
+      }
+    });
 
     if (!hasCollision[0]) {
       return labels; // common case: done, no extra allocation
@@ -619,11 +614,10 @@ final class Otel2PrometheusConverter {
     // Collision path: discard partial state and rebuild with merged values.
     labels.clear();
     Map<String, List<OriginalLabelKeyValue>> groups = new LinkedHashMap<>();
-    attributes.forEach(
-        (key, value) ->
-            groups
-                .computeIfAbsent(convertLabelName(key.getKey()), ignored -> new ArrayList<>())
-                .add(new OriginalLabelKeyValue(key.getKey(), toLabelValue(key.getType(), value))));
+    attributes.forEach((key, value) ->
+        groups
+            .computeIfAbsent(convertLabelName(key.getKey()), ignored -> new ArrayList<>())
+            .add(new OriginalLabelKeyValue(key.getKey(), toLabelValue(key.getType(), value))));
     groups.forEach((labelName, entries) -> labels.put(labelName, mergeValues(entries)));
     return labels;
   }

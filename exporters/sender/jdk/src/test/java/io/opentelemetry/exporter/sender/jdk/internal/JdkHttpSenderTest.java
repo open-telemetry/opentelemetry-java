@@ -70,9 +70,8 @@ class JdkHttpSenderTest {
     // Can't directly spy on HttpClient for some reason, so create a real instance and a mock that
     // delegates to the real thing
     when(mockHttpClient.send(any(), any()))
-        .thenAnswer(
-            invocation ->
-                realHttpClient.send(invocation.getArgument(0), invocation.getArgument(1)));
+        .thenAnswer(invocation ->
+            realHttpClient.send(invocation.getArgument(0), invocation.getArgument(1)));
     sender =
         new JdkHttpSender(
             mockHttpClient,
@@ -154,10 +153,9 @@ class JdkHttpSenderTest {
   @Test
   void sendInternal_RetryableConnectTimeoutException() throws IOException, InterruptedException {
     assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
-        .satisfies(
-            e ->
-                assertThat((e instanceof HttpConnectTimeoutException) || (e instanceof IOException))
-                    .isTrue());
+        .satisfies(e ->
+            assertThat((e instanceof HttpConnectTimeoutException) || (e instanceof IOException))
+                .isTrue());
 
     verify(mockHttpClient, times(2)).send(any(), any());
   }
@@ -180,12 +178,10 @@ class JdkHttpSenderTest {
             Long.MAX_VALUE);
 
     assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
-        .satisfies(
-            e ->
-                assertThat(
-                        (e instanceof ConnectException)
-                            || (e instanceof HttpConnectTimeoutException))
-                    .isTrue());
+        .satisfies(e ->
+            assertThat(
+                    (e instanceof ConnectException) || (e instanceof HttpConnectTimeoutException))
+                .isTrue());
 
     verify(mockHttpClient, times(2)).send(any(), any());
   }
@@ -242,12 +238,11 @@ class JdkHttpSenderTest {
       assertThat(defaultSender)
           .extracting(
               "executorService", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
-          .satisfies(
-              executor -> {
-                assertThat(executor.getMaximumPoolSize()).isEqualTo(expectedMax);
-                assertThat(executor.getRejectedExecutionHandler())
-                    .isInstanceOf(ThreadPoolExecutor.AbortPolicy.class);
-              });
+          .satisfies(executor -> {
+            assertThat(executor.getMaximumPoolSize()).isEqualTo(expectedMax);
+            assertThat(executor.getRejectedExecutionHandler())
+                .isInstanceOf(ThreadPoolExecutor.AbortPolicy.class);
+          });
     } finally {
       defaultSender.shutdown();
     }
@@ -272,9 +267,8 @@ class JdkHttpSenderTest {
 
     assertThat(sender)
         .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
-        .satisfies(
-            httpClient ->
-                assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
+        .satisfies(httpClient ->
+            assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
   }
 
   @SuppressWarnings("unchecked")

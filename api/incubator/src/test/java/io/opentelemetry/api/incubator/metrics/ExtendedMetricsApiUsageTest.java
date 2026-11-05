@@ -68,9 +68,8 @@ class ExtendedMetricsApiUsageTest {
     // omitted from the results even if values were recorded. The check if enabled simply avoids
     // unnecessary computation.
     assertThat(reader.collectAllMetrics())
-        .allSatisfy(
-            metric ->
-                assertThat(metric.getInstrumentationScopeInfo().getName()).isEqualTo("meterA"));
+        .allSatisfy(metric ->
+            assertThat(metric.getInstrumentationScopeInfo().getName()).isEqualTo("meterA"));
   }
 
   private static final Random random = new Random();
@@ -124,27 +123,23 @@ class ExtendedMetricsApiUsageTest {
             metricData ->
                 assertThat(metricData)
                     .hasName("counter1")
-                    .hasLongSumSatisfying(
-                        sumAssert ->
-                            sumAssert.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1L)
-                                        .hasAttributes(
-                                            Attributes.builder()
-                                                .put("key1", "value1")
-                                                .put("key2", "value2")
-                                                .build()))),
+                    .hasLongSumSatisfying(sumAssert ->
+                        sumAssert.hasPointsSatisfying(point ->
+                            point
+                                .hasValue(1L)
+                                .hasAttributes(
+                                    Attributes.builder()
+                                        .put("key1", "value1")
+                                        .put("key2", "value2")
+                                        .build()))),
             metricData ->
                 assertThat(metricData)
                     .hasName("counter2")
-                    .hasLongSumSatisfying(
-                        sumAssert ->
-                            sumAssert.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1L)
-                                        .hasAttributes(
-                                            Attributes.builder().put("key1", "value1").build()))));
+                    .hasLongSumSatisfying(sumAssert ->
+                        sumAssert.hasPointsSatisfying(point ->
+                            point
+                                .hasValue(1L)
+                                .hasAttributes(
+                                    Attributes.builder().put("key1", "value1").build()))));
   }
 }

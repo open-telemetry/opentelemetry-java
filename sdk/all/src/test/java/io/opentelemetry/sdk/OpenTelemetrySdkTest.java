@@ -375,9 +375,8 @@ class OpenTelemetrySdkTest {
 
     assertThat(logCapturer.getEvents())
         .hasSize(2)
-        .allSatisfy(
-            loggingEvent ->
-                assertThat(loggingEvent.getMessage()).isEqualTo("Multiple shutdown calls"));
+        .allSatisfy(loggingEvent ->
+            assertThat(loggingEvent.getMessage()).isEqualTo("Multiple shutdown calls"));
   }
 
   @Test

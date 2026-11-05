@@ -395,20 +395,19 @@ class OkHttpGrpcSenderTest {
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(null, null, null);
 
-    assertThatCode(
-            () ->
-                new OkHttpGrpcSender(
-                    "https://localhost",
-                    null,
-                    Duration.ofSeconds(10),
-                    Duration.ofSeconds(10),
-                    Collections::emptyMap,
-                    null,
-                    sslContext,
-                    null,
-                    null,
-                    Long.MAX_VALUE,
-                    null))
+    assertThatCode(() ->
+            new OkHttpGrpcSender(
+                "https://localhost",
+                null,
+                Duration.ofSeconds(10),
+                Duration.ofSeconds(10),
+                Collections::emptyMap,
+                null,
+                sslContext,
+                null,
+                null,
+                Long.MAX_VALUE,
+                null))
         .doesNotThrowAnyException();
   }
 
@@ -422,20 +421,19 @@ class OkHttpGrpcSenderTest {
       SSLContext sslContext = SSLContext.getInstance("TLS");
       sslContext.init(null, null, null);
 
-      assertThatThrownBy(
-              () ->
-                  new OkHttpGrpcSender(
-                      "https://localhost",
-                      null,
-                      Duration.ofSeconds(10),
-                      Duration.ofSeconds(10),
-                      Collections::emptyMap,
-                      null,
-                      sslContext,
-                      null,
-                      null,
-                      Long.MAX_VALUE,
-                      null))
+      assertThatThrownBy(() ->
+              new OkHttpGrpcSender(
+                  "https://localhost",
+                  null,
+                  Duration.ofSeconds(10),
+                  Duration.ofSeconds(10),
+                  Collections::emptyMap,
+                  null,
+                  sslContext,
+                  null,
+                  null,
+                  Long.MAX_VALUE,
+                  null))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("Unable to initialize default trust manager")
           .hasCauseInstanceOf(SSLException.class);

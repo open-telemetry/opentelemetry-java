@@ -258,12 +258,10 @@ class LogRecordExporterFactoryTest {
         .getBuilder()
         .addLogRecordExporterCustomizer(LogRecordExporter.class, (exporter, properties) -> null);
 
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterFactory.getInstance()
-                    .create(
-                        new LogRecordExporterModel().setConsole(new ConsoleExporterModel()),
-                        context))
+    assertThatThrownBy(() ->
+            LogRecordExporterFactory.getInstance()
+                .create(
+                    new LogRecordExporterModel().setConsole(new ConsoleExporterModel()), context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Customizer returned null for LogRecordExporter: console");
   }

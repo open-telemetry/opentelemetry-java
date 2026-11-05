@@ -38,11 +38,9 @@ class OtlpHttpMetricExporterOkHttpSenderTest
   /** Test configuration specific to metric exporter. */
   @Test
   void validMetricConfig() {
-    assertThatCode(
-            () ->
-                OtlpHttpMetricExporter.builder()
-                    .setAggregationTemporalitySelector(
-                        AggregationTemporalitySelector.deltaPreferred()))
+    assertThatCode(() ->
+            OtlpHttpMetricExporter.builder()
+                .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred()))
         .doesNotThrowAnyException();
     assertThat(
             OtlpHttpMetricExporter.builder()

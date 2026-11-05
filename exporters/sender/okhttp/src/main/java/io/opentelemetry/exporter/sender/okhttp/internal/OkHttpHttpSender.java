@@ -171,22 +171,21 @@ public final class OkHttpHttpSender implements HttpSender {
     requestBuilder.post(new RequestBodyImpl(messageWriter, compressor, mediaType));
 
     try {
-      InstrumentationUtil.suppressInstrumentation(
-          () ->
-              client
-                  .newCall(requestBuilder.build())
-                  .enqueue(
-                      new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                          onError.accept(e);
-                        }
+      InstrumentationUtil.suppressInstrumentation(() ->
+          client
+              .newCall(requestBuilder.build())
+              .enqueue(
+                  new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                      onError.accept(e);
+                    }
 
-                        @Override
-                        public void onResponse(Call call, Response response) {
-                          handleResponse(response, onResponse, onError);
-                        }
-                      }));
+                    @Override
+                    public void onResponse(Call call, Response response) {
+                      handleResponse(response, onResponse, onError);
+                    }
+                  }));
     } catch (RejectedExecutionException e) {
       onError.accept(e);
     }
