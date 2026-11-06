@@ -125,6 +125,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a double gauge with points matching all of the given
    * assertions and no more, in any order.
+   *
+   * @since 1.68.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -136,6 +138,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a double gauge with points matching all of the given
    * assertions and no more, in any order.
+   *
+   * @since 1.68.0
    */
   public MetricAssert hasDoubleGaugePointsSatisfying(
       Iterable<? extends Consumer<DoublePointAssert>> assertions) {
@@ -162,6 +166,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a long gauge with points matching all of the given
    * assertions and no more, in any order.
+   *
+   * @since 1.68.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -172,6 +178,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a long gauge with points matching all of the given
    * assertions and no more, in any order.
+   *
+   * @since 1.68.0
    */
   public MetricAssert hasLongGaugePointsSatisfying(
       Iterable<? extends Consumer<LongPointAssert>> assertions) {
@@ -196,6 +204,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a double sum with points matching all of the given
    * assertions and no more, in any order.
+   *
+   * @since 1.68.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -207,6 +217,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a double sum with points matching all of the given
    * assertions and no more, in any order.
+   *
+   * @since 1.68.0
    */
   public MetricAssert hasDoubleSumPointsSatisfying(
       Iterable<? extends Consumer<DoublePointAssert>> assertions) {
@@ -231,6 +243,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a long sum with points matching all of the given assertions
    * and no more, in any order.
+   *
+   * @since 1.68.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -241,6 +255,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a long sum with points matching all of the given assertions
    * and no more, in any order.
+   *
+   * @since 1.68.0
    */
   public MetricAssert hasLongSumPointsSatisfying(
       Iterable<? extends Consumer<LongPointAssert>> assertions) {
@@ -265,6 +281,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a histogram with points matching all of the given assertions
    * and no more, in any order.
+   *
+   * @since 1.68.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -276,6 +294,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a histogram with points matching all of the given assertions
    * and no more, in any order.
+   *
+   * @since 1.68.0
    */
   public MetricAssert hasHistogramPointsSatisfying(
       Iterable<? extends Consumer<HistogramPointAssert>> assertions) {
@@ -306,6 +326,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is an exponential histogram with points matching all of the
    * given assertions and no more, in any order.
+   *
+   * @since 1.68.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -318,6 +340,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is an exponential histogram with points matching all of the
    * given assertions and no more, in any order.
+   *
+   * @since 1.68.0
    */
   public MetricAssert hasExponentialHistogramPointsSatisfying(
       Iterable<? extends Consumer<ExponentialHistogramPointAssert>> assertions) {
@@ -343,6 +367,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a summary with points matching all of the given assertions
    * and no more, in any order.
+   *
+   * @since 1.68.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -353,6 +379,8 @@ public final class MetricAssert extends AbstractAssert<MetricAssert, MetricData>
   /**
    * Asserts this {@link MetricData} is a summary with points matching all of the given assertions
    * and no more, in any order.
+   *
+   * @since 1.68.0
    */
   public MetricAssert hasSummaryPointsSatisfying(
       Iterable<? extends Consumer<SummaryPointAssert>> assertions) {
