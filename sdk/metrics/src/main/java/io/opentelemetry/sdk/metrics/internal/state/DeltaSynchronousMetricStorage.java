@@ -295,10 +295,12 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       }
     }
 
-    // Start time for synchronous delta instruments is the time of the last collection, or if no
-    // collection has yet taken place, the time the instrument was created.
+    // Start time for synchronous delta instruments is the later of the previous collection
+    // and instrument creation, so newly created instruments never predate their creation.
     long startEpochNanos =
-        registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos);
+        Math.max(
+            registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos),
+            instrumentCreationEpochNanos);
 
     // Grab aggregated points.
     aggregatorHandles.forEach(

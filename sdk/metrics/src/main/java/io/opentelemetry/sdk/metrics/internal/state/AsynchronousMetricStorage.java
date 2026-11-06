@@ -187,7 +187,9 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
 
   protected AggregatorHandle<T> createAggregatorHandle() {
     return aggregator.createHandle(
-        registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos));
+        Math.max(
+            registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos),
+            instrumentCreationEpochNanos));
   }
 
   @Nullable
@@ -274,10 +276,12 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
         currentPoints = new HashMap<>();
       }
 
-      // Start time for asynchronous delta instruments is the time of the last collection, or if no
-      // collection has yet taken place, the time the instrument was created.
+      // Start time for asynchronous delta instruments is the later of the previous collection
+      // and instrument creation, so newly created instruments never predate their creation.
       long startEpochNanos =
-          registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos);
+          Math.max(
+              registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos),
+              instrumentCreationEpochNanos);
 
       aggregatorHandles.forEach(
           (attributes, handle) -> {
