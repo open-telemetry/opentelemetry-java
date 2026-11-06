@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysRecordSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
@@ -48,8 +47,10 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
     if (model.getParentBased() != null) {
       return createParedBasedSampler(model.getParentBased(), context);
     }
-    if (model.getAlwaysRecord() != null) {
-      return createAlwaysRecordSampler(model.getAlwaysRecord(), context);
+    AlwaysRecordSamplerModel alwaysRecord = model.getAlwaysRecord();
+    if (alwaysRecord != null) {
+      return context.withConfigPath(
+          "always_record", () -> createAlwaysRecordSampler(alwaysRecord, context));
     }
     ExperimentalProbabilitySamplerModel probabilityDevelopment =
         SamplerModelAccessor.getProbability(model);
@@ -102,10 +103,8 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
 
   private static Sampler createAlwaysRecordSampler(
       AlwaysRecordSamplerModel alwaysRecordModel, DeclarativeConfigContext context) {
-    SamplerModel rootModel = alwaysRecordModel.getRoot();
-    if (rootModel == null) {
-      throw new DeclarativeConfigException("always_record sampler .root is required");
-    }
+    SamplerModel rootModel =
+        FileConfigUtil.requireNonNull(context, alwaysRecordModel.getRoot(), "root");
     return AlwaysRecordSampler.create(INSTANCE.create(rootModel, context));
   }
 

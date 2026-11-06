@@ -196,7 +196,11 @@ class SamplerFactoryTest {
   @ParameterizedTest
   @MethodSource("createInvalidArguments")
   void createInvalid(SamplerModel model, String expectedMessage) {
-    assertThatThrownBy(() -> SamplerFactory.getInstance().create(model, context))
+    assertThatThrownBy(
+            () ->
+                context.withConfigPath(
+                    "tracer_provider.sampler",
+                    () -> SamplerFactory.getInstance().create(model, context)))
         .isInstanceOf(DeclarativeConfigException.class)
         .extracting(throwable -> throwable.getCause() == null ? throwable : throwable.getCause())
         .extracting(Throwable::getMessage)
@@ -223,11 +227,11 @@ class SamplerFactoryTest {
                 new SamplerModel(),
                 new ExperimentalComposableSamplerModel()
                     .setParentThreshold(new ExperimentalComposableParentThresholdSamplerModel())),
-            "parent threshold sampler root is required but is null"),
+            ".tracer_provider.sampler.parent_threshold root is required but is null"),
         Arguments.argumentSet(
             "always_record missing root",
             new SamplerModel().setAlwaysRecord(new AlwaysRecordSamplerModel()),
-            "always_record sampler .root is required"),
+            ".tracer_provider.sampler.always_record root is required but is null"),
         Arguments.argumentSet(
             "unknown component provider",
             new SamplerModel()

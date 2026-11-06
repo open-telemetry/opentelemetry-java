@@ -51,29 +51,36 @@ final class ComposableRuleBasedSamplerFactory
 
     List<ExperimentalComposableRuleBasedSamplerRuleModel> rules = model.getRules();
     if (rules != null) {
-      rules.forEach(
-          rule -> {
-            AttributeMatcher valueMatcher = attributeValuesMatcher(rule.getAttributeValues());
-            AttributeMatcher patternMatcher = attributePatternsMatcher(rule.getAttributePatterns());
-            Set<ExperimentalSpanParentModel> matchingParents =
-                rule.getParent() != null && !rule.getParent().isEmpty()
-                    ? new HashSet<>(rule.getParent())
-                    : null;
-            Set<SpanKind> matchingSpanKinds =
-                rule.getSpanKinds() != null && !rule.getSpanKinds().isEmpty()
-                    ? rule.getSpanKinds().stream()
-                        .map(DeclarativeConfigSamplingPredicate::toSpanKind)
-                        .collect(toSet())
-                    : null;
+      for (int i = 0; i < rules.size(); i++) {
+        ExperimentalComposableRuleBasedSamplerRuleModel rule = rules.get(i);
+        context.pushConfigPath("rules[" + i + "]");
+        try {
+          AttributeMatcher valueMatcher =
+              attributeValuesMatcher(rule.getAttributeValues(), context);
+          AttributeMatcher patternMatcher =
+              attributePatternsMatcher(rule.getAttributePatterns(), context);
+          Set<ExperimentalSpanParentModel> matchingParents =
+              rule.getParent() != null && !rule.getParent().isEmpty()
+                  ? new HashSet<>(rule.getParent())
+                  : null;
+          Set<SpanKind> matchingSpanKinds =
+              rule.getSpanKinds() != null && !rule.getSpanKinds().isEmpty()
+                  ? rule.getSpanKinds().stream()
+                      .map(DeclarativeConfigSamplingPredicate::toSpanKind)
+                      .collect(toSet())
+                  : null;
 
-            SamplingPredicate predicate =
-                new DeclarativeConfigSamplingPredicate(
-                    valueMatcher, patternMatcher, matchingParents, matchingSpanKinds);
-            ComposableSampler sampler =
-                ComposableSamplerFactory.getInstance()
-                    .create(requireNonNull(rule.getSampler(), "rule sampler"), context);
-            builder.add(predicate, sampler);
-          });
+          SamplingPredicate predicate =
+              new DeclarativeConfigSamplingPredicate(
+                  valueMatcher, patternMatcher, matchingParents, matchingSpanKinds);
+          ComposableSampler sampler =
+              ComposableSamplerFactory.getInstance()
+                  .create(requireNonNull(context, rule.getSampler(), "sampler"), context);
+          builder.add(predicate, sampler);
+        } finally {
+          context.popConfigPath();
+        }
+      }
     }
 
     return builder.build();
@@ -81,38 +88,49 @@ final class ComposableRuleBasedSamplerFactory
 
   @Nullable
   private static AttributeMatcher attributeValuesMatcher(
-      @Nullable
-          ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValuesModel) {
+      @Nullable ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValuesModel,
+      DeclarativeConfigContext context) {
     if (attributeValuesModel == null) {
       return null;
     }
-    List<String> values = attributeValuesModel.getValues();
-    if (values == null || values.isEmpty()) {
-      throw new DeclarativeConfigException(".values is required and must be non-empty");
+    context.pushConfigPath("attribute_values");
+    try {
+      List<String> values = attributeValuesModel.getValues();
+      if (values == null || values.isEmpty()) {
+        throw new DeclarativeConfigException(".values is required and must be non-empty");
+      }
+      return new AttributeMatcher(
+          requireNonNull(context, attributeValuesModel.getKey(), "key"),
+          IncludeExcludePredicate.createExactMatching(values, null));
+    } finally {
+      context.popConfigPath();
     }
-    return new AttributeMatcher(
-        requireNonNull(attributeValuesModel.getKey(), "attribute_values key"),
-        IncludeExcludePredicate.createExactMatching(values, null));
   }
 
   @Nullable
   private static AttributeMatcher attributePatternsMatcher(
       @Nullable
-          ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatternsModel) {
+          ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatternsModel,
+      DeclarativeConfigContext context) {
     if (attributePatternsModel == null) {
       return null;
     }
-    List<String> included = attributePatternsModel.getIncluded();
-    if (included != null && included.isEmpty()) {
-      throw new DeclarativeConfigException("included must not be empty");
+    context.pushConfigPath("attribute_patterns");
+    try {
+      List<String> included = attributePatternsModel.getIncluded();
+      if (included != null && included.isEmpty()) {
+        throw new DeclarativeConfigException("included must not be empty");
+      }
+      List<String> excluded = attributePatternsModel.getExcluded();
+      if (excluded != null && excluded.isEmpty()) {
+        throw new DeclarativeConfigException("excluded must not be empty");
+      }
+      return new AttributeMatcher(
+          requireNonNull(context, attributePatternsModel.getKey(), "key"),
+          IncludeExcludePredicate.createPatternMatching(included, excluded));
+    } finally {
+      context.popConfigPath();
     }
-    List<String> excluded = attributePatternsModel.getExcluded();
-    if (excluded != null && excluded.isEmpty()) {
-      throw new DeclarativeConfigException("excluded must not be empty");
-    }
-    return new AttributeMatcher(
-        requireNonNull(attributePatternsModel.getKey(), "attribute_patterns key"),
-        IncludeExcludePredicate.createPatternMatching(included, excluded));
   }
 
   // Visible for testing

@@ -15,8 +15,10 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.io.Closeable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +42,7 @@ class DeclarativeConfigContext implements ComponentLoader {
   private final Set<AutoConfigureListener> listeners =
       Collections.newSetFromMap(new IdentityHashMap<>());
   private final List<Closeable> closeables = new ArrayList<>();
+  private final Deque<String> configPath = new ArrayDeque<>();
   @Nullable private volatile MeterProvider meterProvider;
   @Nullable private ConfigProvider configProvider;
   @Nullable private List<ComponentProvider> componentProviders = null;
@@ -81,6 +84,42 @@ class DeclarativeConfigContext implements ComponentLoader {
 
   DeclarativeConfigurationBuilder getBuilder() {
     return Objects.requireNonNull(builder, "builder has not been set");
+  }
+
+  /**
+   * Returns the path of the node in the declarative configuration document which is currently being
+   * interpreted, for example {@code .tracer_provider.processors[0].batch}. Returns the empty string
+   * when the root node is being interpreted.
+   */
+  String getConfigPath() {
+    return configPath.isEmpty() ? "" : "." + String.join(".", configPath);
+  }
+
+  /**
+   * Interpret {@code supplier} as if the currently interpreted node was the child of the current
+   * node identified by {@code pathSegment}, restoring the previous {@linkplain #getConfigPath()
+   * configuration path} afterwards.
+   */
+  <T> T withConfigPath(String pathSegment, Supplier<T> supplier) {
+    configPath.addLast(pathSegment);
+    try {
+      return supplier.get();
+    } finally {
+      configPath.removeLast();
+    }
+  }
+
+  /**
+   * Descend into the child node identified by {@code pathSegment}. Callers must ensure that {@link
+   * #popConfigPath()} is called, typically from a {@code finally} block.
+   */
+  void pushConfigPath(String pathSegment) {
+    configPath.addLast(pathSegment);
+  }
+
+  /** Ascend from the node entered by {@link #pushConfigPath(String)}. */
+  void popConfigPath() {
+    configPath.removeLast();
   }
 
   /**

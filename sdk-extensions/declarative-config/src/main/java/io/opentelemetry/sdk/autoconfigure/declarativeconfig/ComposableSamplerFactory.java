@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableParentThresholdSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableProbabilitySamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 
@@ -38,11 +39,17 @@ final class ComposableSamplerFactory
     if (model.getProbability() != null) {
       return createProbabilitySampler(model.getProbability());
     }
-    if (model.getRuleBased() != null) {
-      return ComposableRuleBasedSamplerFactory.getInstance().create(model.getRuleBased(), context);
+    ExperimentalComposableRuleBasedSamplerModel ruleBasedModel = model.getRuleBased();
+    if (ruleBasedModel != null) {
+      return context.withConfigPath(
+          "rule_based",
+          () -> ComposableRuleBasedSamplerFactory.getInstance().create(ruleBasedModel, context));
     }
-    if (model.getParentThreshold() != null) {
-      return createParentThresholdSampler(model.getParentThreshold(), context);
+    ExperimentalComposableParentThresholdSamplerModel parentThresholdModel =
+        model.getParentThreshold();
+    if (parentThresholdModel != null) {
+      return context.withConfigPath(
+          "parent_threshold", () -> createParentThresholdSampler(parentThresholdModel, context));
     }
 
     return context.loadComponent(ComposableSampler.class, samplerKeyValue);
@@ -61,8 +68,7 @@ final class ComposableSamplerFactory
       ExperimentalComposableParentThresholdSamplerModel parentThresholdModel,
       DeclarativeConfigContext context) {
     ExperimentalComposableSamplerModel rootModel =
-        FileConfigUtil.requireNonNull(
-            parentThresholdModel.getRoot(), "parent threshold sampler root");
+        FileConfigUtil.requireNonNull(context, parentThresholdModel.getRoot(), "root");
     ComposableSampler rootSampler = INSTANCE.create(rootModel, context);
     return ComposableSampler.parentThreshold(rootSampler);
   }

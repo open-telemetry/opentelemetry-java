@@ -107,7 +107,11 @@ class LogRecordProcessorFactoryTest {
   @ParameterizedTest
   @MethodSource("createInvalidTestCases")
   void create_Invalid(LogRecordProcessorModel model, String expectedMessage) {
-    assertThatThrownBy(() -> LogRecordProcessorFactory.getInstance().create(model, context))
+    assertThatThrownBy(
+            () ->
+                context.withConfigPath(
+                    "logger_provider.processors[0]",
+                    () -> LogRecordProcessorFactory.getInstance().create(model, context)))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(expectedMessage);
   }
@@ -117,11 +121,11 @@ class LogRecordProcessorFactoryTest {
         Arguments.argumentSet(
             "batch missing exporter",
             new LogRecordProcessorModel().setBatch(new BatchLogRecordProcessorModel()),
-            "batch log record processor exporter is required but is null"),
+            ".logger_provider.processors[0].batch exporter is required but is null"),
         Arguments.argumentSet(
             "simple missing exporter",
             new LogRecordProcessorModel().setSimple(new SimpleLogRecordProcessorModel()),
-            "simple log record processor exporter is required but is null"),
+            ".logger_provider.processors[0].simple exporter is required but is null"),
         Arguments.argumentSet(
             "unknown component provider",
             new LogRecordProcessorModel()

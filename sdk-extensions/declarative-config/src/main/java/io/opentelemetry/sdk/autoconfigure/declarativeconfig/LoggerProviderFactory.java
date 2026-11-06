@@ -58,10 +58,13 @@ final class LoggerProviderFactory
 
     List<LogRecordProcessorModel> processors = loggerProviderModel.getProcessors();
     if (processors != null) {
-      processors.forEach(
-          processor ->
-              builder.addLogRecordProcessor(
-                  LogRecordProcessorFactory.getInstance().create(processor, context)));
+      for (int i = 0; i < processors.size(); i++) {
+        LogRecordProcessorModel processor = processors.get(i);
+        builder.addLogRecordProcessor(
+            context.withConfigPath(
+                "processors[" + i + "]",
+                () -> LogRecordProcessorFactory.getInstance().create(processor, context)));
+      }
     }
 
     ExperimentalLoggerConfiguratorModel loggerConfiguratorModel =
@@ -76,9 +79,13 @@ final class LoggerProviderFactory
       List<ExperimentalLoggerMatcherAndConfigModel> loggerMatcherAndConfigs =
           loggerConfiguratorModel.getLoggers();
       if (loggerMatcherAndConfigs != null) {
-        for (ExperimentalLoggerMatcherAndConfigModel loggerMatcherAndConfig :
-            loggerMatcherAndConfigs) {
-          String name = requireNonNull(loggerMatcherAndConfig.getName(), "logger matcher name");
+        for (int i = 0; i < loggerMatcherAndConfigs.size(); i++) {
+          ExperimentalLoggerMatcherAndConfigModel loggerMatcherAndConfig =
+              loggerMatcherAndConfigs.get(i);
+          String name =
+              context.withConfigPath(
+                  "logger_configurator/development.loggers[" + i + "]",
+                  () -> requireNonNull(context, loggerMatcherAndConfig.getName(), "name"));
           ExperimentalLoggerConfigModel config = loggerMatcherAndConfig.getConfig();
           if (name == null || config == null) {
             continue;
