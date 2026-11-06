@@ -20,10 +20,9 @@ class InstrumentSelectorFactoryTest {
 
   @Test
   void create_Defaults() {
-    assertThatThrownBy(
-            () ->
-                InstrumentSelectorFactory.getInstance()
-                    .create(new ViewSelectorModel(), mock(DeclarativeConfigContext.class)))
+    assertThatThrownBy(() ->
+            InstrumentSelectorFactory.getInstance()
+                .create(new ViewSelectorModel(), mock(DeclarativeConfigContext.class)))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("Invalid selector");
   }

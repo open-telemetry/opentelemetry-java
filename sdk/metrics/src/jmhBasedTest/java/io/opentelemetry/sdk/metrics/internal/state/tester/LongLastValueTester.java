@@ -31,12 +31,11 @@ public class LongLastValueTester implements TestInstrumentType.InstrumentTester 
     meter
         .gaugeBuilder("test.long.last.value")
         .ofLongs()
-        .buildWithCallback(
-            observableLongMeasurement -> {
-              for (int j = 0; j < attributesList.size(); j++) {
-                observableLongMeasurement.record(1, attributesList.get(j));
-              }
-            });
+        .buildWithCallback(observableLongMeasurement -> {
+          for (int j = 0; j < attributesList.size(); j++) {
+            observableLongMeasurement.record(1, attributesList.get(j));
+          }
+        });
 
     return new TestInstrumentType.EmptyInstrumentsState();
   }

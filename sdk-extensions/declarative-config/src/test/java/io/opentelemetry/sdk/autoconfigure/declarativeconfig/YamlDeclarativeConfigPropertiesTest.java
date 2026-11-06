@@ -86,11 +86,10 @@ class YamlDeclarativeConfigPropertiesTest {
         resourceProps.getStructuredList("attributes");
     assertThat(resourceAttributesList)
         .isNotNull()
-        .satisfiesExactly(
-            attributeEntry -> {
-              assertThat(attributeEntry.getString("name")).isEqualTo("service.name");
-              assertThat(attributeEntry.getString("value")).isEqualTo("unknown_service");
-            });
+        .satisfiesExactly(attributeEntry -> {
+          assertThat(attributeEntry.getString("name")).isEqualTo("service.name");
+          assertThat(attributeEntry.getString("value")).isEqualTo("unknown_service");
+        });
   }
 
   @Test

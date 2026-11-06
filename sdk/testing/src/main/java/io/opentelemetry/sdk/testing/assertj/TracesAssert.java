@@ -29,18 +29,17 @@ public final class TracesAssert
   /** Compare spans by start time, placing parents before their children as a tiebreaker. */
   static final Comparator<SpanData> SPAN_DATA_COMPARATOR =
       Comparator.comparingLong(SpanData::getStartEpochNanos)
-          .thenComparing(
-              (span1, span2) -> {
-                SpanContext parent1 = span1.getParentSpanContext();
-                if (parent1.isValid() && parent1.getSpanId().equals(span2.getSpanId())) {
-                  return 1;
-                }
-                SpanContext parent2 = span2.getParentSpanContext();
-                if (parent2.isValid() && parent2.getSpanId().equals(span1.getSpanId())) {
-                  return -1;
-                }
-                return 0;
-              });
+          .thenComparing((span1, span2) -> {
+            SpanContext parent1 = span1.getParentSpanContext();
+            if (parent1.isValid() && parent1.getSpanId().equals(span2.getSpanId())) {
+              return 1;
+            }
+            SpanContext parent2 = span2.getParentSpanContext();
+            if (parent2.isValid() && parent2.getSpanId().equals(span1.getSpanId())) {
+              return -1;
+            }
+            return 0;
+          });
 
   /**
    * Returns an assertion for a list of traces. The provided spans will be grouped into traces by

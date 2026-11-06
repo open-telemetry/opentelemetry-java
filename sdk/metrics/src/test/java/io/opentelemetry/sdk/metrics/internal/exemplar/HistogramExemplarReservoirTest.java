@@ -40,35 +40,32 @@ class HistogramExemplarReservoirTest {
     reservoir.offerDoubleMeasurement(1.1, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
         .hasSize(1)
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(1.1);
-              assertThat(exemplar.getFilteredAttributes()).isEmpty();
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+          assertThat(exemplar.getValue()).isEqualTo(1.1);
+          assertThat(exemplar.getFilteredAttributes()).isEmpty();
+        });
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
     reservoir.offerDoubleMeasurement(2, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
         .hasSize(1)
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(2);
-              assertThat(exemplar.getFilteredAttributes()).isEmpty();
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+          assertThat(exemplar.getValue()).isEqualTo(2);
+          assertThat(exemplar.getFilteredAttributes()).isEmpty();
+        });
     // only latest measurement is kept per-bucket
     clock.advance(Duration.ofSeconds(1));
     reservoir.offerDoubleMeasurement(3, Attributes.empty(), Context.root());
     reservoir.offerDoubleMeasurement(4, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
         .hasSize(1)
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(4);
-              assertThat(exemplar.getFilteredAttributes()).isEmpty();
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+          assertThat(exemplar.getValue()).isEqualTo(4);
+          assertThat(exemplar.getFilteredAttributes()).isEmpty();
+        });
   }
 
   @Test
@@ -85,11 +82,10 @@ class HistogramExemplarReservoirTest {
     reservoir.offerDoubleMeasurement(1, Attributes.empty(), context);
     reservoir.offerDoubleMeasurement(2, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getValue()).isEqualTo(2);
-              assertThat(exemplar.getSpanContext()).isEqualTo(SpanContext.getInvalid());
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getValue()).isEqualTo(2);
+          assertThat(exemplar.getSpanContext()).isEqualTo(SpanContext.getInvalid());
+        });
   }
 
   @Test
@@ -131,22 +127,20 @@ class HistogramExemplarReservoirTest {
     reservoir.offerLongMeasurement(1L, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
         .hasSize(1)
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(1);
-              assertThat(exemplar.getFilteredAttributes()).isEmpty();
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+          assertThat(exemplar.getValue()).isEqualTo(1);
+          assertThat(exemplar.getFilteredAttributes()).isEmpty();
+        });
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
     reservoir.offerLongMeasurement(2, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
         .hasSize(1)
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(2);
-              assertThat(exemplar.getFilteredAttributes()).isEmpty();
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+          assertThat(exemplar.getValue()).isEqualTo(2);
+          assertThat(exemplar.getFilteredAttributes()).isEmpty();
+        });
   }
 }

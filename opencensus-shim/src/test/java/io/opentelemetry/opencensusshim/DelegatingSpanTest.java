@@ -50,15 +50,14 @@ class DelegatingSpanTest {
   void verifyAllMethodsAreUnderTest() {
     List<Method> methods =
         delegateMethodsProvider()
-            .map(
-                pm -> {
-                  try {
-                    return getInterfaceMethod(
-                        Span.class, (String) pm.get()[0], (Class<?>[]) pm.get()[1]);
-                  } catch (NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                  }
-                })
+            .map(pm -> {
+              try {
+                return getInterfaceMethod(
+                    Span.class, (String) pm.get()[0], (Class<?>[]) pm.get()[1]);
+              } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+              }
+            })
             .collect(Collectors.toList());
 
     assertThat(methods)

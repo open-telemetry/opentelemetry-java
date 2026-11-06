@@ -147,36 +147,30 @@ class TraceAssertionsTest {
         .hasTraceState(TRACE_STATE)
         .hasParentSpanId(SPAN_ID2)
         .hasResource(RESOURCE)
-        .hasResourceSatisfying(
-            resource ->
-                resource
-                    .hasSchemaUrl(null)
-                    .hasAttribute(DOG, "bark")
-                    .hasAttributes(
-                        Attributes.of(DOG, "bark", AttributeKey.booleanKey("dog is cute"), true))
-                    .hasAttributes(
-                        attributeEntry("dog", "bark"), attributeEntry("dog is cute", true))
-                    .hasAttributesSatisfying(
-                        attributes ->
-                            assertThat(attributes)
-                                .hasSize(2)
-                                .containsEntry(stringKey("dog"), "bark")
-                                .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
-                                .hasEntrySatisfying(
-                                    AttributeKey.booleanKey("dog is cute"),
-                                    value -> assertThat(value).isTrue())))
-        .hasResourceSatisfying(
-            resource ->
-                resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("bark"))))
-        .hasResourceSatisfying(
-            resource ->
-                resource.hasAttributesSatisfyingExactly(
-                    equalTo(DOG, "bark"), equalTo(AttributeKey.booleanKey("dog is cute"), true)))
-        .hasResourceSatisfying(
-            resource ->
-                resource.hasAttributesSatisfyingExactly(
-                    satisfies(DOG, val -> val.startsWith("bar")),
-                    satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
+        .hasResourceSatisfying(resource ->
+            resource
+                .hasSchemaUrl(null)
+                .hasAttribute(DOG, "bark")
+                .hasAttributes(
+                    Attributes.of(DOG, "bark", AttributeKey.booleanKey("dog is cute"), true))
+                .hasAttributes(attributeEntry("dog", "bark"), attributeEntry("dog is cute", true))
+                .hasAttributesSatisfying(attributes ->
+                    assertThat(attributes)
+                        .hasSize(2)
+                        .containsEntry(stringKey("dog"), "bark")
+                        .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
+                        .hasEntrySatisfying(
+                            AttributeKey.booleanKey("dog is cute"),
+                            value -> assertThat(value).isTrue())))
+        .hasResourceSatisfying(resource ->
+            resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("bark"))))
+        .hasResourceSatisfying(resource ->
+            resource.hasAttributesSatisfyingExactly(
+                equalTo(DOG, "bark"), equalTo(AttributeKey.booleanKey("dog is cute"), true)))
+        .hasResourceSatisfying(resource ->
+            resource.hasAttributesSatisfyingExactly(
+                satisfies(DOG, val -> val.startsWith("bar")),
+                satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
         .hasInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
         .hasName("span")
         .hasKind(SpanKind.CLIENT)
@@ -229,63 +223,61 @@ class TraceAssertionsTest {
             equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
             equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
             satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
-        .hasAttributesSatisfying(
-            attributes ->
-                assertThat(attributes)
-                    .hasSize(9)
-                    .containsEntry(stringKey("bear"), "mya")
-                    .hasEntrySatisfying(stringKey("bear"), value -> assertThat(value).hasSize(3))
-                    .containsEntry("bear", "mya")
-                    .containsEntry("warm", true)
-                    .containsEntry("temperature", 30)
-                    .containsEntry(AttributeKey.longKey("temperature"), 30L)
-                    .containsEntry(AttributeKey.longKey("temperature"), 30)
-                    .containsEntry("length", 1.2)
-                    .containsEntry("colors", "red", "blue")
-                    .containsEntryWithStringValuesOf("colors", Arrays.asList("red", "blue"))
-                    .containsEntry("conditions", false, true)
-                    .containsEntryWithBooleanValuesOf("conditions", Arrays.asList(false, true))
-                    .containsEntry("scores", 0L, 1L)
-                    .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
-                    .containsEntry("coins", 0.01, 0.05, 0.1)
-                    .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
-                    .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
-                    .containsKey(stringKey("bear"))
-                    .containsKey("bear")
-                    .doesNotContainKey(stringKey("cat"))
-                    .doesNotContainKey("cat")
-                    .containsOnly(
-                        attributeEntry("bear", "mya"),
-                        attributeEntry("warm", true),
-                        attributeEntry("temperature", 30),
-                        attributeEntry("length", 1.2),
-                        attributeEntry("colors", "red", "blue"),
-                        attributeEntry("conditions", false, true),
-                        attributeEntry("scores", 0L, 1L),
-                        attributeEntry("coins", 0.01, 0.05, 0.1),
-                        attributeEntry("bytes", Value.of(new byte[] {1, 2, 3}))))
+        .hasAttributesSatisfying(attributes ->
+            assertThat(attributes)
+                .hasSize(9)
+                .containsEntry(stringKey("bear"), "mya")
+                .hasEntrySatisfying(stringKey("bear"), value -> assertThat(value).hasSize(3))
+                .containsEntry("bear", "mya")
+                .containsEntry("warm", true)
+                .containsEntry("temperature", 30)
+                .containsEntry(AttributeKey.longKey("temperature"), 30L)
+                .containsEntry(AttributeKey.longKey("temperature"), 30)
+                .containsEntry("length", 1.2)
+                .containsEntry("colors", "red", "blue")
+                .containsEntryWithStringValuesOf("colors", Arrays.asList("red", "blue"))
+                .containsEntry("conditions", false, true)
+                .containsEntryWithBooleanValuesOf("conditions", Arrays.asList(false, true))
+                .containsEntry("scores", 0L, 1L)
+                .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
+                .containsEntry("coins", 0.01, 0.05, 0.1)
+                .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
+                .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
+                .containsKey(stringKey("bear"))
+                .containsKey("bear")
+                .doesNotContainKey(stringKey("cat"))
+                .doesNotContainKey("cat")
+                .containsOnly(
+                    attributeEntry("bear", "mya"),
+                    attributeEntry("warm", true),
+                    attributeEntry("temperature", 30),
+                    attributeEntry("length", 1.2),
+                    attributeEntry("colors", "red", "blue"),
+                    attributeEntry("conditions", false, true),
+                    attributeEntry("scores", 0L, 1L),
+                    attributeEntry("coins", 0.01, 0.05, 0.1),
+                    attributeEntry("bytes", Value.of(new byte[] {1, 2, 3}))))
         .hasEvents(EVENTS)
         .hasEvents(EVENTS.toArray(new EventData[0]))
-        .hasEventsSatisfying(
-            events -> {
-              assertThat(events).hasSize(EVENTS.size());
-              assertThat(events.get(0))
-                  .hasName("event")
-                  .hasTimestamp(10)
-                  .hasTimestamp(10, TimeUnit.NANOSECONDS)
-                  .hasTimestamp(Instant.ofEpochSecond(0, 10))
-                  .hasAttributes(Attributes.empty())
-                  .hasAttributesSatisfying(
-                      attributes -> assertThat(attributes).isEqualTo(Attributes.empty()))
-                  .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty());
-              assertThat(events.get(2))
-                  .hasAttributesSatisfying(
-                      equalTo(stringKey("exception.type"), "java.lang.IllegalArgumentException"))
-                  .hasAttributesSatisfyingExactly(
-                      equalTo(stringKey("exception.type"), "java.lang.IllegalArgumentException"),
-                      equalTo(stringKey("exception.message"), "bad argument"),
-                      equalTo(stringKey("exception.stacktrace"), "some obfuscated stack"));
-            })
+        .hasEventsSatisfying(events -> {
+          assertThat(events).hasSize(EVENTS.size());
+          assertThat(events.get(0))
+              .hasName("event")
+              .hasTimestamp(10)
+              .hasTimestamp(10, TimeUnit.NANOSECONDS)
+              .hasTimestamp(Instant.ofEpochSecond(0, 10))
+              .hasAttributes(Attributes.empty())
+              .hasAttributesSatisfying(
+                  attributes -> assertThat(attributes).isEqualTo(Attributes.empty()))
+              .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty());
+          assertThat(events.get(2))
+              .hasAttributesSatisfying(
+                  equalTo(stringKey("exception.type"), "java.lang.IllegalArgumentException"))
+              .hasAttributesSatisfyingExactly(
+                  equalTo(stringKey("exception.type"), "java.lang.IllegalArgumentException"),
+                  equalTo(stringKey("exception.message"), "bad argument"),
+                  equalTo(stringKey("exception.stacktrace"), "some obfuscated stack"));
+        })
         .hasEventsSatisfyingExactly(
             event -> event.hasName("event"),
             event -> event.hasName("event2"),
@@ -295,13 +287,8 @@ class TraceAssertionsTest {
         .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
         .hasStatus(StatusData.ok())
-        .hasStatusSatisfying(
-            status ->
-                status
-                    .isOk()
-                    .hasCode(StatusCode.OK)
-                    .hasDescription("")
-                    .hasDescriptionMatching("^$"))
+        .hasStatusSatisfying(status ->
+            status.isOk().hasCode(StatusCode.OK).hasDescription("").hasDescriptionMatching("^$"))
         .endsAt(200)
         .endsAt(200, TimeUnit.NANOSECONDS)
         .endsAt(Instant.ofEpochSecond(0, 200))
@@ -330,78 +317,57 @@ class TraceAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.empty()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(resource -> resource.hasSchemaUrl("http://example.com")))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasResourceSatisfying(resource -> resource.hasSchemaUrl("http://example.com")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(resource -> resource.hasAttribute(DOG, "meow")))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1).hasResourceSatisfying(resource -> resource.hasAttribute(DOG, "meow")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(
-                        resource -> resource.hasAttributes(Attributes.of(DOG, "bark"))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasResourceSatisfying(
+                    resource -> resource.hasAttributes(Attributes.of(DOG, "bark"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(
-                        resource -> resource.hasAttributes(attributeEntry("dog is cute", true))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasResourceSatisfying(
+                    resource -> resource.hasAttributes(attributeEntry("dog is cute", true))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfying(
-                                attributes -> assertThat(attributes).hasSize(1))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfying(
+                        attributes -> assertThat(attributes).hasSize(1))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .containsEntry(stringKey("dog"), "meow"))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfying(attributes ->
+                        assertThat(attributes).containsEntry(stringKey("dog"), "meow"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .containsEntry(
-                                            AttributeKey.booleanKey("dog is cute"), false))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfying(attributes ->
+                        assertThat(attributes)
+                            .containsEntry(AttributeKey.booleanKey("dog is cute"), false))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfying(
-                                satisfies(DOG, val -> val.isEqualTo("meow")))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("meow")))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(
-                        resource -> resource.hasAttributesSatisfyingExactly(equalTo(DOG, "bark"))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasResourceSatisfying(
+                    resource -> resource.hasAttributesSatisfyingExactly(equalTo(DOG, "bark"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfyingExactly(
-                                satisfies(DOG, val -> val.isEqualTo("bark")))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfyingExactly(
+                        satisfies(DOG, val -> val.isEqualTo("bark")))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(SPAN1).hasInstrumentationScopeInfo(InstrumentationScopeInfo.empty()))
@@ -420,159 +386,133 @@ class TraceAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(attributeEntry("food", "burger")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfyingExactly(
-                        // Failed
-                        satisfies(BEAR, val -> val.doesNotContain("mya")),
-                        satisfies(WARM, val -> val.isTrue()),
-                        satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
-                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
-                        satisfies(COLORS, val -> val.containsExactly("red", "blue")),
-                        satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
-                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
-                        satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfyingExactly(
+                    // Failed
+                    satisfies(BEAR, val -> val.doesNotContain("mya")),
+                    satisfies(WARM, val -> val.isTrue()),
+                    satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                    satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                    satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                    satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                    satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                    satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                    satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    // Missing BEAR
-                    .hasAttributesSatisfyingExactly(
-                        satisfies(WARM, val -> val.isTrue()),
-                        satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
-                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
-                        satisfies(COLORS, val -> val.containsExactly("red", "blue")),
-                        satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
-                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
-                        satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                // Missing BEAR
+                .hasAttributesSatisfyingExactly(
+                    satisfies(WARM, val -> val.isTrue()),
+                    satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                    satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                    satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                    satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                    satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                    satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                    satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    // Extra CAT
-                    .hasAttributesSatisfyingExactly(
-                        satisfies(BEAR, val -> val.startsWith("mya")),
-                        satisfies(CAT, val -> val.startsWith("nya")),
-                        satisfies(WARM, val -> val.isTrue()),
-                        satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
-                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
-                        satisfies(COLORS, val -> val.containsExactly("red", "blue")),
-                        satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
-                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
-                        satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                // Extra CAT
+                .hasAttributesSatisfyingExactly(
+                    satisfies(BEAR, val -> val.startsWith("mya")),
+                    satisfies(CAT, val -> val.startsWith("nya")),
+                    satisfies(WARM, val -> val.isTrue()),
+                    satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                    satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                    satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                    satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                    satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                    satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                    satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfying(
-                        attributes -> assertThat(attributes).containsEntry("cat", "bark")))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfying(
+                    attributes -> assertThat(attributes).containsEntry("cat", "bark")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfying(
-                        attributes -> assertThat(attributes).containsKey(stringKey("cat"))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfying(
+                    attributes -> assertThat(attributes).containsKey(stringKey("cat"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfying(
-                        attributes -> assertThat(attributes).containsKey("cat")))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfying(attributes -> assertThat(attributes).containsKey("cat")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfying(
-                        attributes -> assertThat(attributes).doesNotContainKey(stringKey("bear"))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfying(
+                    attributes -> assertThat(attributes).doesNotContainKey(stringKey("bear"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfying(
-                        attributes -> assertThat(attributes).doesNotContainKey("bear")))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfying(
+                    attributes -> assertThat(attributes).doesNotContainKey("bear")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty()))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfying(attributes -> assertThat(attributes).hasSize(33)))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfying(attributes -> assertThat(attributes).hasSize(33)))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfying(
-                        attributes ->
-                            assertThat(attributes)
-                                .hasEntrySatisfying(
-                                    stringKey("bear"), value -> assertThat(value).hasSize(2))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfying(attributes ->
+                    assertThat(attributes)
+                        .hasEntrySatisfying(
+                            stringKey("bear"), value -> assertThat(value).hasSize(2))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasEvents()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasEvents(Collections.emptyList()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
         () -> assertThat(SPAN1).hasEventsSatisfying(events -> assertThat(events).isEmpty()));
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasEventsSatisfying(events -> assertThat(events.get(0)).hasName("notevent")))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasEventsSatisfying(events -> assertThat(events.get(0)).hasName("notevent")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(SPAN1).hasEventsSatisfyingExactly(event -> event.hasName("notevent")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasEventsSatisfying(events -> assertThat(events.get(0)).hasTimestamp(1)))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasEventsSatisfying(events -> assertThat(events.get(0)).hasTimestamp(1)))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasEventsSatisfying(
-                        events -> assertThat(events.get(0)).hasTimestamp(1, TimeUnit.NANOSECONDS)))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasEventsSatisfying(
+                    events -> assertThat(events.get(0)).hasTimestamp(1, TimeUnit.NANOSECONDS)))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasEventsSatisfying(
-                        events ->
-                            assertThat(events.get(0)).hasTimestamp(Instant.ofEpochSecond(0, 1))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasEventsSatisfying(
+                    events -> assertThat(events.get(0)).hasTimestamp(Instant.ofEpochSecond(0, 1))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasEventsSatisfying(
-                        events ->
-                            assertThat(events.get(0)).hasAttributes(RESOURCE.getAttributes())))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasEventsSatisfying(
+                    events -> assertThat(events.get(0)).hasAttributes(RESOURCE.getAttributes())))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasEventsSatisfying(
-                        events ->
-                            assertThat(events.get(0))
-                                .hasAttributesSatisfying(
-                                    attributes ->
-                                        assertThat(attributes).containsEntry("dogs", "meow"))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasEventsSatisfying(events ->
+                    assertThat(events.get(0))
+                        .hasAttributesSatisfying(
+                            attributes -> assertThat(attributes).containsEntry("dogs", "meow"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasEventsSatisfying(
-                        events ->
-                            assertThat(events.get(2))
-                                .hasAttributesSatisfyingExactly(
-                                    equalTo(
-                                        stringKey("exception.type"),
-                                        "java.lang.IllegalArgumentException"),
-                                    equalTo(stringKey("exception.message"), "bad argument"))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasEventsSatisfying(events ->
+                    assertThat(events.get(2))
+                        .hasAttributesSatisfyingExactly(
+                            equalTo(
+                                stringKey("exception.type"), "java.lang.IllegalArgumentException"),
+                            equalTo(stringKey("exception.message"), "bad argument"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(SPAN1).hasException(new IllegalStateException("bad argument")))
@@ -595,10 +535,8 @@ class TraceAssertionsTest {
     assertThatThrownBy(
             () -> assertThat(SPAN1).hasStatusSatisfying(status -> status.hasCode(StatusCode.ERROR)))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasStatusSatisfying(status -> status.hasDescriptionMatching("test")))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1).hasStatusSatisfying(status -> status.hasDescriptionMatching("test")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10)).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10, TimeUnit.NANOSECONDS))
@@ -616,14 +554,12 @@ class TraceAssertionsTest {
     assertThatThrownBy(() -> assertThat(SPAN2).isSampled()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN2).hasEnded()).isInstanceOf(AssertionError.class);
 
-    assertThatThrownBy(
-            () ->
-                assertThat(RESOURCE.getAttributes())
-                    .containsOnly(entry(stringKey("dog"), "bark"), entry(stringKey("cat"), "meow")))
+    assertThatThrownBy(() ->
+            assertThat(RESOURCE.getAttributes())
+                .containsOnly(entry(stringKey("dog"), "bark"), entry(stringKey("cat"), "meow")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(RESOURCE.getAttributes()).containsOnly(entry(stringKey("cat"), "meow")))
+    assertThatThrownBy(() ->
+            assertThat(RESOURCE.getAttributes()).containsOnly(entry(stringKey("cat"), "meow")))
         .isInstanceOf(AssertionError.class);
   }
 
@@ -656,29 +592,28 @@ class TraceAssertionsTest {
                 val ->
                     val.extracting(v -> ((ByteBuffer) v.getValue()).get(0)).isEqualTo((byte) 1)));
 
-    assertThatThrownBy(
-            () ->
-                assertThat(SPAN1)
-                    .hasAttributesSatisfyingExactly(
-                        // Yes null
-                        satisfies(
-                            UNSET,
-                            val ->
-                                val.satisfiesAnyOf(
-                                    v -> assertThat(v).isNull(),
-                                    v -> assertThat(v).isEqualTo("objection"))),
-                        satisfies(WARM, val -> val.isTrue()),
-                        satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
-                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
-                        satisfies(COLORS, val -> val.containsExactly("red", "blue")),
-                        satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
-                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
-                        satisfies(
-                            BYTES,
-                            val ->
-                                val.extracting(v -> ((ByteBuffer) v.getValue()).get(0))
-                                    .isEqualTo((byte) 1))))
+    assertThatThrownBy(() ->
+            assertThat(SPAN1)
+                .hasAttributesSatisfyingExactly(
+                    // Yes null
+                    satisfies(
+                        UNSET,
+                        val ->
+                            val.satisfiesAnyOf(
+                                v -> assertThat(v).isNull(),
+                                v -> assertThat(v).isEqualTo("objection"))),
+                    satisfies(WARM, val -> val.isTrue()),
+                    satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                    satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                    satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                    satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                    satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                    satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                    satisfies(
+                        BYTES,
+                        val ->
+                            val.extracting(v -> ((ByteBuffer) v.getValue()).get(0))
+                                .isEqualTo((byte) 1))))
         .isInstanceOf(AssertionError.class);
   }
 
@@ -703,53 +638,43 @@ class TraceAssertionsTest {
 
     // test asserting spans in exact oder
     TracesAssert.assertThat(traces)
-        .hasTracesSatisfyingExactly(
-            trace ->
-                trace.hasSpansSatisfyingExactly(
-                    span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID2)));
+        .hasTracesSatisfyingExactly(trace ->
+            trace.hasSpansSatisfyingExactly(
+                span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID2)));
     // wrong number of spans
-    assertThatThrownBy(
-            () ->
-                TracesAssert.assertThat(traces)
-                    .hasTracesSatisfyingExactly(
-                        trace -> trace.hasSpansSatisfyingExactly(span -> span.hasSpanId(SPAN_ID1))))
+    assertThatThrownBy(() ->
+            TracesAssert.assertThat(traces)
+                .hasTracesSatisfyingExactly(
+                    trace -> trace.hasSpansSatisfyingExactly(span -> span.hasSpanId(SPAN_ID1))))
         .isInstanceOf(AssertionError.class)
         .hasMessageStartingWith(
             "[Trace 0] " + System.lineSeparator() + "Expected size: 1 but was: 2");
 
     // test asserting spans in wrong oder
-    assertThatThrownBy(
-            () ->
-                TracesAssert.assertThat(traces)
-                    .hasTracesSatisfyingExactly(
-                        trace ->
-                            trace.hasSpansSatisfyingExactly(
-                                span -> span.hasSpanId(SPAN_ID2),
-                                span -> span.hasSpanId(SPAN_ID1))))
+    assertThatThrownBy(() ->
+            TracesAssert.assertThat(traces)
+                .hasTracesSatisfyingExactly(trace ->
+                    trace.hasSpansSatisfyingExactly(
+                        span -> span.hasSpanId(SPAN_ID2), span -> span.hasSpanId(SPAN_ID1))))
         .isInstanceOf(AssertionError.class)
         .hasMessage(
             "[Span 0] Expected span [span1] to have span ID <0000000000000004> but was <0000000000000003>");
 
     // test asserting spans in any order
     TracesAssert.assertThat(traces)
-        .hasTracesSatisfyingExactly(
-            trace ->
-                trace.hasSpansSatisfyingExactlyInAnyOrder(
-                    span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID2)));
+        .hasTracesSatisfyingExactly(trace ->
+            trace.hasSpansSatisfyingExactlyInAnyOrder(
+                span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID2)));
     TracesAssert.assertThat(traces)
-        .hasTracesSatisfyingExactly(
-            trace ->
-                trace.hasSpansSatisfyingExactlyInAnyOrder(
-                    span -> span.hasSpanId(SPAN_ID2), span -> span.hasSpanId(SPAN_ID1)));
+        .hasTracesSatisfyingExactly(trace ->
+            trace.hasSpansSatisfyingExactlyInAnyOrder(
+                span -> span.hasSpanId(SPAN_ID2), span -> span.hasSpanId(SPAN_ID1)));
     // test not asserting all spans
-    assertThatThrownBy(
-            () ->
-                TracesAssert.assertThat(traces)
-                    .hasTracesSatisfyingExactly(
-                        trace ->
-                            trace.hasSpansSatisfyingExactlyInAnyOrder(
-                                span -> span.hasSpanId(SPAN_ID1),
-                                span -> span.hasSpanId(SPAN_ID1))))
+    assertThatThrownBy(() ->
+            TracesAssert.assertThat(traces)
+                .hasTracesSatisfyingExactly(trace ->
+                    trace.hasSpansSatisfyingExactlyInAnyOrder(
+                        span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID1))))
         .isInstanceOf(AssertionError.class);
   }
 }

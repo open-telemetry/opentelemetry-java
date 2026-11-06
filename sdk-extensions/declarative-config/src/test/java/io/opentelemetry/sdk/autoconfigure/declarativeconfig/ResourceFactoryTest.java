@@ -207,11 +207,10 @@ class ResourceFactoryTest {
     } else {
       assertThat(EntityUtil.getEntities(resource))
           .singleElement()
-          .satisfies(
-              filtered -> {
-                assertThat(filtered.getId()).isEqualTo(expectedId);
-                assertThat(filtered.getDescription()).isEqualTo(expectedDescription);
-              });
+          .satisfies(filtered -> {
+            assertThat(filtered.getId()).isEqualTo(expectedId);
+            assertThat(filtered.getDescription()).isEqualTo(expectedDescription);
+          });
     }
     assertThat(resource.getAttributes())
         .isEqualTo(

@@ -235,12 +235,11 @@ class DeltaSynchronousMetricStorage<T extends PointData>
         (memoryMode == REUSABLE_DATA)
             ? previousCollectionAggregatorHandles
             : new ConcurrentHashMap<>();
-    holder.aggregatorHandles.forEach(
-        (attributes, handle) -> {
-          if (handle.bound) {
-            newHolderHandles.put(attributes, handle);
-          }
-        });
+    holder.aggregatorHandles.forEach((attributes, handle) -> {
+      if (handle.bound) {
+        newHolderHandles.put(attributes, handle);
+      }
+    });
     this.aggregatorHolder = new AggregatorHolder<>(newHolderHandles);
 
     ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles =
@@ -249,18 +248,16 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     // Lock and drain unbound handles (unchanged from the unbound-only path). Bound handles are
     // handled separately below with a tight per-handle lock window so that recording to a bound
     // series never blocks for the duration of the whole collection.
-    aggregatorHandles.forEach(
-        (attributes, handle) -> {
-          if (!handle.bound) {
-            handle.lockForCollect();
-          }
-        });
-    aggregatorHandles.forEach(
-        (attributes, handle) -> {
-          if (!handle.bound) {
-            handle.awaitRecordersAndUnlock();
-          }
-        });
+    aggregatorHandles.forEach((attributes, handle) -> {
+      if (!handle.bound) {
+        handle.lockForCollect();
+      }
+    });
+    aggregatorHandles.forEach((attributes, handle) -> {
+      if (!handle.bound) {
+        handle.awaitRecordersAndUnlock();
+      }
+    });
 
     List<T> points;
     if (memoryMode == REUSABLE_DATA) {
@@ -286,12 +283,11 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     // Bound handles are kept unconditionally since their bound instruments hold direct references.
     if (memoryMode == REUSABLE_DATA) {
       if (aggregatorHandles.size() >= maxCardinality) {
-        aggregatorHandles.forEach(
-            (attribute, handle) -> {
-              if (!handle.bound && !handle.handle.hasRecordedValues()) {
-                aggregatorHandles.remove(attribute);
-              }
-            });
+        aggregatorHandles.forEach((attribute, handle) -> {
+          if (!handle.bound && !handle.handle.hasRecordedValues()) {
+            aggregatorHandles.remove(attribute);
+          }
+        });
       }
     }
 
@@ -301,30 +297,29 @@ class DeltaSynchronousMetricStorage<T extends PointData>
         registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos);
 
     // Grab aggregated points.
-    aggregatorHandles.forEach(
-        (attributes, handle) -> {
-          if (handle.bound) {
-            collectBound(handle, attributes, startEpochNanos, epochNanos, points);
-            return;
-          }
-          if (!handle.handle.hasRecordedValues()) {
-            return;
-          }
-          T point =
-              handle.handle.aggregateThenMaybeReset(
-                  startEpochNanos, epochNanos, attributes, /* reset= */ true);
+    aggregatorHandles.forEach((attributes, handle) -> {
+      if (handle.bound) {
+        collectBound(handle, attributes, startEpochNanos, epochNanos, points);
+        return;
+      }
+      if (!handle.handle.hasRecordedValues()) {
+        return;
+      }
+      T point =
+          handle.handle.aggregateThenMaybeReset(
+              startEpochNanos, epochNanos, attributes, /* reset= */ true);
 
-          if (memoryMode == IMMUTABLE_DATA) {
-            // Return the handle to the pool.
-            // Only in IMMUTABLE_DATA memory mode: in REUSABLE_DATA we avoid using the pool
-            // since ConcurrentLinkedQueue.offer() allocates memory internally.
-            aggregatorHandlePool.offer(handle);
-          }
+      if (memoryMode == IMMUTABLE_DATA) {
+        // Return the handle to the pool.
+        // Only in IMMUTABLE_DATA memory mode: in REUSABLE_DATA we avoid using the pool
+        // since ConcurrentLinkedQueue.offer() allocates memory internally.
+        aggregatorHandlePool.offer(handle);
+      }
 
-          if (point != null) {
-            points.add(point);
-          }
-        });
+      if (point != null) {
+        points.add(point);
+      }
+    });
 
     if (memoryMode == REUSABLE_DATA) {
       previousCollectionAggregatorHandles = aggregatorHandles;

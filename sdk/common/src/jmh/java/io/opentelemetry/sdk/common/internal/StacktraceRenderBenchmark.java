@@ -56,15 +56,14 @@ public class StacktraceRenderBenchmark {
 
   @SuppressWarnings("ImmutableEnumChecker")
   public enum Renderer {
-    JDK(
-        (throwable, limit) -> {
-          StringWriter stringWriter = new StringWriter();
-          try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-            throwable.printStackTrace(printWriter);
-          }
-          String stacktrace = stringWriter.toString();
-          return stacktrace.substring(0, Math.min(stacktrace.length(), limit));
-        }),
+    JDK((throwable, limit) -> {
+      StringWriter stringWriter = new StringWriter();
+      try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+        throwable.printStackTrace(printWriter);
+      }
+      String stacktrace = stringWriter.toString();
+      return stacktrace.substring(0, Math.min(stacktrace.length(), limit));
+    }),
     CUSTOM((throwable, limit) -> new StackTraceRenderer(throwable, limit).render());
 
     private final BiFunction<Throwable, Integer, String> renderer;

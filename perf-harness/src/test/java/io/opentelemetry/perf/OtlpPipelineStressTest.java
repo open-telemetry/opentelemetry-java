@@ -80,17 +80,16 @@ public class OtlpPipelineStressTest {
               MountableFile.forClasspathResource("otel-collector-config-perf.yaml"),
               "/etc/otel-collector-config-perf.yaml")
           .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("otel-collector")))
-          .withLogConsumer(
-              outputFrame -> {
-                String logline = outputFrame.getUtf8String();
-                String spanExportPrefix = "TracesExporter\t{\"#spans\": ";
-                int start = logline.indexOf(spanExportPrefix);
-                int end = logline.indexOf("}");
-                if (start > 0) {
-                  String substring = logline.substring(start + spanExportPrefix.length(), end);
-                  totalSpansReceivedByCollector.addAndGet(Long.parseLong(substring));
-                }
-              })
+          .withLogConsumer(outputFrame -> {
+            String logline = outputFrame.getUtf8String();
+            String spanExportPrefix = "TracesExporter\t{\"#spans\": ";
+            int start = logline.indexOf(spanExportPrefix);
+            int end = logline.indexOf("}");
+            if (start > 0) {
+              String substring = logline.substring(start + spanExportPrefix.length(), end);
+              totalSpansReceivedByCollector.addAndGet(Long.parseLong(substring));
+            }
+          })
           .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Everything is ready.*"));
 
   @Container
@@ -160,16 +159,15 @@ public class OtlpPipelineStressTest {
     ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
     CountDownLatch latch = new CountDownLatch(1);
     for (int i = 0; i < numberOfThreads; i++) {
-      executorService.submit(
-          () -> {
-            try {
-              latch.await();
-              runOnce(null, 30_000);
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-              throw new IllegalStateException("Interrupted", e);
-            }
-          });
+      executorService.submit(() -> {
+        try {
+          latch.await();
+          runOnce(null, 30_000);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw new IllegalStateException("Interrupted", e);
+        }
+      });
     }
     latch.countDown();
 
@@ -194,18 +192,16 @@ public class OtlpPipelineStressTest {
   private static void reportMetrics(List<MetricData> finishedMetricItems) {
     Map<String, List<MetricData>> metricsByName =
         finishedMetricItems.stream().collect(Collectors.groupingBy(MetricData::getName));
-    metricsByName.forEach(
-        (name, metricData) -> {
-          Stream<LongPointData> longPointStream =
-              metricData.stream().flatMap(md -> md.getLongSumData().getPoints().stream());
-          Map<Attributes, List<LongPointData>> pointsByAttributes =
-              longPointStream.collect(Collectors.groupingBy(PointData::getAttributes));
-          pointsByAttributes.forEach(
-              (attributes, longPoints) -> {
-                long total = longPoints.get(longPoints.size() - 1).getValue();
-                logger.info("{} : {} : {}", name, attributes, total);
-              });
-        });
+    metricsByName.forEach((name, metricData) -> {
+      Stream<LongPointData> longPointStream =
+          metricData.stream().flatMap(md -> md.getLongSumData().getPoints().stream());
+      Map<Attributes, List<LongPointData>> pointsByAttributes =
+          longPointStream.collect(Collectors.groupingBy(PointData::getAttributes));
+      pointsByAttributes.forEach((attributes, longPoints) -> {
+        long total = longPoints.get(longPoints.size() - 1).getValue();
+        logger.info("{} : {} : {}", name, attributes, total);
+      });
+    });
   }
 
   private void runOnce(Integer numberOfSpans, int numberOfMillisToRunFor)

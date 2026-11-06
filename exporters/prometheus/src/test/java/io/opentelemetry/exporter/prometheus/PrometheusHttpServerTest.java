@@ -192,13 +192,12 @@ class PrometheusHttpServerTest {
       List<Thread> threads = new ArrayList<>();
       for (int i = 0; i < 4; i++) {
         Thread thread =
-            new Thread(
-                () -> {
-                  for (int j = 0; j < 10; j++) {
-                    AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
-                    assertThat(response.status()).isEqualTo(HttpStatus.OK);
-                  }
-                });
+            new Thread(() -> {
+              for (int j = 0; j < 10; j++) {
+                AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
+                assertThat(response.status()).isEqualTo(HttpStatus.OK);
+              }
+            });
         thread.setDaemon(true);
         thread.start();
         threads.add(thread);

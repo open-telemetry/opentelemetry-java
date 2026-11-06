@@ -89,14 +89,13 @@ public final class OtlpDeclarativeConfigUtil {
 
     List<DeclarativeConfigProperties> headers = config.getStructuredList("headers");
     if (headers != null) {
-      headers.forEach(
-          header -> {
-            String name = header.getString("name");
-            String value = header.getString("value");
-            if (name != null && value != null) {
-              addHeader.accept(name, value);
-            }
-          });
+      headers.forEach(header -> {
+        String name = header.getString("name");
+        String value = header.getString("value");
+        if (name != null && value != null) {
+          addHeader.accept(name, value);
+        }
+      });
     }
 
     String compression = config.getString("compression");

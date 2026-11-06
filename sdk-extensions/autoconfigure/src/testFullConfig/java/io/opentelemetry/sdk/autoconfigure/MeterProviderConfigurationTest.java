@@ -97,12 +97,11 @@ class MeterProviderConfigurationTest {
             "metricReaders",
             as(InstanceOfAssertFactories.map(MetricReader.class, CardinalityLimitSelector.class)))
         .hasSizeGreaterThan(0)
-        .allSatisfy(
-            (metricReader, cardinalityLimitSelector) -> {
-              for (InstrumentType instrumentType : InstrumentType.values()) {
-                assertThat(cardinalityLimitSelector.getCardinalityLimit(instrumentType))
-                    .isEqualTo(expectedCardinalityLimit);
-              }
-            });
+        .allSatisfy((metricReader, cardinalityLimitSelector) -> {
+          for (InstrumentType instrumentType : InstrumentType.values()) {
+            assertThat(cardinalityLimitSelector.getCardinalityLimit(instrumentType))
+                .isEqualTo(expectedCardinalityLimit);
+          }
+        });
   }
 }
