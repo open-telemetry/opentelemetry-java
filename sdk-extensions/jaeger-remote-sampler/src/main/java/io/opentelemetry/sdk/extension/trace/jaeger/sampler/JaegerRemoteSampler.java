@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -54,7 +53,7 @@ public final class JaegerRemoteSampler implements Sampler {
 
   @GuardedBy("lock")
   @Nullable
-  private byte[] lastResponseMessage;
+  private SamplingStrategyResponse lastStrategyResponse;
 
   JaegerRemoteSampler(
       GrpcSender grpcSender,
@@ -102,18 +101,17 @@ public final class JaegerRemoteSampler implements Sampler {
       if (isShutdown.get()) {
         return;
       }
-      byte[] responseMessage = grpcResponse.getResponseMessage();
       try {
+        SamplingStrategyResponse strategyResponse =
+            SamplingStrategyResponseUnMarshaler.read(grpcResponse.getResponseMessage());
         synchronized (lock) {
           // Keep the current sampler when the strategy hasn't changed, so stateful samplers such
           // as RateLimitingSampler don't lose their state on every poll.
-          if (Arrays.equals(responseMessage, lastResponseMessage)) {
+          if (strategyResponse.equals(lastStrategyResponse)) {
             return;
           }
-          SamplingStrategyResponse strategyResponse =
-              SamplingStrategyResponseUnMarshaler.read(responseMessage);
           sampler = updateSampler(strategyResponse);
-          lastResponseMessage = responseMessage;
+          lastStrategyResponse = strategyResponse;
         }
       } catch (IOException e) {
         logger.log(Level.WARNING, "Failed to unmarshal strategy response", e);
