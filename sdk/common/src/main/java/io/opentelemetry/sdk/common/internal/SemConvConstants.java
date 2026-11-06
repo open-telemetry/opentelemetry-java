@@ -45,8 +45,8 @@ public class SemConvConstants {
       AttributeKey.stringKey("server.address");
   public static final AttributeKey<Long> SERVER_PORT = AttributeKey.longKey("server.port");
 
-  public static final AttributeKey<String> RPC_RESPONSE_STATUS_CODE =
-      AttributeKey.stringKey("rpc.response.status_code");
+  public static final AttributeKey<String> RPC_STATUS_CODE =
+      AttributeKey.stringKey("rpc.status_code");
   public static final AttributeKey<Long> HTTP_RESPONSE_STATUS_CODE =
       AttributeKey.longKey("http.response.status_code");
 
