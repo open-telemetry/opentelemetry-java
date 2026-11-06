@@ -60,6 +60,8 @@
   ([#8967](https://github.com/open-telemetry/opentelemetry-java/pull/8967))
 * OTLP: Correct exporter builder Javadoc
   ([#8996](https://github.com/open-telemetry/opentelemetry-java/pull/8996))
+* OTLP: Accept `0` as no limit for maximum request body and message sizes
+  ([#8945](https://github.com/open-telemetry/opentelemetry-java/pull/8945))
 * Prometheus: Give exemplar `trace_id` and `span_id` precedence over filtered attributes
   ([#8959](https://github.com/open-telemetry/opentelemetry-java/pull/8959))
 
@@ -78,6 +80,8 @@
 
 * Add fluent metric point assertions to `MetricAssert`
   ([#8994](https://github.com/open-telemetry/opentelemetry-java/pull/8994))
+* Add a builder supporting aggregation temporality selectors to `InMemoryMetricExporter`
+  ([#8993](https://github.com/open-telemetry/opentelemetry-java/pull/8993))
 
 ## Version 1.67.0 (2026-10-09)
 
