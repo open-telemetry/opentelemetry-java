@@ -277,6 +277,58 @@ class JdkHttpSenderTest {
                 assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
   }
 
+  @Test
+  void cleartextEndpoint_usesHttp11() {
+    JdkHttpSender testSender =
+        new JdkHttpSender(
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null,
+            Long.MAX_VALUE,
+            null);
+
+    try {
+      assertThat(testSender)
+          .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
+          .satisfies(client -> assertThat(client.version()).isEqualTo(HttpClient.Version.HTTP_1_1));
+    } finally {
+      testSender.shutdown();
+    }
+  }
+
+  @Test
+  void secureEndpoint_keepsDefaultHttpVersion() {
+    JdkHttpSender testSender =
+        new JdkHttpSender(
+            URI.create("https://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null,
+            Long.MAX_VALUE,
+            null);
+
+    try {
+      assertThat(testSender)
+          .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
+          .satisfies(client -> assertThat(client.version()).isEqualTo(HttpClient.Version.HTTP_2));
+    } finally {
+      testSender.shutdown();
+    }
+  }
+
   @SuppressWarnings("unchecked")
   @Test
   void send_successfulResponse_callsOnResponse() throws Exception {
