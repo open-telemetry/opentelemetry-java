@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.68.0 (2026-11-06)
+
 ### API
 
 * Add null guards and API usage logging for tracing, metrics, propagation, and context APIs
