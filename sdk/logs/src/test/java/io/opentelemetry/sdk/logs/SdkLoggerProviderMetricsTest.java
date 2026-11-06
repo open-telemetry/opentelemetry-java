@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -24,6 +25,7 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -417,5 +419,61 @@ class SdkLoggerProviderMetricsTest {
                     .hasName("otel.sdk.log.created")
                     .hasLongSumSatisfying(
                         s -> s.hasPointsSatisfying(p -> p.hasValue(1).hasAttributes())));
+  }
+
+  @Test
+  void filteringLogger() {
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+    MeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+
+    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
+    LoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
+            .addLoggerConfiguratorCondition(
+                scope -> scope.getName().equals("warnAbove"),
+                LoggerConfig.builder().setMinimumSeverity(Severity.WARN).build())
+            .addLoggerConfiguratorCondition(
+                scope -> scope.getName().equals("disabled"), LoggerConfig.disabled())
+            .addLogRecordProcessor(
+                SimpleLogRecordProcessor.builder(exporter)
+                    .setMeterProvider(() -> meterProvider)
+                    .build())
+            .setMeterProvider(() -> meterProvider)
+            .build();
+
+    Logger defaultLogger = loggerProvider.get("test"); // 2 created, 2 emitted
+    defaultLogger.logRecordBuilder().setSeverity(Severity.WARN).emit();
+    defaultLogger.logRecordBuilder().setSeverity(Severity.INFO).emit();
+
+    Logger warnAbove = loggerProvider.get("warnAbove"); // 2 created, 1 emitted
+    warnAbove.logRecordBuilder().setSeverity(Severity.WARN).emit();
+    warnAbove.logRecordBuilder().setSeverity(Severity.INFO).emit();
+
+    Logger disabled = loggerProvider.get("disabled"); // 0 created, 0 emitted
+    disabled.logRecordBuilder().setSeverity(Severity.WARN).emit();
+    disabled.logRecordBuilder().setSeverity(Severity.INFO).emit();
+
+    assertThat(metricReader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.log.created")
+                    .hasLongSumSatisfying(
+                        s -> s.hasPointsSatisfying(p -> p.hasValue(4).hasAttributes())),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.processor.log.processed")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(3)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "simple_log_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "simple_log_processor")))));
   }
 }
