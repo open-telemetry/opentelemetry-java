@@ -83,5 +83,11 @@ final class ExtendedSdkDoubleUpDownCounter extends SdkDoubleUpDownCounter
       builder.setAdviceAttributes(attributes);
       return this;
     }
+
+    @Override
+    public ExtendedDoubleUpDownCounterBuilder setOptInAdvice(boolean optIn) {
+      builder.setAdviceOptIn(optIn);
+      return this;
+    }
   }
 }

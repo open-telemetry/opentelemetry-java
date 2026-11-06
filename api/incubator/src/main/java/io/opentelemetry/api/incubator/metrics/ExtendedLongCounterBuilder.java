@@ -19,4 +19,12 @@ public interface ExtendedLongCounterBuilder extends LongCounterBuilder {
   default ExtendedLongCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
     return this;
   }
+
+  /**
+   * Specify the opt-in advice, which indicates whether this counter should be disabled by default
+   * and require explicit opt-in via a view to produce metric data.
+   */
+  default ExtendedLongCounterBuilder setOptInAdvice(boolean optIn) {
+    return this;
+  }
 }

@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -146,5 +147,49 @@ class ExtendedMetricsApiUsageTest {
                                         .hasValue(1L)
                                         .hasAttributes(
                                             Attributes.builder().put("key1", "value1").build()))));
+  }
+
+  @Test
+  void optInAdvice() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    ViewBuilder enabledViewBuilder = View.builder();
+    SdkMeterProviderUtil.setEnabled(enabledViewBuilder, /* enabled= */ true);
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder()
+            .setResource(Resource.getDefault())
+            .registerMetricReader(reader)
+            .registerView(
+                InstrumentSelector.builder().setName("counter1").build(),
+                enabledViewBuilder.build())
+            .build();
+
+    Meter meter = meterProvider.get("org.foo.my-scope");
+
+    ExtendedLongCounter counter1 =
+        (ExtendedLongCounter)
+            ((ExtendedLongCounterBuilder) meter.counterBuilder("counter1"))
+                .setOptInAdvice(true)
+                .build();
+    ExtendedLongCounter counter2 =
+        (ExtendedLongCounter)
+            ((ExtendedLongCounterBuilder) meter.counterBuilder("counter2"))
+                .setOptInAdvice(true)
+                .build();
+
+    assertThat(counter1.isEnabled()).isTrue();
+    assertThat(counter2.isEnabled()).isFalse();
+
+    counter1.add(1);
+    counter2.add(1);
+
+    // Verify that only counter1 is collected and measurements recorded to disabled counter2 are
+    // dropped
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metricData ->
+                assertThat(metricData)
+                    .hasName("counter1")
+                    .hasLongSumSatisfying(
+                        sumAssert -> sumAssert.hasPointsSatisfying(point -> point.hasValue(1L))));
   }
 }
