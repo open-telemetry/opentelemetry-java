@@ -56,6 +56,16 @@ final class MultiSpanExporter implements SpanExporter {
     return CompletableResultCode.ofAll(results);
   }
 
+  @Override
+  public boolean supportsExportBackpressure() {
+    for (SpanExporter spanExporter : spanExporters) {
+      if (!spanExporter.supportsExportBackpressure()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /**
    * Flushes the data of all registered {@link SpanExporter}s.
    *

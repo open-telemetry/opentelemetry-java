@@ -74,6 +74,23 @@ public interface LogRecordExporter extends Closeable {
   CompletableResultCode export(Collection<LogRecordData> logs);
 
   /**
+   * Returns whether this exporter applies backpressure to callers of {@link #export(Collection)}.
+   *
+   * <p>When {@code true}, the exporter may block the export call while its own capacity is
+   * exhausted. The batch log record processor will not wait for the returned result before
+   * submitting the next batch, allowing the exporter to control concurrency and capacity
+   * dynamically.
+   *
+   * <p>The default is {@code false}, preserving serialized export behavior.
+   *
+   * @return whether this exporter controls export backpressure
+   * @since 1.68.0
+   */
+  default boolean supportsExportBackpressure() {
+    return false;
+  }
+
+  /**
    * Exports the collection of {@link LogRecordData} that have not yet been exported.
    *
    * @return the result of the flush, which is often an asynchronous operation

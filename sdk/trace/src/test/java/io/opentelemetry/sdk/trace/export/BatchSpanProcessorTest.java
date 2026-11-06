@@ -557,6 +557,33 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  @Timeout(5)
+  void exporterBackpressureAllowsConcurrentExportsAndFlushWaits() {
+    when(mockSpanExporter.supportsExportBackpressure()).thenReturn(true);
+    CompletableResultCode firstExport = new CompletableResultCode();
+    CompletableResultCode secondExport = new CompletableResultCode();
+    when(mockSpanExporter.export(anyList())).thenReturn(firstExport, secondExport);
+
+    BatchSpanProcessor processor =
+        BatchSpanProcessor.builder(mockSpanExporter)
+            .setScheduleDelay(1, TimeUnit.MILLISECONDS)
+            .setMaxExportBatchSize(1)
+            .build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(processor).build();
+
+    createEndedSpan(SPAN_NAME_1);
+    createEndedSpan(SPAN_NAME_2);
+
+    await().untilAsserted(() -> verify(mockSpanExporter, times(2)).export(anyList()));
+
+    CompletableResultCode flush = processor.forceFlush();
+    assertThat(flush.isDone()).isFalse();
+    firstExport.succeed();
+    secondExport.succeed();
+    assertThat(flush.join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void exportNotSampledSpans() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
@@ -690,6 +717,26 @@ class BatchSpanProcessorTest {
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isFalse();
+  }
+
+  @Test
+  @SuppressLogger(BatchSpanProcessor.class)
+  void exporterBackpressureHandlesExporterException() {
+    doThrow(new IllegalArgumentException("No export for you."))
+        .when(mockSpanExporter)
+        .export(anyList());
+    sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(mockSpanExporter)
+                    .setMaxExportBatchSize(1)
+                    .setScheduleDelay(1, TimeUnit.HOURS)
+                    .build())
+            .build();
+
+    createEndedSpan(SPAN_NAME_1);
+
+    assertThat(sdkTracerProvider.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
 
   @Test

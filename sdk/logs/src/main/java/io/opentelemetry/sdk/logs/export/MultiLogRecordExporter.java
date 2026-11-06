@@ -59,6 +59,16 @@ final class MultiLogRecordExporter implements LogRecordExporter {
     return CompletableResultCode.ofAll(results);
   }
 
+  @Override
+  public boolean supportsExportBackpressure() {
+    for (LogRecordExporter logRecordExporter : logRecordExporters) {
+      if (!logRecordExporter.supportsExportBackpressure()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /**
    * Flushes the data of all registered {@link LogRecordExporter}s.
    *

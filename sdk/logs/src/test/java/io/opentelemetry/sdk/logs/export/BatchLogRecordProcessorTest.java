@@ -498,6 +498,26 @@ class BatchLogRecordProcessorTest {
   }
 
   @Test
+  @SuppressLogger(BatchLogRecordProcessor.class)
+  void exporterBackpressureHandlesExporterException() {
+    doThrow(new IllegalArgumentException("No export for you."))
+        .when(mockLogRecordExporter)
+        .export(anyList());
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(
+                BatchLogRecordProcessor.builder(mockLogRecordExporter)
+                    .setMaxExportBatchSize(1)
+                    .setScheduleDelay(1, TimeUnit.HOURS)
+                    .build())
+            .build();
+
+    emitLog(loggerProvider, LOG_MESSAGE_1);
+
+    assertThat(loggerProvider.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void getLogRecordExporter() {
     assertThat(
             BatchLogRecordProcessor.builder(mockLogRecordExporter).build().getLogRecordExporter())
