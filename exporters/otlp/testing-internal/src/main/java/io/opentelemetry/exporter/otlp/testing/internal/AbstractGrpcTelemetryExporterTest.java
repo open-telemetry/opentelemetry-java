@@ -1136,6 +1136,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
     assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestSize(1)))
         .doesNotThrowAnyException();
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestSize(0)))
+        .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4317"))
         .doesNotThrowAnyException();
@@ -1248,12 +1250,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
-    assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(0))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("maxRequestMessageSizeBytes must be positive");
     assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(-1))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("maxRequestMessageSizeBytes must be positive");
+        .hasMessage("maxRequestMessageSizeBytes must be non-negative");
 
     assertThatThrownBy(() -> exporterBuilder().setEnabledProtocols(null))
         .isInstanceOf(NullPointerException.class)
@@ -1275,6 +1274,17 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .hasMessageContaining("Failed to export")
           .hasMessageContaining("Request message size")
           .hasMessageContaining("exceeded limit of 1 bytes");
+    }
+  }
+
+  @Test
+  void requestMessageSizeLimitDisabledWithZero() {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri().toString()).setMaxRequestSize(0).build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     }
   }
 

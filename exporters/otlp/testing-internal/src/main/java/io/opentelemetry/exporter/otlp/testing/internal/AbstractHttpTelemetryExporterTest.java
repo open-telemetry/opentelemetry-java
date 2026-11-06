@@ -919,6 +919,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
     assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestSize(1)))
         .doesNotThrowAnyException();
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestSize(0)))
+        .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4318"))
         .doesNotThrowAnyException();
@@ -1000,12 +1002,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
-    assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(0))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("maxRequestBodySizeBytes must be positive");
     assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(-1))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("maxRequestBodySizeBytes must be positive");
+        .hasMessage("maxRequestBodySizeBytes must be non-negative");
 
     assertThatThrownBy(() -> exporterBuilder().setEnabledProtocols(null))
         .isInstanceOf(NullPointerException.class)
@@ -1027,6 +1026,17 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           .hasMessageContaining("Failed to export")
           .hasMessageContaining("Request body size")
           .hasMessageContaining("exceeded limit of 1 bytes");
+    }
+  }
+
+  @Test
+  void requestBodySizeLimitDisabledWithZero() {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri() + path).setMaxRequestSize(0).build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     }
   }
 

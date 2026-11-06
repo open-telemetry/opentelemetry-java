@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
@@ -50,7 +51,12 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 // We always assert the contents of lists out of order to verify that assertions behave that way.
 class MetricAssertionsTest {
@@ -303,6 +309,239 @@ class MetricAssertionsTest {
           ImmutableSummaryData.create(
               // Points
               Collections.singletonList(SUMMARY_POINT_DATA)));
+
+  @Test
+  void doubleGaugePointsSatisfying() {
+    assertThat(DOUBLE_GAUGE_METRIC)
+        .hasName("gauge")
+        .hasDoubleGaugePointsSatisfying(
+            point -> point.hasValue(3.0).hasStartEpochNanos(3),
+            point -> point.hasValue(3.0).hasStartEpochNanos(1))
+        .hasDoubleGaugePointsSatisfying(
+            Arrays.asList(
+                point -> point.hasValue(3.0).hasStartEpochNanos(3),
+                point -> point.hasValue(3.0).hasStartEpochNanos(1)))
+        .hasUnit("1");
+  }
+
+  @Test
+  void longGaugePointsSatisfying() {
+    assertThat(LONG_GAUGE_METRIC)
+        .hasName("gauge")
+        .hasLongGaugePointsSatisfying(
+            point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1))
+        .hasLongGaugePointsSatisfying(
+            Arrays.asList(point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1)))
+        .hasUnit("1");
+  }
+
+  @Test
+  void doubleSumPointsSatisfying() {
+    assertThat(DOUBLE_SUM_METRIC)
+        .hasName("sum")
+        .hasDoubleSumPointsSatisfying(
+            point -> point.hasValue(3.0).hasStartEpochNanos(3),
+            point -> point.hasValue(3.0).hasStartEpochNanos(1))
+        .hasDoubleSumPointsSatisfying(
+            Arrays.asList(
+                point -> point.hasValue(3.0).hasStartEpochNanos(3),
+                point -> point.hasValue(3.0).hasStartEpochNanos(1)))
+        .hasDoubleSumSatisfying(sum -> sum.isMonotonic().isCumulative());
+  }
+
+  @Test
+  void longSumPointsSatisfying() {
+    assertThat(LONG_SUM_METRIC)
+        .hasName("sum")
+        .hasLongSumPointsSatisfying(
+            point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1))
+        .hasLongSumPointsSatisfying(
+            Arrays.asList(point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1)))
+        .hasLongSumSatisfying(sum -> sum.isMonotonic().isCumulative());
+  }
+
+  @Test
+  void histogramPointsSatisfying() {
+    MetricAssert assertion = assertThat(HISTOGRAM_METRIC).hasName("histogram");
+    assertThat(
+            assertion
+                .hasHistogramPointsSatisfying(point -> point.hasCount(3).hasSum(15))
+                .hasHistogramSatisfying(HistogramAssert::isCumulative))
+        .isSameAs(assertion);
+    assertThat(
+            assertion
+                .hasHistogramPointsSatisfying(
+                    Collections.singletonList(point -> point.hasCount(3).hasSum(15)))
+                .hasUnit("1"))
+        .isSameAs(assertion);
+  }
+
+  @Test
+  void exponentialHistogramPointsSatisfying() {
+    assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+        .hasName("exponential_histogram")
+        .hasExponentialHistogramPointsSatisfying(point -> point.hasCount(4).hasSum(10).hasScale(1))
+        .hasExponentialHistogramPointsSatisfying(
+            Collections.singletonList(point -> point.hasCount(4).hasSum(10).hasScale(1)))
+        .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isCumulative);
+  }
+
+  @Test
+  void summaryPointsSatisfying() {
+    assertThat(SUMMARY_METRIC)
+        .hasName("summary")
+        .hasSummaryPointsSatisfying(point -> point.hasCount(1).hasSum(2))
+        .hasSummaryPointsSatisfying(Collections.singletonList(point -> point.hasCount(1).hasSum(2)))
+        .hasUnit("1");
+  }
+
+  @ParameterizedTest
+  @MethodSource("pointShortcuts")
+  void pointShortcutsFailure(MetricData metric, Consumer<MetricAssert> assertion) {
+    assertThatThrownBy(() -> assertion.accept(assertThat((MetricData) null)))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("not to be null");
+
+    MetricData wrongType =
+        metric.getType() == MetricDataType.HISTOGRAM ? SUMMARY_METRIC : HISTOGRAM_METRIC;
+    assertThatThrownBy(() -> assertion.accept(assertThat(wrongType)))
+        .isInstanceOf(AssertionError.class)
+        .hasMessage(
+            "Expected MetricData to have type <%s> but found <%s>",
+            metric.getType(), wrongType.getType());
+
+    assertThatThrownBy(() -> assertion.accept(assertThat(metric)))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  static Stream<Arguments> pointShortcuts() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "double gauge varargs",
+            DOUBLE_GAUGE_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasDoubleGaugePointsSatisfying),
+        Arguments.argumentSet(
+            "double gauge iterable",
+            DOUBLE_GAUGE_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasDoubleGaugePointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "long gauge varargs",
+            LONG_GAUGE_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasLongGaugePointsSatisfying),
+        Arguments.argumentSet(
+            "long gauge iterable",
+            LONG_GAUGE_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasLongGaugePointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "double sum varargs",
+            DOUBLE_SUM_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasDoubleSumPointsSatisfying),
+        Arguments.argumentSet(
+            "double sum iterable",
+            DOUBLE_SUM_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasDoubleSumPointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "long sum varargs",
+            LONG_SUM_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasLongSumPointsSatisfying),
+        Arguments.argumentSet(
+            "long sum iterable",
+            LONG_SUM_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasLongSumPointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "histogram varargs",
+            HISTOGRAM_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasHistogramPointsSatisfying),
+        Arguments.argumentSet(
+            "histogram iterable",
+            HISTOGRAM_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasHistogramPointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "exponential histogram varargs",
+            EXPONENTIAL_HISTOGRAM_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasExponentialHistogramPointsSatisfying),
+        Arguments.argumentSet(
+            "exponential histogram iterable",
+            EXPONENTIAL_HISTOGRAM_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasExponentialHistogramPointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "summary varargs",
+            SUMMARY_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasSummaryPointsSatisfying),
+        Arguments.argumentSet(
+            "summary iterable",
+            SUMMARY_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasSummaryPointsSatisfying(Collections.emptyList())));
+  }
+
+  @Test
+  void pointShortcutsRejectMismatchedPoints() {
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramPointsSatisfying(point -> point.hasCount(42)))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void pointShortcutsRequireExactMatching() {
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_GAUGE_METRIC)
+                    .hasLongGaugePointsSatisfying(point -> point.hasValue(1)))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_GAUGE_METRIC)
+                    .hasLongGaugePointsSatisfying(
+                        point -> point.hasValue(Long.MAX_VALUE),
+                        point -> point.hasValue(1),
+                        point -> point.hasValue(1)))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_GAUGE_METRIC)
+                    .hasLongGaugePointsSatisfying(
+                        point -> point.hasValue(1), point -> point.hasValue(1)))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  @SuppressWarnings("NullAway")
+  void pointShortcutsNullAssertions() {
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramPointsSatisfying((Iterable<Consumer<HistogramPointAssert>>) null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>) null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SUMMARY_METRIC)
+                    .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat((MetricData) null)
+                    .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
+        .isInstanceOf(AssertionError.class);
+  }
 
   @Test
   @SuppressWarnings("Convert2MethodRef")
