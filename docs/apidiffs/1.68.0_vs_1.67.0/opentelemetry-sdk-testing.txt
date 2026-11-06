@@ -1,0 +1,32 @@
+Comparing source compatibility of opentelemetry-sdk-testing-1.68.0.jar against opentelemetry-sdk-testing-1.67.0.jar
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.MetricAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasDoubleGaugePointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.DoublePointAssert>)
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasDoubleGaugePointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.DoublePointAssert>>)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasDoubleSumPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.DoublePointAssert>)
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasDoubleSumPointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.DoublePointAssert>>)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasExponentialHistogramPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert>)
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasExponentialHistogramPointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.ExponentialHistogramPointAssert>>)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasHistogramPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.HistogramPointAssert>)
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasHistogramPointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.HistogramPointAssert>>)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasLongGaugePointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.LongPointAssert>)
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasLongGaugePointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.LongPointAssert>>)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasLongSumPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.LongPointAssert>)
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasLongSumPointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.LongPointAssert>>)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasSummaryPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.SummaryPointAssert>)
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasSummaryPointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.SummaryPointAssert>>)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporterBuilder builder()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporterBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporterBuilder setAggregationTemporalitySelector(io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector)
