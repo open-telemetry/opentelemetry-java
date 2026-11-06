@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
@@ -15,9 +16,18 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
 
-/** SDK implementation of {@link LogRecordBuilder}. */
+/**
+ * SDK implementation of {@link LogRecordBuilder}.
+ *
+ * <p>Note: When context-scoped attributes are enabled, {@link #emit()} mutates the builder's
+ * internal attribute storage in-place by appending filtered context-scoped attributes, then
+ * transfers ownership of that attribute map directly to the created {@link ReadWriteLogRecord}.
+ * Consequently, builder instances are single-use lifecycle objects and reusing a builder across
+ * multiple {@link #emit()} calls is unsupported.
+ */
 class SdkLogRecordBuilder implements LogRecordBuilder {
 
   private final LoggerSharedState loggerSharedState;
@@ -168,7 +178,29 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     }
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
+    BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter =
+        loggerSharedState.getContextScopedAttributesFilter();
+    if (filter != null && SdkLogger.INCUBATOR_AVAILABLE) {
+      Attributes contextAttributes = IncubatingUtil.getContextAttributes(context);
+      if (!contextAttributes.isEmpty()) {
+        AttributesMap attrs = this.attributes;
+        if (attrs == null) {
+          attrs =
+              AttributesMap.create(
+                  logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+          this.attributes = attrs;
+        }
+        AttributesMap nonNullAttrs = attrs;
+        contextAttributes.forEach(
+            (key, value) -> {
+              if (filter.test(instrumentationScopeInfo, key) && !nonNullAttrs.contains(key)) {
+                nonNullAttrs.put((AttributeKey) key, value);
+              }
+            });
+      }
+    }
     return SdkReadWriteLogRecord.create(
         loggerSharedState.getLogLimits(),
         loggerSharedState.getResource(),
@@ -179,7 +211,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
         severity,
         severityText,
         body,
-        attributes,
+        this.attributes,
         eventName);
   }
 }

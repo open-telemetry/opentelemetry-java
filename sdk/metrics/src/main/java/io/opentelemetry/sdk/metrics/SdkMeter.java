@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static java.util.stream.Collectors.toMap;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.BatchCallback;
@@ -42,10 +43,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /** {@link SdkMeter} is SDK implementation of {@link Meter}. */
 final class SdkMeter implements Meter {
@@ -97,6 +101,20 @@ final class SdkMeter implements Meter {
    */
   boolean isExemplarsAlwaysOff() {
     return meterProviderSharedState.getExemplarFilter() instanceof AlwaysOffExemplarFilter;
+  }
+
+  boolean isContextScopedAttributesEnabled() {
+    return meterProviderSharedState.isContextScopedAttributesEnabled() && INCUBATOR_AVAILABLE;
+  }
+
+  @Nullable
+  Predicate<AttributeKey<?>> getContextScopedAttributesFilter() {
+    BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter =
+        meterProviderSharedState.getContextScopedAttributesFilter();
+    if (filter == null || !INCUBATOR_AVAILABLE) {
+      return null;
+    }
+    return key -> filter.test(getInstrumentationScopeInfo(), key);
   }
 
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
@@ -300,7 +318,8 @@ final class SdkMeter implements Meter {
                     meterProviderSharedState.getClock(),
                     instrument,
                     meterProviderSharedState.getExemplarFilter(),
-                    meterEnabled)));
+                    meterEnabled,
+                    getContextScopedAttributesFilter())));
       }
     }
 

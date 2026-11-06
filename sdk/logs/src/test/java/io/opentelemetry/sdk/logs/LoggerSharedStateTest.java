@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,9 +33,37 @@ class LoggerSharedStateTest {
             logRecordProcessor,
             Clock.getDefault(),
             ExceptionAttributeResolver.getDefault(),
-            new SdkLoggerInstrumentation(MeterProvider::noop));
+            new SdkLoggerInstrumentation(MeterProvider::noop),
+            /* contextScopedAttributesFilter= */ null);
     state.shutdown();
     state.shutdown();
     verify(logRecordProcessor, times(1)).shutdown();
+  }
+
+  @Test
+  void contextScopedAttributesEnabled() {
+    LoggerSharedState stateEnabled =
+        new LoggerSharedState(
+            SdkResourceProvider.create(Resource.empty()),
+            LogLimits::getDefault,
+            mock(LogRecordProcessor.class),
+            Clock.getDefault(),
+            ExceptionAttributeResolver.getDefault(),
+            new SdkLoggerInstrumentation(MeterProvider::noop),
+            (scope, key) -> true);
+    assertThat(stateEnabled.isContextScopedAttributesEnabled()).isTrue();
+    assertThat(stateEnabled.getContextScopedAttributesFilter()).isNotNull();
+
+    LoggerSharedState stateDisabled =
+        new LoggerSharedState(
+            SdkResourceProvider.create(Resource.empty()),
+            LogLimits::getDefault,
+            mock(LogRecordProcessor.class),
+            Clock.getDefault(),
+            ExceptionAttributeResolver.getDefault(),
+            new SdkLoggerInstrumentation(MeterProvider::noop),
+            /* contextScopedAttributesFilter= */ null);
+    assertThat(stateDisabled.isContextScopedAttributesEnabled()).isFalse();
+    assertThat(stateDisabled.getContextScopedAttributesFilter()).isNull();
   }
 }

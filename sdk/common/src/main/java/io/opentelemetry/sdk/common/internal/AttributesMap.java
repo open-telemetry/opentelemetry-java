@@ -180,6 +180,17 @@ public final class AttributesMap implements Attributes {
     return (T) entryValues[idx];
   }
 
+  /**
+   * Returns whether an attribute with the given key name exists in this map, regardless of type.
+   *
+   * <p>Runs with expected/amortized O(1) complexity using the internal open-addressing table.
+   *
+   * @param key the attribute key whose name to look up. Must not be null.
+   */
+  public boolean contains(AttributeKey<?> key) {
+    return hashTable[findSlot(key.getKey())] != EMPTY;
+  }
+
   @Override
   public int size() {
     return size;

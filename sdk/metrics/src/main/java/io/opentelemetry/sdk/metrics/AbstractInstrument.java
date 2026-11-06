@@ -16,15 +16,17 @@ abstract class AbstractInstrument {
   /**
    * True when the record-path {@link Context} has no observable effect for this instrument, so
    * parameterless record overloads may substitute {@link Context#root()} for {@link
-   * Context#current()} and skip a thread-local lookup. The exemplar filter is the sole record-path
-   * consumer of {@link Context}, so this is true iff exemplars are disabled meter-wide.
+   * Context#current()} and skip a thread-local lookup. The exemplar filter and context-scoped
+   * attributes are the record-path consumers of {@link Context}, so this is true iff both are
+   * disabled meter-wide.
    */
   private final boolean canUseRootContext;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
   AbstractInstrument(InstrumentDescriptor descriptor, SdkMeter sdkMeter) {
     this.descriptor = descriptor;
-    this.canUseRootContext = sdkMeter.isExemplarsAlwaysOff();
+    this.canUseRootContext =
+        sdkMeter.isExemplarsAlwaysOff() && !sdkMeter.isContextScopedAttributesEnabled();
   }
 
   final InstrumentDescriptor getDescriptor() {

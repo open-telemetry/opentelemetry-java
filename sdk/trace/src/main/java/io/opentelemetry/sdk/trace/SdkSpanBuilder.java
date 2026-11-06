@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
 
 /** {@link SdkSpanBuilder} is SDK implementation of {@link SpanBuilder}. */
@@ -55,6 +56,7 @@ class SdkSpanBuilder implements SpanBuilder {
   private final SpanLimits spanLimits;
 
   @Nullable private Context parent; // null means: Use current context.
+  private boolean noParent = false;
   private SpanKind spanKind = SpanKind.INTERNAL;
   @Nullable private AttributesMap attributes;
   @Nullable private List<LinkData> links;
@@ -78,12 +80,14 @@ class SdkSpanBuilder implements SpanBuilder {
       return this;
     }
     this.parent = context;
+    this.noParent = false;
     return this;
   }
 
   @Override
   public SpanBuilder setNoParent() {
     this.parent = Context.root();
+    this.noParent = true;
     return this;
   }
 
@@ -184,6 +188,9 @@ class SdkSpanBuilder implements SpanBuilder {
   @SuppressWarnings({"rawtypes", "ReferenceEquality"})
   public Span startSpan() {
     Context parentContext = parent == null ? Context.current() : parent;
+    if (noParent) {
+      parentContext = Context.root();
+    }
     Span parentSpan = Span.fromContext(parentContext);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;
@@ -218,6 +225,21 @@ class SdkSpanBuilder implements SpanBuilder {
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
+    BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter =
+        tracerSharedState.getContextScopedAttributesFilter();
+    if (filter != null && SdkTracer.INCUBATOR_AVAILABLE) {
+      Context contextForAttributes = noParent ? Context.current() : parentContext;
+      Attributes contextAttributes = IncubatingUtil.getContextAttributes(contextForAttributes);
+      if (!contextAttributes.isEmpty()) {
+        AttributesMap spanAttributes = attributes();
+        contextAttributes.forEach(
+            (key, value) -> {
+              if (filter.test(instrumentationScopeInfo, key) && !spanAttributes.contains(key)) {
+                spanAttributes.put((AttributeKey) key, value);
+              }
+            });
+      }
+    }
     Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
     SamplingResult samplingResult =
         tracerSharedState

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace.internal;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
@@ -13,7 +14,9 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /**
  * A collection of methods that allow use of experimental features prior to availability in public
@@ -115,6 +118,42 @@ public final class SdkTracerProviderUtil {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
           "Error calling setExceptionAttributeResolver on SdkTracerProviderBuilder", e);
+    }
+  }
+
+  /**
+   * Reflectively set the context-scoped attributes filter on the {@link SdkTracerProviderBuilder}.
+   */
+  public static void setContextScopedAttributesFilter(
+      SdkTracerProviderBuilder sdkTracerProviderBuilder,
+      @Nullable BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter) {
+    try {
+      Method method =
+          SdkTracerProviderBuilder.class.getDeclaredMethod(
+              "setContextScopedAttributesFilter", BiPredicate.class);
+      method.setAccessible(true);
+      method.invoke(sdkTracerProviderBuilder, filter);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setContextScopedAttributesFilter on SdkTracerProviderBuilder", e);
+    }
+  }
+
+  /**
+   * Reflectively set whether context-scoped attributes are enabled on the {@link
+   * SdkTracerProviderBuilder}.
+   */
+  public static void setContextScopedAttributesEnabled(
+      SdkTracerProviderBuilder sdkTracerProviderBuilder, boolean contextScopedAttributesEnabled) {
+    try {
+      Method method =
+          SdkTracerProviderBuilder.class.getDeclaredMethod(
+              "setContextScopedAttributesEnabled", boolean.class);
+      method.setAccessible(true);
+      method.invoke(sdkTracerProviderBuilder, contextScopedAttributesEnabled);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setContextScopedAttributesEnabled on SdkTracerProviderBuilder", e);
     }
   }
 }

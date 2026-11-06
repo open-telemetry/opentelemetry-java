@@ -5,11 +5,14 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -25,6 +28,11 @@ final class LoggerSharedState {
   private final Clock clock;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
   private final SdkLoggerInstrumentation loggerInstrumentation;
+
+  @Nullable
+  private final BiPredicate<InstrumentationScopeInfo, AttributeKey<?>>
+      contextScopedAttributesFilter;
+
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
@@ -33,13 +41,16 @@ final class LoggerSharedState {
       LogRecordProcessor logRecordProcessor,
       Clock clock,
       ExceptionAttributeResolver exceptionAttributeResolver,
-      SdkLoggerInstrumentation loggerInstrumentation) {
+      SdkLoggerInstrumentation loggerInstrumentation,
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
     this.resourceProvider = resourceProvider;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.loggerInstrumentation = loggerInstrumentation;
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
   }
 
   Resource getResource() {
@@ -64,6 +75,15 @@ final class LoggerSharedState {
 
   SdkLoggerInstrumentation getLoggerInstrumentation() {
     return loggerInstrumentation;
+  }
+
+  boolean isContextScopedAttributesEnabled() {
+    return contextScopedAttributesFilter != null;
+  }
+
+  @Nullable
+  BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> getContextScopedAttributesFilter() {
+    return contextScopedAttributesFilter;
   }
 
   boolean hasBeenShutdown() {

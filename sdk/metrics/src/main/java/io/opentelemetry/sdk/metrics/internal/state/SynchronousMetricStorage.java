@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -16,6 +17,8 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
+import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -36,6 +39,54 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
    * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
    *     recorded.
    */
+  static SynchronousMetricStorage create(
+      RegisteredReader registeredReader,
+      RegisteredView registeredView,
+      Clock clock,
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilterInternal exemplarFilter,
+      boolean enabled) {
+    return create(
+        registeredReader,
+        registeredView,
+        clock,
+        instrumentDescriptor,
+        exemplarFilter,
+        enabled,
+        /* contextScopedAttributesEnabled= */ false);
+  }
+
+  /**
+   * Constructs metric storage for a given synchronous instrument and view.
+   *
+   * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
+   *     recorded.
+   */
+  @SuppressWarnings("ReferenceEquality")
+  static SynchronousMetricStorage create(
+      RegisteredReader registeredReader,
+      RegisteredView registeredView,
+      Clock clock,
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilterInternal exemplarFilter,
+      boolean enabled,
+      boolean contextScopedAttributesEnabled) {
+    return create(
+        registeredReader,
+        registeredView,
+        clock,
+        instrumentDescriptor,
+        exemplarFilter,
+        enabled,
+        contextScopedAttributesEnabled ? key -> true : null);
+  }
+
+  /**
+   * Constructs metric storage for a given synchronous instrument and view.
+   *
+   * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
+   *     recorded.
+   */
   @SuppressWarnings("ReferenceEquality")
   static <T extends PointData> SynchronousMetricStorage create(
       RegisteredReader registeredReader,
@@ -43,7 +94,8 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       Clock clock,
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilterInternal exemplarFilter,
-      boolean enabled) {
+      boolean enabled,
+      @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
@@ -62,6 +114,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
         registeredView.getAttributesFilter(),
         registeredView.getCardinalityLimit(),
         clock,
-        enabled);
+        enabled,
+        contextScopedAttributesFilter);
   }
 }

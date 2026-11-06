@@ -7,7 +7,9 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.CUMULATIVE;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
@@ -17,9 +19,11 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -35,6 +39,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
   final UnaryOperator<Attributes> attributesFilter;
+  @Nullable private final Predicate<AttributeKey<?>> contextScopedAttributesFilter;
   protected final Clock clock;
   protected final MetricDescriptor metricDescriptor;
   protected final Aggregator<T> aggregator;
@@ -53,13 +58,33 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
-      boolean enabled) {
+      boolean enabled,
+      @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter) {
     this.metricDescriptor = metricDescriptor;
     this.aggregator = aggregator;
     this.attributesFilter = attributesFilter;
     this.clock = clock;
     this.maxCardinality = maxCardinality - 1;
     this.enabled = enabled;
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
+  }
+
+  DefaultSynchronousMetricStorage(
+      MetricDescriptor metricDescriptor,
+      Aggregator<T> aggregator,
+      UnaryOperator<Attributes> attributesFilter,
+      Clock clock,
+      int maxCardinality,
+      boolean enabled,
+      boolean contextScopedAttributesEnabled) {
+    this(
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesEnabled ? key -> true : null);
   }
 
   static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
@@ -70,6 +95,46 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       int maxCardinality,
       Clock clock,
       boolean enabled) {
+    return create(
+        reader,
+        descriptor,
+        aggregator,
+        attributesFilter,
+        maxCardinality,
+        clock,
+        enabled,
+        /* contextScopedAttributesFilter= */ null);
+  }
+
+  static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
+      RegisteredReader reader,
+      MetricDescriptor descriptor,
+      Aggregator<T> aggregator,
+      UnaryOperator<Attributes> attributesFilter,
+      int maxCardinality,
+      Clock clock,
+      boolean enabled,
+      boolean contextScopedAttributesEnabled) {
+    return create(
+        reader,
+        descriptor,
+        aggregator,
+        attributesFilter,
+        maxCardinality,
+        clock,
+        enabled,
+        contextScopedAttributesEnabled ? key -> true : null);
+  }
+
+  static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
+      RegisteredReader reader,
+      MetricDescriptor descriptor,
+      Aggregator<T> aggregator,
+      UnaryOperator<Attributes> attributesFilter,
+      int maxCardinality,
+      Clock clock,
+      boolean enabled,
+      @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter) {
     AggregationTemporality aggregationTemporality =
         reader.getReader().getAggregationTemporality(descriptor.getSourceInstrument().getType());
     return aggregationTemporality == CUMULATIVE
@@ -80,9 +145,45 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             clock,
             maxCardinality,
             enabled,
+            contextScopedAttributesFilter,
             reader.getReader().getMemoryMode())
         : new DeltaSynchronousMetricStorage<>(
-            reader, descriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+            reader,
+            descriptor,
+            aggregator,
+            attributesFilter,
+            clock,
+            maxCardinality,
+            enabled,
+            contextScopedAttributesFilter);
+  }
+
+  @Nullable
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private Attributes getMergedContextAttributes(Attributes attributes, Context context) {
+    if (contextScopedAttributesFilter == null) {
+      return null;
+    }
+    Attributes contextAttributes = StateIncubatingUtil.getContextAttributes(context);
+    if (contextAttributes.isEmpty()) {
+      return null;
+    }
+    boolean[] hasMatched = new boolean[1];
+    AttributesBuilder builder = Attributes.builder();
+    contextAttributes.forEach(
+        (key, value) -> {
+          if (contextScopedAttributesFilter.test(key)) {
+            hasMatched[0] = true;
+            builder.put((AttributeKey) key, value);
+          }
+        });
+    if (!hasMatched[0]) {
+      return null;
+    }
+    if (attributes.isEmpty()) {
+      return builder.build();
+    }
+    return builder.putAll(attributes).build();
   }
 
   @Override
@@ -90,11 +191,17 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     if (!enabled) {
       return;
     }
-    doRecordLong(value, attributes, context);
+    Attributes merged = getMergedContextAttributes(attributes, context);
+    doRecordLong(value, merged != null ? merged : attributes, context);
   }
 
   @Override
   public void recordDouble(double value, Attributes attributes, Context context) {
+    if (!enabled) {
+      return;
+    }
+    Attributes merged = getMergedContextAttributes(attributes, context);
+    attributes = merged != null ? merged : attributes;
     if (!shouldRecordDouble(value, attributes)) {
       return;
     }

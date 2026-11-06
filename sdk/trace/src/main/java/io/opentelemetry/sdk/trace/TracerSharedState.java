@@ -5,14 +5,17 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -31,6 +34,11 @@ final class TracerSharedState {
   private final SpanProcessor activeSpanProcessor;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
   private final SdkTracerInstrumentation tracerInstrumentation;
+
+  @Nullable
+  private final BiPredicate<InstrumentationScopeInfo, AttributeKey<?>>
+      contextScopedAttributesFilter;
+
   private final boolean noSpanProcessor;
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
@@ -43,7 +51,9 @@ final class TracerSharedState {
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
       ExceptionAttributeResolver exceptionAttributeResolver,
-      SdkTracerInstrumentation tracerInstrumentation) {
+      SdkTracerInstrumentation tracerInstrumentation,
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
@@ -53,6 +63,7 @@ final class TracerSharedState {
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.tracerInstrumentation = tracerInstrumentation;
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
     // Note: This relies on SpanProcessor.composite(..) returning NoopSpanProcessor unwrapped
     // when given an empty list. If SpanProcessor.composite(..) behavior changes, this instanceof
     // check must change too
@@ -114,6 +125,15 @@ final class TracerSharedState {
 
   SdkTracerInstrumentation getTracerInstrumentation() {
     return tracerInstrumentation;
+  }
+
+  boolean isContextScopedAttributesEnabled() {
+    return contextScopedAttributesFilter != null;
+  }
+
+  @Nullable
+  BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> getContextScopedAttributesFilter() {
+    return contextScopedAttributesFilter;
   }
 
   /**
