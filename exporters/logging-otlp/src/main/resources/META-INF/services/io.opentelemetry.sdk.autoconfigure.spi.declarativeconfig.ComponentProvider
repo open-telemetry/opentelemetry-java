@@ -1,3 +1,4 @@
 io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterComponentProvider
 io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporterComponentProvider
 io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporterComponentProvider
+

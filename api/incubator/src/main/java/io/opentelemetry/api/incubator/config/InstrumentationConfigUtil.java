@@ -6,6 +6,8 @@
 package io.opentelemetry.api.incubator.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.api.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
