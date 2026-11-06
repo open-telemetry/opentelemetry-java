@@ -48,6 +48,7 @@ class NoSharedInternalCodeTest {
           "opentelemetry-sdk-extension-declarative-config",
           "opentelemetry-sdk-extension-incubator",
           "opentelemetry-sdk-extension-jaeger-remote-sampler",
+          "opentelemetry-sdk-processcontext",
           "opentelemetry-exporter-otlp",
           "opentelemetry-exporter-otlp-common",
           "opentelemetry-exporter-otlp-profiles",
