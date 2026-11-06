@@ -85,7 +85,7 @@ public class SemConvConstants {
   public static final String OTEL_SDK_LOG_CREATED_NAME = "otel.sdk.log.created";
   public static final String OTEL_SDK_LOG_CREATED_UNIT = "{log_record}";
   public static final String OTEL_SDK_LOG_CREATED_DESCRIPTION =
-      "The number of logs submitted to enabled SDK Loggers.";
+      "The number of log records submitted to an enabled `Logger`.";
 
   public static final String OTEL_SDK_PROCESSOR_LOG_PROCESSED_NAME =
       "otel.sdk.processor.log.processed";
