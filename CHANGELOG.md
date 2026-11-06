@@ -62,6 +62,9 @@
   ([#8996](https://github.com/open-telemetry/opentelemetry-java/pull/8996))
 * OTLP: Accept `0` as no limit for maximum request body and message sizes
   ([#8945](https://github.com/open-telemetry/opentelemetry-java/pull/8945))
+* OTLP: gRPC exporter internal telemetry uses `rpc.status_code` instead of
+  `rpc.response.status.code` when `InternalTelemetryVersion` is set to `LATEST`
+  ([#9007](https://github.com/open-telemetry/opentelemetry-java/pull/9007))
 * Prometheus: Give exemplar `trace_id` and `span_id` precedence over filtered attributes
   ([#8959](https://github.com/open-telemetry/opentelemetry-java/pull/8959))
 
