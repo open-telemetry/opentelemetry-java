@@ -11,6 +11,9 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -95,6 +98,99 @@ class TracerProviderConfigurationTest {
                       .isEqualTo(SpanProcessor.composite()));
       assertThat(closeables).isEmpty();
     }
+  }
+
+  @Test
+  void configureTracerProvider_noopExporter() {
+    List<Closeable> closeables = new ArrayList<>();
+    List<SpanProcessor> customizerInputs = new ArrayList<>();
+
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
+    TracerProviderConfiguration.configureTracerProvider(
+        tracerProviderBuilder,
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("otel.traces.exporter", "noop")),
+        spiHelper,
+        MeterProvider.noop(),
+        (a, unused) -> a,
+        (a, unused) -> {
+          customizerInputs.add(a);
+          return a;
+        },
+        (a, unused) -> a,
+        closeables);
+
+    // The no-op processor flows through the span processor customizer, and no BatchSpanProcessor
+    // (with its worker thread) is created.
+    assertThat(customizerInputs).containsExactly(SpanProcessor.noop());
+    assertThat(closeables).isEmpty();
+
+    try (SdkTracerProvider tracerProvider = tracerProviderBuilder.build()) {
+      assertThat(tracerProvider)
+          .extracting("sharedState")
+          .satisfies(
+              sharedState ->
+                  assertThat(sharedState)
+                      .extracting("activeSpanProcessor")
+                      .isSameAs(SpanProcessor.noop()));
+
+      Tracer tracer = tracerProvider.get("test");
+      assertThat(tracer.isEnabled()).isTrue();
+      Span span = tracer.spanBuilder("span").startSpan();
+      try {
+        assertThat(span.getSpanContext().isValid()).isTrue();
+        assertThat(span.isRecording()).isTrue();
+      } finally {
+        span.end();
+      }
+    }
+  }
+
+  @Test
+  void configureTracerProvider_noneExporter_tracersAreNoop() {
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
+    TracerProviderConfiguration.configureTracerProvider(
+        tracerProviderBuilder,
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("otel.traces.exporter", "none")),
+        spiHelper,
+        MeterProvider.noop(),
+        (a, unused) -> a,
+        (a, unused) -> a,
+        (a, unused) -> a,
+        new ArrayList<>());
+
+    try (SdkTracerProvider tracerProvider = tracerProviderBuilder.build()) {
+      Tracer tracer = tracerProvider.get("test");
+      assertThat(tracer).isSameAs(TracerProvider.noop().get("test"));
+      assertThat(tracer.isEnabled()).isFalse();
+
+      Span span = tracer.spanBuilder("span").startSpan();
+      try {
+        assertThat(span.getSpanContext().isValid()).isFalse();
+        assertThat(span.isRecording()).isFalse();
+      } finally {
+        span.end();
+      }
+    }
+  }
+
+  @Test
+  void configureTracerProvider_noopExporterWithOthers() {
+    assertThatThrownBy(
+            () ->
+                TracerProviderConfiguration.configureTracerProvider(
+                    SdkTracerProvider.builder(),
+                    DefaultConfigProperties.createFromMap(
+                        Collections.singletonMap("otel.traces.exporter", "noop,otlp")),
+                    spiHelper,
+                    MeterProvider.noop(),
+                    (a, unused) -> a,
+                    (a, unused) -> a,
+                    (a, unused) -> a,
+                    new ArrayList<>()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("otel.traces.exporter contains noop along with other exporters");
   }
 
   @Test
