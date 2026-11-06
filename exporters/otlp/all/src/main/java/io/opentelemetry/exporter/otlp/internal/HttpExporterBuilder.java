@@ -171,7 +171,7 @@ public final class HttpExporterBuilder {
   }
 
   public HttpExporterBuilder setMaxRequestBodySize(long maxRequestBodySize) {
-    this.maxRequestBodySize = maxRequestBodySize;
+    this.maxRequestBodySize = maxRequestBodySize == 0 ? Long.MAX_VALUE : maxRequestBodySize;
     return this;
   }
 

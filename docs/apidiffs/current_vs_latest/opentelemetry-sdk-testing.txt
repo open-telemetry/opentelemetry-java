@@ -22,3 +22,11 @@ Comparing source compatibility of opentelemetry-sdk-testing-1.68.0-SNAPSHOT.jar 
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasSummaryPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.SummaryPointAssert>)
 		+++  NEW ANNOTATION: java.lang.SafeVarargs
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.MetricAssert hasSummaryPointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.SummaryPointAssert>>)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporterBuilder builder()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporterBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporterBuilder setAggregationTemporalitySelector(io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector)
