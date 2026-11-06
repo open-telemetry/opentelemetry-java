@@ -38,6 +38,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
@@ -70,6 +71,8 @@ class JaegerRemoteSamplerTest {
 
   private static final ConcurrentLinkedQueue<Sampling.SamplingStrategyResponse> responses =
       new ConcurrentLinkedQueue<>();
+
+  private static final AtomicInteger requestCount = new AtomicInteger();
 
   private static void addGrpcError(GrpcStatusCode code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code.getValue(), message));
@@ -104,6 +107,7 @@ class JaegerRemoteSamplerTest {
                                     io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2
                                         .Sampling.SamplingStrategyResponse>
                                 responseObserver) {
+                          requestCount.incrementAndGet();
                           ArmeriaStatusException grpcError = grpcErrors.poll();
                           if (grpcError != null) {
                             responseObserver.onError(grpcError);
@@ -142,6 +146,7 @@ class JaegerRemoteSamplerTest {
   public void before() {
     grpcErrors.clear();
     responses.clear();
+    requestCount.set(0);
   }
 
   @Test
@@ -446,6 +451,33 @@ class JaegerRemoteSamplerTest {
                   assertThat(sampler.getDescription())
                       .startsWith(
                           "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}}}"));
+    }
+  }
+
+  @Test
+  void unchangedStrategy_keepsSampler() {
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setServiceName(SERVICE_NAME)
+            .setPollingInterval(50, TimeUnit.MILLISECONDS)
+            .build()) {
+      await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+      Sampler initial = sampler.getSampler();
+
+      // Further polls return the same strategy, so the stateful sampler must be retained.
+      int polls = requestCount.get();
+      await().untilAsserted(() -> assertThat(requestCount.get()).isGreaterThan(polls + 2));
+      assertThat(sampler.getSampler()).isSameAs(initial);
+
+      // A changed strategy still replaces the sampler.
+      responses.add(
+          Sampling.SamplingStrategyResponse.newBuilder()
+              .setStrategyType(SamplingStrategyType.RATE_LIMITING)
+              .setRateLimitingSampling(
+                  RateLimitingSamplingStrategy.newBuilder().setMaxTracesPerSecond(5).build())
+              .build());
+      await().untilAsserted(() -> assertThat(sampler.getSampler()).isNotSameAs(initial));
     }
   }
 

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -48,6 +49,11 @@ public final class JaegerRemoteSampler implements Sampler {
   private final GrpcSender grpcSender;
   private final URI endpoint;
   private final int pollingIntervalMs;
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
+  @Nullable
+  private SamplingStrategyResponse lastStrategyResponse;
 
   JaegerRemoteSampler(
       GrpcSender grpcSender,
@@ -98,7 +104,15 @@ public final class JaegerRemoteSampler implements Sampler {
       try {
         SamplingStrategyResponse strategyResponse =
             SamplingStrategyResponseUnMarshaler.read(grpcResponse.getResponseMessage());
-        sampler = updateSampler(strategyResponse);
+        synchronized (lock) {
+          // Keep the current sampler when the strategy hasn't changed, so stateful samplers such
+          // as RateLimitingSampler don't lose their state on every poll.
+          if (strategyResponse.equals(lastStrategyResponse)) {
+            return;
+          }
+          sampler = updateSampler(strategyResponse);
+          lastStrategyResponse = strategyResponse;
+        }
       } catch (IOException e) {
         logger.log(Level.WARNING, "Failed to unmarshal strategy response", e);
       }
