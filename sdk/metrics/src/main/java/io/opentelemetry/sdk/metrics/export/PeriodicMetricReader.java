@@ -43,8 +43,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
   private static final Clock CLOCK = Clock.getDefault();
 
-  private static final ComponentId COMPONENT_ID =
-      ComponentId.generateLazy("periodic_metric_reader");
+  private final ComponentId componentId = ComponentId.generateLazy("periodic_metric_reader");
 
   private final MetricExporter exporter;
   private final long intervalNanos;
@@ -71,7 +70,7 @@ public final class PeriodicMetricReader implements MetricReader {
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   private volatile MetricReaderInstrumentation instrumentation =
-      new MetricReaderInstrumentation(COMPONENT_ID, MeterProvider.noop());
+      new MetricReaderInstrumentation(componentId, MeterProvider.noop());
 
   /**
    * Returns a new {@link PeriodicMetricReader} which exports to the {@code exporter} once every
@@ -205,7 +204,7 @@ public final class PeriodicMetricReader implements MetricReader {
   @SuppressWarnings("UnusedMethod")
   private void setMeterProvider(MeterProvider meterProvider) {
     if (internalTelemetryVersion != InternalTelemetryVersion.LEGACY) {
-      instrumentation = new MetricReaderInstrumentation(COMPONENT_ID, meterProvider);
+      instrumentation = new MetricReaderInstrumentation(componentId, meterProvider);
     }
   }
 
