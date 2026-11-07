@@ -11,6 +11,8 @@ import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_COMPONE
 import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_SPAN_PARENT_ORIGIN;
 import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_SPAN_SAMPLING_RESULT;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
@@ -30,6 +32,8 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -39,9 +43,13 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -50,6 +58,52 @@ class SdkTracerProviderMetricsTest {
 
   @Mock private Sampler sampler;
   @Mock private SpanExporter mockExporter;
+
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void componentNamesAreUniqueAndStable(boolean batching) {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    try (SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(reader).build()) {
+      SdkTracerProviderBuilder builder = SdkTracerProvider.builder();
+      for (int i = 0; i < 2; i++) {
+        builder.addSpanProcessor(
+            batching
+                ? BatchSpanProcessor.builder(InMemorySpanExporter.create())
+                    .setMeterProvider(() -> meterProvider)
+                    .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
+                    .build()
+                : SimpleSpanProcessor.builder(InMemorySpanExporter.create())
+                    .setMeterProvider(() -> meterProvider)
+                    .build());
+      }
+      try (SdkTracerProvider provider = builder.build()) {
+        List<String> previousNames = null;
+        for (int count = 1; count <= 2; count++) {
+          provider.get("test").spanBuilder("span").startSpan().end();
+          assertThat(provider.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+          MetricData metric =
+              reader.collectAllMetrics().stream()
+                  .filter(m -> m.getName().equals("otel.sdk.processor.span.processed"))
+                  .findFirst()
+                  .get();
+          assertThat(metric.getLongSumData().getPoints()).hasSize(2);
+          List<String> names =
+              metric.getLongSumData().getPoints().stream()
+                  .map(point -> point.getAttributes().get(OTEL_COMPONENT_NAME))
+                  .collect(Collectors.toList());
+          assertThat(names).doesNotHaveDuplicates().doesNotContainNull();
+          if (previousNames != null) {
+            assertThat(names).containsExactlyInAnyOrderElementsOf(previousNames);
+          }
+          previousNames = names;
+          for (LongPointData point : metric.getLongSumData().getPoints()) {
+            assertThat(point.getValue()).isEqualTo(count);
+          }
+        }
+      }
+    }
+  }
 
   @Test
   void simple() {
@@ -110,12 +164,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -154,12 +209,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -209,12 +265,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -266,12 +323,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -329,12 +387,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -405,12 +464,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -476,12 +536,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -561,12 +622,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -640,12 +702,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(2)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -723,22 +786,21 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(2)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")),
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor",
-                                                ERROR_TYPE,
-                                                "already_shutdown")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor"),
+                                            equalTo(ERROR_TYPE, "already_shutdown")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -852,12 +914,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor")))),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.size")
@@ -867,12 +930,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor")))),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
@@ -882,22 +946,22 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor")),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "batching_span_processor")),
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor",
-                                                ERROR_TYPE,
-                                                "queue_full")))),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
+                                            equalTo(ERROR_TYPE, "queue_full")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -938,12 +1002,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor")))),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.size")
@@ -952,12 +1017,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor")))),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
@@ -966,22 +1032,22 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(2)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor")),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "batching_span_processor")),
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor",
-                                                ERROR_TYPE,
-                                                "queue_full")))),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
+                                            equalTo(ERROR_TYPE, "queue_full")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -1023,12 +1089,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor")))),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.size")
@@ -1037,12 +1104,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor")))),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
@@ -1051,32 +1119,31 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(2)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor")),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "batching_span_processor")),
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor",
-                                                ERROR_TYPE,
-                                                "already_shutdown")),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
+                                            equalTo(ERROR_TYPE, "already_shutdown")),
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "batching_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_span_processor",
-                                                ERROR_TYPE,
-                                                "queue_full")))),
+                                                name ->
+                                                    name.matches("batching_span_processor/[0-9]+")),
+                                            equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
+                                            equalTo(ERROR_TYPE, "queue_full")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
@@ -1136,12 +1203,13 @@ class SdkTracerProviderMetricsTest {
                             s.hasPointsSatisfying(
                                 p ->
                                     p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
+                                        .hasAttributesSatisfyingExactly(
+                                            satisfies(
                                                 OTEL_COMPONENT_NAME,
-                                                "simple_span_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "simple_span_processor")))),
+                                                name ->
+                                                    name.matches("simple_span_processor/[0-9]+")),
+                                            equalTo(
+                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")

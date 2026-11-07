@@ -42,9 +42,6 @@ import java.util.logging.Logger;
  */
 public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
-  private static final ComponentId COMPONENT_ID =
-      ComponentId.generateLazy("batching_log_processor");
-
   private static final String WORKER_THREAD_NAME =
       BatchLogRecordProcessor.class.getSimpleName() + "_WorkerThread";
 
@@ -176,7 +173,8 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       this.queue = queue;
       this.signal = new ArrayBlockingQueue<>(1);
       logProcessorInstrumentation =
-          LogRecordProcessorInstrumentation.get(telemetryVersion, COMPONENT_ID, meterProvider);
+          LogRecordProcessorInstrumentation.get(
+              telemetryVersion, ComponentId.generateLazy("batching_log_processor"), meterProvider);
       this.maxQueueSize = maxQueueSize;
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);

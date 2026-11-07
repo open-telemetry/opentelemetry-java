@@ -44,9 +44,6 @@ import java.util.logging.Logger;
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 
-  private static final ComponentId COMPONENT_ID =
-      ComponentId.generateLazy("batching_span_processor");
-
   private static final Logger logger = Logger.getLogger(BatchSpanProcessor.class.getName());
 
   private static final String WORKER_THREAD_NAME =
@@ -219,7 +216,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.signal = new ArrayBlockingQueue<>(1);
 
       spanProcessorInstrumentation =
-          SpanProcessorInstrumentation.get(telemetryVersion, COMPONENT_ID, meterProvider);
+          SpanProcessorInstrumentation.get(
+              telemetryVersion, ComponentId.generateLazy("batching_span_processor"), meterProvider);
       this.maxQueueSize = maxQueueSize;
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
