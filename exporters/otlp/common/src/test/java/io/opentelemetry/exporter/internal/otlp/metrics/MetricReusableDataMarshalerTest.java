@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
@@ -38,13 +38,14 @@ class MetricReusableDataMarshalerTest {
 
   @ParameterizedTest
   @MethodSource("exportCases")
-  void countsDataPoints(MemoryMode memoryMode, boolean successful) {
+  void countsDataPoints(
+      InternalTelemetryVersion telemetryVersion, MemoryMode memoryMode, boolean successful) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     try (SdkMeterProvider provider =
         SdkMeterProvider.builder().registerMetricReader(reader).build()) {
       ExporterInstrumentation instrumentation =
           new ExporterInstrumentation(
-              InternalTelemetryVersion.LATEST,
+              telemetryVersion,
               () -> provider,
               ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_METRIC_EXPORTER),
               URI.create("http://localhost:4317"));
@@ -78,7 +79,25 @@ class MetricReusableDataMarshalerTest {
         int points = expectedPointCounts[batchIndex++];
         CompletableResultCode result = marshaler.export(batch);
         assertThat(result.isDone()).isFalse();
-        assertMetricValue(reader, "otel.sdk.exporter.metric_data_point.inflight", points);
+        if (telemetryVersion == InternalTelemetryVersion.LEGACY) {
+          assertLegacyMetricValue(
+              reader,
+              "otlp.exporter.seen",
+              exported + points,
+              Attributes.builder().put("type", "metric").build());
+          if (batchIndex == 1) {
+            assertThat(reader.collectAllMetrics())
+                .noneMatch(metric -> metric.getName().equals("otlp.exporter.exported"));
+          } else {
+            assertLegacyMetricValue(
+                reader,
+                "otlp.exporter.exported",
+                exported,
+                Attributes.builder().put("type", "metric").put("success", successful).build());
+          }
+        } else {
+          assertMetricValue(reader, "otel.sdk.exporter.metric_data_point.inflight", points);
+        }
         if (successful) {
           pending.get().succeed();
         } else {
@@ -87,8 +106,21 @@ class MetricReusableDataMarshalerTest {
         assertThat(result.isDone()).isTrue();
         assertThat(result.isSuccess()).isEqualTo(successful);
         exported += points;
-        assertMetricValue(reader, "otel.sdk.exporter.metric_data_point.inflight", 0);
-        assertMetricValue(reader, "otel.sdk.exporter.metric_data_point.exported", exported);
+        if (telemetryVersion == InternalTelemetryVersion.LEGACY) {
+          assertLegacyMetricValue(
+              reader,
+              "otlp.exporter.seen",
+              exported,
+              Attributes.builder().put("type", "metric").build());
+          assertLegacyMetricValue(
+              reader,
+              "otlp.exporter.exported",
+              exported,
+              Attributes.builder().put("type", "metric").put("success", successful).build());
+        } else {
+          assertMetricValue(reader, "otel.sdk.exporter.metric_data_point.inflight", 0);
+          assertMetricValue(reader, "otel.sdk.exporter.metric_data_point.exported", exported);
+        }
       }
     }
   }
@@ -103,6 +135,20 @@ class MetricReusableDataMarshalerTest {
                     .singleElement()
                     .extracting(LongPointData::getValue)
                     .isEqualTo(expected));
+  }
+
+  private static void assertLegacyMetricValue(
+      InMemoryMetricReader reader, String name, long expected, Attributes attributes) {
+    assertThat(reader.collectAllMetrics())
+        .filteredOn(metric -> metric.getName().equals(name))
+        .singleElement()
+        .satisfies(
+            metric ->
+                assertThat(metric)
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point -> point.hasValue(expected).hasAttributes(attributes))));
   }
 
   private static MetricData metric(String name, int count) {
@@ -120,7 +166,16 @@ class MetricReusableDataMarshalerTest {
   }
 
   private static Stream<Arguments> exportCases() {
-    return Arrays.stream(MemoryMode.values())
-        .flatMap(mode -> Stream.of(Arguments.of(mode, true), Arguments.of(mode, false)));
+    return Stream.of(InternalTelemetryVersion.LEGACY, InternalTelemetryVersion.LATEST)
+        .flatMap(
+            version ->
+                Arrays.stream(MemoryMode.values())
+                    .flatMap(
+                        mode ->
+                            Stream.of(
+                                Arguments.argumentSet(
+                                    version + " " + mode + " success", version, mode, true),
+                                Arguments.argumentSet(
+                                    version + " " + mode + " failure", version, mode, false))));
   }
 }
