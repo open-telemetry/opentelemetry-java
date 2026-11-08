@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,6 +41,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
@@ -254,6 +256,34 @@ class SdkSpanTest {
     assertThat(span.hasEnded()).isTrue();
     assertThat(span.getLatencyNanos()).isEqualTo(expectedDuration);
     assertThat(spanLatencyInProcessor.get()).isEqualTo(expectedDuration);
+  }
+
+  @Test
+  @SuppressLogger(SdkSpan.class)
+  void onEnding_processorThrows() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    doThrow(new IllegalStateException("onEnding failed")).when(spanProcessor).onEnding(any());
+
+    assertThatCode(span::end).doesNotThrowAnyException();
+    assertThat(span.hasEnded()).isTrue();
+    assertThat(span).extracting("spanEndingThread").isNull();
+    verify(spanProcessor).onEnd(same(span));
+  }
+
+  @Test
+  @SuppressLogger(SdkSpan.class)
+  void onEnding_processorThrowsCheckedException() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    doAnswer(
+            invocation -> {
+              throw new Exception("onEnding failed");
+            })
+        .when(spanProcessor)
+        .onEnding(any());
+
+    assertThatCode(span::end).doesNotThrowAnyException();
+    assertThat(span.hasEnded()).isTrue();
+    verify(spanProcessor).onEnd(same(span));
   }
 
   @Test
