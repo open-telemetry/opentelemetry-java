@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.internal.view.ViewMatchingMode;
 import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -130,6 +131,22 @@ public final class SdkMeterProviderUtil {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
           "Error calling setContextScopedAttributesFilter on SdkMeterProviderBuilder", e);
+    }
+    return sdkMeterProviderBuilder;
+  }
+
+  /** Reflectively set the {@link ViewMatchingMode} on the {@link SdkMeterProviderBuilder}. */
+  public static SdkMeterProviderBuilder setViewMatchingMode(
+      SdkMeterProviderBuilder sdkMeterProviderBuilder, ViewMatchingMode viewMatchingMode) {
+    try {
+      Method method =
+          SdkMeterProviderBuilder.class.getDeclaredMethod(
+              "setViewMatchingMode", ViewMatchingMode.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProviderBuilder, viewMatchingMode);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setViewMatchingMode on SdkMeterProviderBuilder", e);
     }
     return sdkMeterProviderBuilder;
   }

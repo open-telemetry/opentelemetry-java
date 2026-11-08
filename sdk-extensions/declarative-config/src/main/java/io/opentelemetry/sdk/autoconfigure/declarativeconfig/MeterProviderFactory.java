@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamMode
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalViewMatchingModeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.MeterProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
@@ -24,6 +25,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
+import io.opentelemetry.sdk.metrics.internal.view.ViewMatchingMode;
 import java.util.List;
 
 final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeterProviderBuilder> {
@@ -93,6 +95,16 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
         }
       }
       SdkMeterProviderUtil.setMeterConfigurator(builder, configuratorBuilder.build());
+    }
+
+    ExperimentalViewMatchingModeModel viewMatchingModeModel =
+        MeterProviderModelAccessor.getViewMatchingMode(model);
+    if (viewMatchingModeModel != null) {
+      ViewMatchingMode viewMatchingMode =
+          viewMatchingModeModel == ExperimentalViewMatchingModeModel.COMPOSABLE
+              ? ViewMatchingMode.COMPOSABLE
+              : ViewMatchingMode.INDEPENDENT;
+      SdkMeterProviderUtil.setViewMatchingMode(builder, viewMatchingMode);
     }
 
     ExemplarFilterModel exemplarFilterModel = model.getExemplarFilter();

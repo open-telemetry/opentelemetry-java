@@ -33,8 +33,19 @@ public abstract class View {
       @Nullable String description,
       Aggregation aggregation,
       Predicate<String> attributeFilter,
-      int cardinalityLimit) {
-    return new AutoValue_View(name, description, aggregation, attributeFilter, cardinalityLimit);
+      int cardinalityLimit,
+      @Nullable Aggregation explicitAggregation,
+      @Nullable Predicate<String> explicitAttributeFilter,
+      @Nullable Integer explicitCardinalityLimit) {
+    return new AutoValue_View(
+        name,
+        description,
+        aggregation,
+        attributeFilter,
+        cardinalityLimit,
+        explicitAggregation,
+        explicitAttributeFilter,
+        explicitCardinalityLimit);
   }
 
   View() {}
@@ -70,6 +81,15 @@ public abstract class View {
    * @since 1.44.0
    */
   public abstract int getCardinalityLimit();
+
+  @Nullable
+  abstract Aggregation getExplicitAggregation();
+
+  @Nullable
+  abstract Predicate<String> getExplicitAttributeFilter();
+
+  @Nullable
+  abstract Integer getExplicitCardinalityLimit();
 
   @Override
   public final String toString() {

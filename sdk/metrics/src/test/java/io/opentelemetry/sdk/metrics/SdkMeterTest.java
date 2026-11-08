@@ -9,6 +9,8 @@ import static io.opentelemetry.sdk.metrics.SdkMeter.checkValidInstrumentName;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
@@ -18,9 +20,17 @@ import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
+import io.opentelemetry.sdk.metrics.internal.view.ViewMatchingMode;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -493,5 +503,142 @@ class SdkMeterTest {
     assertThat(meter.isMeterEnabled()).isFalse();
     meter.updateMeterConfig(MeterConfig.enabled());
     assertThat(meter.isMeterEnabled()).isTrue();
+  }
+
+  @Test
+  void composableViews_InstrumentRegisteredTwiceProducesSingleStorageAndStream() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+    SdkMeterProviderUtil.setViewMatchingMode(builder, ViewMatchingMode.COMPOSABLE);
+
+    builder.registerView(
+        InstrumentSelector.builder().setName("duplicate_counter").build(),
+        View.builder().setAttributeFilter(new HashSet<>(Arrays.asList("k1", "k2"))).build());
+    builder.registerView(
+        InstrumentSelector.builder().setName("duplicate_counter").build(),
+        View.builder().setAttributeFilter(new HashSet<>(Arrays.asList("k2", "k3"))).build());
+
+    SdkMeterProvider provider = builder.build();
+    Meter meter = provider.get("test");
+
+    LongCounter counter1 = meter.counterBuilder("duplicate_counter").build();
+    LongCounter counter2 = meter.counterBuilder("duplicate_counter").build();
+
+    counter1.add(1, Attributes.builder().put("k1", "v1").put("k2", "v2").put("k3", "v3").build());
+    counter2.add(2, Attributes.builder().put("k1", "v1").put("k2", "v2").put("k3", "v3").build());
+
+    Collection<MetricData> metrics = reader.collectAllMetrics();
+    assertThat(metrics).hasSize(1);
+    MetricData metric = metrics.iterator().next();
+    assertThat(metric.getName()).isEqualTo("duplicate_counter");
+    assertThat(metric.getLongSumData().getPoints()).hasSize(1);
+    LongPointData point = metric.getLongSumData().getPoints().iterator().next();
+    assertThat(point.getValue()).isEqualTo(3);
+    assertThat(point.getAttributes().asMap()).containsOnlyKeys(AttributeKey.stringKey("k2"));
+  }
+
+  @Test
+  void composableViews_AsyncGaugeRegisteredTwiceProducesSingleStream() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+    SdkMeterProviderUtil.setViewMatchingMode(builder, ViewMatchingMode.COMPOSABLE);
+
+    builder.registerView(
+        InstrumentSelector.builder().setName("duplicate_gauge").build(),
+        View.builder().setAttributeFilter(new HashSet<>(Arrays.asList("k1", "k2"))).build());
+    builder.registerView(
+        InstrumentSelector.builder().setName("duplicate_gauge").build(),
+        View.builder().setAttributeFilter(new HashSet<>(Arrays.asList("k2", "k3"))).build());
+
+    SdkMeterProvider provider = builder.build();
+    Meter meter = provider.get("test");
+
+    meter
+        .gaugeBuilder("duplicate_gauge")
+        .buildWithCallback(
+            m -> m.record(42.0, Attributes.builder().put("k1", "v1").put("k2", "v2").build()));
+    meter
+        .gaugeBuilder("duplicate_gauge")
+        .buildWithCallback(
+            m -> m.record(84.0, Attributes.builder().put("k1", "v1").put("k2", "v2").build()));
+
+    Collection<MetricData> metrics = reader.collectAllMetrics();
+    assertThat(metrics).hasSize(1);
+    MetricData metric = metrics.iterator().next();
+    assertThat(metric.getName()).isEqualTo("duplicate_gauge");
+  }
+
+  @Test
+  void independentViews_TwoViewsWithIdenticalFilter_DoesNotDoubleCount() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+
+    builder.registerView(
+        InstrumentSelector.builder().setName("*").build(),
+        View.builder().setAttributeFilter(Collections.singleton("a")).build());
+    builder.registerView(
+        InstrumentSelector.builder().setName("my_counter").build(),
+        View.builder().setAttributeFilter(Collections.singleton("a")).build());
+
+    SdkMeterProvider provider = builder.build();
+    Meter meter = provider.get("test");
+
+    LongCounter counter = meter.counterBuilder("my_counter").build();
+    counter.add(1, Attributes.of(AttributeKey.stringKey("a"), "val"));
+
+    Collection<MetricData> metrics = reader.collectAllMetrics();
+    // In independent mode without filter value equality, conflicting views emit 2 streams of value
+    // 1 each
+    for (MetricData metric : metrics) {
+      for (LongPointData point : metric.getLongSumData().getPoints()) {
+        assertThat(point.getValue()).isEqualTo(1);
+      }
+    }
+  }
+
+  @Test
+  void independentViews_SameViewInstanceMatchingMultipleSelectors_DoesNotDoubleCount() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+
+    View view = View.builder().setAttributeFilter(Collections.singleton("a")).build();
+    builder.registerView(InstrumentSelector.builder().setName("*").build(), view);
+    builder.registerView(InstrumentSelector.builder().setName("same_view_counter").build(), view);
+
+    SdkMeterProvider provider = builder.build();
+    Meter meter = provider.get("test");
+
+    LongCounter counter = meter.counterBuilder("same_view_counter").build();
+    counter.add(1, Attributes.of(AttributeKey.stringKey("a"), "val"));
+
+    Collection<MetricData> metrics = reader.collectAllMetrics();
+    assertThat(metrics).hasSize(1);
+    MetricData metric = metrics.iterator().next();
+    assertThat(metric.getLongSumData().getPoints()).hasSize(1);
+    assertThat(metric.getLongSumData().getPoints().iterator().next().getValue()).isEqualTo(1);
+  }
+
+  @Test
+  void independentViews_AsyncGaugeSameViewInstance_DoesNotDoubleCount() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+
+    View view = View.builder().setAttributeFilter(Collections.singleton("a")).build();
+    builder.registerView(InstrumentSelector.builder().setName("*").build(), view);
+    builder.registerView(InstrumentSelector.builder().setName("same_view_gauge").build(), view);
+
+    SdkMeterProvider provider = builder.build();
+    Meter meter = provider.get("test");
+
+    meter
+        .gaugeBuilder("same_view_gauge")
+        .buildWithCallback(m -> m.record(42.0, Attributes.of(AttributeKey.stringKey("a"), "val")));
+
+    Collection<MetricData> metrics = reader.collectAllMetrics();
+    assertThat(metrics).hasSize(1);
+    MetricData metric = metrics.iterator().next();
+    assertThat(metric.getDoubleGaugeData().getPoints()).hasSize(1);
+    assertThat(metric.getDoubleGaugeData().getPoints().iterator().next().getValue())
+        .isEqualTo(42.0);
   }
 }

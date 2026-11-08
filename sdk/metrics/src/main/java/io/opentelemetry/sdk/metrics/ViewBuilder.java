@@ -25,9 +25,9 @@ public final class ViewBuilder {
 
   @Nullable private String name;
   @Nullable private String description;
-  private Aggregation aggregation = Aggregation.defaultAggregation();
-  private Predicate<String> attributeFilter = StringPredicates.ALL;
-  private int cardinalityLimit = MetricStorage.DEFAULT_MAX_CARDINALITY;
+  @Nullable private Aggregation explicitAggregation;
+  @Nullable private Predicate<String> explicitAttributeFilter;
+  @Nullable private Integer explicitCardinalityLimit;
 
   ViewBuilder() {}
 
@@ -58,12 +58,13 @@ public final class ViewBuilder {
    * @param aggregation aggregation to use.
    */
   public ViewBuilder setAggregation(Aggregation aggregation) {
+    Objects.requireNonNull(aggregation, "aggregation");
     if (!(aggregation instanceof AggregatorFactory)) {
       throw new IllegalArgumentException(
           "Custom Aggregation implementations are currently not supported. "
               + "Use one of the standard implementations returned by the static factories in the Aggregation class.");
     }
-    this.aggregation = aggregation;
+    this.explicitAggregation = aggregation;
     return this;
   }
 
@@ -104,7 +105,7 @@ public final class ViewBuilder {
    */
   public ViewBuilder setAttributeFilter(Predicate<String> keyFilter) {
     Objects.requireNonNull(keyFilter, "keyFilter");
-    this.attributeFilter = keyFilter;
+    this.explicitAttributeFilter = keyFilter;
     return this;
   }
 
@@ -121,12 +122,28 @@ public final class ViewBuilder {
     if (cardinalityLimit <= 0) {
       throw new IllegalArgumentException("cardinalityLimit must be > 0");
     }
-    this.cardinalityLimit = cardinalityLimit;
+    this.explicitCardinalityLimit = cardinalityLimit;
     return this;
   }
 
   /** Returns a {@link View} with the configuration of this builder. */
   public View build() {
-    return View.create(name, description, aggregation, attributeFilter, cardinalityLimit);
+    Aggregation aggregation =
+        explicitAggregation != null ? explicitAggregation : Aggregation.defaultAggregation();
+    Predicate<String> attributeFilter =
+        explicitAttributeFilter != null ? explicitAttributeFilter : StringPredicates.ALL;
+    int cardinalityLimit =
+        explicitCardinalityLimit != null
+            ? explicitCardinalityLimit
+            : MetricStorage.DEFAULT_MAX_CARDINALITY;
+    return View.create(
+        name,
+        description,
+        aggregation,
+        attributeFilter,
+        cardinalityLimit,
+        explicitAggregation,
+        explicitAttributeFilter,
+        explicitCardinalityLimit);
   }
 }
