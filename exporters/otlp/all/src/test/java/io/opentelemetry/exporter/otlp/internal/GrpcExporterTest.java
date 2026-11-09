@@ -187,7 +187,7 @@ class GrpcExporterTest {
                               pa.hasAttributes(
                                       expectedAttributes.toBuilder()
                                           .put(
-                                              SemConvConstants.RPC_RESPONSE_STATUS_CODE,
+                                              SemConvConstants.RPC_STATUS_CODE,
                                               GrpcStatusCode.OK.name())
                                           .build())
                                   .hasBucketCounts(1),
@@ -197,9 +197,7 @@ class GrpcExporterTest {
                                           .put(
                                               SemConvConstants.ERROR_TYPE,
                                               "" + UNAVAILABLE.getValue())
-                                          .put(
-                                              SemConvConstants.RPC_RESPONSE_STATUS_CODE,
-                                              UNAVAILABLE.name())
+                                          .put(SemConvConstants.RPC_STATUS_CODE, UNAVAILABLE.name())
                                           .build())
                                   .hasBucketCounts(1),
                           pa ->
