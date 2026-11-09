@@ -46,11 +46,10 @@ public class LogReusableDataMarshaler {
       exportMarshaler.initialize(logs);
       return doExport
           .apply(exportMarshaler, logs.size())
-          .whenComplete(
-              () -> {
-                exportMarshaler.reset();
-                marshalerPool.add(exportMarshaler);
-              });
+          .whenComplete(() -> {
+            exportMarshaler.reset();
+            marshalerPool.add(exportMarshaler);
+          });
     }
     // MemoryMode == MemoryMode.IMMUTABLE_DATA
     LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);

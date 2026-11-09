@@ -22,13 +22,12 @@ final class Client {
 
   /** Async execution. */
   private Future<Object> execute(Object message, ResponseListener responseListener) {
-    return executor.submit(
-        () -> {
-          // send via wire and get response
-          Object response = message + ":response";
-          responseListener.onResponse(response);
-          return response;
-        });
+    return executor.submit(() -> {
+      // send via wire and get response
+      Object response = message + ":response";
+      responseListener.onResponse(response);
+      return response;
+    });
   }
 
   public Future<Object> send(Object message) {

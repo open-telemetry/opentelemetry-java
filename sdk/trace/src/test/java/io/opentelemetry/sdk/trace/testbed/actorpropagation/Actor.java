@@ -36,47 +36,45 @@ final class Actor implements AutoCloseable {
   Future<?> tell(String message) {
     Context parent = Context.current();
     phaser.register();
-    return executor.submit(
-        () -> {
-          Span child =
-              tracer
-                  .spanBuilder("received")
-                  .setParent(parent)
-                  .setSpanKind(SpanKind.CONSUMER)
-                  .startSpan();
-          try (Scope ignored = child.makeCurrent()) {
-            phaser.arriveAndAwaitAdvance(); // child tracer started
-            child.addEvent("received " + message);
-            phaser.arriveAndAwaitAdvance(); // assert size
-          } finally {
-            child.end();
-          }
+    return executor.submit(() -> {
+      Span child =
+          tracer
+              .spanBuilder("received")
+              .setParent(parent)
+              .setSpanKind(SpanKind.CONSUMER)
+              .startSpan();
+      try (Scope ignored = child.makeCurrent()) {
+        phaser.arriveAndAwaitAdvance(); // child tracer started
+        child.addEvent("received " + message);
+        phaser.arriveAndAwaitAdvance(); // assert size
+      } finally {
+        child.end();
+      }
 
-          phaser.arriveAndAwaitAdvance(); // child tracer finished
-          phaser.arriveAndAwaitAdvance(); // assert size
-        });
+      phaser.arriveAndAwaitAdvance(); // child tracer finished
+      phaser.arriveAndAwaitAdvance(); // assert size
+    });
   }
 
   Future<String> ask(String message) {
     Context parent = Context.current();
     phaser.register();
-    return executor.submit(
-        () -> {
-          Span span =
-              tracer
-                  .spanBuilder("received")
-                  .setParent(parent)
-                  .setSpanKind(SpanKind.CONSUMER)
-                  .startSpan();
-          try {
-            phaser.arriveAndAwaitAdvance(); // child tracer started
-            phaser.arriveAndAwaitAdvance(); // assert size
-            return "received " + message;
-          } finally {
-            span.end();
-            phaser.arriveAndAwaitAdvance(); // child tracer finished
-            phaser.arriveAndAwaitAdvance(); // assert size
-          }
-        });
+    return executor.submit(() -> {
+      Span span =
+          tracer
+              .spanBuilder("received")
+              .setParent(parent)
+              .setSpanKind(SpanKind.CONSUMER)
+              .startSpan();
+      try {
+        phaser.arriveAndAwaitAdvance(); // child tracer started
+        phaser.arriveAndAwaitAdvance(); // assert size
+        return "received " + message;
+      } finally {
+        span.end();
+        phaser.arriveAndAwaitAdvance(); // child tracer finished
+        phaser.arriveAndAwaitAdvance(); // assert size
+      }
+    });
   }
 }

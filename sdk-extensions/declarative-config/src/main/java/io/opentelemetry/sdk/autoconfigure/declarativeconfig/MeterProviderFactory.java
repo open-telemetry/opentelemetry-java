@@ -43,31 +43,29 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
 
     List<MetricReaderModel> readerModels = model.getReaders();
     if (readerModels != null) {
-      readerModels.forEach(
-          readerModel -> {
-            MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
-                MetricReaderFactory.getInstance().create(readerModel, context);
-            CardinalityLimitSelector cardinalityLimits =
-                readerAndCardinalityLimits.getCardinalityLimitsSelector();
-            if (cardinalityLimits == null) {
-              builder.registerMetricReader(readerAndCardinalityLimits.getMetricReader());
-            } else {
-              builder.registerMetricReader(
-                  readerAndCardinalityLimits.getMetricReader(), cardinalityLimits);
-            }
-          });
+      readerModels.forEach(readerModel -> {
+        MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
+            MetricReaderFactory.getInstance().create(readerModel, context);
+        CardinalityLimitSelector cardinalityLimits =
+            readerAndCardinalityLimits.getCardinalityLimitsSelector();
+        if (cardinalityLimits == null) {
+          builder.registerMetricReader(readerAndCardinalityLimits.getMetricReader());
+        } else {
+          builder.registerMetricReader(
+              readerAndCardinalityLimits.getMetricReader(), cardinalityLimits);
+        }
+      });
     }
 
     List<ViewModel> viewModels = model.getViews();
     if (viewModels != null) {
-      viewModels.forEach(
-          viewModel -> {
-            ViewSelectorModel selector = requireNonNull(viewModel.getSelector(), "view selector");
-            ViewStreamModel stream = requireNonNull(viewModel.getStream(), "view stream");
-            builder.registerView(
-                InstrumentSelectorFactory.getInstance().create(selector, context),
-                ViewFactory.getInstance().create(stream, context));
-          });
+      viewModels.forEach(viewModel -> {
+        ViewSelectorModel selector = requireNonNull(viewModel.getSelector(), "view selector");
+        ViewStreamModel stream = requireNonNull(viewModel.getStream(), "view stream");
+        builder.registerView(
+            InstrumentSelectorFactory.getInstance().create(selector, context),
+            ViewFactory.getInstance().create(stream, context));
+      });
     }
 
     ExperimentalMeterConfiguratorModel meterConfiguratorModel =

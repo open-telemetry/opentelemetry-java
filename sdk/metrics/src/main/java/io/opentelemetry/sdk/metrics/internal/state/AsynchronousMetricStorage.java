@@ -279,50 +279,48 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
       long startEpochNanos =
           registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos);
 
-      aggregatorHandles.forEach(
-          (attributes, handle) -> {
-            T point =
-                handle.aggregateThenMaybeReset(
-                    startEpochNanos, epochNanos, attributes, /* reset= */ true);
+      aggregatorHandles.forEach((attributes, handle) -> {
+        T point =
+            handle.aggregateThenMaybeReset(
+                startEpochNanos, epochNanos, attributes, /* reset= */ true);
 
-            T pointForCurrentPoints;
-            if (memoryMode == REUSABLE_DATA) {
-              // AggregatorHandle is going to modify the point eventually, but we must persist its
-              // value to used it at the next collection (within lastPoints). Thus, we make a copy.
-              pointForCurrentPoints = reusablePointsPool.borrowObject();
-              aggregator.copyPoint(point, pointForCurrentPoints);
-            } else {
-              pointForCurrentPoints = point;
-            }
-            currentPoints.put(attributes, pointForCurrentPoints);
-          });
+        T pointForCurrentPoints;
+        if (memoryMode == REUSABLE_DATA) {
+          // AggregatorHandle is going to modify the point eventually, but we must persist its
+          // value to used it at the next collection (within lastPoints). Thus, we make a copy.
+          pointForCurrentPoints = reusablePointsPool.borrowObject();
+          aggregator.copyPoint(point, pointForCurrentPoints);
+        } else {
+          pointForCurrentPoints = point;
+        }
+        currentPoints.put(attributes, pointForCurrentPoints);
+      });
 
       List<T> deltaPoints = memoryMode == REUSABLE_DATA ? reusablePointsList : new ArrayList<>();
-      currentPoints.forEach(
-          (attributes, currentPoint) -> {
-            T lastPoint = lastPoints.remove(attributes);
+      currentPoints.forEach((attributes, currentPoint) -> {
+        T lastPoint = lastPoints.remove(attributes);
 
-            T deltaPoint;
-            if (lastPoint == null) {
-              if (memoryMode == REUSABLE_DATA) {
-                // All deltaPoints are released at the end of the collection. Thus, we need a copy
-                // to make sure currentPoint can still be used within lastPoints during the next
-                // collection.
-                deltaPoint = reusablePointsPool.borrowObject();
-                aggregator.copyPoint(currentPoint, deltaPoint);
-              } else {
-                deltaPoint = currentPoint;
-              }
-            } else {
-              if (memoryMode == REUSABLE_DATA) {
-                aggregator.diffInPlace(lastPoint, currentPoint);
-                deltaPoint = lastPoint;
-              } else {
-                deltaPoint = aggregator.diff(lastPoint, currentPoint);
-              }
-            }
-            deltaPoints.add(deltaPoint);
-          });
+        T deltaPoint;
+        if (lastPoint == null) {
+          if (memoryMode == REUSABLE_DATA) {
+            // All deltaPoints are released at the end of the collection. Thus, we need a copy
+            // to make sure currentPoint can still be used within lastPoints during the next
+            // collection.
+            deltaPoint = reusablePointsPool.borrowObject();
+            aggregator.copyPoint(currentPoint, deltaPoint);
+          } else {
+            deltaPoint = currentPoint;
+          }
+        } else {
+          if (memoryMode == REUSABLE_DATA) {
+            aggregator.diffInPlace(lastPoint, currentPoint);
+            deltaPoint = lastPoint;
+          } else {
+            deltaPoint = aggregator.diff(lastPoint, currentPoint);
+          }
+        }
+        deltaPoints.add(deltaPoint);
+      });
 
       if (memoryMode == REUSABLE_DATA) {
         // - If the point was used to compute a delta, it's now in deltaPoints (and thus in
@@ -394,17 +392,16 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
       //   cycle
       // - Otherwise, the preceding collection interval's timestamp
       // This logic is handled in AggregatorHandle creation via #createAggregatorHandle()
-      aggregatorHandles.forEach(
-          (attributes, handle) -> {
-            if (!handle.hasRecordedValues()) {
-              aggregatorHandles.remove(attributes);
-              return;
-            }
-            T value =
-                handle.aggregateThenMaybeReset(
-                    handle.getCreationEpochNanos(), epochNanos, attributes, /* reset= */ true);
-            currentPoints.add(value);
-          });
+      aggregatorHandles.forEach((attributes, handle) -> {
+        if (!handle.hasRecordedValues()) {
+          aggregatorHandles.remove(attributes);
+          return;
+        }
+        T value =
+            handle.aggregateThenMaybeReset(
+                handle.getCreationEpochNanos(), epochNanos, attributes, /* reset= */ true);
+        currentPoints.add(value);
+      });
 
       return currentPoints;
     }

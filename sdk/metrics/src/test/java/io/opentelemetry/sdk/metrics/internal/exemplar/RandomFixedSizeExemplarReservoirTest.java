@@ -40,24 +40,22 @@ class RandomFixedSizeExemplarReservoirTest {
     reservoir.offerDoubleMeasurement(1.1, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
         .hasSize(1)
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getFilteredAttributes()).isEmpty();
-              assertThat(exemplar.getValue()).isEqualTo(1.1);
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+          assertThat(exemplar.getFilteredAttributes()).isEmpty();
+          assertThat(exemplar.getValue()).isEqualTo(1.1);
+        });
 
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
     reservoir.offerDoubleMeasurement(2, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
         .hasSize(1)
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getFilteredAttributes()).isEmpty();
-              assertThat(exemplar.getValue()).isEqualTo(2);
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+          assertThat(exemplar.getFilteredAttributes()).isEmpty();
+          assertThat(exemplar.getValue()).isEqualTo(2);
+        });
   }
 
   @Test
@@ -71,12 +69,11 @@ class RandomFixedSizeExemplarReservoirTest {
         RandomFixedSizeExemplarReservoir.create(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerDoubleMeasurement(1.1, all, Context.root());
     assertThat(reservoir.collectAndResetDoubles(partial))
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(1.1);
-              assertThat(exemplar.getFilteredAttributes()).isEqualTo(remaining);
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+          assertThat(exemplar.getValue()).isEqualTo(1.1);
+          assertThat(exemplar.getFilteredAttributes()).isEqualTo(remaining);
+        });
   }
 
   @Test
@@ -94,14 +91,13 @@ class RandomFixedSizeExemplarReservoirTest {
         RandomFixedSizeExemplarReservoir.create(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerDoubleMeasurement(1, all, context);
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
-        .satisfiesExactly(
-            exemplar -> {
-              assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(1);
-              assertThat(exemplar.getFilteredAttributes()).isEqualTo(all);
-              assertThat(exemplar.getSpanContext().getTraceId()).isEqualTo(TRACE_ID);
-              assertThat(exemplar.getSpanContext().getSpanId()).isEqualTo(SPAN_ID);
-            });
+        .satisfiesExactly(exemplar -> {
+          assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
+          assertThat(exemplar.getValue()).isEqualTo(1);
+          assertThat(exemplar.getFilteredAttributes()).isEqualTo(all);
+          assertThat(exemplar.getSpanContext().getTraceId()).isEqualTo(TRACE_ID);
+          assertThat(exemplar.getSpanContext().getSpanId()).isEqualTo(SPAN_ID);
+        });
   }
 
   @Test

@@ -111,22 +111,20 @@ class BoundInstrumentUsageTest {
 
       // One cumulative data point per die face, each with the exact roll count recorded above.
       assertThat(reader.collectAllMetrics())
-          .satisfiesExactly(
-              metric ->
-                  assertThat(metric)
-                      .hasName("dice.rolls")
-                      .hasDescription("The number of times each side of the die was rolled")
-                      .hasUnit("{roll}")
-                      .hasLongSumSatisfying(
-                          sum ->
-                              sum.isMonotonic()
-                                  .hasPointsSatisfying(
-                                      point -> point.hasAttributes(ROLL_1).hasValue(counts[1]),
-                                      point -> point.hasAttributes(ROLL_2).hasValue(counts[2]),
-                                      point -> point.hasAttributes(ROLL_3).hasValue(counts[3]),
-                                      point -> point.hasAttributes(ROLL_4).hasValue(counts[4]),
-                                      point -> point.hasAttributes(ROLL_5).hasValue(counts[5]),
-                                      point -> point.hasAttributes(ROLL_6).hasValue(counts[6]))));
+          .satisfiesExactly(metric ->
+              assertThat(metric)
+                  .hasName("dice.rolls")
+                  .hasDescription("The number of times each side of the die was rolled")
+                  .hasUnit("{roll}")
+                  .hasLongSumSatisfying(sum ->
+                      sum.isMonotonic()
+                          .hasPointsSatisfying(
+                              point -> point.hasAttributes(ROLL_1).hasValue(counts[1]),
+                              point -> point.hasAttributes(ROLL_2).hasValue(counts[2]),
+                              point -> point.hasAttributes(ROLL_3).hasValue(counts[3]),
+                              point -> point.hasAttributes(ROLL_4).hasValue(counts[4]),
+                              point -> point.hasAttributes(ROLL_5).hasValue(counts[5]),
+                              point -> point.hasAttributes(ROLL_6).hasValue(counts[6]))));
     }
   }
 }

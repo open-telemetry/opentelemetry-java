@@ -132,18 +132,16 @@ public final class PeriodicMetricReader implements MetricReader {
     CompletableResultCode collectExport = new CompletableResultCode();
     signals.offer(Signal.flush(collectExport));
     CompletableResultCode result = new CompletableResultCode();
-    collectExport.whenComplete(
-        () -> {
-          CompletableResultCode flushResult = exporter.flush();
-          flushResult.whenComplete(
-              () -> {
-                if (collectExport.isSuccess() && flushResult.isSuccess()) {
-                  result.succeed();
-                } else {
-                  result.fail();
-                }
-              });
-        });
+    collectExport.whenComplete(() -> {
+      CompletableResultCode flushResult = exporter.flush();
+      flushResult.whenComplete(() -> {
+        if (collectExport.isSuccess() && flushResult.isSuccess()) {
+          result.succeed();
+        } else {
+          result.fail();
+        }
+      });
+    });
     return result;
   }
 
@@ -181,14 +179,13 @@ public final class PeriodicMetricReader implements MetricReader {
 
     CompletableResultCode result = new CompletableResultCode();
     CompletableResultCode exporterShutdown = exporter.shutdown();
-    exporterShutdown.whenComplete(
-        () -> {
-          if (finalFlush.isSuccess() && exporterShutdown.isSuccess()) {
-            result.succeed();
-          } else {
-            result.fail();
-          }
-        });
+    exporterShutdown.whenComplete(() -> {
+      if (finalFlush.isSuccess() && exporterShutdown.isSuccess()) {
+        result.succeed();
+      } else {
+        result.fail();
+      }
+    });
     return result;
   }
 

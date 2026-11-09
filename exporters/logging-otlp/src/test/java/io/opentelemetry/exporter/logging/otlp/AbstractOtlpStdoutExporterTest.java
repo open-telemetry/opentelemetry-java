@@ -385,11 +385,10 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     return (T)
         StreamSupport.stream(
                 properties.getComponentLoader().load(ComponentProvider.class).spliterator(), false)
-            .filter(
-                p -> {
-                  return "otlp_file/development".equals(p.getName())
-                      && p.getType().equals(componentProviderType);
-                })
+            .filter(p -> {
+              return "otlp_file/development".equals(p.getName())
+                  && p.getType().equals(componentProviderType);
+            })
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No provider found"))
             .create(properties);
@@ -413,15 +412,14 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   private Object loadProvider(ConfigProperties config) {
     return StreamSupport.stream(
             config.getComponentLoader().load(providerClass).spliterator(), false)
-        .filter(
-            p -> {
-              try {
-                return AbstractOtlpStdoutExporterTest.TYPE.equals(
-                    p.getClass().getDeclaredMethod("getName").invoke(p));
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-            })
+        .filter(p -> {
+          try {
+            return AbstractOtlpStdoutExporterTest.TYPE.equals(
+                p.getClass().getDeclaredMethod("getName").invoke(p));
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        })
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No provider found"));
   }

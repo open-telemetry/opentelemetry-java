@@ -33,90 +33,82 @@ class ValueTest {
   @Test
   void value_OfString() {
     assertThat(Value.of("foo"))
-        .satisfies(
-            value -> {
-              assertThat(value.getType()).isEqualTo(ValueType.STRING);
-              assertThat(value.getValue()).isEqualTo("foo");
-              assertThat(value).hasSameHashCodeAs(Value.of("foo"));
-            });
+        .satisfies(value -> {
+          assertThat(value.getType()).isEqualTo(ValueType.STRING);
+          assertThat(value.getValue()).isEqualTo("foo");
+          assertThat(value).hasSameHashCodeAs(Value.of("foo"));
+        });
   }
 
   @Test
   void value_OfBoolean() {
     assertThat(Value.of(true))
-        .satisfies(
-            value -> {
-              assertThat(value.getType()).isEqualTo(ValueType.BOOLEAN);
-              assertThat(value.getValue()).isEqualTo(true);
-              assertThat(value).hasSameHashCodeAs(Value.of(true));
-            });
+        .satisfies(value -> {
+          assertThat(value.getType()).isEqualTo(ValueType.BOOLEAN);
+          assertThat(value.getValue()).isEqualTo(true);
+          assertThat(value).hasSameHashCodeAs(Value.of(true));
+        });
   }
 
   @Test
   void value_OfLong() {
     assertThat(Value.of(1L))
-        .satisfies(
-            value -> {
-              assertThat(value.getType()).isEqualTo(ValueType.LONG);
-              assertThat(value.getValue()).isEqualTo(1L);
-              assertThat(value).hasSameHashCodeAs(Value.of(1L));
-            });
+        .satisfies(value -> {
+          assertThat(value.getType()).isEqualTo(ValueType.LONG);
+          assertThat(value.getValue()).isEqualTo(1L);
+          assertThat(value).hasSameHashCodeAs(Value.of(1L));
+        });
   }
 
   @Test
   void value_OfDouble() {
     assertThat(Value.of(1.1))
-        .satisfies(
-            value -> {
-              assertThat(value.getType()).isEqualTo(ValueType.DOUBLE);
-              assertThat(value.getValue()).isEqualTo(1.1);
-              assertThat(value).hasSameHashCodeAs(Value.of(1.1));
-            });
+        .satisfies(value -> {
+          assertThat(value.getType()).isEqualTo(ValueType.DOUBLE);
+          assertThat(value.getValue()).isEqualTo(1.1);
+          assertThat(value).hasSameHashCodeAs(Value.of(1.1));
+        });
   }
 
   @Test
   void value_OfByteArray() {
     assertThat(Value.of(new byte[] {'a', 'b'}))
-        .satisfies(
-            value -> {
-              assertThat(value.getType()).isEqualTo(ValueType.BYTES);
-              ByteBuffer buf = value.getValue();
-              // ValueBytes returns read only view of ByteBuffer
-              assertThatThrownBy(buf::array).isInstanceOf(ReadOnlyBufferException.class);
-              byte[] bytes = new byte[buf.remaining()];
-              buf.get(bytes);
-              assertThat(bytes).isEqualTo(new byte[] {'a', 'b'});
-              assertThat(value).hasSameHashCodeAs(Value.of(new byte[] {'a', 'b'}));
-            });
+        .satisfies(value -> {
+          assertThat(value.getType()).isEqualTo(ValueType.BYTES);
+          ByteBuffer buf = value.getValue();
+          // ValueBytes returns read only view of ByteBuffer
+          assertThatThrownBy(buf::array).isInstanceOf(ReadOnlyBufferException.class);
+          byte[] bytes = new byte[buf.remaining()];
+          buf.get(bytes);
+          assertThat(bytes).isEqualTo(new byte[] {'a', 'b'});
+          assertThat(value).hasSameHashCodeAs(Value.of(new byte[] {'a', 'b'}));
+        });
   }
 
   @Test
   void value_OfvalueArray() {
     assertThat(Value.of(Value.of(true), Value.of(1L)))
-        .satisfies(
-            value -> {
-              assertThat(value.getType()).isEqualTo(ValueType.ARRAY);
-              assertThat(value.getValue()).isEqualTo(Arrays.asList(Value.of(true), Value.of(1L)));
-              assertThat(value).hasSameHashCodeAs(Value.of(Value.of(true), Value.of(1L)));
-            });
+        .satisfies(value -> {
+          assertThat(value.getType()).isEqualTo(ValueType.ARRAY);
+          assertThat(value.getValue()).isEqualTo(Arrays.asList(Value.of(true), Value.of(1L)));
+          assertThat(value).hasSameHashCodeAs(Value.of(Value.of(true), Value.of(1L)));
+        });
   }
 
   @Test
   @SuppressWarnings("DoubleBraceInitialization")
   void value_OfKeyValueList() {
     assertThat(Value.of(KeyValue.of("bool", Value.of(true)), KeyValue.of("long", Value.of(1L))))
-        .satisfies(
-            value -> {
-              assertThat(value.getType()).isEqualTo(ValueType.KEY_VALUE_LIST);
-              assertThat(value.getValue())
-                  .isEqualTo(
-                      Arrays.asList(
-                          KeyValue.of("bool", Value.of(true)), KeyValue.of("long", Value.of(1L))));
-              assertThat(value)
-                  .hasSameHashCodeAs(
-                      Value.of(
-                          KeyValue.of("bool", Value.of(true)), KeyValue.of("long", Value.of(1L))));
-            });
+        .satisfies(value -> {
+          assertThat(value.getType()).isEqualTo(ValueType.KEY_VALUE_LIST);
+          assertThat(value.getValue())
+              .isEqualTo(
+                  Arrays.asList(
+                      KeyValue.of("bool", Value.of(true)), KeyValue.of("long", Value.of(1L))));
+          assertThat(value)
+              .hasSameHashCodeAs(
+                  Value.of(KeyValue.of("bool", Value.of(true)), KeyValue.of("long", Value.of(1L))));
+        });
 
     assertThat(
             Value.of(
@@ -126,23 +118,22 @@ class ValueTest {
                     put("long", Value.of(1L));
                   }
                 }))
-        .satisfies(
-            value -> {
-              assertThat(value.getType()).isEqualTo(ValueType.KEY_VALUE_LIST);
-              assertThat(value.getValue())
-                  .isEqualTo(
-                      Arrays.asList(
-                          KeyValue.of("bool", Value.of(true)), KeyValue.of("long", Value.of(1L))));
-              assertThat(value)
-                  .hasSameHashCodeAs(
-                      Value.of(
-                          new LinkedHashMap<String, Value<?>>() {
-                            {
-                              put("bool", Value.of(true));
-                              put("long", Value.of(1L));
-                            }
-                          }));
-            });
+        .satisfies(value -> {
+          assertThat(value.getType()).isEqualTo(ValueType.KEY_VALUE_LIST);
+          assertThat(value.getValue())
+              .isEqualTo(
+                  Arrays.asList(
+                      KeyValue.of("bool", Value.of(true)), KeyValue.of("long", Value.of(1L))));
+          assertThat(value)
+              .hasSameHashCodeAs(
+                  Value.of(
+                      new LinkedHashMap<String, Value<?>>() {
+                        {
+                          put("bool", Value.of(true));
+                          put("long", Value.of(1L));
+                        }
+                      }));
+        });
   }
 
   @Test
