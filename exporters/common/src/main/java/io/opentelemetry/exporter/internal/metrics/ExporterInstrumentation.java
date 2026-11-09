@@ -150,7 +150,7 @@ public class ExporterInstrumentation {
         return Attributes.of(SemConvConstants.HTTP_RESPONSE_STATUS_CODE, httpStatusCode);
       }
       if (grpcStatusCode != null) {
-        return Attributes.of(SemConvConstants.RPC_RESPONSE_STATUS_CODE, grpcStatusCode.name());
+        return Attributes.of(SemConvConstants.RPC_STATUS_CODE, grpcStatusCode.name());
       }
       return Attributes.empty();
     }
