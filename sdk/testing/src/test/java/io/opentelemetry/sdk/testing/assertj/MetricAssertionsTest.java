@@ -483,63 +483,52 @@ class MetricAssertionsTest {
 
   @Test
   void pointShortcutsRejectMismatchedPoints() {
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramPointsSatisfying(point -> point.hasCount(42)))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC).hasHistogramPointsSatisfying(point -> point.hasCount(42)))
         .isInstanceOf(AssertionError.class);
   }
 
   @Test
   void pointShortcutsRequireExactMatching() {
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugePointsSatisfying(point -> point.hasValue(1)))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC).hasLongGaugePointsSatisfying(point -> point.hasValue(1)))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugePointsSatisfying(
-                        point -> point.hasValue(Long.MAX_VALUE),
-                        point -> point.hasValue(1),
-                        point -> point.hasValue(1)))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugePointsSatisfying(
+                    point -> point.hasValue(Long.MAX_VALUE),
+                    point -> point.hasValue(1),
+                    point -> point.hasValue(1)))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugePointsSatisfying(
-                        point -> point.hasValue(1), point -> point.hasValue(1)))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugePointsSatisfying(
+                    point -> point.hasValue(1), point -> point.hasValue(1)))
         .isInstanceOf(AssertionError.class);
   }
 
   @Test
   @SuppressWarnings("NullAway")
   void pointShortcutsNullAssertions() {
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
         .isInstanceOf(NullPointerException.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramPointsSatisfying((Iterable<Consumer<HistogramPointAssert>>) null))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramPointsSatisfying((Iterable<Consumer<HistogramPointAssert>>) null))
         .isInstanceOf(NullPointerException.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>) null))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>) null))
         .isInstanceOf(NullPointerException.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SUMMARY_METRIC)
-                    .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
+    assertThatThrownBy(() ->
+            assertThat(SUMMARY_METRIC)
+                .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat((MetricData) null)
-                    .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
+    assertThatThrownBy(() ->
+            assertThat((MetricData) null)
+                .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
         .isInstanceOf(AssertionError.class);
   }
 

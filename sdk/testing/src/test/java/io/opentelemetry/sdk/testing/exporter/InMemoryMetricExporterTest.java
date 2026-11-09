@@ -137,17 +137,14 @@ class InMemoryMetricExporterTest {
                 metric ->
                     assertThat(metric)
                         .hasName("counter")
-                        .hasLongSumSatisfying(
-                            sum ->
-                                sum.isDelta().hasPointsSatisfying(point -> point.hasValue(value))),
+                        .hasLongSumSatisfying(sum ->
+                            sum.isDelta().hasPointsSatisfying(point -> point.hasValue(value))),
                 metric ->
                     assertThat(metric)
                         .hasName("upDownCounter")
-                        .hasLongSumSatisfying(
-                            sum ->
-                                sum.isCumulative()
-                                    .hasPointsSatisfying(
-                                        point -> point.hasValue(value == 1 ? 1 : 0))));
+                        .hasLongSumSatisfying(sum ->
+                            sum.isCumulative()
+                                .hasPointsSatisfying(point -> point.hasValue(value == 1 ? 1 : 0))));
         deltaExporter.reset();
       }
     }
