@@ -291,19 +291,6 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Sets whether context-scoped attributes are automatically inherited by spans.
-   *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * SdkTracerProviderUtil#setContextScopedAttributesEnabled(SdkTracerProviderBuilder, boolean)}.
-   */
-  SdkTracerProviderBuilder setContextScopedAttributesEnabled(
-      boolean contextScopedAttributesEnabled) {
-    this.contextScopedAttributesFilter =
-        contextScopedAttributesEnabled ? (scope, key) -> true : null;
-    return this;
-  }
-
-  /**
    * Sets the filter predicate to determine which context-scoped attributes are inherited by spans.
    *
    * <p>This method is experimental so not public. You may reflectively call it using {@link

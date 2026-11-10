@@ -26,7 +26,7 @@ abstract class AbstractInstrument {
   AbstractInstrument(InstrumentDescriptor descriptor, SdkMeter sdkMeter) {
     this.descriptor = descriptor;
     this.canUseRootContext =
-        sdkMeter.isExemplarsAlwaysOff() && !sdkMeter.isContextScopedAttributesEnabled();
+        sdkMeter.isExemplarsAlwaysOff() && !sdkMeter.hasContextScopedAttributesFilter();
   }
 
   final InstrumentDescriptor getDescriptor() {

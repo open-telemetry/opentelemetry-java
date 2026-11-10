@@ -19,17 +19,25 @@ import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ContextScopedAttributesLogTest {
 
+  private InMemoryLogRecordExporter exporter;
+  private SdkLoggerProviderBuilder builder;
+
+  @BeforeEach
+  void setUp() {
+    exporter = InMemoryLogRecordExporter.create();
+    builder =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter));
+  }
+
   @Test
   void contextScopedAttributes_disabledByDefault() {
-    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
-    SdkLoggerProvider provider =
-        SdkLoggerProvider.builder()
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
-            .build();
+    SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
     Context ctx = ContextAttributes.add(Context.current(), Attributes.of(stringKey("k1"), "v1"));
@@ -44,11 +52,7 @@ class ContextScopedAttributesLogTest {
 
   @Test
   void contextScopedAttributes_enabled_mergesWithExplicitPrecedence() {
-    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
-    SdkLoggerProviderBuilder builder =
-        SdkLoggerProvider.builder()
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter));
-    SdkLoggerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
@@ -80,11 +84,7 @@ class ContextScopedAttributesLogTest {
 
   @Test
   void contextScopedAttributes_usesExplicitContext() {
-    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
-    SdkLoggerProviderBuilder builder =
-        SdkLoggerProvider.builder()
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter));
-    SdkLoggerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
@@ -104,11 +104,7 @@ class ContextScopedAttributesLogTest {
 
   @Test
   void contextScopedAttributes_sameNameDifferentType_explicitWins() {
-    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
-    SdkLoggerProviderBuilder builder =
-        SdkLoggerProvider.builder()
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter));
-    SdkLoggerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
@@ -130,10 +126,6 @@ class ContextScopedAttributesLogTest {
 
   @Test
   void contextScopedAttributes_filterPredicate_filtersByScopeAndKey() {
-    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
-    SdkLoggerProviderBuilder builder =
-        SdkLoggerProvider.builder()
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter));
     SdkLoggerProviderUtil.setContextScopedAttributesFilter(
         builder,
         (scope, key) ->
@@ -166,12 +158,8 @@ class ContextScopedAttributesLogTest {
 
   @Test
   void contextScopedAttributes_logRecordAttributeLimit() {
-    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
-    SdkLoggerProviderBuilder builder =
-        SdkLoggerProvider.builder()
-            .setLogLimits(() -> LogLimits.builder().setMaxNumberOfAttributes(1).build())
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter));
-    SdkLoggerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    builder.setLogLimits(() -> LogLimits.builder().setMaxNumberOfAttributes(1).build());
+    SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
@@ -191,15 +179,10 @@ class ContextScopedAttributesLogTest {
   @Test
   void
       contextScopedAttributes_explicitExceedsLimitAndContextPresent_tracksDroppedAttributesCorrectly() {
-    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
     int maxNumberOfAttributes = 2;
-
-    SdkLoggerProviderBuilder builder =
-        SdkLoggerProvider.builder()
-            .setLogLimits(
-                () -> LogLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build())
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter));
-    SdkLoggerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    builder.setLogLimits(
+        () -> LogLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build());
+    SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 

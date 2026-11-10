@@ -57,16 +57,19 @@ class ContextScopedAttributesIntegrationTest {
 
     SdkTracerProviderBuilder tracerProviderBuilder =
         SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(spanExporter));
-    SdkTracerProviderUtil.setContextScopedAttributesEnabled(tracerProviderBuilder, true);
+    SdkTracerProviderUtil.setContextScopedAttributesFilter(
+        tracerProviderBuilder, (scope, key) -> true);
 
     SdkLoggerProviderBuilder loggerProviderBuilder =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(SimpleLogRecordProcessor.create(logExporter));
-    SdkLoggerProviderUtil.setContextScopedAttributesEnabled(loggerProviderBuilder, true);
+    SdkLoggerProviderUtil.setContextScopedAttributesFilter(
+        loggerProviderBuilder, (scope, key) -> true);
 
     SdkMeterProviderBuilder meterProviderBuilder =
         SdkMeterProvider.builder().registerMetricReader(metricReader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(meterProviderBuilder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(
+        meterProviderBuilder, (scope, key) -> true);
 
     OpenTelemetrySdk sdk =
         OpenTelemetrySdk.builder()

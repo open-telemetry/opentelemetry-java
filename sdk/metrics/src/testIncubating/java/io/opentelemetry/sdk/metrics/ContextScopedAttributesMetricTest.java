@@ -62,7 +62,7 @@ class ContextScopedAttributesMetricTest {
                 View.builder()
                     .setAttributeFilter(Collections.singleton("allowed_ctx_key"))
                     .build());
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     LongCounter counter = meter.counterBuilder("counter").build();
@@ -116,7 +116,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_boundCounter_cumulative() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     ExtendedLongCounter counter =
@@ -153,7 +153,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_boundCounter_delta() {
     InMemoryMetricReader reader = InMemoryMetricReader.createDelta();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     ExtendedLongCounter counter =
@@ -190,7 +190,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_doubleCounter_explicitContext() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     DoubleCounter counter = meter.counterBuilder("double_counter").ofDoubles().build();
@@ -226,7 +226,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_boundCounter_cumulative_noContextAttributes() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     ExtendedLongCounter counter =
@@ -253,7 +253,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_boundCounter_delta_noContextAttributes() {
     InMemoryMetricReader reader = InMemoryMetricReader.createDelta();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     ExtendedLongCounter counter =
@@ -280,7 +280,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_boundDoubleCounter_cumulative() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     ExtendedDoubleCounter counter =
@@ -319,7 +319,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_boundDoubleCounter_delta() {
     InMemoryMetricReader reader = InMemoryMetricReader.createDelta();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     ExtendedDoubleCounter counter =
@@ -363,7 +363,7 @@ class ContextScopedAttributesMetricTest {
             .registerView(
                 InstrumentSelector.builder().setName("dropped_*").build(),
                 View.builder().setAggregation(Aggregation.drop()).build());
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
 
@@ -384,7 +384,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_unboundCounter_emptyAttributesUsesContextAttributesDirectly() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     LongCounter counter = meter.counterBuilder("counter_empty_attrs").build();
@@ -413,7 +413,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_doubleCounter_nanDropped() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     DoubleCounter counter = meter.counterBuilder("double_nan").ofDoubles().build();
@@ -437,7 +437,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_boundAndUnbound_isolationInSameContext() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
 
@@ -485,7 +485,7 @@ class ContextScopedAttributesMetricTest {
   void contextScopedAttributes_sameNameDifferentType_explicitWins() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
 

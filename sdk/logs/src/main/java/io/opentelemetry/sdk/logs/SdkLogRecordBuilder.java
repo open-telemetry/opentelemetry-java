@@ -178,29 +178,38 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     }
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
+  @SuppressWarnings("rawtypes")
+  private void populateContextAttributes(Context context) {
     BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter =
         loggerSharedState.getContextScopedAttributesFilter();
-    if (filter != null && SdkLogger.INCUBATOR_AVAILABLE) {
-      Attributes contextAttributes = IncubatingUtil.getContextAttributes(context);
-      if (!contextAttributes.isEmpty()) {
-        AttributesMap attrs = this.attributes;
-        if (attrs == null) {
-          attrs =
-              AttributesMap.create(
-                  logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
-          this.attributes = attrs;
-        }
-        AttributesMap nonNullAttrs = attrs;
-        contextAttributes.forEach(
-            (key, value) -> {
-              if (filter.test(instrumentationScopeInfo, key) && !nonNullAttrs.contains(key)) {
-                nonNullAttrs.put((AttributeKey) key, value);
-              }
-            });
-      }
+    if (filter == null || !SdkLogger.INCUBATOR_AVAILABLE) {
+      return;
     }
+    Attributes contextAttributes = IncubatingUtil.getContextAttributes(context);
+    if (contextAttributes.isEmpty()) {
+      return;
+    }
+    AttributesMap attrs = this.attributes;
+    if (attrs == null) {
+      attrs =
+          AttributesMap.create(
+              logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+      this.attributes = attrs;
+    }
+    AttributesMap nonNullAttrs = attrs;
+    contextAttributes.forEach(
+        (key, value) -> {
+          if (!filter.test(instrumentationScopeInfo, key)) {
+            return;
+          }
+          if (!nonNullAttrs.containsKey(key.getKey())) {
+            nonNullAttrs.put((AttributeKey) key, value);
+          }
+        });
+  }
+
+  protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
+    populateContextAttributes(context);
     return SdkReadWriteLogRecord.create(
         loggerSharedState.getLogLimits(),
         loggerSharedState.getResource(),

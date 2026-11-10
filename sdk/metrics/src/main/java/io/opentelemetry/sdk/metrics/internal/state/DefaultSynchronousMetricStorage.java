@@ -69,24 +69,6 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     this.contextScopedAttributesFilter = contextScopedAttributesFilter;
   }
 
-  DefaultSynchronousMetricStorage(
-      MetricDescriptor metricDescriptor,
-      Aggregator<T> aggregator,
-      UnaryOperator<Attributes> attributesFilter,
-      Clock clock,
-      int maxCardinality,
-      boolean enabled,
-      boolean contextScopedAttributesEnabled) {
-    this(
-        metricDescriptor,
-        aggregator,
-        attributesFilter,
-        clock,
-        maxCardinality,
-        enabled,
-        contextScopedAttributesEnabled ? key -> true : null);
-  }
-
   static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
       RegisteredReader reader,
       MetricDescriptor descriptor,
@@ -104,26 +86,6 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         clock,
         enabled,
         /* contextScopedAttributesFilter= */ null);
-  }
-
-  static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
-      RegisteredReader reader,
-      MetricDescriptor descriptor,
-      Aggregator<T> aggregator,
-      UnaryOperator<Attributes> attributesFilter,
-      int maxCardinality,
-      Clock clock,
-      boolean enabled,
-      boolean contextScopedAttributesEnabled) {
-    return create(
-        reader,
-        descriptor,
-        aggregator,
-        attributesFilter,
-        maxCardinality,
-        clock,
-        enabled,
-        contextScopedAttributesEnabled ? key -> true : null);
   }
 
   static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
@@ -158,27 +120,41 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             contextScopedAttributesFilter);
   }
 
-  @Nullable
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.common.ContextAttributes");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
+
   @SuppressWarnings({"rawtypes", "unchecked"})
   private Attributes getMergedContextAttributes(Attributes attributes, Context context) {
-    if (contextScopedAttributesFilter == null) {
-      return null;
+    if (contextScopedAttributesFilter == null || !INCUBATOR_AVAILABLE) {
+      return attributes;
     }
     Attributes contextAttributes = StateIncubatingUtil.getContextAttributes(context);
     if (contextAttributes.isEmpty()) {
-      return null;
+      return attributes;
     }
-    boolean[] hasMatched = new boolean[1];
-    AttributesBuilder builder = Attributes.builder();
+    AttributesBuilder[] builderRef = new AttributesBuilder[1];
     contextAttributes.forEach(
         (key, value) -> {
           if (contextScopedAttributesFilter.test(key)) {
-            hasMatched[0] = true;
-            builder.put((AttributeKey) key, value);
+            if (builderRef[0] == null) {
+              builderRef[0] = Attributes.builder();
+            }
+            builderRef[0].put((AttributeKey) key, value);
           }
         });
-    if (!hasMatched[0]) {
-      return null;
+    AttributesBuilder builder = builderRef[0];
+    if (builder == null) {
+      return attributes;
     }
     if (attributes.isEmpty()) {
       return builder.build();
@@ -191,8 +167,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     if (!enabled) {
       return;
     }
-    Attributes merged = getMergedContextAttributes(attributes, context);
-    doRecordLong(value, merged != null ? merged : attributes, context);
+    doRecordLong(value, getMergedContextAttributes(attributes, context), context);
   }
 
   @Override
@@ -200,8 +175,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     if (!enabled) {
       return;
     }
-    Attributes merged = getMergedContextAttributes(attributes, context);
-    attributes = merged != null ? merged : attributes;
+    attributes = getMergedContextAttributes(attributes, context);
     if (!shouldRecordDouble(value, attributes)) {
       return;
     }

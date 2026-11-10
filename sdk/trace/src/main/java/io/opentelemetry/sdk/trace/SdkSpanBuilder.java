@@ -234,7 +234,10 @@ class SdkSpanBuilder implements SpanBuilder {
         AttributesMap spanAttributes = attributes();
         contextAttributes.forEach(
             (key, value) -> {
-              if (filter.test(instrumentationScopeInfo, key) && !spanAttributes.contains(key)) {
+              if (!filter.test(instrumentationScopeInfo, key)) {
+                return;
+              }
+              if (!spanAttributes.containsKey(key.getKey())) {
                 spanAttributes.put((AttributeKey) key, value);
               }
             });

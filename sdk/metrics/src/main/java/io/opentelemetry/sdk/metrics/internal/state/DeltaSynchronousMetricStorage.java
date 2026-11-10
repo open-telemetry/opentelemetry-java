@@ -71,26 +71,6 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     this.memoryMode = registeredReader.getReader().getMemoryMode();
   }
 
-  DeltaSynchronousMetricStorage(
-      RegisteredReader registeredReader,
-      MetricDescriptor metricDescriptor,
-      Aggregator<T> aggregator,
-      UnaryOperator<Attributes> attributesFilter,
-      Clock clock,
-      int maxCardinality,
-      boolean enabled,
-      boolean contextScopedAttributesEnabled) {
-    this(
-        registeredReader,
-        metricDescriptor,
-        aggregator,
-        attributesFilter,
-        clock,
-        maxCardinality,
-        enabled,
-        contextScopedAttributesEnabled ? key -> true : null);
-  }
-
   @Override
   void doRecordLong(long value, Attributes attributes, Context context) {
     DeltaAggregatorHandle<T> handle = acquireHandleForRecord(attributes);

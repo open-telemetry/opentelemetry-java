@@ -246,24 +246,6 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Sets whether context-scoped attributes are automatically inherited by synchronous metric
-   * measurements.
-   *
-   * <p>Note: Bound instruments (e.g. {@code BoundLongCounter}) do not inherit context-scoped
-   * attributes because their attributes are pre-resolved at {@code bind()} time and bound recording
-   * operations do not receive or evaluate Context.
-   *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#setContextScopedAttributesEnabled(SdkMeterProviderBuilder, boolean)}.
-   */
-  SdkMeterProviderBuilder setContextScopedAttributesEnabled(
-      boolean contextScopedAttributesEnabled) {
-    this.contextScopedAttributesFilter =
-        contextScopedAttributesEnabled ? (scope, key) -> true : null;
-    return this;
-  }
-
-  /**
    * Sets the filter predicate to determine which context-scoped attributes are inherited by
    * synchronous metric measurements.
    *

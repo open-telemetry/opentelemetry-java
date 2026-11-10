@@ -53,32 +53,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
         instrumentDescriptor,
         exemplarFilter,
         enabled,
-        /* contextScopedAttributesEnabled= */ false);
-  }
-
-  /**
-   * Constructs metric storage for a given synchronous instrument and view.
-   *
-   * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
-   *     recorded.
-   */
-  @SuppressWarnings("ReferenceEquality")
-  static SynchronousMetricStorage create(
-      RegisteredReader registeredReader,
-      RegisteredView registeredView,
-      Clock clock,
-      InstrumentDescriptor instrumentDescriptor,
-      ExemplarFilterInternal exemplarFilter,
-      boolean enabled,
-      boolean contextScopedAttributesEnabled) {
-    return create(
-        registeredReader,
-        registeredView,
-        clock,
-        instrumentDescriptor,
-        exemplarFilter,
-        enabled,
-        contextScopedAttributesEnabled ? key -> true : null);
+        /* contextScopedAttributesFilter= */ null);
   }
 
   /**

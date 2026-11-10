@@ -103,8 +103,9 @@ final class SdkMeter implements Meter {
     return meterProviderSharedState.getExemplarFilter() instanceof AlwaysOffExemplarFilter;
   }
 
-  boolean isContextScopedAttributesEnabled() {
-    return meterProviderSharedState.isContextScopedAttributesEnabled() && INCUBATOR_AVAILABLE;
+  boolean hasContextScopedAttributesFilter() {
+    return meterProviderSharedState.getContextScopedAttributesFilter() != null
+        && INCUBATOR_AVAILABLE;
   }
 
   @Nullable

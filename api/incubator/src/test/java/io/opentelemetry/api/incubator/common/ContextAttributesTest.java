@@ -8,7 +8,6 @@ package io.opentelemetry.api.incubator.common;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -26,12 +25,9 @@ class ContextAttributesTest {
   @Test
   void addNullValidation() {
     Context root = Context.root();
-    assertThatThrownBy(() -> ContextAttributes.add(null, Attributes.of(stringKey("k"), "v")))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("context");
-    assertThatThrownBy(() -> ContextAttributes.add(root, null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("attributes");
+    Attributes attrs = Attributes.of(stringKey("k"), "v");
+    assertThat(ContextAttributes.add(null, attrs)).isEqualTo(Context.root());
+    assertThat(ContextAttributes.add(root, null)).isSameAs(root);
   }
 
   @Test
@@ -43,12 +39,9 @@ class ContextAttributesTest {
   @Test
   void setNullValidation() {
     Context root = Context.root();
-    assertThatThrownBy(() -> ContextAttributes.set(null, Attributes.of(stringKey("k"), "v")))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("context");
-    assertThatThrownBy(() -> ContextAttributes.set(root, null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("attributes");
+    Attributes attrs = Attributes.of(stringKey("k"), "v");
+    assertThat(ContextAttributes.set(null, attrs)).isEqualTo(Context.root());
+    assertThat(ContextAttributes.set(root, null)).isSameAs(root);
   }
 
   @Test

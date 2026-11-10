@@ -127,10 +127,6 @@ final class TracerSharedState {
     return tracerInstrumentation;
   }
 
-  boolean isContextScopedAttributesEnabled() {
-    return contextScopedAttributesFilter != null;
-  }
-
   @Nullable
   BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> getContextScopedAttributesFilter() {
     return contextScopedAttributesFilter;

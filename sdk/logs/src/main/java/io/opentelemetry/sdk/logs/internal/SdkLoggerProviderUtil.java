@@ -140,23 +140,4 @@ public final class SdkLoggerProviderUtil {
     }
     return sdkLoggerProviderBuilder;
   }
-
-  /**
-   * Reflectively set whether context-scoped attributes are enabled on the {@link
-   * SdkLoggerProviderBuilder}.
-   */
-  public static SdkLoggerProviderBuilder setContextScopedAttributesEnabled(
-      SdkLoggerProviderBuilder sdkLoggerProviderBuilder, boolean contextScopedAttributesEnabled) {
-    try {
-      Method method =
-          SdkLoggerProviderBuilder.class.getDeclaredMethod(
-              "setContextScopedAttributesEnabled", boolean.class);
-      method.setAccessible(true);
-      method.invoke(sdkLoggerProviderBuilder, contextScopedAttributesEnabled);
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(
-          "Error calling setContextScopedAttributesEnabled on SdkLoggerProviderBuilder", e);
-    }
-    return sdkLoggerProviderBuilder;
-  }
 }

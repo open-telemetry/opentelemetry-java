@@ -185,10 +185,10 @@ public final class AttributesMap implements Attributes {
    *
    * <p>Runs with expected/amortized O(1) complexity using the internal open-addressing table.
    *
-   * @param key the attribute key whose name to look up. Must not be null.
+   * @param key the attribute key name to look up. Must not be null.
    */
-  public boolean contains(AttributeKey<?> key) {
-    return hashTable[findSlot(key.getKey())] != EMPTY;
+  public boolean containsKey(String key) {
+    return hashTable[findSlot(key)] != EMPTY;
   }
 
   @Override

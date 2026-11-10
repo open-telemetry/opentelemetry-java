@@ -77,10 +77,6 @@ final class LoggerSharedState {
     return loggerInstrumentation;
   }
 
-  boolean isContextScopedAttributesEnabled() {
-    return contextScopedAttributesFilter != null;
-  }
-
   @Nullable
   BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> getContextScopedAttributesFilter() {
     return contextScopedAttributesFilter;

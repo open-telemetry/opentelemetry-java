@@ -41,7 +41,7 @@ class LoggerSharedStateTest {
   }
 
   @Test
-  void contextScopedAttributesEnabled() {
+  void contextScopedAttributesFilter() {
     LoggerSharedState stateEnabled =
         new LoggerSharedState(
             SdkResourceProvider.create(Resource.empty()),
@@ -51,7 +51,6 @@ class LoggerSharedStateTest {
             ExceptionAttributeResolver.getDefault(),
             new SdkLoggerInstrumentation(MeterProvider::noop),
             (scope, key) -> true);
-    assertThat(stateEnabled.isContextScopedAttributesEnabled()).isTrue();
     assertThat(stateEnabled.getContextScopedAttributesFilter()).isNotNull();
 
     LoggerSharedState stateDisabled =
@@ -63,7 +62,6 @@ class LoggerSharedStateTest {
             ExceptionAttributeResolver.getDefault(),
             new SdkLoggerInstrumentation(MeterProvider::noop),
             /* contextScopedAttributesFilter= */ null);
-    assertThat(stateDisabled.isContextScopedAttributesEnabled()).isFalse();
     assertThat(stateDisabled.getContextScopedAttributesFilter()).isNull();
   }
 }

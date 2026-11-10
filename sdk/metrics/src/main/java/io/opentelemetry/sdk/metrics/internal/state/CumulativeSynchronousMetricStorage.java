@@ -58,26 +58,6 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
     this.memoryMode = memoryMode;
   }
 
-  CumulativeSynchronousMetricStorage(
-      MetricDescriptor metricDescriptor,
-      Aggregator<T> aggregator,
-      UnaryOperator<Attributes> attributesFilter,
-      Clock clock,
-      int maxCardinality,
-      boolean enabled,
-      boolean contextScopedAttributesEnabled,
-      MemoryMode memoryMode) {
-    this(
-        metricDescriptor,
-        aggregator,
-        attributesFilter,
-        clock,
-        maxCardinality,
-        enabled,
-        contextScopedAttributesEnabled ? key -> true : null,
-        memoryMode);
-  }
-
   @Override
   void doRecordLong(long value, Attributes attributes, Context context) {
     getAggregatorHandle(attributes).recordLong(value, attributes, context);

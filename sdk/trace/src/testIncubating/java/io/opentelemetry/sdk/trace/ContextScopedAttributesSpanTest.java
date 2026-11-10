@@ -76,7 +76,7 @@ class ContextScopedAttributesSpanTest {
         SdkTracerProvider.builder()
             .setSampler(inspectSampler)
             .addSpanProcessor(SimpleSpanProcessor.create(exporter));
-    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
@@ -109,7 +109,7 @@ class ContextScopedAttributesSpanTest {
     InMemorySpanExporter exporter = InMemorySpanExporter.create();
     SdkTracerProviderBuilder builder =
         SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
-    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
@@ -133,7 +133,7 @@ class ContextScopedAttributesSpanTest {
     InMemorySpanExporter exporter = InMemorySpanExporter.create();
     SdkTracerProviderBuilder builder =
         SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
-    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
@@ -164,7 +164,7 @@ class ContextScopedAttributesSpanTest {
     InMemorySpanExporter exporter = InMemorySpanExporter.create();
     SdkTracerProviderBuilder builder =
         SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
-    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
@@ -190,7 +190,7 @@ class ContextScopedAttributesSpanTest {
         SdkTracerProvider.builder()
             .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(1).build())
             .addSpanProcessor(SimpleSpanProcessor.create(exporter));
-    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
@@ -263,7 +263,7 @@ class ContextScopedAttributesSpanTest {
             .setSampler(testSampler)
             .addSpanProcessor(testProcessor)
             .addSpanProcessor(SimpleSpanProcessor.create(exporter));
-    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
@@ -311,7 +311,7 @@ class ContextScopedAttributesSpanTest {
     InMemorySpanExporter exporter = InMemorySpanExporter.create();
     SdkTracerProviderBuilder builder =
         SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
-    SdkTracerProviderUtil.setContextScopedAttributesEnabled(builder, true);
+    SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 

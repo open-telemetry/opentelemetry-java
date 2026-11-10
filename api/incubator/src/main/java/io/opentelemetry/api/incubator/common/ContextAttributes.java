@@ -5,44 +5,34 @@
 
 package io.opentelemetry.api.incubator.common;
 
-import static java.util.Objects.requireNonNull;
-
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import javax.annotation.Nullable;
 
 // TODO (jack-berg): delete after 2027-07-01 if progress hasn't been made on
-// https://github.com/open-telemetry/opentelemetry-java/issues/8532
+// https://github.com/open-telemetry/opentelemetry-specification/pull/4931
 /**
  * Utility for associating {@link Attributes} with a {@link Context} for automatic propagation to
  * telemetry signals produced within that context.
  *
- * <h2>Usage and Authoring Guidance</h2>
- *
- * <p>Context-scoped attributes are designed for cross-cutting contextual identity attributes (such
- * as {@code tenant.id}, {@code account.id}, or deployment environment metadata) established at
- * request or execution boundaries (for example, in HTTP/RPC server interceptors or messaging
- * consumers). General library instrumentations should avoid populating context-scoped attributes to
- * prevent injecting library-internal concerns into ambient application telemetry.
+ * <p>SDKs can be configured to stamp context-scoped attributes across telemetry signals, with the
+ * ability to filter based on signal, instrumentation scope, and attribute key.
  *
  * <h2>Cardinality Considerations</h2>
  *
- * <p>Context-scoped attributes are stamped across all active telemetry signals produced within the
- * context. While high or unbounded cardinality attributes (such as user identifiers or transaction
- * IDs) are acceptable on event-based signals like spans and log records, attaching high-cardinality
- * attributes to {@link Context} poses a critical risk to metrics. Synchronous metric recordings
- * inherit these attributes into their metric point dimension sets, which can cause metric stream
- * explosion and high memory consumption. Therefore, attributes associated with {@link Context}
- * <b>must</b> be low-cardinality unless a filter is explicitly configured on the metric provider
- * (via {@code SdkMeterProviderBuilder.setContextScopedAttributesFilter}) to exclude them.
+ * <p>Attaching high-cardinality attributes to {@link Context} poses a critical risk to metrics.
+ * Synchronous metric recordings inherit these attributes into their metric point dimension sets,
+ * which can cause metric stream explosion and high memory consumption. Therefore, attributes
+ * associated with {@link Context} <b>must</b> be low-cardinality unless a filter is explicitly
+ * configured on the metric provider to exclude them.
  *
  * <h2>Bound Instruments</h2>
  *
- * <p>Bound instruments (such as {@code BoundLongCounter} or {@code BoundDoubleCounter}) do
- * <b>not</b> inherit context-scoped attributes. Their attribute sets are resolved once at {@code
- * bind()} time, and subsequent bound recording operations do not access or evaluate the active
- * context.
+ * <p>Bound instruments do not inherit dynamic context-scoped attributes. Their attribute sets are
+ * resolved once at bind time, and subsequent bound recording operations do not access or evaluate
+ * the active context.
  */
 public final class ContextAttributes {
 
@@ -55,14 +45,22 @@ public final class ContextAttributes {
    * Sets the {@link Attributes} on the given {@link Context}, completely replacing any previously
    * associated context-scoped attributes.
    *
-   * @param context the context to attach attributes to. Must not be null.
-   * @param attributes the authoritative attributes to associate. Must not be null. Pass {@link
-   *     Attributes#empty()} to logically clear context-scoped attributes.
+   * @param context the context to attach attributes to. If null, {@link Context#root()} is
+   *     returned.
+   * @param attributes the authoritative attributes to associate. If null, {@code context} is
+   *     returned unchanged. Pass {@link Attributes#empty()} to logically clear context-scoped
+   *     attributes.
    * @return a new context containing the specified attributes.
    */
-  public static Context set(Context context, Attributes attributes) {
-    requireNonNull(context, "context");
-    requireNonNull(attributes, "attributes");
+  public static Context set(@Nullable Context context, @Nullable Attributes attributes) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(ContextAttributes.class, "set", "context");
+      return Context.root();
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(ContextAttributes.class, "set", "attributes");
+      return context;
+    }
     if (attributes.isEmpty()) {
       Attributes existing = context.get(CONTEXT_ATTRIBUTES_KEY);
       if (existing == null || existing.isEmpty()) {
@@ -77,14 +75,21 @@ public final class ContextAttributes {
    * Adds the given {@link Attributes} to the {@link Context}, merging them with any existing
    * context-scoped attributes. Conflicting keys take the value from {@code attributes}.
    *
-   * @param context the context to attach attributes to. Must not be null.
-   * @param attributes the attributes to add. Must not be null. If empty, {@code context} is
-   *     returned unchanged.
+   * @param context the context to attach attributes to. If null, {@link Context#root()} is
+   *     returned.
+   * @param attributes the attributes to add. If null or empty, {@code context} is returned
+   *     unchanged.
    * @return a new context containing the merged attributes.
    */
-  public static Context add(Context context, Attributes attributes) {
-    requireNonNull(context, "context");
-    requireNonNull(attributes, "attributes");
+  public static Context add(@Nullable Context context, @Nullable Attributes attributes) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(ContextAttributes.class, "add", "context");
+      return Context.root();
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(ContextAttributes.class, "add", "attributes");
+      return context;
+    }
     if (attributes.isEmpty()) {
       return context;
     }
