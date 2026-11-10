@@ -74,12 +74,11 @@ class ExtendedSpanProcessorUsageTest {
       assertThat(exporter.getFinishedSpanItems())
           .hasSize(1)
           .first()
-          .satisfies(
-              spanData -> {
-                assertThat(spanData.getAttributes())
-                    .containsEntry(FOO_KEY, "Hello!")
-                    .containsEntry(BAR_KEY, "Hello!");
-              });
+          .satisfies(spanData -> {
+            assertThat(spanData.getAttributes())
+                .containsEntry(FOO_KEY, "Hello!")
+                .containsEntry(BAR_KEY, "Hello!");
+          });
     }
   }
 }

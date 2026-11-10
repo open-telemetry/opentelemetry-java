@@ -23,20 +23,18 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
 
   @Override
   public GrpcSender createSender(GrpcSenderConfig grpcSenderConfig) {
-    if (!(grpcSenderConfig instanceof ExtendedGrpcSenderConfig)) {
-      throw new IllegalStateException(
-          "grpcSenderConfig must be an instance of ExtendedGrpcSenderConfig for UpstreamGrpcSenderProvider");
-    }
+    checkState(
+        grpcSenderConfig instanceof ExtendedGrpcSenderConfig,
+        "grpcSenderConfig must be an instance of ExtendedGrpcSenderConfig for UpstreamGrpcSenderProvider");
     ExtendedGrpcSenderConfig extendedSenderConfig = (ExtendedGrpcSenderConfig) grpcSenderConfig;
 
     boolean shutdownChannel = false;
     Object configManagedChannel = extendedSenderConfig.getManagedChannel();
     ManagedChannel managedChannel;
     if (configManagedChannel != null) {
-      if (!(configManagedChannel instanceof ManagedChannel)) {
-        throw new IllegalStateException(
-            "managedChannel must be an instance of ManagedChannel for UpstreamGrpcSenderProvider");
-      }
+      checkState(
+          configManagedChannel instanceof ManagedChannel,
+          "managedChannel must be an instance of ManagedChannel for UpstreamGrpcSenderProvider");
       managedChannel = (ManagedChannel) configManagedChannel;
     } else {
       // Shutdown the channel as part of the exporter shutdown sequence if we created it.
@@ -73,5 +71,11 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
       channelBuilder.usePlaintext();
     }
     return channelBuilder.build();
+  }
+
+  private static void checkState(boolean isValid, String message) {
+    if (!isValid) {
+      throw new IllegalStateException(message);
+    }
   }
 }

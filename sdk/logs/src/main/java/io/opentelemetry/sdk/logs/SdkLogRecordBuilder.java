@@ -197,15 +197,14 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
       this.attributes = attrs;
     }
     AttributesMap nonNullAttrs = attrs;
-    contextAttributes.forEach(
-        (key, value) -> {
-          if (!filter.test(instrumentationScopeInfo, key)) {
-            return;
-          }
-          if (!nonNullAttrs.containsKey(key.getKey())) {
-            nonNullAttrs.put((AttributeKey) key, value);
-          }
-        });
+    contextAttributes.forEach((key, value) -> {
+      if (!filter.test(instrumentationScopeInfo, key)) {
+        return;
+      }
+      if (!nonNullAttrs.containsKey(key.getKey())) {
+        nonNullAttrs.put((AttributeKey) key, value);
+      }
+    });
   }
 
   protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {

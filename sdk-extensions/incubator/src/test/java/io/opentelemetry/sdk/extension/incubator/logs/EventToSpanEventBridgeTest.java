@@ -90,19 +90,17 @@ class EventToSpanEventBridgeTest {
     }
 
     assertThat(spanExporter.getFinishedSpanItems())
-        .satisfiesExactly(
-            spanData ->
-                assertThat(spanData)
-                    .hasName("span")
-                    .hasEventsSatisfyingExactly(
-                        spanEvent ->
-                            spanEvent
-                                .hasName("my.event-name")
-                                .hasTimestamp(100, TimeUnit.NANOSECONDS)
-                                .hasAttributes(
-                                    Attributes.of(
-                                        stringKey("color"), "red",
-                                        stringKey("shape"), "square"))));
+        .satisfiesExactly(spanData ->
+            assertThat(spanData)
+                .hasName("span")
+                .hasEventsSatisfyingExactly(spanEvent ->
+                    spanEvent
+                        .hasName("my.event-name")
+                        .hasTimestamp(100, TimeUnit.NANOSECONDS)
+                        .hasAttributes(
+                            Attributes.of(
+                                stringKey("color"), "red",
+                                stringKey("shape"), "square"))));
   }
 
   @Test
@@ -119,16 +117,15 @@ class EventToSpanEventBridgeTest {
     }
 
     assertThat(spanExporter.getFinishedSpanItems())
-        .satisfiesExactly(
-            spanData ->
-                assertThat(spanData)
-                    .hasName("span")
-                    .hasEventsSatisfyingExactly(
-                        // observedTimestamp is 1ms = 1_000_000 ns
-                        spanEvent ->
-                            spanEvent
-                                .hasName("my.event-name")
-                                .hasTimestamp(1_000_000, TimeUnit.NANOSECONDS)));
+        .satisfiesExactly(spanData ->
+            assertThat(spanData)
+                .hasName("span")
+                .hasEventsSatisfyingExactly(
+                    // observedTimestamp is 1ms = 1_000_000 ns
+                    spanEvent ->
+                        spanEvent
+                            .hasName("my.event-name")
+                            .hasTimestamp(1_000_000, TimeUnit.NANOSECONDS)));
   }
 
   @Test
@@ -197,11 +194,10 @@ class EventToSpanEventBridgeTest {
     }
 
     assertThat(spanExporter.getFinishedSpanItems())
-        .satisfiesExactly(
-            spanData ->
-                assertThat(spanData)
-                    .hasName("span")
-                    .hasEventsSatisfying(events -> assertThat(events).isEmpty()));
+        .satisfiesExactly(spanData ->
+            assertThat(spanData)
+                .hasName("span")
+                .hasEventsSatisfying(events -> assertThat(events).isEmpty()));
   }
 
   @Test

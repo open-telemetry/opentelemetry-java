@@ -232,15 +232,14 @@ class SdkSpanBuilder implements SpanBuilder {
       Attributes contextAttributes = IncubatingUtil.getContextAttributes(contextForAttributes);
       if (!contextAttributes.isEmpty()) {
         AttributesMap spanAttributes = attributes();
-        contextAttributes.forEach(
-            (key, value) -> {
-              if (!filter.test(instrumentationScopeInfo, key)) {
-                return;
-              }
-              if (!spanAttributes.containsKey(key.getKey())) {
-                spanAttributes.put((AttributeKey) key, value);
-              }
-            });
+        contextAttributes.forEach((key, value) -> {
+          if (!filter.test(instrumentationScopeInfo, key)) {
+            return;
+          }
+          if (!spanAttributes.containsKey(key.getKey())) {
+            spanAttributes.put((AttributeKey) key, value);
+          }
+        });
       }
     }
     Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;

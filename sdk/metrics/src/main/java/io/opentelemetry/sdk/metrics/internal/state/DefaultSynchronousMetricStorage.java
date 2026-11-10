@@ -76,25 +76,6 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       UnaryOperator<Attributes> attributesFilter,
       int maxCardinality,
       Clock clock,
-      boolean enabled) {
-    return create(
-        reader,
-        descriptor,
-        aggregator,
-        attributesFilter,
-        maxCardinality,
-        clock,
-        enabled,
-        /* contextScopedAttributesFilter= */ null);
-  }
-
-  static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
-      RegisteredReader reader,
-      MetricDescriptor descriptor,
-      Aggregator<T> aggregator,
-      UnaryOperator<Attributes> attributesFilter,
-      int maxCardinality,
-      Clock clock,
       boolean enabled,
       @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter) {
     AggregationTemporality aggregationTemporality =
@@ -143,15 +124,14 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       return attributes;
     }
     AttributesBuilder[] builderRef = new AttributesBuilder[1];
-    contextAttributes.forEach(
-        (key, value) -> {
-          if (contextScopedAttributesFilter.test(key)) {
-            if (builderRef[0] == null) {
-              builderRef[0] = Attributes.builder();
-            }
-            builderRef[0].put((AttributeKey) key, value);
-          }
-        });
+    contextAttributes.forEach((key, value) -> {
+      if (contextScopedAttributesFilter.test(key)) {
+        if (builderRef[0] == null) {
+          builderRef[0] = Attributes.builder();
+        }
+        builderRef[0].put((AttributeKey) key, value);
+      }
+    });
     AttributesBuilder builder = builderRef[0];
     if (builder == null) {
       return attributes;

@@ -137,20 +137,17 @@ class ContextScopedAttributesIntegrationTest {
 
     // 3. Verify Metric Measurement
     assertThat(metricReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("orders_total")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1)
-                                        .hasAttributes(
-                                            attributeEntry("tenant.id", "t-123"),
-                                            attributeEntry("environment", "production"),
-                                            attributeEntry("payment.method", "CREDIT_CARD")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("orders_total")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(1)
+                            .hasAttributes(
+                                attributeEntry("tenant.id", "t-123"),
+                                attributeEntry("environment", "production"),
+                                attributeEntry("payment.method", "CREDIT_CARD")))));
   }
 
   @Test
@@ -198,19 +195,16 @@ class ContextScopedAttributesIntegrationTest {
 
     // Metric: metric-explicit wins
     assertThat(metricReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("orders_total")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(5)
-                                        .hasAttributes(
-                                            attributeEntry("tenant.id", "context-tenant"),
-                                            attributeEntry("shared.key", "metric-explicit")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("orders_total")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(5)
+                            .hasAttributes(
+                                attributeEntry("tenant.id", "context-tenant"),
+                                attributeEntry("shared.key", "metric-explicit")))));
   }
 
   @Test
@@ -236,14 +230,12 @@ class ContextScopedAttributesIntegrationTest {
     assertThat(logs.get(0).getAttributes()).isEmpty();
 
     assertThat(metricReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("orders_total")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("orders_total")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(
+                        point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
   }
 
   @Test

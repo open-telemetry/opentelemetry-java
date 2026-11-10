@@ -71,20 +71,19 @@ class ConfigUtilTest {
       List<Future<?>> futures = new ArrayList<>();
       for (int i = 0; i < threads; i++) {
         futures.add(
-            executor.submit(
-                () -> {
-                  try {
-                    latch.await();
-                  } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                  }
+            executor.submit(() -> {
+              try {
+                latch.await();
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+              }
 
-                  for (int j = 0; j < cycles; j++) {
-                    String property = "prop " + j;
-                    System.setProperty(property, "a");
-                    System.getProperties().remove(property);
-                  }
-                }));
+              for (int j = 0; j < cycles; j++) {
+                String property = "prop " + j;
+                System.setProperty(property, "a");
+                System.getProperties().remove(property);
+              }
+            }));
       }
 
       latch.countDown();

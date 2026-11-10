@@ -41,14 +41,12 @@ class ContextScopedAttributesMetricTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("counter")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("counter")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(
+                        point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
   }
 
   @Test
@@ -88,28 +86,23 @@ class ContextScopedAttributesMetricTest {
             metric ->
                 assertThat(metric)
                     .hasName("counter")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(5)
-                                        .hasAttributes(
-                                            attributeEntry("k1", "from-context"),
-                                            attributeEntry("k2", "explicit"),
-                                            attributeEntry("k3", "v3"),
-                                            attributeEntry("allowed_ctx_key", "allowed")))),
+                    .hasLongSumSatisfying(sum ->
+                        sum.hasPointsSatisfying(point ->
+                            point
+                                .hasValue(5)
+                                .hasAttributes(
+                                    attributeEntry("k1", "from-context"),
+                                    attributeEntry("k2", "explicit"),
+                                    attributeEntry("k3", "v3"),
+                                    attributeEntry("allowed_ctx_key", "allowed")))),
             metric ->
                 assertThat(metric)
                     .hasName("filtered_counter")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(3)
-                                        .hasAttributes(
-                                            attributeEntry("allowed_ctx_key", "allowed")))));
+                    .hasLongSumSatisfying(sum ->
+                        sum.hasPointsSatisfying(point ->
+                            point
+                                .hasValue(3)
+                                .hasAttributes(attributeEntry("allowed_ctx_key", "allowed")))));
   }
 
   @Test
@@ -134,19 +127,16 @@ class ContextScopedAttributesMetricTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("bound_counter")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(10)
-                                        .hasAttributes(
-                                            attributeEntry("k_bound", "bound"),
-                                            attributeEntry("k_clash", "bound-win")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("bound_counter")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(10)
+                            .hasAttributes(
+                                attributeEntry("k_bound", "bound"),
+                                attributeEntry("k_clash", "bound-win")))));
   }
 
   @Test
@@ -171,19 +161,16 @@ class ContextScopedAttributesMetricTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("bound_counter_delta")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(7)
-                                        .hasAttributes(
-                                            attributeEntry("k_bound", "bound"),
-                                            attributeEntry("k_clash", "bound-win")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("bound_counter_delta")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(7)
+                            .hasAttributes(
+                                attributeEntry("k_bound", "bound"),
+                                attributeEntry("k_clash", "bound-win")))));
   }
 
   @Test
@@ -206,20 +193,17 @@ class ContextScopedAttributesMetricTest {
         explicitCtx);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("double_counter")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(2.5)
-                                        .hasAttributes(
-                                            attributeEntry("k_explicit", "val"),
-                                            attributeEntry("k_clash", "explicit-win"),
-                                            attributeEntry("k_ctx", "ctx")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("double_counter")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(2.5)
+                            .hasAttributes(
+                                attributeEntry("k_explicit", "val"),
+                                attributeEntry("k_clash", "explicit-win"),
+                                attributeEntry("k_ctx", "ctx")))));
   }
 
   @Test
@@ -236,17 +220,12 @@ class ContextScopedAttributesMetricTest {
     bound.add(10);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("bound_counter_no_ctx")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(10)
-                                        .hasAttributes(attributeEntry("k_bound", "bound")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("bound_counter_no_ctx")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point.hasValue(10).hasAttributes(attributeEntry("k_bound", "bound")))));
   }
 
   @Test
@@ -263,17 +242,12 @@ class ContextScopedAttributesMetricTest {
     bound.add(7);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("bound_counter_delta_no_ctx")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(7)
-                                        .hasAttributes(attributeEntry("k_bound", "bound")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("bound_counter_delta_no_ctx")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point.hasValue(7).hasAttributes(attributeEntry("k_bound", "bound")))));
   }
 
   @Test
@@ -300,19 +274,16 @@ class ContextScopedAttributesMetricTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("bound_double_cumulative")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(4.0)
-                                        .hasAttributes(
-                                            attributeEntry("k_bound", "bound"),
-                                            attributeEntry("k_clash", "bound-win")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("bound_double_cumulative")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(4.0)
+                            .hasAttributes(
+                                attributeEntry("k_bound", "bound"),
+                                attributeEntry("k_clash", "bound-win")))));
   }
 
   @Test
@@ -339,19 +310,16 @@ class ContextScopedAttributesMetricTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("bound_double_delta")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(4.0)
-                                        .hasAttributes(
-                                            attributeEntry("k_bound", "bound"),
-                                            attributeEntry("k_clash", "bound-win")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("bound_double_delta")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(4.0)
+                            .hasAttributes(
+                                attributeEntry("k_bound", "bound"),
+                                attributeEntry("k_clash", "bound-win")))));
   }
 
   @Test
@@ -396,17 +364,12 @@ class ContextScopedAttributesMetricTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("counter_empty_attrs")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1)
-                                        .hasAttributes(attributeEntry("k_ctx", "ctx")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("counter_empty_attrs")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(
+                        point -> point.hasValue(1).hasAttributes(attributeEntry("k_ctx", "ctx")))));
   }
 
   @Test
@@ -460,25 +423,21 @@ class ContextScopedAttributesMetricTest {
             metric ->
                 assertThat(metric)
                     .hasName("unbound_requests")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1)
-                                        .hasAttributes(
-                                            attributeEntry("route", "/api"),
-                                            attributeEntry("tenant.id", "acme")))),
+                    .hasLongSumSatisfying(sum ->
+                        sum.hasPointsSatisfying(point ->
+                            point
+                                .hasValue(1)
+                                .hasAttributes(
+                                    attributeEntry("route", "/api"),
+                                    attributeEntry("tenant.id", "acme")))),
             metric ->
                 assertThat(metric)
                     .hasName("bound_infra")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1)
-                                        .hasAttributes(attributeEntry("pool", "shared-infra")))));
+                    .hasLongSumSatisfying(sum ->
+                        sum.hasPointsSatisfying(point ->
+                            point
+                                .hasValue(1)
+                                .hasAttributes(attributeEntry("pool", "shared-infra")))));
   }
 
   @Test
@@ -498,17 +457,12 @@ class ContextScopedAttributesMetricTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("collision_counter")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1)
-                                        .hasAttributes(attributeEntry("code", 200L)))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("collision_counter")
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(
+                        point -> point.hasValue(1).hasAttributes(attributeEntry("code", 200L)))));
   }
 
   @Test
@@ -544,19 +498,14 @@ class ContextScopedAttributesMetricTest {
             metric ->
                 assertThat(metric)
                     .hasName("m1")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1)
-                                        .hasAttributes(attributeEntry("allowed.k", "v1")))),
+                    .hasLongSumSatisfying(sum ->
+                        sum.hasPointsSatisfying(point ->
+                            point.hasValue(1).hasAttributes(attributeEntry("allowed.k", "v1")))),
             metric ->
                 assertThat(metric)
                     .hasName("m2")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
+                    .hasLongSumSatisfying(sum ->
+                        sum.hasPointsSatisfying(
+                            point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
   }
 }

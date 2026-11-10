@@ -74,18 +74,17 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
     }
 
     KeyValueMarshaler[] keyValueMarshalers = new KeyValueMarshaler[items.size()];
-    items.forEach(
-        item ->
-            new Consumer<AttributeKeyValue<?>>() {
-              int index = 0;
+    items.forEach(item ->
+        new Consumer<AttributeKeyValue<?>>() {
+          int index = 0;
 
-              @Override
-              public void accept(AttributeKeyValue<?> attributeKeyValue) {
-                keyValueMarshalers[index++] =
-                    KeyValueMarshaler.create(
-                        attributeKeyValue.getAttributeKey(), attributeKeyValue.getValue());
-              }
-            });
+          @Override
+          public void accept(AttributeKeyValue<?> attributeKeyValue) {
+            keyValueMarshalers[index++] =
+                KeyValueMarshaler.create(
+                    attributeKeyValue.getAttributeKey(), attributeKeyValue.getValue());
+          }
+        });
     return keyValueMarshalers;
   }
 

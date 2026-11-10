@@ -39,29 +39,6 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
    * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
    *     recorded.
    */
-  static SynchronousMetricStorage create(
-      RegisteredReader registeredReader,
-      RegisteredView registeredView,
-      Clock clock,
-      InstrumentDescriptor instrumentDescriptor,
-      ExemplarFilterInternal exemplarFilter,
-      boolean enabled) {
-    return create(
-        registeredReader,
-        registeredView,
-        clock,
-        instrumentDescriptor,
-        exemplarFilter,
-        enabled,
-        /* contextScopedAttributesFilter= */ null);
-  }
-
-  /**
-   * Constructs metric storage for a given synchronous instrument and view.
-   *
-   * @return The storage, or {@link EmptyMetricStorage#empty()} if the instrument should not be
-   *     recorded.
-   */
   @SuppressWarnings("ReferenceEquality")
   static <T extends PointData> SynchronousMetricStorage create(
       RegisteredReader registeredReader,

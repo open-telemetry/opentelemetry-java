@@ -113,18 +113,14 @@ class HttpExporterTest {
 
                 assertThat(inMemoryMetrics.collectAllMetrics())
                     .hasSize(1)
-                    .anySatisfy(
-                        metric ->
-                            assertThat(metric)
-                                .hasName(signalMetricPrefix + "inflight")
-                                .hasUnit(expectedUnit)
-                                .hasLongSumSatisfying(
-                                    ma ->
-                                        ma.isNotMonotonic()
-                                            .hasPointsSatisfying(
-                                                pa ->
-                                                    pa.hasAttributes(expectedAttributes)
-                                                        .hasValue(42))));
+                    .anySatisfy(metric ->
+                        assertThat(metric)
+                            .hasName(signalMetricPrefix + "inflight")
+                            .hasUnit(expectedUnit)
+                            .hasLongSumSatisfying(ma ->
+                                ma.isNotMonotonic()
+                                    .hasPointsSatisfying(
+                                        pa -> pa.hasAttributes(expectedAttributes).hasValue(42))));
 
                 onResponse.accept(new FakeHttpResponse(200, "Ok"));
                 return null;
@@ -156,71 +152,57 @@ class HttpExporterTest {
 
       assertThat(inMemoryMetrics.collectAllMetrics())
           .hasSize(3)
-          .anySatisfy(
-              metric ->
-                  assertThat(metric)
-                      .hasName(signalMetricPrefix + "inflight")
-                      .hasUnit(expectedUnit)
-                      .hasLongSumSatisfying(
-                          ma ->
-                              ma.hasPointsSatisfying(
-                                  pa -> pa.hasAttributes(expectedAttributes).hasValue(0))))
-          .anySatisfy(
-              metric ->
-                  assertThat(metric)
-                      .hasName(signalMetricPrefix + "exported")
-                      .hasUnit(expectedUnit)
-                      .hasLongSumSatisfying(
-                          ma ->
-                              ma.hasPointsSatisfying(
-                                  pa -> pa.hasAttributes(expectedAttributes).hasValue(42),
-                                  pa ->
-                                      pa.hasAttributes(
-                                              expectedAttributes.toBuilder()
-                                                  .put(SemConvConstants.ERROR_TYPE, "404")
-                                                  .build())
-                                          .hasValue(15),
-                                  pa ->
-                                      pa.hasAttributes(
-                                              expectedAttributes.toBuilder()
-                                                  .put(
-                                                      SemConvConstants.ERROR_TYPE,
-                                                      "java.io.IOException")
-                                                  .build())
-                                          .hasValue(7))))
-          .anySatisfy(
-              metric ->
-                  assertThat(metric)
-                      .hasName("otel.sdk.exporter.operation.duration")
-                      .hasUnit("s")
-                      .hasHistogramSatisfying(
-                          ma ->
-                              ma.hasPointsSatisfying(
-                                  pa ->
-                                      pa.hasAttributes(
-                                              expectedAttributes.toBuilder()
-                                                  .put(
-                                                      SemConvConstants.HTTP_RESPONSE_STATUS_CODE,
-                                                      200)
-                                                  .build())
-                                          .hasBucketCounts(1),
-                                  pa ->
-                                      pa.hasAttributes(
-                                              expectedAttributes.toBuilder()
-                                                  .put(SemConvConstants.ERROR_TYPE, "404")
-                                                  .put(
-                                                      SemConvConstants.HTTP_RESPONSE_STATUS_CODE,
-                                                      404)
-                                                  .build())
-                                          .hasBucketCounts(1),
-                                  pa ->
-                                      pa.hasAttributes(
-                                              expectedAttributes.toBuilder()
-                                                  .put(
-                                                      SemConvConstants.ERROR_TYPE,
-                                                      "java.io.IOException")
-                                                  .build())
-                                          .hasBucketCounts(1))));
+          .anySatisfy(metric ->
+              assertThat(metric)
+                  .hasName(signalMetricPrefix + "inflight")
+                  .hasUnit(expectedUnit)
+                  .hasLongSumSatisfying(ma ->
+                      ma.hasPointsSatisfying(
+                          pa -> pa.hasAttributes(expectedAttributes).hasValue(0))))
+          .anySatisfy(metric ->
+              assertThat(metric)
+                  .hasName(signalMetricPrefix + "exported")
+                  .hasUnit(expectedUnit)
+                  .hasLongSumSatisfying(ma ->
+                      ma.hasPointsSatisfying(
+                          pa -> pa.hasAttributes(expectedAttributes).hasValue(42),
+                          pa ->
+                              pa.hasAttributes(
+                                      expectedAttributes.toBuilder()
+                                          .put(SemConvConstants.ERROR_TYPE, "404")
+                                          .build())
+                                  .hasValue(15),
+                          pa ->
+                              pa.hasAttributes(
+                                      expectedAttributes.toBuilder()
+                                          .put(SemConvConstants.ERROR_TYPE, "java.io.IOException")
+                                          .build())
+                                  .hasValue(7))))
+          .anySatisfy(metric ->
+              assertThat(metric)
+                  .hasName("otel.sdk.exporter.operation.duration")
+                  .hasUnit("s")
+                  .hasHistogramSatisfying(ma ->
+                      ma.hasPointsSatisfying(
+                          pa ->
+                              pa.hasAttributes(
+                                      expectedAttributes.toBuilder()
+                                          .put(SemConvConstants.HTTP_RESPONSE_STATUS_CODE, 200)
+                                          .build())
+                                  .hasBucketCounts(1),
+                          pa ->
+                              pa.hasAttributes(
+                                      expectedAttributes.toBuilder()
+                                          .put(SemConvConstants.ERROR_TYPE, "404")
+                                          .put(SemConvConstants.HTTP_RESPONSE_STATUS_CODE, 404)
+                                          .build())
+                                  .hasBucketCounts(1),
+                          pa ->
+                              pa.hasAttributes(
+                                      expectedAttributes.toBuilder()
+                                          .put(SemConvConstants.ERROR_TYPE, "java.io.IOException")
+                                          .build())
+                                  .hasBucketCounts(1))));
     }
   }
 

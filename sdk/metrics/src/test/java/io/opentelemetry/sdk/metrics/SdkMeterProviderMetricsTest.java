@@ -48,18 +48,16 @@ class SdkMeterProviderMetricsTest {
               m -> {
                 assertThat(m)
                     .hasName("otel.sdk.metric_reader.collection.duration")
-                    .hasHistogramSatisfying(
-                        h ->
-                            h.hasPointsSatisfying(
-                                p ->
-                                    p.hasCount(1)
-                                        .hasAttributesSatisfying(
-                                            equalTo(
-                                                SemConvConstants.OTEL_COMPONENT_TYPE,
-                                                "periodic_metric_reader"),
-                                            equalTo(
-                                                SemConvConstants.OTEL_COMPONENT_NAME,
-                                                "periodic_metric_reader/0"))));
+                    .hasHistogramSatisfying(h ->
+                        h.hasPointsSatisfying(p ->
+                            p.hasCount(1)
+                                .hasAttributesSatisfying(
+                                    equalTo(
+                                        SemConvConstants.OTEL_COMPONENT_TYPE,
+                                        "periodic_metric_reader"),
+                                    equalTo(
+                                        SemConvConstants.OTEL_COMPONENT_NAME,
+                                        "periodic_metric_reader/0"))));
               });
     }
   }
@@ -90,18 +88,15 @@ class SdkMeterProviderMetricsTest {
       meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
 
       assertThat(metricExporter.getFinishedMetricItems())
-          .anySatisfy(
-              m ->
-                  assertThat(m)
-                      .hasName("otel.sdk.metric_reader.collection.duration")
-                      .hasHistogramSatisfying(
-                          h ->
-                              h.hasPointsSatisfying(
-                                  p ->
-                                      p.hasAttributesSatisfying(
-                                          equalTo(
-                                              SemConvConstants.ERROR_TYPE,
-                                              "java.lang.IllegalStateException")))));
+          .anySatisfy(m ->
+              assertThat(m)
+                  .hasName("otel.sdk.metric_reader.collection.duration")
+                  .hasHistogramSatisfying(h ->
+                      h.hasPointsSatisfying(p ->
+                          p.hasAttributesSatisfying(
+                              equalTo(
+                                  SemConvConstants.ERROR_TYPE,
+                                  "java.lang.IllegalStateException")))));
     }
   }
 }

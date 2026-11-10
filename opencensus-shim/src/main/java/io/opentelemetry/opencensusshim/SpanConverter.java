@@ -84,14 +84,13 @@ final class SpanConverter {
 
   static Tracestate mapTracestate(TraceState traceState) {
     Tracestate.Builder tracestateBuilder = Tracestate.builder();
-    traceState.forEach(
-        (key, value) -> {
-          // OpenCensus does not accept the W3C multi-tenant key format (tenant-id@system-id) that
-          // OpenTelemetry allows. Drop such entries instead of failing the whole conversion.
-          if (key.indexOf('@') < 0) {
-            tracestateBuilder.set(key, value);
-          }
-        });
+    traceState.forEach((key, value) -> {
+      // OpenCensus does not accept the W3C multi-tenant key format (tenant-id@system-id) that
+      // OpenTelemetry allows. Drop such entries instead of failing the whole conversion.
+      if (key.indexOf('@') < 0) {
+        tracestateBuilder.set(key, value);
+      }
+    });
     return tracestateBuilder.build();
   }
 

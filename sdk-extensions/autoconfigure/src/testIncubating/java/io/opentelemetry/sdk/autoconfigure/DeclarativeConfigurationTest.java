@@ -91,22 +91,20 @@ class DeclarativeConfigurationTest {
   @Test
   @SuppressLogger(AutoConfiguredOpenTelemetrySdkBuilder.class)
   void configFile_fileNotFound() {
-    assertThatThrownBy(
-            () ->
-                AutoConfiguredOpenTelemetrySdk.builder()
-                    .setConfig(
-                        DefaultConfigProperties.createFromMap(
-                            Collections.singletonMap("otel.config.file", "foo")))
-                    .build())
+    assertThatThrownBy(() ->
+            AutoConfiguredOpenTelemetrySdk.builder()
+                .setConfig(
+                    DefaultConfigProperties.createFromMap(
+                        Collections.singletonMap("otel.config.file", "foo")))
+                .build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Configuration file not found");
 
-    assertThatCode(
-            () ->
-                AutoConfiguredOpenTelemetrySdk.builder()
-                    .addPropertiesSupplier(() -> singletonMap("otel.config.file", ""))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
-                    .build())
+    assertThatCode(() ->
+            AutoConfiguredOpenTelemetrySdk.builder()
+                .addPropertiesSupplier(() -> singletonMap("otel.config.file", ""))
+                .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+                .build())
         .doesNotThrowAnyException();
   }
 

@@ -20,6 +20,7 @@
 
 package io.opentelemetry.api.internal;
 
+import io.opentelemetry.api.impl.TemporaryBuffers;
 import javax.annotation.CheckForNull;
 
 /**

@@ -431,12 +431,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return buildImpl();
     }
     AtomicReference<AutoConfiguredOpenTelemetrySdk> autoConfiguredRef = new AtomicReference<>();
-    GlobalOpenTelemetry.set(
-        () -> {
-          AutoConfiguredOpenTelemetrySdk sdk = buildImpl();
-          autoConfiguredRef.set(sdk);
-          return sdk.getOpenTelemetrySdk();
-        });
+    GlobalOpenTelemetry.set(() -> {
+      AutoConfiguredOpenTelemetrySdk sdk = buildImpl();
+      autoConfiguredRef.set(sdk);
+      return sdk.getOpenTelemetrySdk();
+    });
     AutoConfiguredOpenTelemetrySdk sdk = Objects.requireNonNull(autoConfiguredRef.get());
     logger.log(
         Level.FINE,
@@ -613,11 +612,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   void mergeSdkTracerProviderConfigurer() {
     for (SdkTracerProviderConfigurer configurer :
         componentLoader.load(SdkTracerProviderConfigurer.class)) {
-      addTracerProviderCustomizer(
-          (builder, config) -> {
-            configurer.configure(builder, config);
-            return builder;
-          });
+      addTracerProviderCustomizer((builder, config) -> {
+        configurer.configure(builder, config);
+        return builder;
+      });
     }
   }
 
@@ -642,16 +640,15 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   // Visible for testing
   @SuppressWarnings("SystemOut")
   Thread shutdownHook(OpenTelemetrySdk sdk) {
-    return new Thread(
-        () -> {
-          try {
-            sdk.close();
-          } catch (Throwable e) {
-            // https://github.com/open-telemetry/opentelemetry-java/issues/6827
-            // logging deps might not be on the classpath at this point
-            System.out.printf("%s Flush failed during shutdown: %s%n", Level.WARNING, e);
-          }
-        });
+    return new Thread(() -> {
+      try {
+        sdk.close();
+      } catch (Throwable e) {
+        // https://github.com/open-telemetry/opentelemetry-java/issues/6827
+        // logging deps might not be on the classpath at this point
+        System.out.printf("%s Flush failed during shutdown: %s%n", Level.WARNING, e);
+      }
+    });
   }
 
   private static <I, O1, O2> BiFunction<I, ConfigProperties, O2> mergeCustomizer(

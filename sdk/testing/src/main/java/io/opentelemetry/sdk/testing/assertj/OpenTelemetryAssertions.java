@@ -255,22 +255,31 @@ public final class OpenTelemetryAssertions extends Assertions {
   // Unique interfaces to prevent generic functional interface clash. These are not interesting at
   // all but are required to be able to use the same method name in methods like satisfies above.
 
+  /** Assertions on a string attribute value. */
   public interface StringAssertConsumer extends Consumer<AbstractStringAssert<?>> {}
 
+  /** Assertions on a boolean attribute value. */
   public interface BooleanAssertConsumer extends Consumer<AbstractBooleanAssert<?>> {}
 
+  /** Assertions on a long attribute value. */
   public interface LongAssertConsumer extends Consumer<AbstractLongAssert<?>> {}
 
+  /** Assertions on a double attribute value. */
   public interface DoubleAssertConsumer extends Consumer<AbstractDoubleAssert<?>> {}
 
+  /** Assertions on a string array attribute value. */
   public interface StringListAssertConsumer extends Consumer<ListAssert<String>> {}
 
+  /** Assertions on a boolean array attribute value. */
   public interface BooleanListAssertConsumer extends Consumer<ListAssert<Boolean>> {}
 
+  /** Assertions on a long array attribute value. */
   public interface LongListAssertConsumer extends Consumer<ListAssert<Long>> {}
 
+  /** Assertions on a double array attribute value. */
   public interface DoubleListAssertConsumer extends Consumer<ListAssert<Double>> {}
 
+  /** Assertions on a structured attribute value. */
   public interface ValueAssertConsumer extends Consumer<ObjectAssert<Value<?>>> {}
 
   private static List<Boolean> toList(boolean... values) {

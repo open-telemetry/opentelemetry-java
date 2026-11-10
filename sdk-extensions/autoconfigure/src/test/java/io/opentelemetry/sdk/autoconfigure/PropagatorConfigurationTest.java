@@ -46,26 +46,24 @@ class PropagatorConfigurationTest {
 
   @Test
   void configurePropagators_none_withOthers() {
-    assertThatThrownBy(
-            () ->
-                PropagatorConfiguration.configurePropagators(
-                    DefaultConfigProperties.createFromMap(
-                        Collections.singletonMap("otel.propagators", "none,blather")),
-                    spiHelper,
-                    (a, unused) -> a))
+    assertThatThrownBy(() ->
+            PropagatorConfiguration.configurePropagators(
+                DefaultConfigProperties.createFromMap(
+                    Collections.singletonMap("otel.propagators", "none,blather")),
+                spiHelper,
+                (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("otel.propagators contains 'none' along with other propagators");
   }
 
   @Test
   void configurePropagators_NotOnClasspath() {
-    assertThatThrownBy(
-            () ->
-                PropagatorConfiguration.configurePropagators(
-                    DefaultConfigProperties.createFromMap(
-                        Collections.singletonMap("otel.propagators", "b3")),
-                    spiHelper,
-                    (a, config) -> a))
+    assertThatThrownBy(() ->
+            PropagatorConfiguration.configurePropagators(
+                DefaultConfigProperties.createFromMap(
+                    Collections.singletonMap("otel.propagators", "b3")),
+                spiHelper,
+                (a, config) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.propagators: b3");
   }

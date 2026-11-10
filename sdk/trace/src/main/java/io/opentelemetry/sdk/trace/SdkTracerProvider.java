@@ -76,12 +76,9 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             new SdkTracerInstrumentation(meterProvider),
             contextScopedAttributesFilter);
     this.tracerSdkComponentRegistry =
-        new ComponentRegistry<>(
-            instrumentationScopeInfo ->
-                SdkTracer.create(
-                    sharedState,
-                    instrumentationScopeInfo,
-                    getTracerConfig(instrumentationScopeInfo)));
+        new ComponentRegistry<>(instrumentationScopeInfo ->
+            SdkTracer.create(
+                sharedState, instrumentationScopeInfo, getTracerConfig(instrumentationScopeInfo)));
     this.tracerConfigurator = tracerConfigurator;
   }
 
@@ -148,10 +145,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     this.tracerConfigurator = tracerConfigurator;
     this.tracerSdkComponentRegistry
         .getComponents()
-        .forEach(
-            sdkTracer ->
-                sdkTracer.updateTracerConfig(
-                    getTracerConfig(sdkTracer.getInstrumentationScopeInfo())));
+        .forEach(sdkTracer ->
+            sdkTracer.updateTracerConfig(getTracerConfig(sdkTracer.getInstrumentationScopeInfo())));
   }
 
   /**

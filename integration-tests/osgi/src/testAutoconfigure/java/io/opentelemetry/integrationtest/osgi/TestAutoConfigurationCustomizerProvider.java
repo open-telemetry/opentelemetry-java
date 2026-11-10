@@ -16,11 +16,9 @@ public class TestAutoConfigurationCustomizerProvider
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
-    autoConfiguration.addResourceCustomizer(
-        (resource, config) ->
-            resource.merge(
-                Resource.create(
-                    Attributes.of(
-                        AttributeKey.stringKey("test.customizer"), "test-osgi-customizer"))));
+    autoConfiguration.addResourceCustomizer((resource, config) ->
+        resource.merge(
+            Resource.create(
+                Attributes.of(AttributeKey.stringKey("test.customizer"), "test-osgi-customizer"))));
   }
 }

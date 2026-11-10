@@ -69,10 +69,9 @@ class ConfigurableLogRecordExporterTest {
     List<Closeable> closeables = new ArrayList<>();
 
     SpiHelper spiHelper = SpiHelper.create(new URLClassLoader(new URL[0], null));
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterConfiguration.configureLogRecordExporters(
-                    config, spiHelper, (a, unused) -> a, closeables))
+    assertThatThrownBy(() ->
+            LogRecordExporterConfiguration.configureLogRecordExporters(
+                config, spiHelper, (a, unused) -> a, closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
     cleanup.addCloseables(closeables);
@@ -82,10 +81,9 @@ class ConfigurableLogRecordExporterTest {
 
   @Test
   void configureExporter_NotFound() {
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterConfiguration.configureExporter(
-                    "catExporter", NamedSpiManager.createEmpty()))
+    assertThatThrownBy(() ->
+            LogRecordExporterConfiguration.configureExporter(
+                "catExporter", NamedSpiManager.createEmpty()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
   }

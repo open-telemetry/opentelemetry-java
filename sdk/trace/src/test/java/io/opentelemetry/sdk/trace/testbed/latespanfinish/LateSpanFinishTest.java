@@ -60,30 +60,28 @@ public final class LateSpanFinishTest {
    */
   private void submitTasks(Span parentSpan) {
 
-    executor.submit(
-        () -> {
-          /* Alternative to calling activate() is to pass it manually to asChildOf() for each
-           * created Span. */
-          try (Scope scope = parentSpan.makeCurrent()) {
-            Span childSpan = tracer.spanBuilder("task1").startSpan();
-            try (Scope childScope = childSpan.makeCurrent()) {
-              TestUtils.sleep(55);
-            } finally {
-              childSpan.end();
-            }
-          }
-        });
+    executor.submit(() -> {
+      /* Alternative to calling activate() is to pass it manually to asChildOf() for each
+       * created Span. */
+      try (Scope scope = parentSpan.makeCurrent()) {
+        Span childSpan = tracer.spanBuilder("task1").startSpan();
+        try (Scope childScope = childSpan.makeCurrent()) {
+          TestUtils.sleep(55);
+        } finally {
+          childSpan.end();
+        }
+      }
+    });
 
-    executor.submit(
-        () -> {
-          try (Scope scope = parentSpan.makeCurrent()) {
-            Span childSpan = tracer.spanBuilder("task2").startSpan();
-            try (Scope childScope = childSpan.makeCurrent()) {
-              TestUtils.sleep(85);
-            } finally {
-              childSpan.end();
-            }
-          }
-        });
+    executor.submit(() -> {
+      try (Scope scope = parentSpan.makeCurrent()) {
+        Span childSpan = tracer.spanBuilder("task2").startSpan();
+        try (Scope childScope = childSpan.makeCurrent()) {
+          TestUtils.sleep(85);
+        } finally {
+          childSpan.end();
+        }
+      }
+    });
   }
 }

@@ -54,27 +54,25 @@ class LoggerProviderConfigurationTest {
     try (SdkLoggerProvider loggerProvider = builder.build()) {
       assertThat(loggerProvider)
           .extracting("sharedState")
-          .satisfies(
-              sharedState ->
-                  assertThat(sharedState)
-                      .extracting("logRecordProcessor")
-                      .isInstanceOf(BatchLogRecordProcessor.class)
-                      .extracting("worker")
-                      .satisfies(
-                          worker -> {
-                            assertThat(worker)
-                                .extracting("scheduleDelayNanos")
-                                .isEqualTo(TimeUnit.SECONDS.toNanos(1));
-                            assertThat(worker)
-                                .extracting("exporterTimeoutNanos")
-                                .isEqualTo(TimeUnit.MILLISECONDS.toNanos(30000));
-                            assertThat(worker).extracting("maxExportBatchSize").isEqualTo(512);
-                            assertThat(worker)
-                                .extracting("queue")
-                                .isInstanceOfSatisfying(
-                                    ArrayBlockingQueue.class,
-                                    queue -> assertThat(queue.remainingCapacity()).isEqualTo(2048));
-                          }));
+          .satisfies(sharedState ->
+              assertThat(sharedState)
+                  .extracting("logRecordProcessor")
+                  .isInstanceOf(BatchLogRecordProcessor.class)
+                  .extracting("worker")
+                  .satisfies(worker -> {
+                    assertThat(worker)
+                        .extracting("scheduleDelayNanos")
+                        .isEqualTo(TimeUnit.SECONDS.toNanos(1));
+                    assertThat(worker)
+                        .extracting("exporterTimeoutNanos")
+                        .isEqualTo(TimeUnit.MILLISECONDS.toNanos(30000));
+                    assertThat(worker).extracting("maxExportBatchSize").isEqualTo(512);
+                    assertThat(worker)
+                        .extracting("queue")
+                        .isInstanceOfSatisfying(
+                            ArrayBlockingQueue.class,
+                            queue -> assertThat(queue.remainingCapacity()).isEqualTo(2048));
+                  }));
       assertThat(closeables)
           .hasExactlyElementsOfTypes(
               OtlpGrpcLogRecordExporter.class, BatchLogRecordProcessor.class);
@@ -129,24 +127,23 @@ class LoggerProviderConfigurationTest {
             MeterProvider.noop())) {
       assertThat(processor)
           .extracting("worker")
-          .satisfies(
-              worker -> {
-                assertThat(worker)
-                    .extracting("scheduleDelayNanos")
-                    .isEqualTo(TimeUnit.MILLISECONDS.toNanos(100000));
-                assertThat(worker)
-                    .extracting("exporterTimeoutNanos")
-                    .isEqualTo(TimeUnit.MILLISECONDS.toNanos(4));
-                assertThat(worker).extracting("maxExportBatchSize").isEqualTo(2);
-                assertThat(worker)
-                    .extracting("queue")
-                    .isInstanceOfSatisfying(
-                        ArrayBlockingQueue.class,
-                        queue -> assertThat(queue.remainingCapacity()).isEqualTo(2));
-                assertThat(worker)
-                    .extracting("logRecordExporter")
-                    .isInstanceOf(SystemOutLogRecordExporter.class);
-              });
+          .satisfies(worker -> {
+            assertThat(worker)
+                .extracting("scheduleDelayNanos")
+                .isEqualTo(TimeUnit.MILLISECONDS.toNanos(100000));
+            assertThat(worker)
+                .extracting("exporterTimeoutNanos")
+                .isEqualTo(TimeUnit.MILLISECONDS.toNanos(4));
+            assertThat(worker).extracting("maxExportBatchSize").isEqualTo(2);
+            assertThat(worker)
+                .extracting("queue")
+                .isInstanceOfSatisfying(
+                    ArrayBlockingQueue.class,
+                    queue -> assertThat(queue.remainingCapacity()).isEqualTo(2));
+            assertThat(worker)
+                .extracting("logRecordExporter")
+                .isInstanceOf(SystemOutLogRecordExporter.class);
+          });
     }
   }
 }

@@ -104,15 +104,14 @@ final class SdkMeter implements Meter {
   }
 
   boolean hasContextScopedAttributesFilter() {
-    return meterProviderSharedState.getContextScopedAttributesFilter() != null
-        && INCUBATOR_AVAILABLE;
+    return meterProviderSharedState.getContextScopedAttributesFilter() != null;
   }
 
   @Nullable
   Predicate<AttributeKey<?>> getContextScopedAttributesFilter() {
     BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter =
         meterProviderSharedState.getContextScopedAttributesFilter();
-    if (filter == null || !INCUBATOR_AVAILABLE) {
+    if (filter == null) {
       return null;
     }
     return key -> filter.test(getInstrumentationScopeInfo(), key);

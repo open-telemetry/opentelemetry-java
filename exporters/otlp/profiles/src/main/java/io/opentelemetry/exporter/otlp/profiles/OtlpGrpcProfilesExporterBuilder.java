@@ -58,7 +58,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
   }
 
   /**
-   * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+   * Sets the managed channel to use when communicating with the backend. Takes precedence over
    * {@link #setEndpoint(String)} if both are called.
    *
    * <p>Note: calling this overrides the spec compliant {@code User-Agent} header. To ensure spec
@@ -116,9 +116,13 @@ public final class OtlpGrpcProfilesExporterBuilder {
     return this;
   }
 
-  /** Sets the maximum OTLP gRPC request message size in bytes. If unset, defaults to 64 MiB. */
+  /**
+   * Sets the maximum OTLP gRPC request message size in bytes. If unset, defaults to 64 MiB. A value
+   * of 0 means no limit.
+   */
   public OtlpGrpcProfilesExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSizeBytes) {
-    checkArgument(maxRequestMessageSizeBytes > 0, "maxRequestMessageSizeBytes must be positive");
+    checkArgument(
+        maxRequestMessageSizeBytes >= 0, "maxRequestMessageSizeBytes must be non-negative");
     delegate.setMaxRequestMessageSize(maxRequestMessageSizeBytes);
     return this;
   }
@@ -155,7 +159,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
   }
 
   /**
-   * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   * Sets the client key and the certificate chain to use for verifying client when TLS is enabled.
    * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpGrpcProfilesExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {

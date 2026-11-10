@@ -28,12 +28,6 @@ import javax.annotation.concurrent.Immutable;
 public abstract class MeterProviderSharedState {
 
   public static MeterProviderSharedState create(
-      Clock clock, SdkResourceProvider resourceProvider, ExemplarFilterInternal exemplarFilter) {
-    return create(
-        clock, resourceProvider, exemplarFilter, /* contextScopedAttributesFilter= */ null);
-  }
-
-  public static MeterProviderSharedState create(
       Clock clock,
       SdkResourceProvider resourceProvider,
       ExemplarFilterInternal exemplarFilter,

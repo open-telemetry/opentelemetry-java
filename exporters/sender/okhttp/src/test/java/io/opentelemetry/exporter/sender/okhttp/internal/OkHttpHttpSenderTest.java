@@ -247,28 +247,27 @@ class OkHttpHttpSenderTest {
       int port = serverSocket.getLocalPort();
 
       Thread serverThread =
-          new Thread(
-              () -> {
-                try (SSLSocket conn = (SSLSocket) serverSocket.accept()) {
-                  InputStream is = conn.getInputStream();
-                  OutputStream os = conn.getOutputStream();
-                  // Read until end of HTTP headers.
-                  StringBuilder sb = new StringBuilder();
-                  while (!sb.toString().endsWith("\r\n\r\n")) {
-                    int b = is.read();
-                    if (b < 0) {
-                      break;
-                    }
-                    sb.append((char) b);
-                  }
-                  os.write(
-                      "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
-                          .getBytes(StandardCharsets.US_ASCII));
-                  os.flush();
-                } catch (Exception e) {
-                  throw new RuntimeException(e);
+          new Thread(() -> {
+            try (SSLSocket conn = (SSLSocket) serverSocket.accept()) {
+              InputStream is = conn.getInputStream();
+              OutputStream os = conn.getOutputStream();
+              // Read until end of HTTP headers.
+              StringBuilder sb = new StringBuilder();
+              while (!sb.toString().endsWith("\r\n\r\n")) {
+                int b = is.read();
+                if (b < 0) {
+                  break;
                 }
-              });
+                sb.append((char) b);
+              }
+              os.write(
+                  "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
+                      .getBytes(StandardCharsets.US_ASCII));
+              os.flush();
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          });
       serverThread.setDaemon(true);
       serverThread.start();
 
@@ -346,22 +345,21 @@ class OkHttpHttpSenderTest {
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(null, null, null);
 
-    assertThatCode(
-            () ->
-                new OkHttpHttpSender(
-                    URI.create("https://localhost"),
-                    "text/plain",
-                    null,
-                    Duration.ofSeconds(10),
-                    Duration.ofSeconds(10),
-                    Collections::emptyMap,
-                    null,
-                    null,
-                    sslContext,
-                    null,
-                    null,
-                    Long.MAX_VALUE,
-                    null))
+    assertThatCode(() ->
+            new OkHttpHttpSender(
+                URI.create("https://localhost"),
+                "text/plain",
+                null,
+                Duration.ofSeconds(10),
+                Duration.ofSeconds(10),
+                Collections::emptyMap,
+                null,
+                null,
+                sslContext,
+                null,
+                null,
+                Long.MAX_VALUE,
+                null))
         .doesNotThrowAnyException();
   }
 
@@ -375,22 +373,21 @@ class OkHttpHttpSenderTest {
       SSLContext sslContext = SSLContext.getInstance("TLS");
       sslContext.init(null, null, null);
 
-      assertThatThrownBy(
-              () ->
-                  new OkHttpHttpSender(
-                      URI.create("https://localhost"),
-                      "text/plain",
-                      null,
-                      Duration.ofSeconds(10),
-                      Duration.ofSeconds(10),
-                      Collections::emptyMap,
-                      null,
-                      null,
-                      sslContext,
-                      null,
-                      null,
-                      Long.MAX_VALUE,
-                      null))
+      assertThatThrownBy(() ->
+              new OkHttpHttpSender(
+                  URI.create("https://localhost"),
+                  "text/plain",
+                  null,
+                  Duration.ofSeconds(10),
+                  Duration.ofSeconds(10),
+                  Collections::emptyMap,
+                  null,
+                  null,
+                  sslContext,
+                  null,
+                  null,
+                  Long.MAX_VALUE,
+                  null))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("Unable to initialize default trust manager")
           .hasCauseInstanceOf(SSLException.class);

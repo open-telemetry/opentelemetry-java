@@ -17,11 +17,10 @@ class AttributeAssertionTest {
   void nullAttr_errorMessageContainsAttrName() {
     AttributeKey<String> key = AttributeKey.stringKey("flib");
 
-    assertThatThrownBy(
-            () ->
-                AttributeAssertion.create(key, AbstractAssert::isNotNull)
-                    .getAssertion()
-                    .accept(AttributeAssertion.attributeValueAssertion(key, null)))
+    assertThatThrownBy(() ->
+            AttributeAssertion.create(key, AbstractAssert::isNotNull)
+                .getAssertion()
+                .accept(AttributeAssertion.attributeValueAssertion(key, null)))
         .isInstanceOf(AssertionError.class)
         .hasMessage(
             "[STRING attribute 'flib'] "
