@@ -48,25 +48,18 @@ class BoundInstrumentExemplarTest {
     boundFirst.add(1);
 
     assertThat(deltaReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.isDelta()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasValue(1)
-                                            .hasAttributes(
-                                                Attributes.builder().put("keep", "k").build())
-                                            .hasExemplarsSatisfying(
-                                                exemplar ->
-                                                    exemplar
-                                                        .hasValue(1)
-                                                        .hasFilteredAttributes(
-                                                            Attributes.builder()
-                                                                .put("drop", "first")
-                                                                .build())))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasLongSumSatisfying(sum ->
+                    sum.isDelta()
+                        .hasPointsSatisfying(point ->
+                            point
+                                .hasValue(1)
+                                .hasAttributes(Attributes.builder().put("keep", "k").build())
+                                .hasExemplarsSatisfying(exemplar ->
+                                    exemplar
+                                        .hasValue(1)
+                                        .hasFilteredAttributes(
+                                            Attributes.builder().put("drop", "first").build())))));
   }
 }

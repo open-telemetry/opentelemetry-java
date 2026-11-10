@@ -58,14 +58,13 @@ class MetricReusableDataMarshalerTest {
                     instrumentation.startRecordingExport(count);
                 CompletableResultCode result = new CompletableResultCode();
                 pending.set(result);
-                return result.whenComplete(
-                    () -> {
-                      if (result.isSuccess()) {
-                        recording.finishSuccessful();
-                      } else {
-                        recording.finishFailed("test_failure");
-                      }
-                    });
+                return result.whenComplete(() -> {
+                  if (result.isSuccess()) {
+                    recording.finishSuccessful();
+                  } else {
+                    recording.finishFailed("test_failure");
+                  }
+                });
               });
       long exported = 0;
       int[] expectedPointCounts = {5, 0, 0, 1};
@@ -129,12 +128,11 @@ class MetricReusableDataMarshalerTest {
     assertThat(reader.collectAllMetrics())
         .filteredOn(metric -> metric.getName().equals(name))
         .singleElement()
-        .satisfies(
-            metric ->
-                assertThat(metric.getLongSumData().getPoints())
-                    .singleElement()
-                    .extracting(LongPointData::getValue)
-                    .isEqualTo(expected));
+        .satisfies(metric ->
+            assertThat(metric.getLongSumData().getPoints())
+                .singleElement()
+                .extracting(LongPointData::getValue)
+                .isEqualTo(expected));
   }
 
   private static void assertLegacyMetricValue(
@@ -142,13 +140,11 @@ class MetricReusableDataMarshalerTest {
     assertThat(reader.collectAllMetrics())
         .filteredOn(metric -> metric.getName().equals(name))
         .singleElement()
-        .satisfies(
-            metric ->
-                assertThat(metric)
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point -> point.hasValue(expected).hasAttributes(attributes))));
+        .satisfies(metric ->
+            assertThat(metric)
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(
+                        point -> point.hasValue(expected).hasAttributes(attributes))));
   }
 
   private static MetricData metric(String name, int count) {
@@ -167,15 +163,13 @@ class MetricReusableDataMarshalerTest {
 
   private static Stream<Arguments> exportCases() {
     return Stream.of(InternalTelemetryVersion.LEGACY, InternalTelemetryVersion.LATEST)
-        .flatMap(
-            version ->
-                Arrays.stream(MemoryMode.values())
-                    .flatMap(
-                        mode ->
-                            Stream.of(
-                                Arguments.argumentSet(
-                                    version + " " + mode + " success", version, mode, true),
-                                Arguments.argumentSet(
-                                    version + " " + mode + " failure", version, mode, false))));
+        .flatMap(version ->
+            Arrays.stream(MemoryMode.values())
+                .flatMap(mode ->
+                    Stream.of(
+                        Arguments.argumentSet(
+                            version + " " + mode + " success", version, mode, true),
+                        Arguments.argumentSet(
+                            version + " " + mode + " failure", version, mode, false))));
   }
 }

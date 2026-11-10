@@ -32,26 +32,24 @@ class DeclarativeConfigContextTest {
   @Test
   void componentProvidersCached() {
     // First loadComponent call should load providers
-    assertThatThrownBy(
-            () ->
-                context.loadComponent(
-                    Resource.class,
-                    ConfigKeyValue.of(
-                        "nonexistent",
-                        YamlDeclarativeConfigProperties.create(
-                            Collections.emptyMap(), componentLoader))))
+    assertThatThrownBy(() ->
+            context.loadComponent(
+                Resource.class,
+                ConfigKeyValue.of(
+                    "nonexistent",
+                    YamlDeclarativeConfigProperties.create(
+                        Collections.emptyMap(), componentLoader))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("No component provider detected");
 
     // Second loadComponent call should use cached providers, not reload
-    assertThatThrownBy(
-            () ->
-                context.loadComponent(
-                    Resource.class,
-                    ConfigKeyValue.of(
-                        "another",
-                        YamlDeclarativeConfigProperties.create(
-                            Collections.emptyMap(), componentLoader))))
+    assertThatThrownBy(() ->
+            context.loadComponent(
+                Resource.class,
+                ConfigKeyValue.of(
+                    "another",
+                    YamlDeclarativeConfigProperties.create(
+                        Collections.emptyMap(), componentLoader))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("No component provider detected");
 

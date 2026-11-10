@@ -16,29 +16,28 @@ public class TestDeclarativeConfigurationCustomizerProvider
 
   @Override
   public void customize(DeclarativeConfigurationCustomizer customizer) {
-    customizer.addModelCustomizer(
-        model -> {
-          ResourceModel resource = model.getResource();
-          if (resource == null) {
-            resource = new ResourceModel();
-            model.setResource(resource);
-          }
-          List<AttributeNameValueModel> attributes = resource.getAttributes();
-          if (attributes == null) {
-            attributes = new ArrayList<>();
-            resource.setAttributes(attributes);
-          }
-          attributes.add(
-              new AttributeNameValueModel()
-                  .setName("foo")
-                  .setType(AttributeTypeModel.STRING)
-                  .setValue("bar"));
-          attributes.add(
-              new AttributeNameValueModel()
-                  .setName("color")
-                  .setType(AttributeTypeModel.STRING)
-                  .setValue("blue"));
-          return model;
-        });
+    customizer.addModelCustomizer(model -> {
+      ResourceModel resource = model.getResource();
+      if (resource == null) {
+        resource = new ResourceModel();
+        model.setResource(resource);
+      }
+      List<AttributeNameValueModel> attributes = resource.getAttributes();
+      if (attributes == null) {
+        attributes = new ArrayList<>();
+        resource.setAttributes(attributes);
+      }
+      attributes.add(
+          new AttributeNameValueModel()
+              .setName("foo")
+              .setType(AttributeTypeModel.STRING)
+              .setValue("bar"));
+      attributes.add(
+          new AttributeNameValueModel()
+              .setName("color")
+              .setType(AttributeTypeModel.STRING)
+              .setValue("blue"));
+      return model;
+    });
   }
 }

@@ -16,14 +16,13 @@ class GrpcExporterTest {
 
   @Test
   void build_NoGrpcSenderProvider() {
-    assertThatThrownBy(
-            () ->
-                new GrpcExporterBuilder(
-                        StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
-                        Duration.ofSeconds(10),
-                        new URI("http://localhost"),
-                        "service/method")
-                    .build())
+    assertThatThrownBy(() ->
+            new GrpcExporterBuilder(
+                    StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
+                    Duration.ofSeconds(10),
+                    new URI("http://localhost"),
+                    "service/method")
+                .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
             "No GrpcSenderProvider found on classpath. Please add dependency on "

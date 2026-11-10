@@ -61,10 +61,8 @@ final class TracerProviderFactory
 
     List<SpanProcessorModel> processors = tracerProviderModel.getProcessors();
     if (processors != null) {
-      processors.forEach(
-          processor ->
-              builder.addSpanProcessor(
-                  SpanProcessorFactory.getInstance().create(processor, context)));
+      processors.forEach(processor ->
+          builder.addSpanProcessor(SpanProcessorFactory.getInstance().create(processor, context)));
     }
 
     if (tracerProviderModel.getIdGenerator() != null) {

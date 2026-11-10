@@ -143,10 +143,9 @@ class MetricExporterConfigurationTest {
         DefaultConfigProperties.createFromMap(
             ImmutableMap.of("otel.metric.export.max.batch.size", "0"));
 
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureReader(
-                    "otlp", config, spiHelper, (a, b) -> a, (a, b) -> a, closeables))
+    assertThatThrownBy(() ->
+            MetricExporterConfiguration.configureReader(
+                "otlp", config, spiHelper, (a, b) -> a, (a, b) -> a, closeables))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxExportBatchSize must be positive");
     cleanup.addCloseables(closeables);
@@ -193,14 +192,13 @@ class MetricExporterConfigurationTest {
 
   @Test
   void configureOtlpMetricsUnsupportedProtocol() {
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureExporter(
-                    "otlp",
-                    MetricExporterConfiguration.metricExporterSpiManager(
-                        DefaultConfigProperties.createFromMap(
-                            ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                        spiHelper)))
+    assertThatThrownBy(() ->
+            MetricExporterConfiguration.configureExporter(
+                "otlp",
+                MetricExporterConfiguration.metricExporterSpiManager(
+                    DefaultConfigProperties.createFromMap(
+                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
+                    spiHelper)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
   }

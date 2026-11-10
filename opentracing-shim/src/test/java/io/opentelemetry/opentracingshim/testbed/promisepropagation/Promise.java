@@ -40,42 +40,40 @@ final class Promise<T> {
   @SuppressWarnings("FutureReturnValueIgnored")
   public void success(T result) {
     for (SuccessCallback<T> callback : successCallbacks) {
-      context.submit(
-          () -> {
-            Span childSpan =
-                tracer
-                    .buildSpan("success")
-                    .addReference(References.FOLLOWS_FROM, parentSpan.context())
-                    .withTag(Tags.COMPONENT.getKey(), "success")
-                    .start();
-            try (Scope childScope = tracer.activateSpan(childSpan)) {
-              callback.accept(result);
-            } finally {
-              childSpan.finish();
-            }
-            context.getPhaser().arriveAndAwaitAdvance(); // trace reported
-          });
+      context.submit(() -> {
+        Span childSpan =
+            tracer
+                .buildSpan("success")
+                .addReference(References.FOLLOWS_FROM, parentSpan.context())
+                .withTag(Tags.COMPONENT.getKey(), "success")
+                .start();
+        try (Scope childScope = tracer.activateSpan(childSpan)) {
+          callback.accept(result);
+        } finally {
+          childSpan.finish();
+        }
+        context.getPhaser().arriveAndAwaitAdvance(); // trace reported
+      });
     }
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
   public void error(Throwable error) {
     for (ErrorCallback callback : errorCallbacks) {
-      context.submit(
-          () -> {
-            Span childSpan =
-                tracer
-                    .buildSpan("error")
-                    .addReference(References.FOLLOWS_FROM, parentSpan.context())
-                    .withTag(Tags.COMPONENT.getKey(), "error")
-                    .start();
-            try (Scope childScope = tracer.activateSpan(childSpan)) {
-              callback.accept(error);
-            } finally {
-              childSpan.finish();
-            }
-            context.getPhaser().arriveAndAwaitAdvance(); // trace reported
-          });
+      context.submit(() -> {
+        Span childSpan =
+            tracer
+                .buildSpan("error")
+                .addReference(References.FOLLOWS_FROM, parentSpan.context())
+                .withTag(Tags.COMPONENT.getKey(), "error")
+                .start();
+        try (Scope childScope = tracer.activateSpan(childSpan)) {
+          callback.accept(error);
+        } finally {
+          childSpan.finish();
+        }
+        context.getPhaser().arriveAndAwaitAdvance(); // trace reported
+      });
     }
   }
 

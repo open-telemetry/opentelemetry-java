@@ -75,12 +75,9 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
             exceptionAttributeResolver,
             new SdkLoggerInstrumentation(meterProvider));
     this.loggerComponentRegistry =
-        new ComponentRegistry<>(
-            instrumentationScopeInfo ->
-                SdkLogger.create(
-                    sharedState,
-                    instrumentationScopeInfo,
-                    getLoggerConfig(instrumentationScopeInfo)));
+        new ComponentRegistry<>(instrumentationScopeInfo ->
+            SdkLogger.create(
+                sharedState, instrumentationScopeInfo, getLoggerConfig(instrumentationScopeInfo)));
     this.loggerConfigurator = loggerConfigurator;
     this.isNoopLogRecordProcessor = logRecordProcessor instanceof NoopLogRecordProcessor;
   }
@@ -141,10 +138,8 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
     this.loggerConfigurator = loggerConfigurator;
     this.loggerComponentRegistry
         .getComponents()
-        .forEach(
-            sdkLogger ->
-                sdkLogger.updateLoggerConfig(
-                    getLoggerConfig(sdkLogger.getInstrumentationScopeInfo())));
+        .forEach(sdkLogger ->
+            sdkLogger.updateLoggerConfig(getLoggerConfig(sdkLogger.getInstrumentationScopeInfo())));
   }
 
   /**

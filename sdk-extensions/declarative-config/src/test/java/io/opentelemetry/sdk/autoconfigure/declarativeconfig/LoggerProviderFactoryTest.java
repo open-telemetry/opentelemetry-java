@@ -119,12 +119,11 @@ class LoggerProviderFactoryTest {
                                 .setMinimumSeverity(Severity.INFO)
                                 .build())
                         .build())
-                .setLogLimits(
-                    () ->
-                        LogLimits.builder()
-                            .setMaxNumberOfAttributes(1)
-                            .setMaxAttributeValueLength(2)
-                            .build())
+                .setLogLimits(() ->
+                    LogLimits.builder()
+                        .setMaxNumberOfAttributes(1)
+                        .setMaxAttributeValueLength(2)
+                        .build())
                 .addLogRecordProcessor(
                     BatchLogRecordProcessor.builder(
                             OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())

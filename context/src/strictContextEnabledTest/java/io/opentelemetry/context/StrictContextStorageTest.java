@@ -120,14 +120,13 @@ class StrictContextStorageTest {
     AtomicReference<Throwable> errorCatcher = new AtomicReference<>();
 
     Thread t2 =
-        new Thread(
-            () -> {
-              try {
-                closeable.get().close();
-              } catch (Throwable t) {
-                errorCatcher.set(t);
-              }
-            });
+        new Thread(() -> {
+          try {
+            closeable.get().close();
+          } catch (Throwable t) {
+            errorCatcher.set(t);
+          }
+        });
     t2.setName("t2");
     t2.start();
     t2.join();
@@ -135,10 +134,9 @@ class StrictContextStorageTest {
     assertThat(errorCatcher.get())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Thread [t1] opened scope, but thread [t2] closed it")
-        .satisfies(
-            e ->
-                assertThat(e.getCause().getMessage())
-                    .matches("Thread \\[t1\\] opened scope for .* here:"));
+        .satisfies(e ->
+            assertThat(e.getCause().getMessage())
+                .matches("Thread \\[t1\\] opened scope for .* here:"));
   }
 
   @SuppressWarnings("ReturnValueIgnored")
@@ -175,14 +173,12 @@ class StrictContextStorageTest {
 
     await()
         .atMost(Duration.ofSeconds(30))
-        .untilAsserted(
-            () -> {
-              System.gc();
-              LoggingEvent log =
-                  logs.assertContains("Scope garbage collected before being closed.");
-              assertThat(log.getLevel()).isEqualTo(Level.ERROR);
-              assertThat(log.getThrowable().getMessage())
-                  .matches("Thread \\[Test worker\\] opened a scope of .* here:");
-            });
+        .untilAsserted(() -> {
+          System.gc();
+          LoggingEvent log = logs.assertContains("Scope garbage collected before being closed.");
+          assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+          assertThat(log.getThrowable().getMessage())
+              .matches("Thread \\[Test worker\\] opened a scope of .* here:");
+        });
   }
 }

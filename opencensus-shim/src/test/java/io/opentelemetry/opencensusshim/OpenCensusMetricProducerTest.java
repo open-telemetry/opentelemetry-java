@@ -67,37 +67,27 @@ class OpenCensusMetricProducerTest {
 
     Awaitility.await()
         .atMost(Duration.ofSeconds(10))
-        .untilAsserted(
-            () ->
-                assertThat(openCensusMetrics.produce(Resource.empty()))
-                    .satisfiesExactly(
-                        metric ->
-                            assertThat(metric)
-                                .hasName("task_latency_distribution")
-                                .hasDescription("The distribution of the task latencies.")
-                                .hasUnit("ms")
-                                .hasHistogramSatisfying(
-                                    histogram ->
-                                        histogram
-                                            .isCumulative()
-                                            .hasPointsSatisfying(
-                                                point ->
-                                                    point
-                                                        .hasSum(50)
-                                                        .hasCount(1)
-                                                        .hasBucketCounts(1, 0, 0, 0, 0, 0, 0)
-                                                        .hasBucketBoundaries(
-                                                            100d, 200d, 400d, 1000d, 2000d, 4000d)
-                                                        .hasExemplarsSatisfying(
-                                                            exemplar ->
-                                                                exemplar
-                                                                    .hasFilteredAttributes(
-                                                                        Attributes.empty())
-                                                                    .hasValue(50)
-                                                                    .hasTraceId(
-                                                                        TRACE_ID.toLowerBase16())
-                                                                    .hasSpanId(
-                                                                        SPAN_ID
-                                                                            .toLowerBase16()))))));
+        .untilAsserted(() ->
+            assertThat(openCensusMetrics.produce(Resource.empty()))
+                .satisfiesExactly(metric ->
+                    assertThat(metric)
+                        .hasName("task_latency_distribution")
+                        .hasDescription("The distribution of the task latencies.")
+                        .hasUnit("ms")
+                        .hasHistogramSatisfying(histogram ->
+                            histogram
+                                .isCumulative()
+                                .hasPointsSatisfying(point ->
+                                    point
+                                        .hasSum(50)
+                                        .hasCount(1)
+                                        .hasBucketCounts(1, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketBoundaries(100d, 200d, 400d, 1000d, 2000d, 4000d)
+                                        .hasExemplarsSatisfying(exemplar ->
+                                            exemplar
+                                                .hasFilteredAttributes(Attributes.empty())
+                                                .hasValue(50)
+                                                .hasTraceId(TRACE_ID.toLowerBase16())
+                                                .hasSpanId(SPAN_ID.toLowerBase16()))))));
   }
 }

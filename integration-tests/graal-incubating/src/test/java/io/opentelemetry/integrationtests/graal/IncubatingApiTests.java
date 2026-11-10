@@ -109,20 +109,20 @@ class IncubatingApiTests {
     // make sure to test enums too: "instrument_type: histogram"
     String string =
         """
-      file_format: "1.2"
-      tracer_provider:
-        processors:
-          - batch:
-              exporter:
-                console: {}
-      meter_provider:
-        views:
-          - selector:
-              instrument_type: histogram
-            stream:
-              aggregation:
-                drop: {}
-      """;
+        file_format: "1.2"
+        tracer_provider:
+          processors:
+            - batch:
+                exporter:
+                  console: {}
+        meter_provider:
+          views:
+            - selector:
+                instrument_type: histogram
+              stream:
+                aggregation:
+                  drop: {}
+        """;
     // should not throw
     DeclarativeConfiguration.parse(
         new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
