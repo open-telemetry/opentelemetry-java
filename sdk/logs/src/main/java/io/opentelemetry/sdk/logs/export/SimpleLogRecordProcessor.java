@@ -103,13 +103,12 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
       }
 
       pendingExports.add(result);
-      result.whenComplete(
-          () -> {
-            pendingExports.remove(result);
-            if (!result.isSuccess()) {
-              logger.log(Level.FINE, "Exporter failed");
-            }
-          });
+      result.whenComplete(() -> {
+        pendingExports.remove(result);
+        if (!result.isSuccess()) {
+          logger.log(Level.FINE, "Exporter failed");
+        }
+      });
     } catch (Throwable t) {
       ThrowableUtil.propagateIfFatal(t);
       logger.log(Level.WARNING, "Exporter threw an Exception", t);
@@ -124,18 +123,16 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
     CompletableResultCode result = new CompletableResultCode();
 
     CompletableResultCode flushResult = forceFlush();
-    flushResult.whenComplete(
-        () -> {
-          CompletableResultCode shutdownResult = logRecordExporter.shutdown();
-          shutdownResult.whenComplete(
-              () -> {
-                if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
-                  result.fail();
-                } else {
-                  result.succeed();
-                }
-              });
-        });
+    flushResult.whenComplete(() -> {
+      CompletableResultCode shutdownResult = logRecordExporter.shutdown();
+      shutdownResult.whenComplete(() -> {
+        if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
+          result.fail();
+        } else {
+          result.succeed();
+        }
+      });
+    });
 
     return result;
   }

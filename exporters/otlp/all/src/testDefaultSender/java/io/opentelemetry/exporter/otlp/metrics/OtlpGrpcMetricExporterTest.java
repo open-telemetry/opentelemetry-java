@@ -39,11 +39,9 @@ class OtlpGrpcMetricExporterTest
   /** Test configuration specific to metric exporter. */
   @Test
   void validMetricConfig() {
-    assertThatCode(
-            () ->
-                OtlpGrpcMetricExporter.builder()
-                    .setAggregationTemporalitySelector(
-                        AggregationTemporalitySelector.deltaPreferred()))
+    assertThatCode(() ->
+            OtlpGrpcMetricExporter.builder()
+                .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred()))
         .doesNotThrowAnyException();
     assertThat(
             OtlpGrpcMetricExporter.builder()

@@ -10,7 +10,6 @@ import static io.opentelemetry.extension.trace.propagation.Common.MAX_TRACE_ID_L
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
-import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -92,19 +91,18 @@ public final class OtTracePropagator implements TextMapPropagator {
       // Metadata is not supported by OpenTracing
       int[] entriesEmitted = {0};
       int[] bytesEmitted = {0};
-      baggage.forEach(
-          (key, baggageEntry) -> {
-            if (entriesEmitted[0] >= MAX_BAGGAGE_ENTRIES) {
-              return;
-            }
-            String value = baggageEntry.getValue();
-            if (bytesEmitted[0] + key.length() + value.length() > MAX_BAGGAGE_BYTES) {
-              return;
-            }
-            setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, value);
-            entriesEmitted[0]++;
-            bytesEmitted[0] += key.length() + value.length();
-          });
+      baggage.forEach((key, baggageEntry) -> {
+        if (entriesEmitted[0] >= MAX_BAGGAGE_ENTRIES) {
+          return;
+        }
+        String value = baggageEntry.getValue();
+        if (bytesEmitted[0] + key.length() + value.length() > MAX_BAGGAGE_BYTES) {
+          return;
+        }
+        setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, value);
+        entriesEmitted[0]++;
+        bytesEmitted[0] += key.length() + value.length();
+      });
     }
   }
 

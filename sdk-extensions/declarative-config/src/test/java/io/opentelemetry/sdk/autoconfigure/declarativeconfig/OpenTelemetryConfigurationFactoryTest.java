@@ -322,12 +322,11 @@ class OpenTelemetryConfigurationFactoryTest {
                     .setLoggerProvider(
                         SdkLoggerProvider.builder()
                             .setResource(expectedResource)
-                            .setLogLimits(
-                                () ->
-                                    LogLimits.builder()
-                                        .setMaxAttributeValueLength(1)
-                                        .setMaxNumberOfAttributes(2)
-                                        .build())
+                            .setLogLimits(() ->
+                                LogLimits.builder()
+                                    .setMaxAttributeValueLength(1)
+                                    .setMaxNumberOfAttributes(2)
+                                    .build())
                             .addLogRecordProcessor(
                                 BatchLogRecordProcessor.builder(
                                         OtlpHttpLogRecordExporter.builder()

@@ -198,47 +198,44 @@ class ImmutableMetricDataTest {
                 AggregationTemporality.DELTA, Collections.singleton(HISTOGRAM_POINT)));
     assertThat(metricData.getHistogramData().getPoints()).containsExactly(HISTOGRAM_POINT);
 
-    assertThatThrownBy(
-            () ->
-                ImmutableHistogramPointData.create(
-                    0,
-                    0,
-                    Attributes.empty(),
-                    0.0,
-                    /* hasMin= */ false,
-                    0.0,
-                    /* hasMax= */ false,
-                    0.0,
-                    ImmutableList.of(),
-                    ImmutableList.of()))
+    assertThatThrownBy(() ->
+            ImmutableHistogramPointData.create(
+                0,
+                0,
+                Attributes.empty(),
+                0.0,
+                /* hasMin= */ false,
+                0.0,
+                /* hasMax= */ false,
+                0.0,
+                ImmutableList.of(),
+                ImmutableList.of()))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(
-            () ->
-                ImmutableHistogramPointData.create(
-                    0,
-                    0,
-                    Attributes.empty(),
-                    0.0,
-                    /* hasMin= */ false,
-                    0.0,
-                    /* hasMax= */ false,
-                    0.0,
-                    ImmutableList.of(1.0, 1.0),
-                    ImmutableList.of(0L, 0L, 0L)))
+    assertThatThrownBy(() ->
+            ImmutableHistogramPointData.create(
+                0,
+                0,
+                Attributes.empty(),
+                0.0,
+                /* hasMin= */ false,
+                0.0,
+                /* hasMax= */ false,
+                0.0,
+                ImmutableList.of(1.0, 1.0),
+                ImmutableList.of(0L, 0L, 0L)))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(
-            () ->
-                ImmutableHistogramPointData.create(
-                    0,
-                    0,
-                    Attributes.empty(),
-                    0.0,
-                    /* hasMin= */ false,
-                    0.0,
-                    /* hasMax= */ false,
-                    0.0,
-                    ImmutableList.of(Double.NEGATIVE_INFINITY),
-                    ImmutableList.of(0L, 0L)))
+    assertThatThrownBy(() ->
+            ImmutableHistogramPointData.create(
+                0,
+                0,
+                Attributes.empty(),
+                0.0,
+                /* hasMin= */ false,
+                0.0,
+                /* hasMax= */ false,
+                0.0,
+                ImmutableList.of(Double.NEGATIVE_INFINITY),
+                ImmutableList.of(0L, 0L)))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

@@ -31,13 +31,12 @@ public final class AttributeCheckUtil {
 
   /** Determine if the set of attributes if valid for Resource / Entity. */
   public static void checkAttributes(Attributes attributes) {
-    attributes.forEach(
-        (key, value) -> {
-          if (!isValidAndNotEmpty(key)) {
-            throw new IllegalArgumentException("Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
-          }
-          Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
-        });
+    attributes.forEach((key, value) -> {
+      if (!isValidAndNotEmpty(key)) {
+        throw new IllegalArgumentException("Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
+      }
+      Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
+    });
   }
 
   /**

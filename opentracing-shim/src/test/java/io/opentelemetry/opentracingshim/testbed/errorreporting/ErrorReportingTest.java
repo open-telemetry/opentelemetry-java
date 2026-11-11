@@ -60,16 +60,15 @@ public final class ErrorReportingTest {
   @Test
   void testCallbackError() {
     Span span = tracer.buildSpan("one").start();
-    executor.submit(
-        () -> {
-          try (Scope scope = tracer.activateSpan(span)) {
-            throw new RuntimeException("Invalid state");
-          } catch (RuntimeException exc) {
-            Tags.ERROR.set(span, true);
-          } finally {
-            span.finish();
-          }
-        });
+    executor.submit(() -> {
+      try (Scope scope = tracer.activateSpan(span)) {
+        throw new RuntimeException("Invalid state");
+      } catch (RuntimeException exc) {
+        Tags.ERROR.set(span, true);
+      } finally {
+        span.finish();
+      }
+    });
 
     await().atMost(Duration.ofSeconds(5)).until(finishedSpansSize(otelTesting), equalTo(1));
 

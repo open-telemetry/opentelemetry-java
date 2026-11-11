@@ -331,17 +331,15 @@ class DoubleSumAggregatorTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasDoubleSumSatisfying(
-            sum ->
-                sum.isCumulative()
-                    .isMonotonic()
-                    .hasPointsSatisfying(
-                        point ->
-                            point
-                                .hasStartEpochNanos(0)
-                                .hasEpochNanos(100)
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(10)));
+        .hasDoubleSumSatisfying(sum ->
+            sum.isCumulative()
+                .isMonotonic()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasStartEpochNanos(0)
+                        .hasEpochNanos(100)
+                        .hasAttributes(Attributes.empty())
+                        .hasValue(10)));
   }
 
   @ParameterizedTest

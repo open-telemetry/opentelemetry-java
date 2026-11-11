@@ -75,16 +75,15 @@ public class SpanCustomizer implements AutoConfigurationCustomizerProvider {
       public CompletableResultCode export(Collection<SpanData> spans) {
         return delegate.export(
             spans.stream()
-                .map(
-                    span ->
-                        new DelegatingSpanData(span) {
-                          @Override
-                          public Attributes getAttributes() {
-                            return span.getAttributes().toBuilder()
-                                .put("wrapped", config.getInt("otel.test.wrapped"))
-                                .build();
-                          }
-                        })
+                .map(span ->
+                    new DelegatingSpanData(span) {
+                      @Override
+                      public Attributes getAttributes() {
+                        return span.getAttributes().toBuilder()
+                            .put("wrapped", config.getInt("otel.test.wrapped"))
+                            .build();
+                      }
+                    })
                 .collect(Collectors.toList()));
       }
 

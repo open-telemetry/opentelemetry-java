@@ -32,17 +32,16 @@ class ExtendedLoggerBuilderTest {
     logger.logRecordBuilder().setException(new Exception("error")).emit();
 
     assertThat(exporter.getFinishedLogRecordItems())
-        .satisfiesExactly(
-            logRecord ->
-                assertThat(logRecord)
-                    .hasAttributesSatisfyingExactly(
-                        equalTo(EXCEPTION_TYPE, "java.lang.Exception"),
-                        equalTo(EXCEPTION_MESSAGE, "error"),
-                        satisfies(
-                            EXCEPTION_STACKTRACE,
-                            stacktrace ->
-                                stacktrace.startsWith(
-                                    "java.lang.Exception: error" + System.lineSeparator()))));
+        .satisfiesExactly(logRecord ->
+            assertThat(logRecord)
+                .hasAttributesSatisfyingExactly(
+                    equalTo(EXCEPTION_TYPE, "java.lang.Exception"),
+                    equalTo(EXCEPTION_MESSAGE, "error"),
+                    satisfies(
+                        EXCEPTION_STACKTRACE,
+                        stacktrace ->
+                            stacktrace.startsWith(
+                                "java.lang.Exception: error" + System.lineSeparator()))));
   }
 
   @Test
@@ -64,12 +63,10 @@ class ExtendedLoggerBuilderTest {
     logger.logRecordBuilder().setException(new Exception("error")).emit();
 
     assertThat(exporter.getFinishedLogRecordItems())
-        .satisfiesExactly(
-            logRecord ->
-                assertThat(logRecord)
-                    .hasAttributesSatisfyingExactly(
-                        equalTo(EXCEPTION_TYPE, "type"),
-                        equalTo(EXCEPTION_STACKTRACE, "stacktrace")));
+        .satisfiesExactly(logRecord ->
+            assertThat(logRecord)
+                .hasAttributesSatisfyingExactly(
+                    equalTo(EXCEPTION_TYPE, "type"), equalTo(EXCEPTION_STACKTRACE, "stacktrace")));
   }
 
   @Test
@@ -83,16 +80,15 @@ class ExtendedLoggerBuilderTest {
         .emit();
 
     assertThat(exporter.getFinishedLogRecordItems())
-        .satisfiesExactly(
-            logRecord ->
-                assertThat(logRecord)
-                    .hasAttributesSatisfyingExactly(
-                        equalTo(EXCEPTION_TYPE, "java.lang.Exception"),
-                        equalTo(EXCEPTION_MESSAGE, "custom message"),
-                        satisfies(
-                            EXCEPTION_STACKTRACE,
-                            stacktrace ->
-                                stacktrace.startsWith(
-                                    "java.lang.Exception: error" + System.lineSeparator()))));
+        .satisfiesExactly(logRecord ->
+            assertThat(logRecord)
+                .hasAttributesSatisfyingExactly(
+                    equalTo(EXCEPTION_TYPE, "java.lang.Exception"),
+                    equalTo(EXCEPTION_MESSAGE, "custom message"),
+                    satisfies(
+                        EXCEPTION_STACKTRACE,
+                        stacktrace ->
+                            stacktrace.startsWith(
+                                "java.lang.Exception: error" + System.lineSeparator()))));
   }
 }

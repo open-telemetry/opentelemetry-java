@@ -65,6 +65,8 @@ public final class PeriodicMetricReaderBuilder {
    *
    * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
    * individual export(batch) invocation, not the aggregate export cycle.
+   *
+   * @since 1.68.0
    */
   public PeriodicMetricReaderBuilder setExporterTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -80,6 +82,8 @@ public final class PeriodicMetricReaderBuilder {
    *
    * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
    * individual export(batch) invocation, not the aggregate export cycle.
+   *
+   * @since 1.68.0
    */
   public PeriodicMetricReaderBuilder setExporterTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");

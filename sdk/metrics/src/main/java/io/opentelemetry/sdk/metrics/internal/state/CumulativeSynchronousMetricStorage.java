@@ -132,21 +132,20 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
     }
 
     // Grab aggregated points.
-    aggregatorHandles.forEach(
-        (attributes, handle) -> {
-          if (!handle.hasRecordedValues()) {
-            return;
-          }
-          // Start time for cumulative synchronous instruments is the time the first series
-          // measurement was recorded. I.e. the time the AggregatorHandle was created.
-          T point =
-              handle.aggregateThenMaybeReset(
-                  handle.getCreationEpochNanos(), epochNanos, attributes, /* reset= */ false);
+    aggregatorHandles.forEach((attributes, handle) -> {
+      if (!handle.hasRecordedValues()) {
+        return;
+      }
+      // Start time for cumulative synchronous instruments is the time the first series
+      // measurement was recorded. I.e. the time the AggregatorHandle was created.
+      T point =
+          handle.aggregateThenMaybeReset(
+              handle.getCreationEpochNanos(), epochNanos, attributes, /* reset= */ false);
 
-          if (point != null) {
-            points.add(point);
-          }
-        });
+      if (point != null) {
+        points.add(point);
+      }
+    });
 
     if (points.isEmpty() || !enabled) {
       return EmptyMetricData.getInstance();

@@ -67,9 +67,9 @@ public final class OtlpDeclarativeConfigUtil {
       boolean isHttpProtobuf,
       Consumer<InternalTelemetryVersion> internalTelemetryVersionConsumer,
       Runnable setNoopMeterProvider) {
-    if (!(baseConfig instanceof ExtendedDeclarativeConfigProperties)) {
-      throw new IllegalArgumentException("Expected ExtendedDeclarativeConfigProperties");
-    }
+    checkArgument(
+        baseConfig instanceof ExtendedDeclarativeConfigProperties,
+        "Expected ExtendedDeclarativeConfigProperties");
     ExtendedDeclarativeConfigProperties config = (ExtendedDeclarativeConfigProperties) baseConfig;
 
     setComponentLoader.accept(config.getComponentLoader());
@@ -89,14 +89,13 @@ public final class OtlpDeclarativeConfigUtil {
 
     List<DeclarativeConfigProperties> headers = config.getStructuredList("headers");
     if (headers != null) {
-      headers.forEach(
-          header -> {
-            String name = header.getString("name");
-            String value = header.getString("value");
-            if (name != null && value != null) {
-              addHeader.accept(name, value);
-            }
-          });
+      headers.forEach(header -> {
+        String name = header.getString("name");
+        String value = header.getString("value");
+        if (name != null && value != null) {
+          addHeader.accept(name, value);
+        }
+      });
     }
 
     String compression = config.getString("compression");
@@ -166,6 +165,12 @@ public final class OtlpDeclarativeConfigUtil {
       default:
         throw new DeclarativeConfigException(
             "Invalid sdk telemetry version: " + internalTelemetryVersion);
+    }
+  }
+
+  private static void checkArgument(boolean isValid, String message) {
+    if (!isValid) {
+      throw new IllegalArgumentException(message);
     }
   }
 

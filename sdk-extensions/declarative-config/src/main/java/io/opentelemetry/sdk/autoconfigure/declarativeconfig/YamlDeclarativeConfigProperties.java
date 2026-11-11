@@ -135,11 +135,9 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     if (object instanceof List) {
       List<?> list = (List<?>) object;
       return list.stream()
-          .allMatch(
-              entry ->
-                  entry instanceof Map
-                      && ((Map<?, ?>) entry)
-                          .keySet().stream().allMatch(key -> key instanceof String));
+          .allMatch(entry ->
+              entry instanceof Map
+                  && ((Map<?, ?>) entry).keySet().stream().allMatch(key -> key instanceof String));
     }
     return false;
   }
@@ -251,19 +249,18 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
       }
       List<T> result =
           objectList.stream()
-              .map(
-                  entry -> {
-                    if (scalarType == String.class) {
-                      return stringOrNull(entry, name);
-                    } else if (scalarType == Boolean.class) {
-                      return booleanOrNull(entry, name);
-                    } else if (scalarType == Long.class) {
-                      return longOrNull(entry, name);
-                    } else if (scalarType == Double.class) {
-                      return doubleOrNull(entry, name);
-                    }
-                    return null;
-                  })
+              .map(entry -> {
+                if (scalarType == String.class) {
+                  return stringOrNull(entry, name);
+                } else if (scalarType == Boolean.class) {
+                  return booleanOrNull(entry, name);
+                } else if (scalarType == Long.class) {
+                  return longOrNull(entry, name);
+                } else if (scalarType == Double.class) {
+                  return doubleOrNull(entry, name);
+                }
+                return null;
+              })
               .filter(Objects::nonNull)
               .map(scalarType::cast)
               .collect(toList());

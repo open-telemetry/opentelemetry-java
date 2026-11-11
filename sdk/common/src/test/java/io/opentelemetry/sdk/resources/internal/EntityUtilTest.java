@@ -180,17 +180,13 @@ class EntityUtilTest {
 
     assertThat(EntityUtil.getEntities(merged))
         .singleElement()
-        .satisfies(
-            entity -> {
-              assertThat(entity.getId()).isEqualTo(id);
-              assertThat(entity.getDescription())
-                  .isEqualTo(
-                      Attributes.builder()
-                          .put("host.arch", "arm64")
-                          .put("host.name", "new")
-                          .build());
-              assertThat(entity.getSchemaUrl()).isNull();
-            });
+        .satisfies(entity -> {
+          assertThat(entity.getId()).isEqualTo(id);
+          assertThat(entity.getDescription())
+              .isEqualTo(
+                  Attributes.builder().put("host.arch", "arm64").put("host.name", "new").build());
+          assertThat(entity.getSchemaUrl()).isNull();
+        });
     assertThat(merged.getSchemaUrl()).isNull();
     logs.assertDoesNotContain("Replacing entity");
   }

@@ -80,13 +80,12 @@ class ConfigurableSpanExporterTest {
             ImmutableMap.of("test.option", "true", "otel.traces.exporter", "testExporter"));
     List<Closeable> closeables = new ArrayList<>();
 
-    assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureSpanExporters(
-                    config,
-                    SpiHelper.create(new URLClassLoader(new URL[0], null)),
-                    (a, unused) -> a,
-                    new ArrayList<>()))
+    assertThatThrownBy(() ->
+            SpanExporterConfiguration.configureSpanExporters(
+                config,
+                SpiHelper.create(new URLClassLoader(new URL[0], null)),
+                (a, unused) -> a,
+                new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
     cleanup.addCloseables(closeables);
@@ -101,10 +100,9 @@ class ConfigurableSpanExporterTest {
             ImmutableMap.of("otel.traces.exporter", "otlp,otlp,logging"));
     List<Closeable> closeables = new ArrayList<>();
 
-    assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureSpanExporters(
-                    config, spiHelper, (a, unused) -> a, closeables))
+    assertThatThrownBy(() ->
+            SpanExporterConfiguration.configureSpanExporters(
+                config, spiHelper, (a, unused) -> a, closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains duplicates: [otlp]");
     cleanup.addCloseables(closeables);
@@ -117,10 +115,9 @@ class ConfigurableSpanExporterTest {
         DefaultConfigProperties.createFromMap(ImmutableMap.of("otel.traces.exporter", "otlp,none"));
     List<Closeable> closeables = new ArrayList<>();
 
-    assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureSpanExporters(
-                    config, spiHelper, (a, unused) -> a, closeables))
+    assertThatThrownBy(() ->
+            SpanExporterConfiguration.configureSpanExporters(
+                config, spiHelper, (a, unused) -> a, closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains none along with other exporters");
     cleanup.addCloseables(closeables);
@@ -129,10 +126,9 @@ class ConfigurableSpanExporterTest {
 
   @Test
   void configureExporter_NotFound() {
-    assertThatThrownBy(
-            () ->
-                SpanExporterConfiguration.configureExporter(
-                    "catExporter", NamedSpiManager.createEmpty()))
+    assertThatThrownBy(() ->
+            SpanExporterConfiguration.configureExporter(
+                "catExporter", NamedSpiManager.createEmpty()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
   }
@@ -201,22 +197,20 @@ class ConfigurableSpanExporterTest {
         .extracting("worker")
         .extracting("spanExporter")
         .asInstanceOf(InstanceOfAssertFactories.type(SpanExporter.class))
-        .satisfies(
-            spanExporter -> {
-              assertThat(spanExporter)
-                  .extracting(spanExporter1 -> spanExporter1.getClass().getSimpleName())
-                  .isEqualTo("MultiSpanExporter");
-              assertThat(spanExporter)
-                  .extracting("spanExporters")
-                  .asInstanceOf(InstanceOfAssertFactories.type(SpanExporter[].class))
-                  .satisfies(
-                      spanExporters -> {
-                        assertThat(spanExporters.length).isEqualTo(2);
-                        assertThat(spanExporters)
-                            .hasAtLeastOneElementOfType(SpanExporter.noop().getClass())
-                            .hasAtLeastOneElementOfType(OtlpGrpcSpanExporter.class);
-                      });
-            });
+        .satisfies(spanExporter -> {
+          assertThat(spanExporter)
+              .extracting(spanExporter1 -> spanExporter1.getClass().getSimpleName())
+              .isEqualTo("MultiSpanExporter");
+          assertThat(spanExporter)
+              .extracting("spanExporters")
+              .asInstanceOf(InstanceOfAssertFactories.type(SpanExporter[].class))
+              .satisfies(spanExporters -> {
+                assertThat(spanExporters.length).isEqualTo(2);
+                assertThat(spanExporters)
+                    .hasAtLeastOneElementOfType(SpanExporter.noop().getClass())
+                    .hasAtLeastOneElementOfType(OtlpGrpcSpanExporter.class);
+              });
+        });
     assertThat(closeables).hasExactlyElementsOfTypes(BatchSpanProcessor.class);
   }
 

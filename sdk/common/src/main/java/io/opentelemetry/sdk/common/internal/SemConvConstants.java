@@ -45,8 +45,8 @@ public class SemConvConstants {
       AttributeKey.stringKey("server.address");
   public static final AttributeKey<Long> SERVER_PORT = AttributeKey.longKey("server.port");
 
-  public static final AttributeKey<String> RPC_RESPONSE_STATUS_CODE =
-      AttributeKey.stringKey("rpc.response.status_code");
+  public static final AttributeKey<String> RPC_STATUS_CODE =
+      AttributeKey.stringKey("rpc.status_code");
   public static final AttributeKey<Long> HTTP_RESPONSE_STATUS_CODE =
       AttributeKey.longKey("http.response.status_code");
 
@@ -85,7 +85,7 @@ public class SemConvConstants {
   public static final String OTEL_SDK_LOG_CREATED_NAME = "otel.sdk.log.created";
   public static final String OTEL_SDK_LOG_CREATED_UNIT = "{log_record}";
   public static final String OTEL_SDK_LOG_CREATED_DESCRIPTION =
-      "The number of logs submitted to enabled SDK Loggers.";
+      "The number of log records submitted to an enabled `Logger`.";
 
   public static final String OTEL_SDK_PROCESSOR_LOG_PROCESSED_NAME =
       "otel.sdk.processor.log.processed";

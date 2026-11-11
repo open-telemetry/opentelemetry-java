@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
@@ -50,7 +51,12 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 // We always assert the contents of lists out of order to verify that assertions behave that way.
 class MetricAssertionsTest {
@@ -305,186 +311,396 @@ class MetricAssertionsTest {
               Collections.singletonList(SUMMARY_POINT_DATA)));
 
   @Test
+  void doubleGaugePointsSatisfying() {
+    assertThat(DOUBLE_GAUGE_METRIC)
+        .hasName("gauge")
+        .hasDoubleGaugePointsSatisfying(
+            point -> point.hasValue(3.0).hasStartEpochNanos(3),
+            point -> point.hasValue(3.0).hasStartEpochNanos(1))
+        .hasDoubleGaugePointsSatisfying(
+            Arrays.asList(
+                point -> point.hasValue(3.0).hasStartEpochNanos(3),
+                point -> point.hasValue(3.0).hasStartEpochNanos(1)))
+        .hasUnit("1");
+  }
+
+  @Test
+  void longGaugePointsSatisfying() {
+    assertThat(LONG_GAUGE_METRIC)
+        .hasName("gauge")
+        .hasLongGaugePointsSatisfying(
+            point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1))
+        .hasLongGaugePointsSatisfying(
+            Arrays.asList(point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1)))
+        .hasUnit("1");
+  }
+
+  @Test
+  void doubleSumPointsSatisfying() {
+    assertThat(DOUBLE_SUM_METRIC)
+        .hasName("sum")
+        .hasDoubleSumPointsSatisfying(
+            point -> point.hasValue(3.0).hasStartEpochNanos(3),
+            point -> point.hasValue(3.0).hasStartEpochNanos(1))
+        .hasDoubleSumPointsSatisfying(
+            Arrays.asList(
+                point -> point.hasValue(3.0).hasStartEpochNanos(3),
+                point -> point.hasValue(3.0).hasStartEpochNanos(1)))
+        .hasDoubleSumSatisfying(sum -> sum.isMonotonic().isCumulative());
+  }
+
+  @Test
+  void longSumPointsSatisfying() {
+    assertThat(LONG_SUM_METRIC)
+        .hasName("sum")
+        .hasLongSumPointsSatisfying(
+            point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1))
+        .hasLongSumPointsSatisfying(
+            Arrays.asList(point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1)))
+        .hasLongSumSatisfying(sum -> sum.isMonotonic().isCumulative());
+  }
+
+  @Test
+  void histogramPointsSatisfying() {
+    MetricAssert assertion = assertThat(HISTOGRAM_METRIC).hasName("histogram");
+    assertThat(
+            assertion
+                .hasHistogramPointsSatisfying(point -> point.hasCount(3).hasSum(15))
+                .hasHistogramSatisfying(HistogramAssert::isCumulative))
+        .isSameAs(assertion);
+    assertThat(
+            assertion
+                .hasHistogramPointsSatisfying(
+                    Collections.singletonList(point -> point.hasCount(3).hasSum(15)))
+                .hasUnit("1"))
+        .isSameAs(assertion);
+  }
+
+  @Test
+  void exponentialHistogramPointsSatisfying() {
+    assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+        .hasName("exponential_histogram")
+        .hasExponentialHistogramPointsSatisfying(point -> point.hasCount(4).hasSum(10).hasScale(1))
+        .hasExponentialHistogramPointsSatisfying(
+            Collections.singletonList(point -> point.hasCount(4).hasSum(10).hasScale(1)))
+        .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isCumulative);
+  }
+
+  @Test
+  void summaryPointsSatisfying() {
+    assertThat(SUMMARY_METRIC)
+        .hasName("summary")
+        .hasSummaryPointsSatisfying(point -> point.hasCount(1).hasSum(2))
+        .hasSummaryPointsSatisfying(Collections.singletonList(point -> point.hasCount(1).hasSum(2)))
+        .hasUnit("1");
+  }
+
+  @ParameterizedTest
+  @MethodSource("pointShortcuts")
+  void pointShortcutsFailure(MetricData metric, Consumer<MetricAssert> assertion) {
+    assertThatThrownBy(() -> assertion.accept(assertThat((MetricData) null)))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("not to be null");
+
+    MetricData wrongType =
+        metric.getType() == MetricDataType.HISTOGRAM ? SUMMARY_METRIC : HISTOGRAM_METRIC;
+    assertThatThrownBy(() -> assertion.accept(assertThat(wrongType)))
+        .isInstanceOf(AssertionError.class)
+        .hasMessage(
+            "Expected MetricData to have type <%s> but found <%s>",
+            metric.getType(), wrongType.getType());
+
+    assertThatThrownBy(() -> assertion.accept(assertThat(metric)))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  static Stream<Arguments> pointShortcuts() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "double gauge varargs",
+            DOUBLE_GAUGE_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasDoubleGaugePointsSatisfying),
+        Arguments.argumentSet(
+            "double gauge iterable",
+            DOUBLE_GAUGE_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasDoubleGaugePointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "long gauge varargs",
+            LONG_GAUGE_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasLongGaugePointsSatisfying),
+        Arguments.argumentSet(
+            "long gauge iterable",
+            LONG_GAUGE_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasLongGaugePointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "double sum varargs",
+            DOUBLE_SUM_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasDoubleSumPointsSatisfying),
+        Arguments.argumentSet(
+            "double sum iterable",
+            DOUBLE_SUM_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasDoubleSumPointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "long sum varargs",
+            LONG_SUM_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasLongSumPointsSatisfying),
+        Arguments.argumentSet(
+            "long sum iterable",
+            LONG_SUM_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasLongSumPointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "histogram varargs",
+            HISTOGRAM_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasHistogramPointsSatisfying),
+        Arguments.argumentSet(
+            "histogram iterable",
+            HISTOGRAM_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasHistogramPointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "exponential histogram varargs",
+            EXPONENTIAL_HISTOGRAM_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasExponentialHistogramPointsSatisfying),
+        Arguments.argumentSet(
+            "exponential histogram iterable",
+            EXPONENTIAL_HISTOGRAM_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasExponentialHistogramPointsSatisfying(Collections.emptyList())),
+        Arguments.argumentSet(
+            "summary varargs",
+            SUMMARY_METRIC,
+            (Consumer<MetricAssert>) MetricAssert::hasSummaryPointsSatisfying),
+        Arguments.argumentSet(
+            "summary iterable",
+            SUMMARY_METRIC,
+            (Consumer<MetricAssert>)
+                metric -> metric.hasSummaryPointsSatisfying(Collections.emptyList())));
+  }
+
+  @Test
+  void pointShortcutsRejectMismatchedPoints() {
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC).hasHistogramPointsSatisfying(point -> point.hasCount(42)))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void pointShortcutsRequireExactMatching() {
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC).hasLongGaugePointsSatisfying(point -> point.hasValue(1)))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugePointsSatisfying(
+                    point -> point.hasValue(Long.MAX_VALUE),
+                    point -> point.hasValue(1),
+                    point -> point.hasValue(1)))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugePointsSatisfying(
+                    point -> point.hasValue(1), point -> point.hasValue(1)))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  @SuppressWarnings("NullAway")
+  void pointShortcutsNullAssertions() {
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramPointsSatisfying((Iterable<Consumer<HistogramPointAssert>>) null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>) null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() ->
+            assertThat(SUMMARY_METRIC)
+                .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() ->
+            assertThat((MetricData) null)
+                .hasHistogramPointsSatisfying((Consumer<HistogramPointAssert>[]) null))
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
   @SuppressWarnings("Convert2MethodRef")
   void doubleGauge() {
     assertThat(DOUBLE_GAUGE_METRIC)
         .hasResource(RESOURCE)
-        .hasResourceSatisfying(
-            resource ->
-                resource
-                    .hasSchemaUrl(null)
-                    .hasAttribute(DOG, "bark")
-                    .hasAttributes(
-                        Attributes.of(DOG, "bark", AttributeKey.booleanKey("dog is cute"), true))
-                    .hasAttributes(
-                        attributeEntry("dog", "bark"), attributeEntry("dog is cute", true))
-                    .hasAttributesSatisfying(
-                        attributes ->
-                            assertThat(attributes)
-                                .hasSize(2)
-                                .containsEntry(stringKey("dog"), "bark")
-                                .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
-                                .hasEntrySatisfying(
-                                    AttributeKey.booleanKey("dog is cute"),
-                                    value -> assertThat(value).isTrue())))
-        .hasResourceSatisfying(
-            resource ->
-                resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("bark"))))
-        .hasResourceSatisfying(
-            resource ->
-                resource.hasAttributesSatisfyingExactly(
-                    equalTo(DOG, "bark"), equalTo(AttributeKey.booleanKey("dog is cute"), true)))
-        .hasResourceSatisfying(
-            resource ->
-                resource.hasAttributesSatisfyingExactly(
-                    satisfies(DOG, val -> val.startsWith("bar")),
-                    satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
+        .hasResourceSatisfying(resource ->
+            resource
+                .hasSchemaUrl(null)
+                .hasAttribute(DOG, "bark")
+                .hasAttributes(
+                    Attributes.of(DOG, "bark", AttributeKey.booleanKey("dog is cute"), true))
+                .hasAttributes(attributeEntry("dog", "bark"), attributeEntry("dog is cute", true))
+                .hasAttributesSatisfying(attributes ->
+                    assertThat(attributes)
+                        .hasSize(2)
+                        .containsEntry(stringKey("dog"), "bark")
+                        .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
+                        .hasEntrySatisfying(
+                            AttributeKey.booleanKey("dog is cute"),
+                            value -> assertThat(value).isTrue())))
+        .hasResourceSatisfying(resource ->
+            resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("bark"))))
+        .hasResourceSatisfying(resource ->
+            resource.hasAttributesSatisfyingExactly(
+                equalTo(DOG, "bark"), equalTo(AttributeKey.booleanKey("dog is cute"), true)))
+        .hasResourceSatisfying(resource ->
+            resource.hasAttributesSatisfyingExactly(
+                satisfies(DOG, val -> val.startsWith("bar")),
+                satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
         .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
         .hasName("gauge")
         .hasDescription("a gauge")
         .hasUnit("1")
-        .hasDoubleGaugeSatisfying(
-            gauge ->
-                gauge.hasPointsSatisfying(
-                    point ->
-                        point
-                            .hasStartEpochNanos(3)
-                            .hasEpochNanos(4)
-                            .hasAttributes(Attributes.empty())
-                            .hasValue(3.0)
-                            .hasValueSatisfying(val -> val.isEqualTo(3.0))
-                            .hasExemplars(DOUBLE_EXEMPLAR2, DOUBLE_EXEMPLAR1)
-                            .hasExemplarsSatisfying(
-                                exemplar ->
-                                    exemplar
-                                        .hasEpochNanos(2)
-                                        .hasTraceId(TRACE_ID)
-                                        .hasSpanId(SPAN_ID2)
-                                        .hasValue(2.0)
-                                        .hasFilteredAttributes(Attributes.empty()),
-                                exemplar ->
-                                    exemplar
-                                        .hasEpochNanos(0)
-                                        .hasTraceId(TRACE_ID)
-                                        .hasSpanId(SPAN_ID1)
-                                        .hasValue(1.0)
-                                        .hasFilteredAttribute(BEAR, "mya")
-                                        .hasFilteredAttribute(equalTo(BEAR, "mya"))
-                                        .hasFilteredAttributes(ATTRIBUTES)
-                                        .hasFilteredAttributes(
-                                            attributeEntry("bear", "mya"),
-                                            attributeEntry("warm", true),
-                                            attributeEntry("temperature", 30),
-                                            attributeEntry("length", 1.2),
-                                            attributeEntry("colors", "red", "blue"),
-                                            attributeEntry("conditions", false, true),
-                                            attributeEntry("scores", 0L, 1L),
-                                            attributeEntry("coins", 0.01, 0.05, 0.1),
-                                            attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
-                                        .hasFilteredAttributesSatisfying(
-                                            equalTo(BEAR, "mya"),
-                                            equalTo(WARM, true),
-                                            equalTo(TEMPERATURE, 30),
-                                            equalTo(LENGTH, 1.2))
-                                        .hasFilteredAttributesSatisfying(
-                                            satisfies(BEAR, val -> val.startsWith("mya")),
-                                            satisfies(WARM, val -> val.isTrue()),
-                                            satisfies(
-                                                TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
-                                            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
-                                            satisfies(
-                                                COLORS, val -> val.containsExactly("red", "blue")),
-                                            satisfies(
-                                                CONDITIONS,
-                                                val -> val.containsExactly(false, true)),
-                                            satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                                            satisfies(
-                                                COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
-                                            satisfies(
-                                                BYTES,
-                                                val ->
-                                                    val.isEqualTo(Value.of(new byte[] {1, 2, 3}))))
-                                        // Demonstrates common usage of many exact matches and one
-                                        // needing a loose one.
-                                        .hasFilteredAttributesSatisfying(
-                                            equalTo(BEAR, "mya"),
-                                            equalTo(COLORS, Arrays.asList("red", "blue")),
-                                            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
-                                        .hasFilteredAttributesSatisfyingExactly(
-                                            equalTo(BEAR, "mya"),
-                                            equalTo(WARM, true),
-                                            equalTo(TEMPERATURE, 30L),
-                                            equalTo(COLORS, Arrays.asList("red", "blue")),
-                                            equalTo(CONDITIONS, Arrays.asList(false, true)),
-                                            equalTo(SCORES, Arrays.asList(0L, 1L)),
-                                            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
-                                            equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
-                                            satisfies(
-                                                LENGTH, val -> val.isCloseTo(1, offset(0.3))))),
-                    point ->
-                        point
-                            .hasStartEpochNanos(1)
-                            .hasEpochNanos(2)
-                            .hasValue(3.0)
-                            .hasAttribute(BEAR, "mya")
-                            .hasAttribute(equalTo(BEAR, "mya"))
-                            .hasAttributes(ATTRIBUTES)
-                            .hasAttributes(
-                                attributeEntry("bear", "mya"),
-                                attributeEntry("warm", true),
-                                attributeEntry("temperature", 30),
-                                attributeEntry("length", 1.2),
-                                attributeEntry("colors", "red", "blue"),
-                                attributeEntry("conditions", false, true),
-                                attributeEntry("scores", 0L, 1L),
-                                attributeEntry("coins", 0.01, 0.05, 0.1),
-                                attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
-                            .hasAttributesSatisfying(
-                                equalTo(BEAR, "mya"),
-                                equalTo(WARM, true),
-                                equalTo(TEMPERATURE, 30),
-                                equalTo(LENGTH, 1.2),
-                                equalTo(COLORS, Arrays.asList("red", "blue")),
-                                equalTo(CONDITIONS, Arrays.asList(false, true)),
-                                equalTo(SCORES, Arrays.asList(0L, 1L)),
-                                equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
-                                equalTo(BYTES, Value.of(new byte[] {1, 2, 3})))
-                            .hasAttributesSatisfying(
-                                satisfies(BEAR, val -> val.startsWith("mya")),
-                                satisfies(WARM, val -> val.isTrue()),
-                                satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
-                                satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
-                                satisfies(COLORS, val -> val.containsExactly("red", "blue")),
-                                satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
-                                satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                                satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
-                                satisfies(
-                                    BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3}))))
-                            // Demonstrates common usage of many exact matches and one needing a
-                            // loose one.
-                            .hasAttributesSatisfying(
-                                equalTo(BEAR, "mya"),
-                                equalTo(WARM, true),
-                                equalTo(TEMPERATURE, 30L),
-                                equalTo(COLORS, Arrays.asList("red", "blue")),
-                                equalTo(CONDITIONS, Arrays.asList(false, true)),
-                                equalTo(SCORES, Arrays.asList(0L, 1L)),
-                                equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
-                                equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
-                                satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
-                            .hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .hasSize(9)
-                                        .containsEntry(stringKey("bear"), "mya")
-                                        .containsEntry("warm", true)
-                                        .containsEntry("temperature", 30L)
-                                        .containsEntry("colors", "red", "blue")
-                                        .containsEntry("conditions", false, true)
-                                        .containsEntry("scores", 0L, 1L)
-                                        .containsEntry("coins", 0.01, 0.05, 0.1)
-                                        .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
-                                        .containsEntry("length", 1.2))));
+        .hasDoubleGaugeSatisfying(gauge ->
+            gauge.hasPointsSatisfying(
+                point ->
+                    point
+                        .hasStartEpochNanos(3)
+                        .hasEpochNanos(4)
+                        .hasAttributes(Attributes.empty())
+                        .hasValue(3.0)
+                        .hasValueSatisfying(val -> val.isEqualTo(3.0))
+                        .hasExemplars(DOUBLE_EXEMPLAR2, DOUBLE_EXEMPLAR1)
+                        .hasExemplarsSatisfying(
+                            exemplar ->
+                                exemplar
+                                    .hasEpochNanos(2)
+                                    .hasTraceId(TRACE_ID)
+                                    .hasSpanId(SPAN_ID2)
+                                    .hasValue(2.0)
+                                    .hasFilteredAttributes(Attributes.empty()),
+                            exemplar ->
+                                exemplar
+                                    .hasEpochNanos(0)
+                                    .hasTraceId(TRACE_ID)
+                                    .hasSpanId(SPAN_ID1)
+                                    .hasValue(1.0)
+                                    .hasFilteredAttribute(BEAR, "mya")
+                                    .hasFilteredAttribute(equalTo(BEAR, "mya"))
+                                    .hasFilteredAttributes(ATTRIBUTES)
+                                    .hasFilteredAttributes(
+                                        attributeEntry("bear", "mya"),
+                                        attributeEntry("warm", true),
+                                        attributeEntry("temperature", 30),
+                                        attributeEntry("length", 1.2),
+                                        attributeEntry("colors", "red", "blue"),
+                                        attributeEntry("conditions", false, true),
+                                        attributeEntry("scores", 0L, 1L),
+                                        attributeEntry("coins", 0.01, 0.05, 0.1),
+                                        attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
+                                    .hasFilteredAttributesSatisfying(
+                                        equalTo(BEAR, "mya"),
+                                        equalTo(WARM, true),
+                                        equalTo(TEMPERATURE, 30),
+                                        equalTo(LENGTH, 1.2))
+                                    .hasFilteredAttributesSatisfying(
+                                        satisfies(BEAR, val -> val.startsWith("mya")),
+                                        satisfies(WARM, val -> val.isTrue()),
+                                        satisfies(
+                                            TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                                        satisfies(
+                                            COLORS, val -> val.containsExactly("red", "blue")),
+                                        satisfies(
+                                            CONDITIONS, val -> val.containsExactly(false, true)),
+                                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                                        satisfies(
+                                            COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                                        satisfies(
+                                            BYTES,
+                                            val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3}))))
+                                    // Demonstrates common usage of many exact matches and one
+                                    // needing a loose one.
+                                    .hasFilteredAttributesSatisfying(
+                                        equalTo(BEAR, "mya"),
+                                        equalTo(COLORS, Arrays.asList("red", "blue")),
+                                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
+                                    .hasFilteredAttributesSatisfyingExactly(
+                                        equalTo(BEAR, "mya"),
+                                        equalTo(WARM, true),
+                                        equalTo(TEMPERATURE, 30L),
+                                        equalTo(COLORS, Arrays.asList("red", "blue")),
+                                        equalTo(CONDITIONS, Arrays.asList(false, true)),
+                                        equalTo(SCORES, Arrays.asList(0L, 1L)),
+                                        equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                                        equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
+                                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))),
+                point ->
+                    point
+                        .hasStartEpochNanos(1)
+                        .hasEpochNanos(2)
+                        .hasValue(3.0)
+                        .hasAttribute(BEAR, "mya")
+                        .hasAttribute(equalTo(BEAR, "mya"))
+                        .hasAttributes(ATTRIBUTES)
+                        .hasAttributes(
+                            attributeEntry("bear", "mya"),
+                            attributeEntry("warm", true),
+                            attributeEntry("temperature", 30),
+                            attributeEntry("length", 1.2),
+                            attributeEntry("colors", "red", "blue"),
+                            attributeEntry("conditions", false, true),
+                            attributeEntry("scores", 0L, 1L),
+                            attributeEntry("coins", 0.01, 0.05, 0.1),
+                            attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
+                        .hasAttributesSatisfying(
+                            equalTo(BEAR, "mya"),
+                            equalTo(WARM, true),
+                            equalTo(TEMPERATURE, 30),
+                            equalTo(LENGTH, 1.2),
+                            equalTo(COLORS, Arrays.asList("red", "blue")),
+                            equalTo(CONDITIONS, Arrays.asList(false, true)),
+                            equalTo(SCORES, Arrays.asList(0L, 1L)),
+                            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                            equalTo(BYTES, Value.of(new byte[] {1, 2, 3})))
+                        .hasAttributesSatisfying(
+                            satisfies(BEAR, val -> val.startsWith("mya")),
+                            satisfies(WARM, val -> val.isTrue()),
+                            satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                            satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                            satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                            satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                            satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                            satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3}))))
+                        // Demonstrates common usage of many exact matches and one needing a
+                        // loose one.
+                        .hasAttributesSatisfying(
+                            equalTo(BEAR, "mya"),
+                            equalTo(WARM, true),
+                            equalTo(TEMPERATURE, 30L),
+                            equalTo(COLORS, Arrays.asList("red", "blue")),
+                            equalTo(CONDITIONS, Arrays.asList(false, true)),
+                            equalTo(SCORES, Arrays.asList(0L, 1L)),
+                            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                            equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
+                            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
+                        .hasAttributesSatisfying(attributes ->
+                            assertThat(attributes)
+                                .hasSize(9)
+                                .containsEntry(stringKey("bear"), "mya")
+                                .containsEntry("warm", true)
+                                .containsEntry("temperature", 30L)
+                                .containsEntry("colors", "red", "blue")
+                                .containsEntry("conditions", false, true)
+                                .containsEntry("scores", 0L, 1L)
+                                .containsEntry("coins", 0.01, 0.05, 0.1)
+                                .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
+                                .containsEntry("length", 1.2))));
   }
 
   @Test
@@ -492,83 +708,62 @@ class MetricAssertionsTest {
   void doubleGaugeFailure() {
     assertThatThrownBy(() -> assertThat(DOUBLE_GAUGE_METRIC).hasResource(Resource.empty()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(resource -> resource.hasSchemaUrl("http://example.com")))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(resource -> resource.hasSchemaUrl("http://example.com")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(resource -> resource.hasAttribute(DOG, "meow")))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(resource -> resource.hasAttribute(DOG, "meow")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(
-                        resource -> resource.hasAttributes(Attributes.of(DOG, "bark"))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(
+                    resource -> resource.hasAttributes(Attributes.of(DOG, "bark"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(
-                        resource -> resource.hasAttributes(attributeEntry("dog is cute", true))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(
+                    resource -> resource.hasAttributes(attributeEntry("dog is cute", true))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfying(
-                                attributes -> assertThat(attributes).hasSize(1))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfying(
+                        attributes -> assertThat(attributes).hasSize(1))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .containsEntry(stringKey("dog"), "meow"))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfying(attributes ->
+                        assertThat(attributes).containsEntry(stringKey("dog"), "meow"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .containsEntry(
-                                            AttributeKey.booleanKey("dog is cute"), false))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfying(attributes ->
+                        assertThat(attributes)
+                            .containsEntry(AttributeKey.booleanKey("dog is cute"), false))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfying(
-                                satisfies(DOG, val -> val.isEqualTo("meow")))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("meow")))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(
-                        resource -> resource.hasAttributesSatisfyingExactly(equalTo(DOG, "bark"))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(
+                    resource -> resource.hasAttributesSatisfyingExactly(equalTo(DOG, "bark"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfyingExactly(
-                                satisfies(DOG, val -> val.isEqualTo("bark")))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfyingExactly(
+                        satisfies(DOG, val -> val.isEqualTo("bark")))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasInstrumentationScope(InstrumentationScopeInfo.empty()))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasInstrumentationScope(InstrumentationScopeInfo.empty()))
         .isInstanceOf(AssertionError.class)
         .hasMessage(
             "Expected MetricData to have instrumentation scope <"
@@ -584,228 +779,109 @@ class MetricAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(DOUBLE_GAUGE_METRIC).hasLongGaugeSatisfying(gauge -> {}))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        // Not enough points
-                        gauge -> gauge.hasPointsSatisfying(point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(
+                    // Not enough points
+                    gauge -> gauge.hasPointsSatisfying(point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasStartEpochNanos(100), point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point -> point.hasStartEpochNanos(100), point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasEpochNanos(100), point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point -> point.hasEpochNanos(100), point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(point -> point.hasValue(100), point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(
+                    gauge -> gauge.hasPointsSatisfying(point -> point.hasValue(100), point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                // Not enough exemplars
-                                point -> point.hasExemplarsSatisfying(exemplar -> {}),
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        // Not enough exemplars
+                        point -> point.hasExemplarsSatisfying(exemplar -> {}),
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                // Not enough exemplars
-                                point -> point.hasExemplars(DOUBLE_EXEMPLAR1),
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        // Not enough exemplars
+                        point -> point.hasExemplars(DOUBLE_EXEMPLAR1),
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar -> exemplar.hasEpochNanos(100), exemplar -> {}),
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point.hasExemplarsSatisfying(
+                                exemplar -> exemplar.hasEpochNanos(100), exemplar -> {}),
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar -> exemplar.hasTraceId("trace"), exemplar -> {}),
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point.hasExemplarsSatisfying(
+                                exemplar -> exemplar.hasTraceId("trace"), exemplar -> {}),
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar -> exemplar.hasSpanId("span"), exemplar -> {}),
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point.hasExemplarsSatisfying(
+                                exemplar -> exemplar.hasSpanId("span"), exemplar -> {}),
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar -> exemplar.hasValue(100.0), exemplar -> {}),
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point.hasExemplarsSatisfying(
+                                exemplar -> exemplar.hasValue(100.0), exemplar -> {}),
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar -> exemplar.hasFilteredAttribute(CAT, "garfield"),
-                                        exemplar -> {}),
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point.hasExemplarsSatisfying(
+                                exemplar -> exemplar.hasFilteredAttribute(CAT, "garfield"),
+                                exemplar -> {}),
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar ->
-                                            exemplar.hasFilteredAttributes(
-                                                Attributes.of(CAT, "garfield")),
-                                        exemplar -> {}),
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point.hasExemplarsSatisfying(
+                                exemplar ->
+                                    exemplar.hasFilteredAttributes(Attributes.of(CAT, "garfield")),
+                                exemplar -> {}),
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar ->
-                                            // Extra CAT
-                                            exemplar.hasFilteredAttributesSatisfying(
-                                                satisfies(BEAR, val -> val.startsWith("mya")),
-                                                satisfies(CAT, val -> val.startsWith("nya")),
-                                                satisfies(WARM, val -> val.isTrue()),
-                                                satisfies(
-                                                    TEMPERATURE,
-                                                    val -> val.isGreaterThanOrEqualTo(30)),
-                                                satisfies(
-                                                    LENGTH, val -> val.isCloseTo(1, offset(0.3))),
-                                                satisfies(
-                                                    COLORS,
-                                                    val -> val.containsExactly("red", "blue")),
-                                                satisfies(
-                                                    CONDITIONS,
-                                                    val -> val.containsExactly(false, true)),
-                                                satisfies(
-                                                    SCORES, val -> val.containsExactly(0L, 1L)),
-                                                satisfies(
-                                                    COINS,
-                                                    val -> val.containsExactly(0.01, 0.05, 0.1)),
-                                                satisfies(
-                                                    BYTES,
-                                                    val ->
-                                                        val.isEqualTo(
-                                                            Value.of(new byte[] {1, 2, 3})))),
-                                        exemplar -> {}),
-                                point -> {})))
-        .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar ->
-                                            // Extra CAT
-                                            exemplar.hasFilteredAttributesSatisfyingExactly(
-                                                satisfies(WARM, val -> val.isTrue()),
-                                                satisfies(
-                                                    TEMPERATURE,
-                                                    val -> val.isGreaterThanOrEqualTo(30)),
-                                                satisfies(
-                                                    LENGTH, val -> val.isCloseTo(1, offset(0.3))),
-                                                satisfies(
-                                                    COLORS,
-                                                    val -> val.containsExactly("red", "blue")),
-                                                satisfies(
-                                                    CONDITIONS,
-                                                    val -> val.containsExactly(false, true)),
-                                                satisfies(
-                                                    SCORES, val -> val.containsExactly(0L, 1L)),
-                                                satisfies(
-                                                    COINS,
-                                                    val -> val.containsExactly(0.01, 0.05, 0.1)),
-                                                satisfies(
-                                                    BYTES,
-                                                    val ->
-                                                        val.isEqualTo(
-                                                            Value.of(new byte[] {1, 2, 3})))),
-                                        exemplar -> {}),
-                                point -> {})))
-        .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasAttributes(Attributes.empty()),
-                                point -> point.hasAttribute(CAT, "garfield"))))
-        .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasAttributes(Attributes.empty()),
-                                point -> point.hasAttributes(Attributes.of(CAT, "garfield")))))
-        .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasAttributes(Attributes.empty()),
-                                // Extra CAT
-                                point ->
-                                    point.hasAttributesSatisfying(
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point.hasExemplarsSatisfying(
+                                exemplar ->
+                                    // Extra CAT
+                                    exemplar.hasFilteredAttributesSatisfying(
                                         satisfies(BEAR, val -> val.startsWith("mya")),
                                         satisfies(CAT, val -> val.startsWith("nya")),
                                         satisfies(WARM, val -> val.isTrue()),
@@ -821,33 +897,89 @@ class MetricAssertionsTest {
                                             COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
                                         satisfies(
                                             BYTES,
-                                            val ->
-                                                val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))))
+                                            val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))),
+                                exemplar -> {}),
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasAttributes(Attributes.empty()),
-                                point ->
-                                    point.hasAttributesSatisfying(
-                                        attributes ->
-                                            assertThat(attributes)
-                                                .hasSize(9)
-                                                .containsEntry(
-                                                    stringKey("bear"),
-                                                    "WRONG BEAR NAME") // Failed here
-                                                .containsEntry("warm", true)
-                                                .containsEntry("temperature", 30L)
-                                                .containsEntry("colors", "red", "blue")
-                                                .containsEntry("conditions", false, true)
-                                                .containsEntry("scores", 0L, 1L)
-                                                .containsEntry("coins", 0.01, 0.05, 0.1)
-                                                .containsEntry(
-                                                    "bytes", Value.of(new byte[] {1, 2, 3}))
-                                                .containsEntry("length", 1.2)))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point.hasExemplarsSatisfying(
+                                exemplar ->
+                                    // Extra CAT
+                                    exemplar.hasFilteredAttributesSatisfyingExactly(
+                                        satisfies(WARM, val -> val.isTrue()),
+                                        satisfies(
+                                            TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                                        satisfies(
+                                            COLORS, val -> val.containsExactly("red", "blue")),
+                                        satisfies(
+                                            CONDITIONS, val -> val.containsExactly(false, true)),
+                                        satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                                        satisfies(
+                                            COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                                        satisfies(
+                                            BYTES,
+                                            val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))),
+                                exemplar -> {}),
+                        point -> {})))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point -> point.hasAttributes(Attributes.empty()),
+                        point -> point.hasAttribute(CAT, "garfield"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point -> point.hasAttributes(Attributes.empty()),
+                        point -> point.hasAttributes(Attributes.of(CAT, "garfield")))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point -> point.hasAttributes(Attributes.empty()),
+                        // Extra CAT
+                        point ->
+                            point.hasAttributesSatisfying(
+                                satisfies(BEAR, val -> val.startsWith("mya")),
+                                satisfies(CAT, val -> val.startsWith("nya")),
+                                satisfies(WARM, val -> val.isTrue()),
+                                satisfies(TEMPERATURE, val -> val.isGreaterThanOrEqualTo(30)),
+                                satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))),
+                                satisfies(COLORS, val -> val.containsExactly("red", "blue")),
+                                satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
+                                satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
+                                satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                                satisfies(
+                                    BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point -> point.hasAttributes(Attributes.empty()),
+                        point ->
+                            point.hasAttributesSatisfying(attributes ->
+                                assertThat(attributes)
+                                    .hasSize(9)
+                                    .containsEntry(
+                                        stringKey("bear"), "WRONG BEAR NAME") // Failed here
+                                    .containsEntry("warm", true)
+                                    .containsEntry("temperature", 30L)
+                                    .containsEntry("colors", "red", "blue")
+                                    .containsEntry("conditions", false, true)
+                                    .containsEntry("scores", 0L, 1L)
+                                    .containsEntry("coins", 0.01, 0.05, 0.1)
+                                    .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
+                                    .containsEntry("length", 1.2)))))
         .isInstanceOf(AssertionError.class);
   }
 
@@ -858,135 +990,110 @@ class MetricAssertionsTest {
   @Test
   void longGauge() {
     assertThat(LONG_GAUGE_METRIC)
-        .hasLongGaugeSatisfying(
-            gauge ->
-                gauge.hasPointsSatisfying(
-                    point ->
-                        point
-                            .hasValue(Long.MAX_VALUE)
-                            .hasValueSatisfying(val -> val.isEqualTo(Long.MAX_VALUE))
-                            .hasExemplarsSatisfying(
-                                exemplar -> exemplar.hasValue(2),
-                                exemplar ->
-                                    exemplar
-                                        .hasValue(1)
-                                        .hasFilteredAttributesSatisfying(
-                                            equalTo(BEAR, "mya"),
-                                            equalTo(WARM, true),
-                                            equalTo(TEMPERATURE, 30L),
-                                            equalTo(COLORS, Arrays.asList("red", "blue")),
-                                            satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
-                                        .hasFilteredAttributesSatisfyingExactly(
-                                            equalTo(BEAR, "mya"),
-                                            equalTo(WARM, true),
-                                            equalTo(TEMPERATURE, 30L),
-                                            equalTo(COLORS, Arrays.asList("red", "blue")),
-                                            equalTo(CONDITIONS, Arrays.asList(false, true)),
-                                            equalTo(SCORES, Arrays.asList(0L, 1L)),
-                                            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
-                                            equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
-                                            satisfies(
-                                                LENGTH, val -> val.isCloseTo(1, offset(0.3))))),
-                    point -> point.hasValue(1)));
+        .hasLongGaugeSatisfying(gauge ->
+            gauge.hasPointsSatisfying(
+                point ->
+                    point
+                        .hasValue(Long.MAX_VALUE)
+                        .hasValueSatisfying(val -> val.isEqualTo(Long.MAX_VALUE))
+                        .hasExemplarsSatisfying(
+                            exemplar -> exemplar.hasValue(2),
+                            exemplar ->
+                                exemplar
+                                    .hasValue(1)
+                                    .hasFilteredAttributesSatisfying(
+                                        equalTo(BEAR, "mya"),
+                                        equalTo(WARM, true),
+                                        equalTo(TEMPERATURE, 30L),
+                                        equalTo(COLORS, Arrays.asList("red", "blue")),
+                                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
+                                    .hasFilteredAttributesSatisfyingExactly(
+                                        equalTo(BEAR, "mya"),
+                                        equalTo(WARM, true),
+                                        equalTo(TEMPERATURE, 30L),
+                                        equalTo(COLORS, Arrays.asList("red", "blue")),
+                                        equalTo(CONDITIONS, Arrays.asList(false, true)),
+                                        equalTo(SCORES, Arrays.asList(0L, 1L)),
+                                        equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                                        equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
+                                        satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))),
+                point -> point.hasValue(1)));
   }
 
   @Test
   void longGaugeFailure() {
     assertThatThrownBy(() -> assertThat(LONG_GAUGE_METRIC).hasDoubleGaugeSatisfying(gauge -> {}))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                // Not enough points
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        // Not enough points
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasValue(2), point -> point.hasValue(1))))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point -> point.hasValue(2), point -> point.hasValue(1))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasValueSatisfying(val -> val.isNegative()),
-                                point -> point.hasValueSatisfying(val -> val.isNegative()))))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point -> point.hasValueSatisfying(val -> val.isNegative()),
+                        point -> point.hasValueSatisfying(val -> val.isNegative()))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasExemplars(LONG_EXEMPLAR2),
-                                point -> point.hasValue(1))))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point -> point.hasExemplars(LONG_EXEMPLAR2), point -> point.hasValue(1))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar -> exemplar.hasValue(100), exemplar -> {}),
-                                point -> point.hasValue(1))))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point.hasExemplarsSatisfying(
+                                exemplar -> exemplar.hasValue(100), exemplar -> {}),
+                        point -> point.hasValue(1))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar ->
-                                            exemplar.hasFilteredAttributesSatisfying(
-                                                equalTo(CAT, "mya"), equalTo(WARM, true))))))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point.hasExemplarsSatisfying(exemplar ->
+                            exemplar.hasFilteredAttributesSatisfying(
+                                equalTo(CAT, "mya"), equalTo(WARM, true))))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point.hasExemplarsSatisfying(
-                                        exemplar ->
-                                            exemplar.hasFilteredAttributesSatisfyingExactly(
-                                                equalTo(BEAR, "mya"),
-                                                equalTo(WARM, true),
-                                                satisfies(
-                                                    LENGTH,
-                                                    val -> val.isCloseTo(1, offset(0.3))))))))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point.hasExemplarsSatisfying(exemplar ->
+                            exemplar.hasFilteredAttributesSatisfyingExactly(
+                                equalTo(BEAR, "mya"),
+                                equalTo(WARM, true),
+                                satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))))))
         .isInstanceOf(AssertionError.class);
     // hasFilteredAttributesSatisfyingExactly must reject extra filtered attributes. The exemplar
     // has nine filtered attributes but only one is asserted, so the exact assertion must fail.
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(Long.MAX_VALUE)
-                                        .hasExemplarsSatisfying(
-                                            exemplar -> exemplar.hasValue(2),
-                                            exemplar ->
-                                                exemplar
-                                                    .hasValue(1)
-                                                    .hasFilteredAttributesSatisfyingExactly(
-                                                        equalTo(BEAR, "mya"))),
-                                point -> point.hasValue(1))))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasValue(Long.MAX_VALUE)
+                                .hasExemplarsSatisfying(
+                                    exemplar -> exemplar.hasValue(2),
+                                    exemplar ->
+                                        exemplar
+                                            .hasValue(1)
+                                            .hasFilteredAttributesSatisfyingExactly(
+                                                equalTo(BEAR, "mya"))),
+                        point -> point.hasValue(1))))
         .isInstanceOf(AssertionError.class);
   }
 
@@ -1005,14 +1112,12 @@ class MetricAssertionsTest {
   void doubleSumFailure() {
     assertThatThrownBy(() -> assertThat(DOUBLE_SUM_METRIC).hasLongSumSatisfying(sum -> {}))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_SUM_METRIC)
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                // Not enough points
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_SUM_METRIC)
+                .hasDoubleSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(
+                        // Not enough points
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(DOUBLE_SUM_METRIC).hasDoubleSumSatisfying(sum -> sum.isNotMonotonic()))
@@ -1020,15 +1125,13 @@ class MetricAssertionsTest {
     assertThatThrownBy(
             () -> assertThat(DOUBLE_SUM_METRIC).hasDoubleSumSatisfying(sum -> sum.isDelta()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
-                    .hasDoubleSumSatisfying(sum -> sum.isMonotonic()))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
+                .hasDoubleSumSatisfying(sum -> sum.isMonotonic()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
-                    .hasDoubleSumSatisfying(sum -> sum.isCumulative()))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_SUM_METRIC_DELTA_NONMONOTONIC)
+                .hasDoubleSumSatisfying(sum -> sum.isCumulative()))
         .isInstanceOf(AssertionError.class);
   }
 
@@ -1047,49 +1150,43 @@ class MetricAssertionsTest {
   void longSumFailure() {
     assertThatThrownBy(() -> assertThat(LONG_SUM_METRIC).hasDoubleSumSatisfying(sum -> {}))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_SUM_METRIC)
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                // Not enough points
-                                point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(LONG_SUM_METRIC)
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(
+                        // Not enough points
+                        point -> {})))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(LONG_SUM_METRIC).hasLongSumSatisfying(sum -> sum.isNotMonotonic()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(LONG_SUM_METRIC).hasLongSumSatisfying(sum -> sum.isDelta()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
-                    .hasLongSumSatisfying(sum -> sum.isMonotonic()))
+    assertThatThrownBy(() ->
+            assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
+                .hasLongSumSatisfying(sum -> sum.isMonotonic()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
-                    .hasLongSumSatisfying(sum -> sum.isCumulative()))
+    assertThatThrownBy(() ->
+            assertThat(LONG_SUM_METRIC_DELTA_NONMONOTONIC)
+                .hasLongSumSatisfying(sum -> sum.isCumulative()))
         .isInstanceOf(AssertionError.class);
   }
 
   @Test
   void histogram() {
     assertThat(HISTOGRAM_METRIC)
-        .hasHistogramSatisfying(
-            histogram ->
-                histogram
-                    .isCumulative()
-                    .hasPointsSatisfying(
-                        point ->
-                            point
-                                .hasSum(15.0)
-                                .hasSumGreaterThan(10.1)
-                                .hasMax(7.0)
-                                .hasMin(4.0)
-                                .hasCount(3)
-                                .hasBucketBoundaries(10.0)
-                                .hasBucketBoundaries(new double[] {10.1}, within(0.1))));
+        .hasHistogramSatisfying(histogram ->
+            histogram
+                .isCumulative()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasSum(15.0)
+                        .hasSumGreaterThan(10.1)
+                        .hasMax(7.0)
+                        .hasMin(4.0)
+                        .hasCount(3)
+                        .hasBucketBoundaries(10.0)
+                        .hasBucketBoundaries(new double[] {10.1}, within(0.1))));
     assertThat(HISTOGRAM_METRIC_DELTA).hasHistogramSatisfying(histogram -> histogram.isDelta());
   }
 
@@ -1097,107 +1194,84 @@ class MetricAssertionsTest {
   void histogram_failure() {
     assertThatThrownBy(() -> assertThat(HISTOGRAM_METRIC).hasDoubleGaugeSatisfying(gauge -> {}))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(histogram -> histogram.isDelta()))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC).hasHistogramSatisfying(histogram -> histogram.isDelta()))
         .isInstanceOf(AssertionError.class)
         .hasMessage("Expected Histogram to have delta aggregation but found <CUMULATIVE>");
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC_DELTA)
-                    .hasHistogramSatisfying(histogram -> histogram.isCumulative()))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC_DELTA)
+                .hasHistogramSatisfying(histogram -> histogram.isCumulative()))
         .isInstanceOf(AssertionError.class)
         .hasMessage("Expected Histogram to have cumulative aggregation but found <DELTA>");
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> {}, point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> {}, point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> point.hasSum(14.0))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> point.hasSum(14.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(point -> point.hasSumGreaterThan(16.0))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(point -> point.hasSumGreaterThan(16.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> point.hasMax(8.0))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> point.hasMax(8.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> point.hasMin(5.0))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> point.hasMin(5.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> point.hasCount(4))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> point.hasCount(4))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point -> point.hasBucketBoundaries(11.0))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(point -> point.hasBucketBoundaries(11.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point.hasBucketBoundaries(new double[] {11.0}, within(0.1)))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(
+                        point -> point.hasBucketBoundaries(new double[] {11.0}, within(0.1)))))
         .isInstanceOf(AssertionError.class);
   }
 
   @Test
   void exponentialHistogram() {
     assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
-        .hasExponentialHistogramSatisfying(
-            histogram ->
-                histogram
-                    .isCumulative()
-                    .hasPointsSatisfying(
-                        point ->
-                            point
-                                .hasScale(1)
-                                .hasSum(10.0)
-                                .hasZeroCount(1)
-                                .hasCount(4)
-                                .hasMin(2.0)
-                                .hasMax(4.0)
-                                .hasPositiveBucketsSatisfying(
-                                    buckets ->
-                                        buckets
-                                            .hasOffset(10)
-                                            .hasCounts(Arrays.asList(1L, 2L))
-                                            .hasTotalCount(3))
-                                .hasNegativeBucketsSatisfying(
-                                    buckets ->
-                                        buckets
-                                            .hasOffset(0)
-                                            .hasCounts(Collections.emptyList())
-                                            .hasTotalCount(0))
-                                .hasStartEpochNanos(1)
-                                .hasEpochNanos(2)
-                                .hasAttributes(Attributes.empty())
-                                .hasExemplars(DOUBLE_EXEMPLAR1, DOUBLE_EXEMPLAR2)
-                                .hasExemplarsSatisfying(exemplar -> {}, exemplar -> {})));
+        .hasExponentialHistogramSatisfying(histogram ->
+            histogram
+                .isCumulative()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasScale(1)
+                        .hasSum(10.0)
+                        .hasZeroCount(1)
+                        .hasCount(4)
+                        .hasMin(2.0)
+                        .hasMax(4.0)
+                        .hasPositiveBucketsSatisfying(buckets ->
+                            buckets.hasOffset(10).hasCounts(Arrays.asList(1L, 2L)).hasTotalCount(3))
+                        .hasNegativeBucketsSatisfying(buckets ->
+                            buckets
+                                .hasOffset(0)
+                                .hasCounts(Collections.emptyList())
+                                .hasTotalCount(0))
+                        .hasStartEpochNanos(1)
+                        .hasEpochNanos(2)
+                        .hasAttributes(Attributes.empty())
+                        .hasExemplars(DOUBLE_EXEMPLAR1, DOUBLE_EXEMPLAR2)
+                        .hasExemplarsSatisfying(exemplar -> {}, exemplar -> {})));
     assertThat(EXPONENTIAL_HISTOGRAM_DELTA_METRIC)
         .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isDelta);
   }
@@ -1207,125 +1281,101 @@ class MetricAssertionsTest {
     assertThatThrownBy(
             () -> assertThat(EXPONENTIAL_HISTOGRAM_METRIC).hasDoubleGaugeSatisfying(gauge -> {}))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
-                    .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isDelta))
+    assertThatThrownBy(() ->
+            assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+                .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isDelta))
         .isInstanceOf(AssertionError.class)
         .hasMessage("Expected Histogram to have delta aggregation but found <CUMULATIVE>");
-    assertThatThrownBy(
-            () ->
-                assertThat(EXPONENTIAL_HISTOGRAM_DELTA_METRIC)
-                    .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isCumulative))
+    assertThatThrownBy(() ->
+            assertThat(EXPONENTIAL_HISTOGRAM_DELTA_METRIC)
+                .hasExponentialHistogramSatisfying(ExponentialHistogramAssert::isCumulative))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
-                    .hasExponentialHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> {}, point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+                .hasExponentialHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> {}, point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
-                    .hasExponentialHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> point.hasSum(14.0))))
+    assertThatThrownBy(() ->
+            assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+                .hasExponentialHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> point.hasSum(14.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasExponentialHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> point.hasMax(8.0))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasExponentialHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> point.hasMax(8.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasExponentialHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> point.hasMin(5.0))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasExponentialHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> point.hasMin(5.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasExponentialHistogramSatisfying(
-                        histogram -> histogram.hasPointsSatisfying(point -> point.hasCount(4))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasExponentialHistogramSatisfying(
+                    histogram -> histogram.hasPointsSatisfying(point -> point.hasCount(4))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasExponentialHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point.hasPositiveBucketsSatisfying(
-                                        buckets ->
-                                            buckets.hasCounts(Collections.singletonList(1L))))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasExponentialHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(point ->
+                        point.hasPositiveBucketsSatisfying(
+                            buckets -> buckets.hasCounts(Collections.singletonList(1L))))))
         .isInstanceOf(AssertionError.class);
   }
 
   @Test
   void summary() {
     assertThat(SUMMARY_METRIC)
-        .hasSummarySatisfying(
-            summary ->
-                summary.hasPointsSatisfying(
-                    point ->
-                        point
-                            .hasSum(2.0)
-                            .hasCount(1)
-                            .hasValuesSatisfying(value -> value.hasQuantile(0.0).hasValue(1.0))));
+        .hasSummarySatisfying(summary ->
+            summary.hasPointsSatisfying(point ->
+                point
+                    .hasSum(2.0)
+                    .hasCount(1)
+                    .hasValuesSatisfying(value -> value.hasQuantile(0.0).hasValue(1.0))));
   }
 
   @Test
   void summary_failure() {
     assertThatThrownBy(() -> assertThat(SUMMARY_METRIC).hasHistogramSatisfying(histogram -> {}))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasSummarySatisfying(
-                        summary -> summary.hasPointsSatisfying(point -> {}, point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasSummarySatisfying(
+                    summary -> summary.hasPointsSatisfying(point -> {}, point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SUMMARY_METRIC)
-                    .hasSummarySatisfying(
-                        summary -> summary.hasPointsSatisfying(point -> {}, point -> {})))
+    assertThatThrownBy(() ->
+            assertThat(SUMMARY_METRIC)
+                .hasSummarySatisfying(
+                    summary -> summary.hasPointsSatisfying(point -> {}, point -> {})))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SUMMARY_METRIC)
-                    .hasSummarySatisfying(
-                        summary -> summary.hasPointsSatisfying(point -> point.hasSum(1.0))))
+    assertThatThrownBy(() ->
+            assertThat(SUMMARY_METRIC)
+                .hasSummarySatisfying(
+                    summary -> summary.hasPointsSatisfying(point -> point.hasSum(1.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SUMMARY_METRIC)
-                    .hasSummarySatisfying(
-                        summary -> summary.hasPointsSatisfying(point -> point.hasCount(2))))
+    assertThatThrownBy(() ->
+            assertThat(SUMMARY_METRIC)
+                .hasSummarySatisfying(
+                    summary -> summary.hasPointsSatisfying(point -> point.hasCount(2))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SUMMARY_METRIC)
-                    .hasSummarySatisfying(
-                        summary ->
-                            summary.hasPointsSatisfying(
-                                point -> point.hasValuesSatisfying(value -> {}, value -> {}))))
+    assertThatThrownBy(() ->
+            assertThat(SUMMARY_METRIC)
+                .hasSummarySatisfying(summary ->
+                    summary.hasPointsSatisfying(
+                        point -> point.hasValuesSatisfying(value -> {}, value -> {}))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SUMMARY_METRIC)
-                    .hasSummarySatisfying(
-                        summary ->
-                            summary.hasPointsSatisfying(
-                                point ->
-                                    point.hasValuesSatisfying(value -> value.hasQuantile(1.0)))))
+    assertThatThrownBy(() ->
+            assertThat(SUMMARY_METRIC)
+                .hasSummarySatisfying(summary ->
+                    summary.hasPointsSatisfying(
+                        point -> point.hasValuesSatisfying(value -> value.hasQuantile(1.0)))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SUMMARY_METRIC)
-                    .hasSummarySatisfying(
-                        summary ->
-                            summary.hasPointsSatisfying(
-                                point -> point.hasValuesSatisfying(value -> value.hasValue(3.0)))))
+    assertThatThrownBy(() ->
+            assertThat(SUMMARY_METRIC)
+                .hasSummarySatisfying(summary ->
+                    summary.hasPointsSatisfying(
+                        point -> point.hasValuesSatisfying(value -> value.hasValue(3.0)))))
         .isInstanceOf(AssertionError.class);
   }
 
@@ -1335,10 +1385,9 @@ class MetricAssertionsTest {
         .hasDoubleGaugeSatisfying(
             gauge -> gauge.containsPointsSatisfying(point -> point.hasValue(3.0)));
     assertThat(LONG_GAUGE_METRIC)
-        .hasLongGaugeSatisfying(
-            gauge ->
-                gauge.containsPointsSatisfying(
-                    point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1)));
+        .hasLongGaugeSatisfying(gauge ->
+            gauge.containsPointsSatisfying(
+                point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1)));
     assertThat(DOUBLE_SUM_METRIC)
         .hasDoubleSumSatisfying(sum -> sum.containsPointsSatisfying(point -> point.hasValue(3.0)));
     assertThat(LONG_SUM_METRIC)
@@ -1358,40 +1407,32 @@ class MetricAssertionsTest {
   @Test
   void containsPointsSatisfyingFailure() {
     // single assertion that matches no point
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_GAUGE_METRIC)
-                    .hasDoubleGaugeSatisfying(
-                        gauge -> gauge.containsPointsSatisfying(point -> point.hasValue(42.0))))
+    assertThatThrownBy(() ->
+            assertThat(DOUBLE_GAUGE_METRIC)
+                .hasDoubleGaugeSatisfying(
+                    gauge -> gauge.containsPointsSatisfying(point -> point.hasValue(42.0))))
         .isInstanceOf(AssertionError.class);
     // one of multiple assertions unmatched
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_GAUGE_METRIC)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.containsPointsSatisfying(
-                                point -> point.hasValue(Long.MAX_VALUE),
-                                point -> point.hasValue(42))))
+    assertThatThrownBy(() ->
+            assertThat(LONG_GAUGE_METRIC)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.containsPointsSatisfying(
+                        point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(42))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(HISTOGRAM_METRIC)
-                    .hasHistogramSatisfying(
-                        histogram -> histogram.containsPointsSatisfying(point -> point.hasSum(42))))
+    assertThatThrownBy(() ->
+            assertThat(HISTOGRAM_METRIC)
+                .hasHistogramSatisfying(
+                    histogram -> histogram.containsPointsSatisfying(point -> point.hasSum(42))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
-                    .hasExponentialHistogramSatisfying(
-                        histogram ->
-                            histogram.containsPointsSatisfying(point -> point.hasSum(42.0))))
+    assertThatThrownBy(() ->
+            assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+                .hasExponentialHistogramSatisfying(
+                    histogram -> histogram.containsPointsSatisfying(point -> point.hasSum(42.0))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(SUMMARY_METRIC)
-                    .hasSummarySatisfying(
-                        summary -> summary.containsPointsSatisfying(point -> point.hasSum(42.0))))
+    assertThatThrownBy(() ->
+            assertThat(SUMMARY_METRIC)
+                .hasSummarySatisfying(
+                    summary -> summary.containsPointsSatisfying(point -> point.hasSum(42.0))))
         .isInstanceOf(AssertionError.class);
   }
 }
