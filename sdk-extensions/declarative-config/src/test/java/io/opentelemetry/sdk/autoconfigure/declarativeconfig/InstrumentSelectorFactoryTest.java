@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.InstrumentTypeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;

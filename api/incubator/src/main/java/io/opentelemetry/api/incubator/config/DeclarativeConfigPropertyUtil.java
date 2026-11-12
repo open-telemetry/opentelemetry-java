@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("deprecation")
 final class DeclarativeConfigPropertyUtil {
 
   private DeclarativeConfigPropertyUtil() {}

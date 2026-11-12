@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.internal;
 
 import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;

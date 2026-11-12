@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 /** Empty instance of {@link DeclarativeConfigProperties}. */
+@SuppressWarnings("deprecation")
 final class EmptyDeclarativeConfigProperties implements DeclarativeConfigProperties {
 
   private static final EmptyDeclarativeConfigProperties INSTANCE =

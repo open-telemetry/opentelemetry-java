@@ -6,8 +6,8 @@
 package io.opentelemetry.api.incubator;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 
 /** Extension to {@link OpenTelemetry} with experimental APIs. */
 public interface ExtendedOpenTelemetry extends OpenTelemetry {

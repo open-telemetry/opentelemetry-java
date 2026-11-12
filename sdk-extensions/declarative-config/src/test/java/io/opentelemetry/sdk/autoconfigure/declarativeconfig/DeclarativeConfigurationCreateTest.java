@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
