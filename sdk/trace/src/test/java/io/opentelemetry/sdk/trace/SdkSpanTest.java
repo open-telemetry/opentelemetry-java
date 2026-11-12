@@ -1159,6 +1159,7 @@ class SdkSpanTest {
             SPAN_NAME,
             instrumentationScopeInfo,
             SpanKind.INTERNAL,
+            null,
             Span.getInvalid(),
             Context.root(),
             SpanLimits.getDefault(),
@@ -1515,6 +1516,7 @@ class SdkSpanTest {
             SPAN_NAME,
             instrumentationScopeInfo,
             SpanKind.INTERNAL,
+            null,
             parentSpanId != null
                 ? Span.wrap(
                     SpanContext.create(
@@ -1660,6 +1662,7 @@ class SdkSpanTest {
             SPAN_NAME,
             instrumentationScopeInfo,
             kind,
+            null,
             parentSpanId != null
                 ? Span.wrap(
                     SpanContext.create(
@@ -1749,6 +1752,7 @@ class SdkSpanTest {
             name,
             instrumentationScopeInfo,
             kind,
+            null,
             parentSpanId != null
                 ? Span.wrap(
                     SpanContext.create(
