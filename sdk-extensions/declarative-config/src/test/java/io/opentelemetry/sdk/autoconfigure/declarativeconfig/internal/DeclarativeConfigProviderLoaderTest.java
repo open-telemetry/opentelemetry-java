@@ -71,7 +71,12 @@ class DeclarativeConfigProviderLoaderTest {
             "");
 
     assertThat(selected).isSameAs(firstProvider);
-    logs.assertContains("Multiple SelectionTestSpi providers found.");
+    assertThat(
+            logs.assertContains(
+                    event -> event.getMessage().startsWith("Multiple {0} providers found."),
+                    "Expected parameterized multiple-provider warning")
+                .getArguments())
+        .containsExactly("SelectionTestSpi", SelectionTestSpi.class.getName());
   }
 
   @Test

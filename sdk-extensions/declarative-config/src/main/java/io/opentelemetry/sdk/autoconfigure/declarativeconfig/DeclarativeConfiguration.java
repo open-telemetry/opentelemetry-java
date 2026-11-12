@@ -145,8 +145,14 @@ public final class DeclarativeConfiguration {
       Map<String, String> environmentVariables,
       Map<Object, Object> systemProperties) {
     Object yamlObj = loadYaml(configuration, environmentVariables, systemProperties);
-    OpenTelemetryConfigurationModel model =
-        DeclarativeConfigurationMapperUtil.convert(yamlObj, OpenTelemetryConfigurationModel.class);
+    OpenTelemetryConfigurationModel model;
+    try {
+      model =
+          DeclarativeConfigurationMapperUtil.convert(
+              yamlObj, OpenTelemetryConfigurationModel.class);
+    } catch (DeclarativeConfigException e) {
+      throw new DeclarativeConfigException("Unable to parse configuration input stream", e);
+    }
     return Objects.requireNonNull(model, "Unable to map configuration to model");
   }
 

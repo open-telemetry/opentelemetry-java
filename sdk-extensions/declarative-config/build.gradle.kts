@@ -38,6 +38,7 @@ dependencies {
   api("com.fasterxml.jackson.core:jackson-annotations")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk-extensions:autoconfigure-spi"))
   testImplementation(project(":exporters:logging"))
   testImplementation(project(":exporters:logging-otlp"))
   testImplementation(project(":exporters:otlp:all"))
@@ -47,7 +48,8 @@ dependencies {
   testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-resources")
   testImplementation("com.linecorp.armeria:armeria-junit5")
-  testImplementation("com.fasterxml.jackson.core:jackson-databind")
+  testRuntimeOnly(project(":sdk-extensions:declarative-config-jackson2"))
+  testRuntimeOnly(project(":sdk-extensions:declarative-config-snakeyaml"))
 //
   testImplementation("com.google.guava:guava-testlib")
   testImplementation("nl.jqno.equalsverifier:equalsverifier")
