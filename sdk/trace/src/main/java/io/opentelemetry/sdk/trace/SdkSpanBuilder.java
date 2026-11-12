@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributeUtil;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
 
 /** {@link SdkSpanBuilder} is SDK implementation of {@link SpanBuilder}. */
@@ -48,6 +50,8 @@ class SdkSpanBuilder implements SpanBuilder {
   // Pre-built for the common case where parentContext is root (no extra context to preserve).
   private static final Context ROOT_CONTEXT_WITH_RANDOM_TRACE_ID_BIT =
       Context.root().with(RANDOM_TRACE_ID_PRIMORDIAL_SPAN);
+  private static final Context NO_PARENT =
+      Context.root().with(ContextKey.named("opentelemetry-no-parent"), Boolean.TRUE);
 
   private final String spanName;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -83,7 +87,7 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder setNoParent() {
-    this.parent = Context.root();
+    this.parent = NO_PARENT;
     return this;
   }
 
@@ -183,7 +187,9 @@ class SdkSpanBuilder implements SpanBuilder {
   @Override
   @SuppressWarnings({"rawtypes", "ReferenceEquality"})
   public Span startSpan() {
-    Context parentContext = parent == null ? Context.current() : parent;
+    boolean isNoParent = parent == NO_PARENT;
+    Context parentContext =
+        isNoParent ? Context.root() : (parent == null ? Context.current() : parent);
     Span parentSpan = Span.fromContext(parentContext);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;
@@ -218,6 +224,23 @@ class SdkSpanBuilder implements SpanBuilder {
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
+    BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter =
+        tracerSharedState.getContextScopedAttributesFilter();
+    if (filter != null && SdkTracer.INCUBATOR_AVAILABLE) {
+      Context contextForAttributes = isNoParent ? Context.current() : parentContext;
+      Attributes contextAttributes = IncubatingUtil.getContextAttributes(contextForAttributes);
+      if (!contextAttributes.isEmpty()) {
+        AttributesMap spanAttributes = attributes();
+        contextAttributes.forEach((key, value) -> {
+          if (!filter.test(instrumentationScopeInfo, key)) {
+            return;
+          }
+          if (!spanAttributes.containsKey(key.getKey())) {
+            spanAttributes.put((AttributeKey) key, value);
+          }
+        });
+      }
+    }
     Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
     SamplingResult samplingResult =
         tracerSharedState

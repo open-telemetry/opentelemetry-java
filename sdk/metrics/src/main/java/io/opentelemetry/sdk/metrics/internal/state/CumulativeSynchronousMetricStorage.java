@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
 import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.CUMULATIVE;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
@@ -24,8 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
+import javax.annotation.Nullable;
 
 class CumulativeSynchronousMetricStorage<T extends PointData>
     extends DefaultSynchronousMetricStorage<T> {
@@ -42,8 +45,16 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
       Clock clock,
       int maxCardinality,
       boolean enabled,
+      @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter,
       MemoryMode memoryMode) {
-    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+    super(
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesFilter);
     this.memoryMode = memoryMode;
   }
 
