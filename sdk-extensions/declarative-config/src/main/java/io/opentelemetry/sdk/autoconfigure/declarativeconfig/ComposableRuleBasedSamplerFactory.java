@@ -51,29 +51,28 @@ final class ComposableRuleBasedSamplerFactory
 
     List<ExperimentalComposableRuleBasedSamplerRuleModel> rules = model.getRules();
     if (rules != null) {
-      rules.forEach(
-          rule -> {
-            AttributeMatcher valueMatcher = attributeValuesMatcher(rule.getAttributeValues());
-            AttributeMatcher patternMatcher = attributePatternsMatcher(rule.getAttributePatterns());
-            Set<ExperimentalSpanParentModel> matchingParents =
-                rule.getParent() != null && !rule.getParent().isEmpty()
-                    ? new HashSet<>(rule.getParent())
-                    : null;
-            Set<SpanKind> matchingSpanKinds =
-                rule.getSpanKinds() != null && !rule.getSpanKinds().isEmpty()
-                    ? rule.getSpanKinds().stream()
-                        .map(DeclarativeConfigSamplingPredicate::toSpanKind)
-                        .collect(toSet())
-                    : null;
+      rules.forEach(rule -> {
+        AttributeMatcher valueMatcher = attributeValuesMatcher(rule.getAttributeValues());
+        AttributeMatcher patternMatcher = attributePatternsMatcher(rule.getAttributePatterns());
+        Set<ExperimentalSpanParentModel> matchingParents =
+            rule.getParent() != null && !rule.getParent().isEmpty()
+                ? new HashSet<>(rule.getParent())
+                : null;
+        Set<SpanKind> matchingSpanKinds =
+            rule.getSpanKinds() != null && !rule.getSpanKinds().isEmpty()
+                ? rule.getSpanKinds().stream()
+                    .map(DeclarativeConfigSamplingPredicate::toSpanKind)
+                    .collect(toSet())
+                : null;
 
-            SamplingPredicate predicate =
-                new DeclarativeConfigSamplingPredicate(
-                    valueMatcher, patternMatcher, matchingParents, matchingSpanKinds);
-            ComposableSampler sampler =
-                ComposableSamplerFactory.getInstance()
-                    .create(requireNonNull(rule.getSampler(), "rule sampler"), context);
-            builder.add(predicate, sampler);
-          });
+        SamplingPredicate predicate =
+            new DeclarativeConfigSamplingPredicate(
+                valueMatcher, patternMatcher, matchingParents, matchingSpanKinds);
+        ComposableSampler sampler =
+            ComposableSamplerFactory.getInstance()
+                .create(requireNonNull(rule.getSampler(), "rule sampler"), context);
+        builder.add(predicate, sampler);
+      });
     }
 
     return builder.build();
@@ -171,23 +170,22 @@ final class ComposableRuleBasedSamplerFactory
 
     private static boolean attributesMatch(AttributeMatcher matcher, Attributes attributes) {
       boolean[] match = new boolean[] {false};
-      attributes.forEach(
-          (key, value) -> {
-            if (!matcher.matchesKey(key.getKey())) {
+      attributes.forEach((key, value) -> {
+        if (!matcher.matchesKey(key.getKey())) {
+          return;
+        }
+        if (value instanceof List) {
+          // For array attributes, it is a match if any item matches
+          for (Object item : (List<?>) value) {
+            if (matcher.matchesValue(String.valueOf(item))) {
+              match[0] = true;
               return;
             }
-            if (value instanceof List) {
-              // For array attributes, it is a match if any item matches
-              for (Object item : (List<?>) value) {
-                if (matcher.matchesValue(String.valueOf(item))) {
-                  match[0] = true;
-                  return;
-                }
-              }
-            } else if (matcher.matchesValue(String.valueOf(value))) {
-              match[0] = true;
-            }
-          });
+          }
+        } else if (matcher.matchesValue(String.valueOf(value))) {
+          match[0] = true;
+        }
+      });
       return match[0];
     }
 

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.javadocs;
 
+/** Maven coordinates of an artifact whose Javadoc is crawled. */
 public class Artifact {
   private final String group;
   private final String name;

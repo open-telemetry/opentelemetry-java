@@ -91,11 +91,10 @@ class JaegerRemoteSamplerIntegrationTest {
             .build()) {
       await()
           .atMost(Duration.ofSeconds(10))
-          .untilAsserted(
-              () ->
-                  assertThat(remoteSampler.getDescription())
-                      .contains("TraceIdRatioBased")
-                      .contains("0.8"));
+          .untilAsserted(() ->
+              assertThat(remoteSampler.getDescription())
+                  .contains("TraceIdRatioBased")
+                  .contains("0.8"));
     }
   }
 }

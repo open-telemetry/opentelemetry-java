@@ -419,10 +419,9 @@ public class ResourceBuilder {
   private static boolean hasAttributeOverride(Attributes current, Attributes incoming) {
     // Map lookup compares attribute types without valueKey's type coercion.
     return incoming.asMap().entrySet().stream()
-        .anyMatch(
-            entry ->
-                EntityUtil.hasAttributeKey(current, entry.getKey().getKey())
-                    && !Objects.equals(current.asMap().get(entry.getKey()), entry.getValue()));
+        .anyMatch(entry ->
+            EntityUtil.hasAttributeKey(current, entry.getKey().getKey())
+                && !Objects.equals(current.asMap().get(entry.getKey()), entry.getValue()));
   }
 
   /** Returns the schema URL shared by all entities that declare one, or null if they differ. */

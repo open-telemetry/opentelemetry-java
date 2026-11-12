@@ -13,3 +13,8 @@ dependencies {
   compileOnly(project(":api:incubator"))
   testImplementation(project(":api:incubator"))
 }
+
+tasks.test {
+  // Configure environment variable for ConfigPropertiesTest
+  environment("OTEL_JAVA_EXPORTER_MEMORY_MODE", "immutable_data")
+}

@@ -28,10 +28,8 @@ class AttributeListFactoryTest {
   @ParameterizedTest
   @MethodSource("invalidAttributes")
   void create_InvalidAttributes(List<AttributeNameValueModel> model, String expectedMessage) {
-    assertThatThrownBy(
-            () ->
-                AttributeListFactory.getInstance()
-                    .create(model, mock(DeclarativeConfigContext.class)))
+    assertThatThrownBy(() ->
+            AttributeListFactory.getInstance().create(model, mock(DeclarativeConfigContext.class)))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining(expectedMessage);
   }

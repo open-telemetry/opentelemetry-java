@@ -35,10 +35,9 @@ public interface AttributeKeyValue<T> {
   @SuppressWarnings("unchecked")
   static <T> List<AttributeKeyValue<?>> of(Attributes attributes) {
     List<AttributeKeyValue<?>> result = new ArrayList<>(attributes.size());
-    attributes.forEach(
-        (key, value) -> {
-          result.add(of((AttributeKey<T>) key, (T) value));
-        });
+    attributes.forEach((key, value) -> {
+      result.add(of((AttributeKey<T>) key, (T) value));
+    });
     return result;
   }
 

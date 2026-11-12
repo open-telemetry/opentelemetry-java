@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+/** HTTP server for the W3C trace context conformance tests. */
 public final class Application {
   private static final Logger logger = Logger.getLogger(Application.class.getName());
 

@@ -122,10 +122,9 @@ class PropagatorFactoryTest {
 
   @Test
   void create_SpiPropagator_Unknown() {
-    assertThatThrownBy(
-            () ->
-                PropagatorFactory.getInstance()
-                    .create(new PropagatorModel().setCompositeList("foo"), context))
+    assertThatThrownBy(() ->
+            PropagatorFactory.getInstance()
+                .create(new PropagatorModel().setCompositeList("foo"), context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.context.propagation.TextMapPropagator with name \"foo\".");

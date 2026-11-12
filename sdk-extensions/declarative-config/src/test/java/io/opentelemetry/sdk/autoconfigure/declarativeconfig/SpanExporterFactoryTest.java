@@ -128,6 +128,13 @@ class SpanExporterFactoryTest {
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
+            "otlp_http max_request_size 0",
+            new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel().setMaxRequestSize(0)),
+            OtlpHttpSpanExporter.getDefault().toBuilder()
+                .setMaxRequestBodySize(Long.MAX_VALUE)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
             "otlp_grpc default",
             new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()),
             OtlpGrpcSpanExporter.getDefault().toBuilder().setComponentLoader(context).build()),
@@ -159,6 +166,13 @@ class SpanExporterFactoryTest {
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
+            "otlp_grpc max_request_size 0",
+            new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel().setMaxRequestSize(0)),
+            OtlpGrpcSpanExporter.getDefault().toBuilder()
+                .setMaxRequestMessageSize(Long.MAX_VALUE)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
             "console",
             new SpanExporterModel().setConsole(new ConsoleExporterModel()),
             LoggingSpanExporter.create()),
@@ -183,7 +197,15 @@ class SpanExporterFactoryTest {
             "unknown component provider",
             new SpanExporterModel()
                 .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
-            "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"unknown_key\"."));
+            "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"unknown_key\"."),
+        Arguments.argumentSet(
+            "otlp_http negative max_request_size",
+            new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.trace.export.SpanExporter with name \"otlp_http\""),
+        Arguments.argumentSet(
+            "otlp_grpc negative max_request_size",
+            new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.trace.export.SpanExporter with name \"otlp_grpc\""));
   }
 
   @Test
@@ -266,11 +288,9 @@ class SpanExporterFactoryTest {
         .getBuilder()
         .addSpanExporterCustomizer(SpanExporter.class, (exporter, properties) -> null);
 
-    assertThatThrownBy(
-            () ->
-                SpanExporterFactory.getInstance()
-                    .create(
-                        new SpanExporterModel().setConsole(new ConsoleExporterModel()), context))
+    assertThatThrownBy(() ->
+            SpanExporterFactory.getInstance()
+                .create(new SpanExporterModel().setConsole(new ConsoleExporterModel()), context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Customizer returned null for SpanExporter: console");
   }

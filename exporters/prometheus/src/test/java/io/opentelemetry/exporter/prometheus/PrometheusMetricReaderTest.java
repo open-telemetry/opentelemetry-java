@@ -294,11 +294,10 @@ class PrometheusMetricReaderTest {
         .setUnit("Cel")
         .setDescription("help text")
         .ofLongs()
-        .buildWithCallback(
-            m -> {
-              m.record(23, Attributes.builder().put("location", "inside").build());
-              m.record(17, Attributes.builder().put("location", "outside").build());
-            });
+        .buildWithCallback(m -> {
+          m.record(23, Attributes.builder().put("location", "inside").build());
+          m.record(17, Attributes.builder().put("location", "outside").build());
+        });
     assertGaugeComplete(reader.collect());
   }
 
@@ -308,11 +307,10 @@ class PrometheusMetricReaderTest {
         .gaugeBuilder("temperature")
         .setUnit("Cel")
         .setDescription("help text")
-        .buildWithCallback(
-            m -> {
-              m.record(23.0, Attributes.builder().put("location", "inside").build());
-              m.record(17.0, Attributes.builder().put("location", "outside").build());
-            });
+        .buildWithCallback(m -> {
+          m.record(23.0, Attributes.builder().put("location", "inside").build());
+          m.record(17.0, Attributes.builder().put("location", "outside").build());
+        });
     assertGaugeComplete(reader.collect());
   }
 

@@ -718,13 +718,12 @@ class ContextTest {
       assertThat(future).isNotNull();
       await()
           .await()
-          .untilAsserted(
-              () -> {
-                if (!future.isCancelled()) {
-                  future.cancel(true);
-                }
-                assertThat(longAdder.intValue()).isGreaterThan(1);
-              });
+          .untilAsserted(() -> {
+            if (!future.isCancelled()) {
+              future.cancel(true);
+            }
+            assertThat(longAdder.intValue()).isGreaterThan(1);
+          });
       assertThat(longAdder.intValue()).isGreaterThan(1);
     }
 
@@ -736,13 +735,12 @@ class ContextTest {
       assertThat(future).isNotNull();
       await()
           .await()
-          .untilAsserted(
-              () -> {
-                if (!future.isCancelled()) {
-                  future.cancel(true);
-                }
-                assertThat(longAdder.intValue()).isGreaterThan(1);
-              });
+          .untilAsserted(() -> {
+            if (!future.isCancelled()) {
+              future.cancel(true);
+            }
+            assertThat(longAdder.intValue()).isGreaterThan(1);
+          });
     }
   }
 

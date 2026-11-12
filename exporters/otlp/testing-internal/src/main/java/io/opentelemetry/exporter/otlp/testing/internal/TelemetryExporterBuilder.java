@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
+/** A signal-independent exporter builder for shared OTLP exporter tests. */
 public interface TelemetryExporterBuilder<T> {
 
   static TelemetryExporterBuilder<SpanData> wrap(OtlpGrpcSpanExporterBuilder builder) {

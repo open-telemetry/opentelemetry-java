@@ -77,15 +77,14 @@ class LoggerConfigTest {
 
     // Only logs from loggerA and loggerC should be seen
     assertThat(exporter.getFinishedLogRecordItems())
-        .satisfies(
-            metrics -> {
-              Map<InstrumentationScopeInfo, List<LogRecordData>> logsByScope =
-                  metrics.stream()
-                      .collect(Collectors.groupingBy(LogRecordData::getInstrumentationScopeInfo));
-              assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerA"))).hasSize(1);
-              assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerB"))).isNull();
-              assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerC"))).hasSize(1);
-            });
+        .satisfies(metrics -> {
+          Map<InstrumentationScopeInfo, List<LogRecordData>> logsByScope =
+              metrics.stream()
+                  .collect(Collectors.groupingBy(LogRecordData::getInstrumentationScopeInfo));
+          assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerA"))).hasSize(1);
+          assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerB"))).isNull();
+          assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerC"))).hasSize(1);
+        });
     // loggerA and loggerC are enabled, loggerB is disabled.
     assertThat(((ExtendedLogger) loggerA).isEnabled(Severity.INFO)).isTrue();
     assertThat(((ExtendedLogger) loggerB).isEnabled(Severity.INFO)).isFalse();

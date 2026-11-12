@@ -50,25 +50,22 @@ class IdentityTest {
     meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                assertThat(metricData)
-                    .hasInstrumentationScope(forMeter("meter1"))
-                    .hasName("counter1")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            assertThat(metricData)
+                .hasInstrumentationScope(forMeter("meter1"))
+                .hasName("counter1")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
 
     meterProvider.get("meter2").counterBuilder("counter2").ofDoubles().build().add(10);
     meterProvider.get("meter2").counterBuilder("counter2").ofDoubles().build().add(10);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                assertThat(metricData)
-                    .hasInstrumentationScope(forMeter("meter2"))
-                    .hasName("counter2")
-                    .hasDoubleSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            assertThat(metricData)
+                .hasInstrumentationScope(forMeter("meter2"))
+                .hasName("counter2")
+                .hasDoubleSumSatisfying(
+                    sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
 
     meterProvider
         .get("meter3")
@@ -84,27 +81,23 @@ class IdentityTest {
         .add(10);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                assertThat(metricData)
-                    .hasInstrumentationScope(forMeter("meter3"))
-                    .hasName("counter3")
-                    .hasDescription("description3")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            assertThat(metricData)
+                .hasInstrumentationScope(forMeter("meter3"))
+                .hasName("counter3")
+                .hasDescription("description3")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
 
     meterProvider.get("meter4").counterBuilder("counter4").setUnit("unit4").build().add(10);
     meterProvider.get("meter4").counterBuilder("counter4").setUnit("unit4").build().add(10);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                assertThat(metricData)
-                    .hasInstrumentationScope(forMeter("meter4"))
-                    .hasName("counter4")
-                    .hasUnit("unit4")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            assertThat(metricData)
+                .hasInstrumentationScope(forMeter("meter4"))
+                .hasName("counter4")
+                .hasUnit("unit4")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
 
     assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
   }
@@ -142,13 +135,11 @@ class IdentityTest {
     meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                assertThat(metricData)
-                    .hasInstrumentationScope(forMeter("meter1"))
-                    .hasName("Counter1")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            assertThat(metricData)
+                .hasInstrumentationScope(forMeter("meter1"))
+                .hasName("Counter1")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
 
     assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
   }
@@ -207,14 +198,12 @@ class IdentityTest {
                 assertThat(metricData)
                     .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.isNotMonotonic().hasPointsSatisfying(point -> point.hasValue(10))));
+                    .hasLongSumSatisfying(sum ->
+                        sum.isNotMonotonic().hasPointsSatisfying(point -> point.hasValue(10))));
 
     assertThat(metricStorageRegistryLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
         .hasSize(4);
   }
 
@@ -246,27 +235,22 @@ class IdentityTest {
                 assertThat(metricData)
                     .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("histogram1")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasBucketCounts(
-                                            0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasBucketBoundaries(
-                                            0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d,
-                                            1_000d, 2_500d, 5_000d, 7_500d, 10_000d))),
+                    .hasHistogramSatisfying(histogram ->
+                        histogram.hasPointsSatisfying(point ->
+                            point
+                                .hasBucketCounts(0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                .hasBucketBoundaries(
+                                    0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d,
+                                    2_500d, 5_000d, 7_500d, 10_000d))),
             metricData ->
                 assertThat(metricData)
                     .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("histogram2")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasBucketCounts(2, 0, 0, 0)
-                                        .hasBucketBoundaries(10.0, 20.0, 30.0))));
+                    .hasHistogramSatisfying(histogram ->
+                        histogram.hasPointsSatisfying(point ->
+                            point
+                                .hasBucketCounts(2, 0, 0, 0)
+                                .hasBucketBoundaries(10.0, 20.0, 30.0))));
 
     assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
   }
@@ -391,9 +375,8 @@ class IdentityTest {
             });
 
     assertThat(metricStorageRegistryLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
         .hasSize(1);
   }
 
@@ -424,9 +407,8 @@ class IdentityTest {
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))));
 
     assertThat(metricStorageRegistryLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
         .hasSize(1);
   }
 
@@ -445,9 +427,8 @@ class IdentityTest {
                 assertThat(metricData)
                     .hasInstrumentationScope(forMeter("meter1"))
                     .hasName("counter1")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.isNotMonotonic().hasPointsSatisfying(point -> point.hasValue(10))),
+                    .hasLongSumSatisfying(sum ->
+                        sum.isNotMonotonic().hasPointsSatisfying(point -> point.hasValue(10))),
             metricData ->
                 assertThat(metricData)
                     .hasInstrumentationScope(forMeter("meter1"))
@@ -456,9 +437,8 @@ class IdentityTest {
                         sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(10))));
 
     assertThat(metricStorageRegistryLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
         .hasSize(1);
   }
 
@@ -487,9 +467,8 @@ class IdentityTest {
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))));
 
     assertThat(metricStorageRegistryLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
         .hasSize(1);
   }
 
@@ -506,14 +485,12 @@ class IdentityTest {
     meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                assertThat(metricData)
-                    .hasInstrumentationScope(forMeter("meter1"))
-                    .hasName("counter1")
-                    .hasDescription("description1")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            assertThat(metricData)
+                .hasInstrumentationScope(forMeter("meter1"))
+                .hasName("counter1")
+                .hasDescription("description1")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
 
     assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
   }
@@ -855,9 +832,8 @@ class IdentityTest {
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
 
     assertThat(metricStorageRegistryLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
         .hasSize(1);
   }
 
@@ -895,9 +871,8 @@ class IdentityTest {
                         histogram -> histogram.hasPointsSatisfying(point -> point.hasSum(20))));
 
     assertThat(metricStorageRegistryLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
         .hasSize(1);
     assertThat(viewRegistryLogs.getEvents()).hasSize(0);
   }
@@ -933,9 +908,8 @@ class IdentityTest {
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))));
 
     assertThat(metricStorageRegistryLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
         .hasSize(1);
   }
 
@@ -1087,11 +1061,10 @@ class IdentityTest {
 
     assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
     assertThat(viewRegistryLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage())
-                    .contains(
-                        "View aggregation explicit_bucket_histogram is incompatible with instrument counter1 of type OBSERVABLE_COUNTER"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage())
+                .contains(
+                    "View aggregation explicit_bucket_histogram is incompatible with instrument counter1 of type OBSERVABLE_COUNTER"))
         .hasSize(1);
   }
 
@@ -1112,13 +1085,11 @@ class IdentityTest {
 
     assertThat(counter.isEnabled()).isTrue();
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                assertThat(metricData)
-                    .hasInstrumentationScope(forMeter("meter1"))
-                    .hasName("1invalid-name")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            assertThat(metricData)
+                .hasInstrumentationScope(forMeter("meter1"))
+                .hasName("1invalid-name")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))));
 
     assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
     assertThat(viewRegistryLogs.getEvents()).hasSize(0);
@@ -1137,10 +1108,9 @@ class IdentityTest {
     assertThat(counter.isEnabled()).isFalse();
     assertThat(reader.collectAllMetrics()).isEmpty();
     assertThat(sdkMeterLogs.getEvents())
-        .allSatisfy(
-            logEvent ->
-                assertThat(logEvent.getMessage())
-                    .contains("Instrument name \"1invalid-name\" is invalid"))
+        .allSatisfy(logEvent ->
+            assertThat(logEvent.getMessage())
+                .contains("Instrument name \"1invalid-name\" is invalid"))
         .hasSize(1);
   }
 

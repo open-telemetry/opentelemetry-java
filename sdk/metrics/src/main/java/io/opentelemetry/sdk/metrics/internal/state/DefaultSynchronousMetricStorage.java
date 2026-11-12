@@ -7,7 +7,9 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.CUMULATIVE;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
@@ -17,9 +19,11 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -32,9 +36,22 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   private static final Logger internalLogger =
       Logger.getLogger(DefaultSynchronousMetricStorage.class.getName());
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.common.ContextAttributes");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
 
   final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
   final UnaryOperator<Attributes> attributesFilter;
+  @Nullable private final Predicate<AttributeKey<?>> contextScopedAttributesFilter;
   protected final Clock clock;
   protected final MetricDescriptor metricDescriptor;
   protected final Aggregator<T> aggregator;
@@ -53,13 +70,15 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
-      boolean enabled) {
+      boolean enabled,
+      @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter) {
     this.metricDescriptor = metricDescriptor;
     this.aggregator = aggregator;
     this.attributesFilter = attributesFilter;
     this.clock = clock;
     this.maxCardinality = maxCardinality - 1;
     this.enabled = enabled;
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
   }
 
   static <T extends PointData> DefaultSynchronousMetricStorage<T> create(
@@ -69,7 +88,8 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       UnaryOperator<Attributes> attributesFilter,
       int maxCardinality,
       Clock clock,
-      boolean enabled) {
+      boolean enabled,
+      @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter) {
     AggregationTemporality aggregationTemporality =
         reader.getReader().getAggregationTemporality(descriptor.getSourceInstrument().getType());
     return aggregationTemporality == CUMULATIVE
@@ -80,9 +100,45 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             clock,
             maxCardinality,
             enabled,
+            contextScopedAttributesFilter,
             reader.getReader().getMemoryMode())
         : new DeltaSynchronousMetricStorage<>(
-            reader, descriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+            reader,
+            descriptor,
+            aggregator,
+            attributesFilter,
+            clock,
+            maxCardinality,
+            enabled,
+            contextScopedAttributesFilter);
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private Attributes getMergedContextAttributes(Attributes attributes, Context context) {
+    if (contextScopedAttributesFilter == null || !INCUBATOR_AVAILABLE) {
+      return attributes;
+    }
+    Attributes contextAttributes = StateIncubatingUtil.getContextAttributes(context);
+    if (contextAttributes.isEmpty()) {
+      return attributes;
+    }
+    AttributesBuilder[] builderRef = new AttributesBuilder[1];
+    contextAttributes.forEach((key, value) -> {
+      if (contextScopedAttributesFilter.test(key)) {
+        if (builderRef[0] == null) {
+          builderRef[0] = Attributes.builder();
+        }
+        builderRef[0].put((AttributeKey) key, value);
+      }
+    });
+    AttributesBuilder builder = builderRef[0];
+    if (builder == null) {
+      return attributes;
+    }
+    if (attributes.isEmpty()) {
+      return builder.build();
+    }
+    return builder.putAll(attributes).build();
   }
 
   @Override
@@ -90,11 +146,15 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     if (!enabled) {
       return;
     }
-    doRecordLong(value, attributes, context);
+    doRecordLong(value, getMergedContextAttributes(attributes, context), context);
   }
 
   @Override
   public void recordDouble(double value, Attributes attributes, Context context) {
+    if (!enabled) {
+      return;
+    }
+    attributes = getMergedContextAttributes(attributes, context);
     if (!shouldRecordDouble(value, attributes)) {
       return;
     }

@@ -109,6 +109,26 @@ class AttributesMapTest {
     assertThat(map.get(stringKey("absent"))).isNull();
   }
 
+  // ---- containsKey ----
+
+  @Test
+  void containsKey_returnsTrueForPresentKey() {
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(stringKey("k"), "v");
+
+    assertThat(map.containsKey("k")).isTrue();
+    assertThat(map.containsKey("absent")).isFalse();
+  }
+
+  @Test
+  void containsKey_returnsTrueForSameNameDifferentType() {
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(longKey("count"), 42L);
+
+    // containsKey() is name-based: true even if originally put as longKey("count")
+    assertThat(map.containsKey("count")).isTrue();
+  }
+
   // ---- capacity ----
 
   @Test

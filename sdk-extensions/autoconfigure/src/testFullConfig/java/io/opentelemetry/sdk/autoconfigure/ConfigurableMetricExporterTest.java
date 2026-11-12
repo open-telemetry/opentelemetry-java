@@ -86,10 +86,9 @@ class ConfigurableMetricExporterTest {
             ImmutableMap.of("otel.metrics.exporter", "otlp,none"));
     List<Closeable> closeables = new ArrayList<>();
 
-    assertThatThrownBy(
-            () ->
-                MeterProviderConfiguration.configureMetricReaders(
-                    config, spiHelper, (a, unused) -> a, (a, unused) -> a, closeables))
+    assertThatThrownBy(() ->
+            MeterProviderConfiguration.configureMetricReaders(
+                config, spiHelper, (a, unused) -> a, (a, unused) -> a, closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.metrics.exporter contains none along with other exporters");
     cleanup.addCloseables(closeables);
@@ -112,12 +111,11 @@ class ConfigurableMetricExporterTest {
     cleanup.addCloseables(closeables);
 
     assertThat(metricReaders)
-        .satisfiesExactly(
-            metricReader ->
-                assertThat(metricReader)
-                    .isInstanceOf(PeriodicMetricReader.class)
-                    .extracting("exporter")
-                    .isInstanceOf(OtlpGrpcMetricExporter.class));
+        .satisfiesExactly(metricReader ->
+            assertThat(metricReader)
+                .isInstanceOf(PeriodicMetricReader.class)
+                .extracting("exporter")
+                .isInstanceOf(OtlpGrpcMetricExporter.class));
     assertThat(closeables)
         .hasExactlyElementsOfTypes(OtlpGrpcMetricExporter.class, PeriodicMetricReader.class);
   }

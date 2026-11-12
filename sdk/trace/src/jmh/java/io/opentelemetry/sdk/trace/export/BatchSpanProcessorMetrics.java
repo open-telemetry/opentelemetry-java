@@ -59,11 +59,10 @@ public class BatchSpanProcessorMetrics {
             .filter(metricData -> !metricData.isEmpty())
             .map(metricData -> metricData.getLongSumData().getPoints())
             .flatMap(Collection::stream)
-            .filter(
-                point -> {
-                  Boolean attrDropped = point.getAttributes().get(booleanKey("dropped"));
-                  return attrDropped != null && attrDropped == dropped;
-                })
+            .filter(point -> {
+              Boolean attrDropped = point.getAttributes().get(booleanKey("dropped"));
+              return attrDropped != null && attrDropped == dropped;
+            })
             .mapToLong(LongPointData::getValue)
             .findFirst();
     return value.isPresent() ? value.getAsLong() : 0;

@@ -39,26 +39,24 @@ class DeclarativeConfigContextTest {
   @SuppressWarnings("deprecation")
   void componentProvidersCached() {
     // First loadComponent call should load providers
-    assertThatThrownBy(
-            () ->
-                context.loadComponent(
-                    Resource.class,
-                    ConfigKeyValue.of(
-                        "nonexistent",
-                        YamlDeclarativeConfigProperties.create(
-                            Collections.emptyMap(), componentLoader))))
+    assertThatThrownBy(() ->
+            context.loadComponent(
+                Resource.class,
+                ConfigKeyValue.of(
+                    "nonexistent",
+                    YamlDeclarativeConfigProperties.create(
+                        Collections.emptyMap(), componentLoader))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("No component provider detected");
 
     // Second loadComponent call should use cached providers, not reload
-    assertThatThrownBy(
-            () ->
-                context.loadComponent(
-                    Resource.class,
-                    ConfigKeyValue.of(
-                        "another",
-                        YamlDeclarativeConfigProperties.create(
-                            Collections.emptyMap(), componentLoader))))
+    assertThatThrownBy(() ->
+            context.loadComponent(
+                Resource.class,
+                ConfigKeyValue.of(
+                    "another",
+                    YamlDeclarativeConfigProperties.create(
+                        Collections.emptyMap(), componentLoader))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("No component provider detected");
 
@@ -201,14 +199,13 @@ class DeclarativeConfigContextTest {
         .when(componentLoader)
         .load(io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class);
 
-    assertThatThrownBy(
-            () ->
-                context.loadComponent(
-                    Resource.class,
-                    ConfigKeyValue.of(
-                        "duplicate-test",
-                        YamlDeclarativeConfigProperties.create(
-                            Collections.emptyMap(), componentLoader))))
+    assertThatThrownBy(() ->
+            context.loadComponent(
+                Resource.class,
+                ConfigKeyValue.of(
+                    "duplicate-test",
+                    YamlDeclarativeConfigProperties.create(
+                        Collections.emptyMap(), componentLoader))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Component provider conflict. Multiple providers detected for");
   }
@@ -261,14 +258,13 @@ class DeclarativeConfigContextTest {
         .when(componentLoader)
         .load(io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class);
 
-    assertThatThrownBy(
-            () ->
-                context.loadComponent(
-                    Resource.class,
-                    ConfigKeyValue.of(
-                        "duplicate-legacy",
-                        YamlDeclarativeConfigProperties.create(
-                            Collections.emptyMap(), componentLoader))))
+    assertThatThrownBy(() ->
+            context.loadComponent(
+                Resource.class,
+                ConfigKeyValue.of(
+                    "duplicate-legacy",
+                    YamlDeclarativeConfigProperties.create(
+                        Collections.emptyMap(), componentLoader))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Component provider conflict. Multiple providers detected for");
   }
@@ -297,14 +293,13 @@ class DeclarativeConfigContextTest {
         .when(componentLoader)
         .load(ComponentProvider.class);
 
-    assertThatThrownBy(
-            () ->
-                context.loadComponent(
-                    Resource.class,
-                    ConfigKeyValue.of(
-                        "bad-type",
-                        YamlDeclarativeConfigProperties.create(
-                            Collections.emptyMap(), componentLoader))))
+    assertThatThrownBy(() ->
+            context.loadComponent(
+                Resource.class,
+                ConfigKeyValue.of(
+                    "bad-type",
+                    YamlDeclarativeConfigProperties.create(
+                        Collections.emptyMap(), componentLoader))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageStartingWith(
             "Error configuring io.opentelemetry.sdk.resources.Resource with name \"bad-type\"")
@@ -339,14 +334,13 @@ class DeclarativeConfigContextTest {
         .when(componentLoader)
         .load(ComponentProvider.class);
 
-    assertThatThrownBy(
-            () ->
-                context.loadComponent(
-                    Resource.class,
-                    ConfigKeyValue.of(
-                        "throws-error",
-                        YamlDeclarativeConfigProperties.create(
-                            Collections.emptyMap(), componentLoader))))
+    assertThatThrownBy(() ->
+            context.loadComponent(
+                Resource.class,
+                ConfigKeyValue.of(
+                    "throws-error",
+                    YamlDeclarativeConfigProperties.create(
+                        Collections.emptyMap(), componentLoader))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageStartingWith(
             "Error configuring io.opentelemetry.sdk.resources.Resource with name \"throws-error\"")

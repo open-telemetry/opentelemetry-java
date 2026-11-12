@@ -96,11 +96,9 @@ class OtlpStdoutMetricExporterTest
 
   @Test
   void validMetricConfig() {
-    assertThatCode(
-            () ->
-                OtlpStdoutMetricExporter.builder()
-                    .setAggregationTemporalitySelector(
-                        AggregationTemporalitySelector.deltaPreferred()))
+    assertThatCode(() ->
+            OtlpStdoutMetricExporter.builder()
+                .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred()))
         .doesNotThrowAnyException();
     assertThat(
             OtlpStdoutMetricExporter.builder()

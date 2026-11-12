@@ -125,6 +125,14 @@ class LogRecordExporterFactoryTest {
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
+            "otlp_http max_request_size 0",
+            new LogRecordExporterModel()
+                .setOtlpHttp(new OtlpHttpExporterModel().setMaxRequestSize(0)),
+            OtlpHttpLogRecordExporter.getDefault().toBuilder()
+                .setMaxRequestBodySize(Long.MAX_VALUE)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
             "otlp_grpc default",
             new LogRecordExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()),
             OtlpGrpcLogRecordExporter.getDefault().toBuilder().setComponentLoader(context).build()),
@@ -156,6 +164,14 @@ class LogRecordExporterFactoryTest {
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
+            "otlp_grpc max_request_size 0",
+            new LogRecordExporterModel()
+                .setOtlpGrpc(new OtlpGrpcExporterModel().setMaxRequestSize(0)),
+            OtlpGrpcLogRecordExporter.getDefault().toBuilder()
+                .setMaxRequestMessageSize(Long.MAX_VALUE)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
             "otlp_file/development",
             LogRecordExporterModelAccessor.setOtlpFile(
                 new LogRecordExporterModel(), new ExperimentalOtlpFileExporterModel()),
@@ -176,7 +192,17 @@ class LogRecordExporterFactoryTest {
             "unknown component provider",
             new LogRecordExporterModel()
                 .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
-            "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"unknown_key\"."));
+            "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"unknown_key\"."),
+        Arguments.argumentSet(
+            "otlp_http negative max_request_size",
+            new LogRecordExporterModel()
+                .setOtlpHttp(new OtlpHttpExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"otlp_http\""),
+        Arguments.argumentSet(
+            "otlp_grpc negative max_request_size",
+            new LogRecordExporterModel()
+                .setOtlpGrpc(new OtlpGrpcExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"otlp_grpc\""));
   }
 
   @Test
@@ -258,12 +284,10 @@ class LogRecordExporterFactoryTest {
         .getBuilder()
         .addLogRecordExporterCustomizer(LogRecordExporter.class, (exporter, properties) -> null);
 
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterFactory.getInstance()
-                    .create(
-                        new LogRecordExporterModel().setConsole(new ConsoleExporterModel()),
-                        context))
+    assertThatThrownBy(() ->
+            LogRecordExporterFactory.getInstance()
+                .create(
+                    new LogRecordExporterModel().setConsole(new ConsoleExporterModel()), context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Customizer returned null for LogRecordExporter: console");
   }

@@ -71,25 +71,22 @@ class SdkDoubleCounterTest {
     doubleCounter.add(12d);
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testCounter")
-                    .hasDescription("description")
-                    .hasUnit("ms")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isMonotonic()
-                                .isCumulative()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasAttributes(Attributes.empty())
-                                            .hasValue(24))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testCounter")
+                .hasDescription("description")
+                .hasUnit("ms")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.isMonotonic()
+                        .isCumulative()
+                        .hasPointsSatisfying(point ->
+                            point
+                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(24))));
   }
 
   @Test
@@ -104,57 +101,53 @@ class SdkDoubleCounterTest {
     doubleCounter.add(321.5d, Attributes.builder().put("K", "V").build());
     doubleCounter.add(111.1d, Attributes.builder().put("K", "V").build());
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testCounter")
-                    .hasDescription("")
-                    .hasUnit("")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isMonotonic()
-                                .isCumulative()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(startTime)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasAttributes(Attributes.empty())
-                                            .hasValue(33.5),
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(startTime)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(555.9)
-                                            .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testCounter")
+                .hasDescription("")
+                .hasUnit("")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.isMonotonic()
+                        .isCumulative()
+                        .hasPointsSatisfying(
+                            point ->
+                                point
+                                    .hasStartEpochNanos(startTime)
+                                    .hasEpochNanos(testClock.now())
+                                    .hasAttributes(Attributes.empty())
+                                    .hasValue(33.5),
+                            point ->
+                                point
+                                    .hasStartEpochNanos(startTime)
+                                    .hasEpochNanos(testClock.now())
+                                    .hasValue(555.9)
+                                    .hasAttributes(attributeEntry("K", "V")))));
 
     // Repeat to prove we keep previous values.
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleCounter.add(222d, Attributes.builder().put("K", "V").build());
     doubleCounter.add(11d, Attributes.empty());
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isMonotonic()
-                                .isCumulative()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(startTime)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasAttributes(Attributes.empty())
-                                            .hasValue(44.5),
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(startTime)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(777.9)
-                                            .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasDoubleSumSatisfying(sum ->
+                    sum.isMonotonic()
+                        .isCumulative()
+                        .hasPointsSatisfying(
+                            point ->
+                                point
+                                    .hasStartEpochNanos(startTime)
+                                    .hasEpochNanos(testClock.now())
+                                    .hasAttributes(Attributes.empty())
+                                    .hasValue(44.5),
+                            point ->
+                                point
+                                    .hasStartEpochNanos(startTime)
+                                    .hasEpochNanos(testClock.now())
+                                    .hasValue(777.9)
+                                    .hasAttributes(attributeEntry("K", "V")))));
   }
 
   @Test

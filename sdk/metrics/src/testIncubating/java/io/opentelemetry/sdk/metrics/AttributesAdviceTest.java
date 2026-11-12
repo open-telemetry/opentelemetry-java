@@ -82,10 +82,9 @@ class AttributesAdviceTest {
     instrument.record(1, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                pointsAssert.hasPointSatisfying(
-                    assertThat(metric), point -> point.hasAttributes(ATTRIBUTES)));
+        .satisfiesExactly(metric ->
+            pointsAssert.hasPointSatisfying(
+                assertThat(metric), point -> point.hasAttributes(ATTRIBUTES)));
   }
 
   @ParameterizedTest
@@ -101,13 +100,12 @@ class AttributesAdviceTest {
     instrument.record(1, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                pointsAssert.hasPointSatisfying(
-                    assertThat(metric),
-                    point ->
-                        point.hasAttributesSatisfyingExactly(
-                            equalTo(stringKey("key1"), "1"), equalTo(stringKey("key2"), "2"))));
+        .satisfiesExactly(metric ->
+            pointsAssert.hasPointSatisfying(
+                assertThat(metric),
+                point ->
+                    point.hasAttributesSatisfyingExactly(
+                        equalTo(stringKey("key1"), "1"), equalTo(stringKey("key2"), "2"))));
   }
 
   @ParameterizedTest
@@ -131,13 +129,12 @@ class AttributesAdviceTest {
     instrument.record(1, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                pointsAssert.hasPointSatisfying(
-                    assertThat(metric),
-                    point ->
-                        point.hasAttributesSatisfyingExactly(
-                            equalTo(stringKey("key2"), "2"), equalTo(stringKey("key3"), "3"))));
+        .satisfiesExactly(metric ->
+            pointsAssert.hasPointSatisfying(
+                assertThat(metric),
+                point ->
+                    point.hasAttributesSatisfyingExactly(
+                        equalTo(stringKey("key2"), "2"), equalTo(stringKey("key3"), "3"))));
   }
 
   @ParameterizedTest
@@ -161,15 +158,14 @@ class AttributesAdviceTest {
     instrument.record(1, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                pointsAssert.hasPointSatisfying(
-                    assertThat(metric),
-                    point ->
-                        point.hasAttributesSatisfyingExactly(
-                            equalTo(stringKey("key1"), "1"),
-                            equalTo(stringKey("key2"), "2"),
-                            equalTo(stringKey("key3"), "3"))));
+        .satisfiesExactly(metric ->
+            pointsAssert.hasPointSatisfying(
+                assertThat(metric),
+                point ->
+                    point.hasAttributesSatisfyingExactly(
+                        equalTo(stringKey("key1"), "1"),
+                        equalTo(stringKey("key2"), "2"),
+                        equalTo(stringKey("key3"), "3"))));
   }
 
   static final class InstrumentsProvider implements ArgumentsProvider {

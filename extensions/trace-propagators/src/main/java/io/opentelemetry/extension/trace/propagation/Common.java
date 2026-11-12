@@ -5,7 +5,6 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
-import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -56,12 +55,13 @@ final class Common {
   }
 
   static boolean isTraceIdValid(@Nullable String value) {
-    return !(StringUtils.isNullOrEmpty(value)
-        || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH)
-        || !TraceId.isValid(StringUtils.padLeft(value, TraceId.getLength())));
+    return value != null
+        && !value.isEmpty()
+        && (value.length() == MIN_TRACE_ID_LENGTH || value.length() == MAX_TRACE_ID_LENGTH)
+        && TraceId.isValid(StringUtils.padLeft(value, TraceId.getLength()));
   }
 
   static boolean isSpanIdValid(@Nullable String value) {
-    return !StringUtils.isNullOrEmpty(value) && SpanId.isValid(value);
+    return value != null && !value.isEmpty() && SpanId.isValid(value);
   }
 }

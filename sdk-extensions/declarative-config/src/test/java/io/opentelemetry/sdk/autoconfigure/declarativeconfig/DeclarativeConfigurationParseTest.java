@@ -40,10 +40,9 @@ class DeclarativeConfigurationParseTest {
 
   @Test
   void parse_BadInputStream() {
-    assertThatThrownBy(
-            () ->
-                DeclarativeConfiguration.parseAndCreate(
-                    new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
+    assertThatThrownBy(() ->
+            DeclarativeConfiguration.parseAndCreate(
+                new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("Unable to parse configuration input stream");
   }

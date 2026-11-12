@@ -55,11 +55,10 @@ public class LogRecordCustomizer implements AutoConfigurationCustomizerProvider 
       public CompletableResultCode export(Collection<LogRecordData> logs) {
         Collection<LogRecordData> filtered =
             logs.stream()
-                .filter(
-                    log ->
-                        log.getSeverity() == Severity.UNDEFINED_SEVERITY_NUMBER
-                            || log.getSeverity().getSeverityNumber()
-                                >= Severity.INFO.getSeverityNumber())
+                .filter(log ->
+                    log.getSeverity() == Severity.UNDEFINED_SEVERITY_NUMBER
+                        || log.getSeverity().getSeverityNumber()
+                            >= Severity.INFO.getSeverityNumber())
                 .collect(Collectors.toList());
         return delegate.export(filtered);
       }

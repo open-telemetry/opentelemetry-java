@@ -44,25 +44,22 @@ public class JaegerRemoteSamplerProviderTest {
     Sampler sampler = Sampler.parentBased(Sampler.traceIdRatioBased(samplingRate));
     assertThat(samplerProviders)
         .singleElement(type(JaegerRemoteSamplerProvider.class))
-        .satisfies(
-            provider -> {
-              try (JaegerRemoteSampler s =
-                  (JaegerRemoteSampler) provider.createSampler(mockConfig)) {
-                assertThat(s)
-                    .extracting("sampler", type(Sampler.class))
-                    .asString()
-                    .isEqualTo(sampler.toString());
-                assertThat(s).extracting("serviceName").isEqualTo("test_service");
-                assertThat(s)
-                    .extracting("grpcSender")
-                    .extracting("url")
-                    .satisfies(
-                        url ->
-                            assertThat(url.toString())
-                                .isEqualTo(
-                                    "http://localhost:9999/jaeger.api_v2.SamplingManager/GetSamplingStrategy"));
-              }
-            });
+        .satisfies(provider -> {
+          try (JaegerRemoteSampler s = (JaegerRemoteSampler) provider.createSampler(mockConfig)) {
+            assertThat(s)
+                .extracting("sampler", type(Sampler.class))
+                .asString()
+                .isEqualTo(sampler.toString());
+            assertThat(s).extracting("serviceName").isEqualTo("test_service");
+            assertThat(s)
+                .extracting("grpcSender")
+                .extracting("url")
+                .satisfies(url ->
+                    assertThat(url.toString())
+                        .isEqualTo(
+                            "http://localhost:9999/jaeger.api_v2.SamplingManager/GetSamplingStrategy"));
+          }
+        });
   }
 
   @Test
@@ -77,12 +74,10 @@ public class JaegerRemoteSamplerProviderTest {
         ServiceLoader.load(ConfigurableSamplerProvider.class);
     assertThat(samplerProviders)
         .singleElement(type(JaegerRemoteSamplerProvider.class))
-        .satisfies(
-            provider -> {
-              try (JaegerRemoteSampler s =
-                  (JaegerRemoteSampler) provider.createSampler(mockConfig)) {
-                assertThat(s).extracting("serviceName").isEqualTo("test_service2");
-              }
-            });
+        .satisfies(provider -> {
+          try (JaegerRemoteSampler s = (JaegerRemoteSampler) provider.createSampler(mockConfig)) {
+            assertThat(s).extracting("serviceName").isEqualTo("test_service2");
+          }
+        });
   }
 }

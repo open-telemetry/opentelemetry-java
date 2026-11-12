@@ -375,31 +375,25 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     // Assertions run twice to verify immutability; recordings shouldn't modify the metric data
     for (int i = 0; i < 2; i++) {
       assertThat(metricDataCumulative)
-          .hasExponentialHistogramSatisfying(
-              expHistogram ->
-                  expHistogram
-                      .isCumulative()
-                      .hasPointsSatisfying(
-                          point ->
-                              point
-                                  .hasSum(123.456)
-                                  .hasScale(20)
-                                  .hasZeroCount(2)
-                                  .hasCount(3)
-                                  .hasMin(0)
-                                  .hasMax(123.456)
-                                  .hasExemplars(exemplar)
-                                  .hasPositiveBucketsSatisfying(
-                                      buckets ->
-                                          buckets
-                                              .hasCounts(Collections.singletonList(1L))
-                                              .hasOffset(valueToIndex(20, 123.456))
-                                              .hasTotalCount(1))
-                                  .hasNegativeBucketsSatisfying(
-                                      buckets ->
-                                          buckets
-                                              .hasTotalCount(0)
-                                              .hasCounts(Collections.emptyList()))));
+          .hasExponentialHistogramSatisfying(expHistogram ->
+              expHistogram
+                  .isCumulative()
+                  .hasPointsSatisfying(point ->
+                      point
+                          .hasSum(123.456)
+                          .hasScale(20)
+                          .hasZeroCount(2)
+                          .hasCount(3)
+                          .hasMin(0)
+                          .hasMax(123.456)
+                          .hasExemplars(exemplar)
+                          .hasPositiveBucketsSatisfying(buckets ->
+                              buckets
+                                  .hasCounts(Collections.singletonList(1L))
+                                  .hasOffset(valueToIndex(20, 123.456))
+                                  .hasTotalCount(1))
+                          .hasNegativeBucketsSatisfying(buckets ->
+                              buckets.hasTotalCount(0).hasCounts(Collections.emptyList()))));
       aggregatorHandle.recordDouble(1, Attributes.empty(), Context.current());
       aggregatorHandle.recordDouble(-1, Attributes.empty(), Context.current());
       aggregatorHandle.recordDouble(0, Attributes.empty(), Context.current());
@@ -431,18 +425,16 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
 
     executor.invokeAll(
         updates.stream()
-            .map(
-                v ->
-                    Executors.callable(
-                        () -> {
-                          for (int j = 0; j < numberOfUpdates; j++) {
-                            aggregatorHandle.recordDouble(v, Attributes.empty(), Context.current());
-                            if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                              aggregatorHandle.aggregateThenMaybeReset(
-                                  0, 1, Attributes.empty(), /* reset= */ false);
-                            }
-                          }
-                        }))
+            .map(v ->
+                Executors.callable(() -> {
+                  for (int j = 0; j < numberOfUpdates; j++) {
+                    aggregatorHandle.recordDouble(v, Attributes.empty(), Context.current());
+                    if (ThreadLocalRandom.current().nextInt(10) == 0) {
+                      aggregatorHandle.aggregateThenMaybeReset(
+                          0, 1, Attributes.empty(), /* reset= */ false);
+                    }
+                  }
+                }))
             .collect(Collectors.toList()));
 
     ExponentialHistogramPointData point =

@@ -161,14 +161,13 @@ class RateLimiterTest {
     List<Future<?>> futures = new ArrayList<>(numWorkers);
     for (int w = 0; w < numWorkers; ++w) {
       Future<?> future =
-          executorService.submit(
-              () -> {
-                for (int i = 0; i < creditsPerWorker * 2; ++i) {
-                  if (limiter.trySpend(1)) {
-                    count.getAndIncrement(); // count allowed operations
-                  }
-                }
-              });
+          executorService.submit(() -> {
+            for (int i = 0; i < creditsPerWorker * 2; ++i) {
+              if (limiter.trySpend(1)) {
+                count.getAndIncrement(); // count allowed operations
+              }
+            }
+          });
       futures.add(future);
     }
     for (Future<?> future : futures) {
