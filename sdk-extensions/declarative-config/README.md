@@ -92,12 +92,12 @@ qualified class name:
 
 When multiple providers are present and neither setting is set, the first discovered provider is
 used and a warning is logged. If the setting names a provider that is not present, declarative
-configuration fails with an `IllegalStateException`.
+configuration fails with a `DeclarativeConfigException`.
 
 ## Use a custom YAML parser
 
 To replace the default SnakeYAML parser, exclude the
-`opentelemetry-sdk-extension-declarative-config-snakeyaml` adapter from the declarative config
+`opentelemetry-sdk-extension-declarative-config-snakeyaml-engine2` adapter from the declarative config
 dependency:
 
 ```kotlin
@@ -105,7 +105,7 @@ dependencies {
   implementation("io.opentelemetry:opentelemetry-sdk-extension-declarative-config:$version") {
     exclude(
       group = "io.opentelemetry",
-      module = "opentelemetry-sdk-extension-declarative-config-snakeyaml",
+      module = "opentelemetry-sdk-extension-declarative-config-snakeyaml-engine2",
     )
   }
   implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:$version")
@@ -135,4 +135,4 @@ provider's fully qualified class name:
 
 When multiple providers are present and neither setting is set, the first discovered provider is
 used and a warning is logged. If the setting names a provider that is not present, declarative
-configuration fails with an `IllegalStateException`.
+configuration fails with a `DeclarativeConfigException`.

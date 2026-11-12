@@ -5,11 +5,16 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal;
 
+import static java.util.Objects.requireNonNull;
+
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.common.impl.ConfigUtil;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,40 +27,71 @@ public final class DeclarativeConfigProviderLoader {
   private static final Logger LOGGER =
       Logger.getLogger(DeclarativeConfigProviderLoader.class.getName());
 
+  // TODO(jack-berg): Allow callers to supply the ComponentLoader used to resolve parser and mapper
+  // providers.
   private static final ComponentLoader COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
 
+  private static final AtomicReference<DeclarativeConfigurationMapper> MAPPER =
+      new AtomicReference<>();
+  private static final AtomicReference<DeclarativeConfigurationYamlParser> YAML_PARSER =
+      new AtomicReference<>();
+
   private DeclarativeConfigProviderLoader() {}
 
-  /**
-   * Load the first discovered implementation of {@code spiClass}, or the configured implementation
-   * if multiple are registered. Create the default provider when none are registered.
-   *
-   * @param spiClass the SPI type
-   * @param defaultProvider supplies the default provider when none are registered
-   * @param configProperty the system property or environment variable used to select a provider
-   * @param <T> the SPI type
-   * @return the selected provider
-   */
-  public static <T> T loadFirstOrConfigured(
-      Class<T> spiClass, Supplier<T> defaultProvider, String configProperty) {
-    return loadFirstOrConfigured(
-        spiClass,
-        defaultProvider,
-        configProperty,
+  /** Returns the cached model mapper, resolving it on first use. */
+  public static DeclarativeConfigurationMapper getMapper() {
+    return resolveProvider(
+        MAPPER,
+        DeclarativeConfigurationMapper.class,
         COMPONENT_LOADER,
-        ConfigUtil.getString(configProperty, ""));
+        "No DeclarativeConfigurationMapper provider is available. Add the optional "
+            + "opentelemetry-sdk-extension-declarative-config-jackson2 artifact or register a "
+            + "custom mapper provider.");
   }
 
-  static <T> T loadFirstOrConfigured(
+  /** Returns the cached YAML parser, resolving it on first use. */
+  public static DeclarativeConfigurationYamlParser getYamlParser() {
+    return resolveProvider(
+        YAML_PARSER,
+        DeclarativeConfigurationYamlParser.class,
+        COMPONENT_LOADER,
+        "No DeclarativeConfigurationYamlParser provider is available. Add the optional "
+            + "opentelemetry-sdk-extension-declarative-config-snakeyaml-engine2 artifact or register a "
+            + "custom parser provider.");
+  }
+
+  static <T> T resolveProvider(
+      AtomicReference<T> providerRef,
       Class<T> spiClass,
-      Supplier<T> defaultProvider,
+      ComponentLoader componentLoader,
+      String missingProviderMessage) {
+    T provider = providerRef.get();
+    if (provider != null) {
+      return provider;
+    }
+    String configProperty = spiClass.getName();
+    T candidate =
+        loadFirstOrConfigured(
+            spiClass,
+            missingProviderMessage,
+            configProperty,
+            componentLoader,
+            ConfigUtil.getString(configProperty, ""));
+    return providerRef.compareAndSet(null, candidate)
+        ? candidate
+        : requireNonNull(providerRef.get());
+  }
+
+  private static <T> T loadFirstOrConfigured(
+      Class<T> spiClass,
+      String missingProviderMessage,
       String configProperty,
       ComponentLoader componentLoader,
       String configuredProvider) {
     List<T> providers = ComponentLoader.loadList(componentLoader, spiClass);
     if (providers.isEmpty()) {
-      return defaultProvider.get();
+      throw new DeclarativeConfigException(missingProviderMessage);
     }
     if (providers.size() == 1) {
       return providers.get(0);

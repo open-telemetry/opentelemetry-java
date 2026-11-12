@@ -12,20 +12,10 @@ import java.util.Map;
 /**
  * Parses a declarative configuration YAML stream into generic Java objects.
  *
- * <p>Implementations are discovered with {@link java.util.ServiceLoader}. If exactly one
- * implementation is available, it is used. If multiple implementations are available, set a system
- * property or environment variable whose name is this interface's fully qualified class name and
- * whose value is the fully qualified class name of the desired implementation. If no implementation
- * is selected, the first discovered implementation is used and a warning is logged. The SnakeYAML
- * implementation is supplied by the {@code
- * opentelemetry-sdk-extension-declarative-config-snakeyaml} runtime adapter, which is included by
- * default with declarative config and can be excluded when using a custom parser.
- *
  * <p>Implementations must apply environment variable and system property substitution according to
  * the OpenTelemetry Configuration Data Model specification. Substitution is performed on scalar
  * values, not mapping keys. For unquoted scalar values, substituted text must be parsed using the
- * same YAML scalar rules as the original text. Implementations throw {@link
- * DeclarativeConfigException} when parsing fails.
+ * same YAML scalar rules as the original text.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

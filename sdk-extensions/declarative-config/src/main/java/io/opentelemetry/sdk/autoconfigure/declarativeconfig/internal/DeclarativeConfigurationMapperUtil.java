@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -15,12 +14,6 @@ import javax.annotation.Nullable;
  * any time.
  */
 public final class DeclarativeConfigurationMapperUtil {
-
-  private static final DeclarativeConfigurationMapper MAPPER =
-      DeclarativeConfigProviderLoader.loadFirstOrConfigured(
-          DeclarativeConfigurationMapper.class,
-          MissingMapper::new,
-          DeclarativeConfigurationMapper.class.getName());
 
   private DeclarativeConfigurationMapperUtil() {}
 
@@ -34,7 +27,7 @@ public final class DeclarativeConfigurationMapperUtil {
    */
   public static <T> T convert(Object value, Class<T> targetType) {
     try {
-      return MAPPER.convert(value, targetType);
+      return DeclarativeConfigProviderLoader.getMapper().convert(value, targetType);
     } catch (DeclarativeConfigException e) {
       throw e;
     } catch (RuntimeException e) {
@@ -51,32 +44,11 @@ public final class DeclarativeConfigurationMapperUtil {
   @Nullable
   public static Map<String, Object> toMap(Object value) {
     try {
-      return MAPPER.toMap(value);
+      return DeclarativeConfigProviderLoader.getMapper().toMap(value);
     } catch (DeclarativeConfigException e) {
       throw e;
     } catch (RuntimeException e) {
       throw new DeclarativeConfigException("Unable to convert value to a map", e);
-    }
-  }
-
-  private static final class MissingMapper implements DeclarativeConfigurationMapper {
-
-    @Override
-    public <T> T convert(Object value, Class<T> targetType) {
-      throw missingMapperException();
-    }
-
-    @Nullable
-    @Override
-    public Map<String, Object> toMap(Object value) {
-      throw missingMapperException();
-    }
-
-    private static DeclarativeConfigException missingMapperException() {
-      return new DeclarativeConfigException(
-          "No DeclarativeConfigurationMapper provider is available. Add the optional "
-              + "opentelemetry-sdk-extension-declarative-config-jackson2 artifact or register a "
-              + "custom mapper provider.");
     }
   }
 }

@@ -29,7 +29,7 @@ dependencies {
   api(project(":api:incubator"))
   compileOnly(project(":sdk-extensions:autoconfigure-spi"))
   runtimeOnly(project(":sdk-extensions:declarative-config-jackson2"))
-  runtimeOnly(project(":sdk-extensions:declarative-config-snakeyaml"))
+  runtimeOnly(project(":sdk-extensions:declarative-config-snakeyaml-engine2"))
   // Needed for composable samplers
   implementation(project(":sdk-extensions:incubator"))
 
@@ -49,7 +49,7 @@ dependencies {
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-resources")
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testRuntimeOnly(project(":sdk-extensions:declarative-config-jackson2"))
-  testRuntimeOnly(project(":sdk-extensions:declarative-config-snakeyaml"))
+  testRuntimeOnly(project(":sdk-extensions:declarative-config-snakeyaml-engine2"))
 //
   testImplementation("com.google.guava:guava-testlib")
   testImplementation("nl.jqno.equalsverifier:equalsverifier")

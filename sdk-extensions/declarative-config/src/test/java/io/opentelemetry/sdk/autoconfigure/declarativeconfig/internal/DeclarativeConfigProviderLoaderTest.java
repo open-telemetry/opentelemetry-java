@@ -6,111 +6,123 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junitpioneer.jupiter.ClearSystemProperty;
 
+@ClearSystemProperty(
+    key =
+        "io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.DeclarativeConfigProviderLoaderTest$TestSpi")
 class DeclarativeConfigProviderLoaderTest {
+
+  private static final TestSpi FIRST = new FirstProvider();
+  private static final TestSpi SECOND = new SecondProvider();
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(DeclarativeConfigProviderLoader.class);
 
+  private final ComponentLoader loader = mock(ComponentLoader.class);
+
   @Test
-  void loadFirstOrConfiguredUsesDefaultWhenNoProvidersAreRegistered() {
-    AtomicBoolean defaultProviderCalled = new AtomicBoolean();
-    Supplier<SelectionTestSpi> defaultProvider =
-        () -> {
-          defaultProviderCalled.set(true);
-          return new FirstSelectionTestProvider();
-        };
-
-    SelectionTestSpi selected =
-        DeclarativeConfigProviderLoader.loadFirstOrConfigured(
-            SelectionTestSpi.class,
-            defaultProvider,
-            SelectionTestSpi.class.getName(),
-            componentLoader(),
-            "");
-
-    assertThat(defaultProviderCalled).isTrue();
-    assertThat(selected).isInstanceOf(FirstSelectionTestProvider.class);
+  void cachesSelectedProviders() {
+    assertThat(DeclarativeConfigProviderLoader.getMapper())
+        .isSameAs(DeclarativeConfigProviderLoader.getMapper());
+    assertThat(DeclarativeConfigProviderLoader.getYamlParser())
+        .isSameAs(DeclarativeConfigProviderLoader.getYamlParser());
   }
 
   @Test
-  void loadFirstOrConfiguredUsesSingleProvider() {
-    FirstSelectionTestProvider provider = new FirstSelectionTestProvider();
+  void retriesFailedResolutionAndCachesSuccess() {
+    AtomicReference<TestSpi> ref = new AtomicReference<>();
+    when(loader.load(TestSpi.class))
+        .thenThrow(new IllegalStateException("lookup failed"))
+        .thenReturn(Collections.singletonList(FIRST));
 
-    SelectionTestSpi selected =
-        DeclarativeConfigProviderLoader.loadFirstOrConfigured(
-            SelectionTestSpi.class,
-            FirstSelectionTestProvider::new,
-            SelectionTestSpi.class.getName(),
-            componentLoader(provider),
-            "");
-
-    assertThat(selected).isSameAs(provider);
-  }
-
-  @Test
-  void loadFirstOrConfiguredUsesFirstProviderAndWarnsWhenMultipleAreUnconfigured() {
-    FirstSelectionTestProvider firstProvider = new FirstSelectionTestProvider();
-    SecondSelectionTestProvider secondProvider = new SecondSelectionTestProvider();
-
-    SelectionTestSpi selected =
-        DeclarativeConfigProviderLoader.loadFirstOrConfigured(
-            SelectionTestSpi.class,
-            FirstSelectionTestProvider::new,
-            SelectionTestSpi.class.getName(),
-            componentLoader(firstProvider, secondProvider),
-            "");
-
-    assertThat(selected).isSameAs(firstProvider);
+    assertThatThrownBy(() ->
+            DeclarativeConfigProviderLoader.resolveProvider(ref, TestSpi.class, loader, "missing"))
+        .isInstanceOf(IllegalStateException.class);
+    assertThat(ref.get()).isNull();
     assertThat(
-            logs.assertContains(
-                    event -> event.getMessage().startsWith("Multiple {0} providers found."),
-                    "Expected parameterized multiple-provider warning")
-                .getArguments())
-        .containsExactly("SelectionTestSpi", SelectionTestSpi.class.getName());
+            DeclarativeConfigProviderLoader.resolveProvider(ref, TestSpi.class, loader, "missing"))
+        .isSameAs(FIRST);
+    assertThat(
+            DeclarativeConfigProviderLoader.resolveProvider(ref, TestSpi.class, loader, "missing"))
+        .isSameAs(FIRST);
+    verify(loader, times(2)).load(TestSpi.class);
   }
 
   @Test
-  void loadFirstOrConfiguredUsesConfiguredProviderWhenMultipleArePresent() {
-    FirstSelectionTestProvider firstProvider = new FirstSelectionTestProvider();
-    SecondSelectionTestProvider selectedProvider = new SecondSelectionTestProvider();
+  void rejectsMissingProvider() {
+    when(loader.load(TestSpi.class)).thenReturn(Collections.emptyList());
 
-    SelectionTestSpi selected =
-        DeclarativeConfigProviderLoader.loadFirstOrConfigured(
-            SelectionTestSpi.class,
-            FirstSelectionTestProvider::new,
-            SelectionTestSpi.class.getName(),
-            componentLoader(firstProvider, selectedProvider),
-            selectedProvider.getClass().getName());
-
-    assertThat(selected).isSameAs(selectedProvider);
+    assertThatThrownBy(() ->
+            DeclarativeConfigProviderLoader.resolveProvider(
+                new AtomicReference<>(), TestSpi.class, loader, "missing"))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessage("missing");
   }
 
-  private static ComponentLoader componentLoader(Object... providers) {
-    return new ComponentLoader() {
-      @Override
-      public <T> Iterable<T> load(Class<T> spiClass) {
-        List<T> result = new ArrayList<>();
-        for (Object provider : providers) {
-          result.add(spiClass.cast(provider));
-        }
-        return result;
-      }
-    };
+  @Test
+  void selectsSingleProvider() {
+    when(loader.load(TestSpi.class)).thenReturn(Collections.singletonList(FIRST));
+
+    assertThat(
+            DeclarativeConfigProviderLoader.resolveProvider(
+                new AtomicReference<>(), TestSpi.class, loader, "missing"))
+        .isSameAs(FIRST);
   }
 
-  private interface SelectionTestSpi {}
+  @Test
+  void selectsFirstProviderAndWarns() {
+    when(loader.load(TestSpi.class)).thenReturn(Arrays.asList(FIRST, SECOND));
 
-  private static final class FirstSelectionTestProvider implements SelectionTestSpi {}
+    assertThat(
+            DeclarativeConfigProviderLoader.resolveProvider(
+                new AtomicReference<>(), TestSpi.class, loader, "missing"))
+        .isSameAs(FIRST);
+    logs.assertContains(
+        event -> event.getMessage().startsWith("Multiple {0} providers found."),
+        "Expected multiple-provider warning");
+  }
 
-  private static final class SecondSelectionTestProvider implements SelectionTestSpi {}
+  @Test
+  void selectsConfiguredProvider() {
+    System.setProperty(TestSpi.class.getName(), SECOND.getClass().getName());
+    when(loader.load(TestSpi.class)).thenReturn(Arrays.asList(FIRST, SECOND));
+
+    assertThat(
+            DeclarativeConfigProviderLoader.resolveProvider(
+                new AtomicReference<>(), TestSpi.class, loader, "missing"))
+        .isSameAs(SECOND);
+  }
+
+  @Test
+  void rejectsUnknownConfiguredProvider() {
+    System.setProperty(TestSpi.class.getName(), "missing.Provider");
+    when(loader.load(TestSpi.class)).thenReturn(Arrays.asList(FIRST, SECOND));
+
+    assertThatThrownBy(() ->
+            DeclarativeConfigProviderLoader.resolveProvider(
+                new AtomicReference<>(), TestSpi.class, loader, "missing"))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("missing.Provider");
+  }
+
+  private interface TestSpi {}
+
+  private static final class FirstProvider implements TestSpi {}
+
+  private static final class SecondProvider implements TestSpi {}
 }

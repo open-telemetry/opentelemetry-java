@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.declarativeconfig.snakeyaml.internal;
+package io.opentelemetry.sdk.autoconfigure.declarativeconfig.snakeyamlengine2.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser;
 import java.io.InputStream;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.snakeyaml.engine.v2.api.LoadSettings;
 import org.snakeyaml.engine.v2.api.YamlUnicodeReader;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
+import org.snakeyaml.engine.v2.exceptions.YamlEngineException;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.snakeyaml.engine.v2.nodes.Node;
 import org.snakeyaml.engine.v2.nodes.ScalarNode;
@@ -49,7 +51,11 @@ public final class SnakeYamlDeclarativeConfigurationParser
       Map<Object, Object> systemProperties) {
     LoadSettings settings = LoadSettings.builder().setSchema(new CoreSchema()).build();
     Load yaml = new EnvLoad(settings, environmentVariables, systemProperties);
-    return yaml.loadFromInputStream(configuration);
+    try {
+      return yaml.loadFromInputStream(configuration);
+    } catch (YamlEngineException e) {
+      throw new DeclarativeConfigException("Unable to parse configuration input stream", e);
+    }
   }
 
   private static final class EnvLoad extends Load {

@@ -46,22 +46,8 @@ public final class DeclarativeConfiguration {
   private static final Logger logger = Logger.getLogger(DeclarativeConfiguration.class.getName());
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
-  private static final DeclarativeConfigurationYamlParser YAML_PARSER =
-      DeclarativeConfigProviderLoader.loadFirstOrConfigured(
-          DeclarativeConfigurationYamlParser.class,
-          DeclarativeConfiguration::missingYamlParser,
-          DeclarativeConfigurationYamlParser.class.getName());
 
   private DeclarativeConfiguration() {}
-
-  private static DeclarativeConfigurationYamlParser missingYamlParser() {
-    return (configuration, environmentVariables, systemProperties) -> {
-      throw new DeclarativeConfigException(
-          "No DeclarativeConfigurationYamlParser provider is available. Add the optional "
-              + "opentelemetry-sdk-extension-declarative-config-snakeyaml artifact or register a "
-              + "custom parser provider.");
-    };
-  }
 
   /**
    * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfigurationModel)}.
@@ -162,7 +148,8 @@ public final class DeclarativeConfiguration {
       Map<String, String> environmentVariables,
       Map<Object, Object> systemProperties) {
     try {
-      return YAML_PARSER.parse(inputStream, environmentVariables, systemProperties);
+      return DeclarativeConfigProviderLoader.getYamlParser()
+          .parse(inputStream, environmentVariables, systemProperties);
     } catch (DeclarativeConfigException e) {
       throw e;
     } catch (RuntimeException e) {

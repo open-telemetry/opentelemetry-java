@@ -294,7 +294,7 @@ val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
     "opentelemetry-extension-trace-propagators",
     "opentelemetry-sdk-extension-declarative-config",
     "opentelemetry-sdk-extension-declarative-config-jackson2",
-    "opentelemetry-sdk-extension-declarative-config-snakeyaml",
+    "opentelemetry-sdk-extension-declarative-config-snakeyaml-engine2",
   ),
   serviceLoaderProvides = listOf(
     "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",

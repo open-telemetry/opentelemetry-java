@@ -4,8 +4,8 @@ plugins {
   id("otel.animalsniffer-conventions")
 }
 
-description = "OpenTelemetry SDK Declarative Config SnakeYAML Parser"
-otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig.snakeyaml")
+description = "OpenTelemetry SDK Declarative Config SnakeYAML Engine 2 Parser"
+otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig.snakeyamlengine2")
 otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser",
@@ -13,5 +13,6 @@ otelJava.osgiServiceLoaderProvides.set(listOf(
 
 dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
+  implementation(project(":api:incubator"))
   implementation("org.snakeyaml:snakeyaml-engine")
 }

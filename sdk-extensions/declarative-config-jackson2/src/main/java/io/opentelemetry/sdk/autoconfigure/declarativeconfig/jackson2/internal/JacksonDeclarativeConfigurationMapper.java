@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2.internal;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -18,13 +19,21 @@ public final class JacksonDeclarativeConfigurationMapper implements DeclarativeC
 
   @Override
   public <T> T convert(Object value, Class<T> targetType) {
-    return JacksonModelMapper.MAPPER.convertValue(value, targetType);
+    try {
+      return JacksonModelMapper.MAPPER.convertValue(value, targetType);
+    } catch (IllegalArgumentException e) {
+      throw new DeclarativeConfigException("Unable to convert value to " + targetType, e);
+    }
   }
 
   @Nullable
   @Override
   public Map<String, Object> toMap(Object value) {
-    return JacksonModelMapper.MAPPER.convertValue(
-        value, new TypeReference<Map<String, Object>>() {});
+    try {
+      return JacksonModelMapper.MAPPER.convertValue(
+          value, new TypeReference<Map<String, Object>>() {});
+    } catch (IllegalArgumentException e) {
+      throw new DeclarativeConfigException("Unable to convert value to a map", e);
+    }
   }
 }
