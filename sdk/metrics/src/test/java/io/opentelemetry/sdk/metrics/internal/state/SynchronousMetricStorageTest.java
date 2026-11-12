@@ -111,7 +111,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     storage.recordDouble(Double.NaN, Attributes.empty(), Context.current());
 
@@ -136,7 +137,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.byKeyName("keep"::equals),
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
     storage.recordDouble(1, attributes, Context.root());
     MetricData md = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, testClock.now());
     assertThat(md)
@@ -157,7 +159,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
@@ -202,7 +205,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     // Record for series A and collect at time 10
     storage.recordDouble(3, Attributes.builder().put("series", "A").build(), Context.current());
@@ -255,7 +259,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
@@ -307,7 +312,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
@@ -400,7 +406,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
     // series
@@ -458,7 +465,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
     // series
@@ -553,7 +561,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
     // series
@@ -630,7 +639,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     // 1st recording: Recording goes to active map
     for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
@@ -764,7 +774,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     storage.setEnabled(false);
 
@@ -784,7 +795,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     storage.setEnabled(false);
     storage.setEnabled(true);
@@ -805,7 +817,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     storage.setEnabled(false);
 
@@ -827,7 +840,8 @@ public class SynchronousMetricStorageTest {
             AttributesFilters.ALLOW_ALL,
             CARDINALITY_LIMIT,
             testClock,
-            /* enabled= */ true);
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
 
     storage.setEnabled(false);
     storage.setEnabled(true);

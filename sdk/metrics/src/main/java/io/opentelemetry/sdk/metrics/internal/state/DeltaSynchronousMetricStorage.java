@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
 import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.DELTA;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
@@ -54,8 +56,16 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
-      boolean enabled) {
-    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+      boolean enabled,
+      @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter) {
+    super(
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesFilter);
     this.instrumentCreationEpochNanos = clock.now();
     this.registeredReader = registeredReader;
     this.memoryMode = registeredReader.getReader().getMemoryMode();
