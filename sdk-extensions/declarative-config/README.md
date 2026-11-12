@@ -42,12 +42,13 @@ dependency and add Jackson 3 Databind. This Gradle example uses Jackson 3.2.3:
 
 ```kotlin
 dependencies {
-  implementation("io.opentelemetry:opentelemetry-sdk-extension-declarative-config") {
+  implementation("io.opentelemetry:opentelemetry-sdk-extension-declarative-config:$version") {
     exclude(
       group = "io.opentelemetry",
       module = "opentelemetry-sdk-extension-declarative-config-jackson2",
     )
   }
+  implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:$version")
   implementation("tools.jackson.core:jackson-databind:3.2.3")
 }
 ```
@@ -101,12 +102,13 @@ dependency:
 
 ```kotlin
 dependencies {
-  implementation("io.opentelemetry:opentelemetry-sdk-extension-declarative-config") {
+  implementation("io.opentelemetry:opentelemetry-sdk-extension-declarative-config:$version") {
     exclude(
       group = "io.opentelemetry",
       module = "opentelemetry-sdk-extension-declarative-config-snakeyaml",
     )
   }
+  implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:$version")
 }
 ```
 
