@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.DeclarativeConfigProviderLoader;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.SnakeYamlDeclarativeConfigurationParser;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser;
@@ -25,12 +24,10 @@ class DeclarativeConfigurationSpiTest {
 
   @Test
   void defaultProvidersAreRegisteredWithServiceLoader() {
-    assertThat(
-            DeclarativeConfigProviderLoader.loadFirstOrConfigured(
-                DeclarativeConfigurationYamlParser.class,
-                SnakeYamlDeclarativeConfigurationParser::new,
-                DeclarativeConfigurationYamlParser.class.getName()))
-        .isInstanceOf(SnakeYamlDeclarativeConfigurationParser.class);
+    assertThat(loadParser().getClass().getName())
+        .isEqualTo(
+            "io.opentelemetry.sdk.autoconfigure.declarativeconfig.snakeyaml.internal."
+                + "SnakeYamlDeclarativeConfigurationParser");
     DeclarativeConfigurationMapper mapper = loadMapper();
     assertThat(mapper.getClass().getName())
         .isEqualTo(
@@ -46,7 +43,7 @@ class DeclarativeConfigurationSpiTest {
     systemProperties.put("port", "4317");
 
     Object parsed =
-        new SnakeYamlDeclarativeConfigurationParser()
+        loadParser()
             .parse(
                 new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)),
                 environmentVariables,
@@ -103,5 +100,14 @@ class DeclarativeConfigurationSpiTest {
         .stream()
         .findFirst()
         .orElseThrow(() -> new AssertionError("Expected a mapper provider to be registered"));
+  }
+
+  private static DeclarativeConfigurationYamlParser loadParser() {
+    return DeclarativeConfigProviderLoader.loadFirstOrConfigured(
+        DeclarativeConfigurationYamlParser.class,
+        () -> {
+          throw new AssertionError("Expected a YAML parser provider to be registered");
+        },
+        DeclarativeConfigurationYamlParser.class.getName());
   }
 }

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.common.impl.ConfigUtil;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -66,10 +65,9 @@ public final class DeclarativeConfigProviderLoader {
       if (LOGGER.isLoggable(Level.WARNING)) {
         LOGGER.log(
             Level.WARNING,
-            MessageFormat.format(
-                "Multiple {0} providers found. Please include only one, or specify preference "
-                    + "setting {1} to the FQCN of the preferred provider.",
-                spiClass.getSimpleName(), configProperty));
+            "Multiple {0} providers found. Please include only one, or specify preference "
+                + "setting {1} to the FQCN of the preferred provider.",
+            new Object[] {spiClass.getSimpleName(), configProperty});
       }
       return providers.get(0);
     }

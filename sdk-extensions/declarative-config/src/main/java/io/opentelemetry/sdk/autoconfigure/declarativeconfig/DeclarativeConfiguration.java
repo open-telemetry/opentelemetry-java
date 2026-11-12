@@ -11,7 +11,6 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.DeclarativeConfigProviderLoader;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.DeclarativeConfigurationMapperUtil;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal.SnakeYamlDeclarativeConfigurationParser;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
@@ -50,10 +49,19 @@ public final class DeclarativeConfiguration {
   private static final DeclarativeConfigurationYamlParser YAML_PARSER =
       DeclarativeConfigProviderLoader.loadFirstOrConfigured(
           DeclarativeConfigurationYamlParser.class,
-          SnakeYamlDeclarativeConfigurationParser::new,
+          DeclarativeConfiguration::missingYamlParser,
           DeclarativeConfigurationYamlParser.class.getName());
 
   private DeclarativeConfiguration() {}
+
+  private static DeclarativeConfigurationYamlParser missingYamlParser() {
+    return (configuration, environmentVariables, systemProperties) -> {
+      throw new DeclarativeConfigException(
+          "No DeclarativeConfigurationYamlParser provider is available. Add the optional "
+              + "opentelemetry-sdk-extension-declarative-config-snakeyaml artifact or register a "
+              + "custom parser provider.");
+    };
+  }
 
   /**
    * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfigurationModel)}.
@@ -124,6 +132,8 @@ public final class DeclarativeConfiguration {
   public static OpenTelemetryConfigurationModel parse(InputStream configuration) {
     try {
       return parse(configuration, System.getenv(), System.getProperties());
+    } catch (DeclarativeConfigException e) {
+      throw e;
     } catch (RuntimeException e) {
       throw new DeclarativeConfigException("Unable to parse configuration input stream", e);
     }
@@ -145,7 +155,13 @@ public final class DeclarativeConfiguration {
       InputStream inputStream,
       Map<String, String> environmentVariables,
       Map<Object, Object> systemProperties) {
-    return YAML_PARSER.parse(inputStream, environmentVariables, systemProperties);
+    try {
+      return YAML_PARSER.parse(inputStream, environmentVariables, systemProperties);
+    } catch (DeclarativeConfigException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new DeclarativeConfigException("Unable to parse configuration input stream", e);
+    }
   }
 
   /**
@@ -153,6 +169,7 @@ public final class DeclarativeConfiguration {
    *
    * @param model the configuration model
    * @return a generic {@link DeclarativeConfigProperties} representation of the model
+   * @throws DeclarativeConfigException if unable to convert
    */
   public static DeclarativeConfigProperties toConfigProperties(Object model) {
     return toConfigProperties(model, DEFAULT_COMPONENT_LOADER);
@@ -163,6 +180,7 @@ public final class DeclarativeConfiguration {
    *
    * @param configuration configuration YAML
    * @return a generic {@link DeclarativeConfigProperties} representation of the model
+   * @throws DeclarativeConfigException if unable to parse or convert
    */
   public static DeclarativeConfigProperties toConfigProperties(InputStream configuration) {
     Object yamlObj = loadYaml(configuration, System.getenv(), System.getProperties());

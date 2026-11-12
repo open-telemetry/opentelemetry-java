@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.declarativeconfig.internal;
+package io.opentelemetry.sdk.autoconfigure.declarativeconfig.snakeyaml.internal;
 
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser;
 import java.io.InputStream;

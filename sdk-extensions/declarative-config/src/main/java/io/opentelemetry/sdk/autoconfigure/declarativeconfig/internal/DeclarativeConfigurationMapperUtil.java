@@ -33,7 +33,13 @@ public final class DeclarativeConfigurationMapperUtil {
    * @return the converted value
    */
   public static <T> T convert(Object value, Class<T> targetType) {
-    return MAPPER.convert(value, targetType);
+    try {
+      return MAPPER.convert(value, targetType);
+    } catch (DeclarativeConfigException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new DeclarativeConfigException("Unable to convert value to " + targetType, e);
+    }
   }
 
   /**
@@ -44,7 +50,13 @@ public final class DeclarativeConfigurationMapperUtil {
    */
   @Nullable
   public static Map<String, Object> toMap(Object value) {
-    return MAPPER.toMap(value);
+    try {
+      return MAPPER.toMap(value);
+    } catch (DeclarativeConfigException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new DeclarativeConfigException("Unable to convert value to a map", e);
+    }
   }
 
   private static final class MissingMapper implements DeclarativeConfigurationMapper {

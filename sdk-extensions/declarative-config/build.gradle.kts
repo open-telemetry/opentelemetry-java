@@ -16,7 +16,6 @@ otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
-  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser",
 ))
 // declarative-config discovers these providers at runtime via ServiceLoader
 otelJava.osgiServiceLoaderRequires.set(listOf(
@@ -28,15 +27,15 @@ otelJava.osgiServiceLoaderRequires.set(listOf(
 dependencies {
   api(project(":sdk:all"))
   api(project(":api:incubator"))
-  api(project(":sdk-extensions:autoconfigure-spi"))
+  compileOnly(project(":sdk-extensions:autoconfigure-spi"))
   runtimeOnly(project(":sdk-extensions:declarative-config-jackson2"))
+  runtimeOnly(project(":sdk-extensions:declarative-config-snakeyaml"))
   // Needed for composable samplers
   implementation(project(":sdk-extensions:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   api("com.fasterxml.jackson.core:jackson-annotations")
-  implementation("org.snakeyaml:snakeyaml-engine")
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":exporters:logging"))
