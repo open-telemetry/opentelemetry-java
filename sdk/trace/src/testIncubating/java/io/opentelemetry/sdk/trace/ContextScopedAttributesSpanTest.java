@@ -8,261 +8,161 @@ package io.opentelemetry.sdk.trace;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.common.ContextAttributes;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.data.LinkData;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ContextScopedAttributesSpanTest {
 
-  @Test
-  void contextScopedAttributes_disabledByDefault() {
-    InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    SdkTracerProvider provider =
-        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter)).build();
-    Tracer tracer = provider.get("test");
+  private InMemorySpanExporter exporter;
+  private SdkTracerProviderBuilder builder;
 
-    Context ctx = ContextAttributes.add(Context.current(), Attributes.of(stringKey("k1"), "v1"));
-    try (Scope ignored = ctx.makeCurrent()) {
-      Span span = tracer.spanBuilder("span").startSpan();
-      span.end();
-    }
-
-    List<SpanData> spans = exporter.getFinishedSpanItems();
-    assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getAttributes()).isEmpty();
+  @BeforeEach
+  void setUp() {
+    exporter = InMemorySpanExporter.create();
+    builder = SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
   }
 
   @Test
-  void contextScopedAttributes_enabled_mergesBeforeSamplerWithExplicitPrecedence() {
-    InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    AtomicReference<Attributes> sampledAttributes = new AtomicReference<>();
-    Sampler inspectSampler =
-        new Sampler() {
-          @Override
-          public SamplingResult shouldSample(
-              Context parentContext,
-              String traceId,
-              String name,
-              SpanKind spanKind,
-              Attributes attributes,
-              List<LinkData> parentLinks) {
-            sampledAttributes.set(attributes);
-            return SamplingResult.recordAndSample();
-          }
+  void disabledByDefault() {
+    SdkTracerProvider provider = builder.build();
+    Tracer tracer = provider.get("test");
 
-          @Override
-          public String getDescription() {
-            return "inspectSampler";
-          }
-        };
+    Context ctx = ContextAttributes.set(Context.current(), Attributes.of(stringKey("k1"), "v1"));
+    try (Scope ignored = ctx.makeCurrent()) {
+      tracer.spanBuilder("span").startSpan().end();
+    }
 
-    SdkTracerProviderBuilder builder =
-        SdkTracerProvider.builder()
-            .setSampler(inspectSampler)
-            .addSpanProcessor(SimpleSpanProcessor.create(exporter));
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactly(span -> assertThat(span).hasAttributes(Attributes.empty()));
+  }
+
+  @Test
+  void enabled_mergesBeforeSamplerWithExplicitPrecedence() {
+    Sampler sampler = mock(Sampler.class);
+    when(sampler.shouldSample(any(), any(), any(), any(), any(), any()))
+        .thenReturn(SamplingResult.recordAndSample());
+
+    builder.setSampler(sampler);
     SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.current(),
             Attributes.of(stringKey("k1"), "from-context", stringKey("k2"), "from-context"));
     try (Scope ignored = ctx.makeCurrent()) {
-      Span span =
-          tracer
-              .spanBuilder("span")
-              .setAttribute("k2", "explicit")
-              .setAttribute("k3", "v3")
-              .startSpan();
-      span.end();
+      tracer
+          .spanBuilder("span")
+          .setAttribute("k2", "explicit")
+          .setAttribute("k3", "v3")
+          .startSpan()
+          .end();
     }
+
+    ArgumentCaptor<Attributes> sampledAttributes = ArgumentCaptor.forClass(Attributes.class);
+    verify(sampler).shouldSample(any(), any(), any(), any(), sampledAttributes.capture(), any());
 
     Attributes expected =
         Attributes.of(
             stringKey("k1"), "from-context", stringKey("k2"), "explicit", stringKey("k3"), "v3");
-    assertThat(sampledAttributes.get().asMap()).isEqualTo(expected.asMap());
+    assertThat(sampledAttributes.getValue().asMap()).isEqualTo(expected.asMap());
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
-    assertThat(spans).hasSize(1);
-    assertThat(spans.get(0)).hasAttributes(expected);
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactly(span -> assertThat(span).hasAttributes(expected));
   }
 
   @Test
-  void contextScopedAttributes_usesExplicitParentContext() {
-    InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    SdkTracerProviderBuilder builder =
-        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
+  void usesExplicitParentContext() {
     SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
     Context explicitParent =
-        ContextAttributes.add(Context.root(), Attributes.of(stringKey("parent"), "explicit"));
+        ContextAttributes.set(Context.root(), Attributes.of(stringKey("parent"), "explicit"));
     Context currentCtx =
-        ContextAttributes.add(Context.root(), Attributes.of(stringKey("parent"), "current"));
+        ContextAttributes.set(Context.root(), Attributes.of(stringKey("parent"), "current"));
 
     try (Scope ignored = currentCtx.makeCurrent()) {
-      Span span = tracer.spanBuilder("span").setParent(explicitParent).startSpan();
-      span.end();
+      tracer.spanBuilder("span").setParent(explicitParent).startSpan().end();
     }
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
-    assertThat(spans).hasSize(1);
-    assertThat(spans.get(0)).hasAttributes(Attributes.of(stringKey("parent"), "explicit"));
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactly(
+            span -> assertThat(span).hasAttributes(attributeEntry("parent", "explicit")));
   }
 
   @Test
-  void contextScopedAttributes_setNoParent_preservesAmbientContextAttributes() {
-    InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    SdkTracerProviderBuilder builder =
-        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
-    SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
-    SdkTracerProvider provider = builder.build();
-    Tracer tracer = provider.get("test");
-
-    Span parent = tracer.spanBuilder("parent").startSpan();
-    try (Scope parentScope = parent.makeCurrent()) {
-      Context currentCtx =
-          ContextAttributes.add(Context.current(), Attributes.of(stringKey("scope"), "current"));
-
-      try (Scope ignored = currentCtx.makeCurrent()) {
-        Span span = tracer.spanBuilder("span").setNoParent().startSpan();
-        span.end();
-      }
-    } finally {
-      parent.end();
-    }
-
-    List<SpanData> spans = exporter.getFinishedSpanItems();
-    assertThat(spans).hasSize(2);
-    SpanData child = spans.get(0);
-    assertThat(child).hasAttributes(Attributes.of(stringKey("scope"), "current"));
-    assertThat(child.getParentSpanContext().isValid()).isFalse();
-    assertThat(child.getSpanContext().getTraceId())
-        .isNotEqualTo(parent.getSpanContext().getTraceId());
-  }
-
-  @Test
-  void contextScopedAttributes_explicitParentRoot_dropsContextAttributes() {
-    InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    SdkTracerProviderBuilder builder =
-        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
+  void explicitParentRoot_dropsContextAttributes() {
     SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
     Context currentCtx =
-        ContextAttributes.add(Context.root(), Attributes.of(stringKey("scope"), "current"));
+        ContextAttributes.set(Context.root(), Attributes.of(stringKey("scope"), "current"));
 
     try (Scope ignored = currentCtx.makeCurrent()) {
-      Span span = tracer.spanBuilder("span").setParent(Context.root()).startSpan();
-      span.end();
+      tracer.spanBuilder("span").setParent(Context.root()).startSpan().end();
     }
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
-    assertThat(spans).hasSize(1);
-    SpanData spanData = spans.get(0);
-    assertThat(spanData.getAttributes()).isEmpty();
-    assertThat(spanData.getParentSpanContext().isValid()).isFalse();
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactly(span -> {
+          assertThat(span).hasAttributes(Attributes.empty());
+          assertThat(span.getParentSpanContext().isValid()).isFalse();
+        });
   }
 
   @Test
-  void contextScopedAttributes_spanAttributeCountLimit() {
-    InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    SdkTracerProviderBuilder builder =
-        SdkTracerProvider.builder()
-            .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(1).build())
-            .addSpanProcessor(SimpleSpanProcessor.create(exporter));
+  void spanAttributeCountLimit() {
+    builder.setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(1).build());
     SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
     Context ctx =
-        ContextAttributes.add(Context.root(), Attributes.of(stringKey("ctx_attr"), "ctx"));
+        ContextAttributes.set(Context.root(), Attributes.of(stringKey("ctx_attr"), "ctx"));
 
     try (Scope ignored = ctx.makeCurrent()) {
-      Span span = tracer.spanBuilder("span").setAttribute("explicit_attr", "explicit").startSpan();
-      span.end();
+      tracer.spanBuilder("span").setAttribute("explicit_attr", "explicit").startSpan().end();
     }
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
-    assertThat(spans).hasSize(1);
-    SpanData spanData = spans.get(0);
-    assertThat(spanData).hasAttributes(Attributes.of(stringKey("explicit_attr"), "explicit"));
-    assertThat(spanData.getTotalAttributeCount()).isEqualTo(2);
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactly(span ->
+            assertThat(span)
+                .hasAttributes(attributeEntry("explicit_attr", "explicit"))
+                .hasTotalAttributeCount(2));
   }
 
   @Test
-  void contextScopedAttributes_setNoParent_doesNotLeakBaggageOrContextToSamplerOrProcessor() {
-    InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    AtomicReference<Context> samplerParentContext = new AtomicReference<>();
-    AtomicReference<Attributes> samplerAttributes = new AtomicReference<>();
-    AtomicReference<Context> processorParentContext = new AtomicReference<>();
+  void setNoParent_isolatesTraceAndBaggageWhilePreservingContextAttributes() {
+    Sampler sampler = mock(Sampler.class);
+    when(sampler.shouldSample(any(), any(), any(), any(), any(), any()))
+        .thenReturn(SamplingResult.recordAndSample());
 
-    Sampler testSampler =
-        new Sampler() {
-          @Override
-          public SamplingResult shouldSample(
-              Context parentContext,
-              String traceId,
-              String name,
-              SpanKind spanKind,
-              Attributes attributes,
-              List<LinkData> parentLinks) {
-            samplerParentContext.set(parentContext);
-            samplerAttributes.set(attributes);
-            return SamplingResult.recordAndSample();
-          }
+    SpanProcessor processor = mock(SpanProcessor.class);
+    when(processor.isStartRequired()).thenReturn(true);
 
-          @Override
-          public String getDescription() {
-            return "testSampler";
-          }
-        };
-
-    SpanProcessor testProcessor =
-        new SpanProcessor() {
-          @Override
-          public void onStart(Context parentContext, ReadWriteSpan span) {
-            processorParentContext.set(parentContext);
-          }
-
-          @Override
-          public boolean isStartRequired() {
-            return true;
-          }
-
-          @Override
-          public void onEnd(ReadableSpan span) {}
-
-          @Override
-          public boolean isEndRequired() {
-            return false;
-          }
-        };
-
-    SdkTracerProviderBuilder builder =
-        SdkTracerProvider.builder()
-            .setSampler(testSampler)
-            .addSpanProcessor(testProcessor)
-            .addSpanProcessor(SimpleSpanProcessor.create(exporter));
+    builder.setSampler(sampler).addSpanProcessor(processor);
     SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
@@ -270,69 +170,70 @@ class ContextScopedAttributesSpanTest {
     Span parent = tracer.spanBuilder("parent").startSpan();
     try (Scope parentScope = parent.makeCurrent()) {
       Context currentCtx =
-          ContextAttributes.add(Context.current(), Attributes.of(stringKey("tenant.id"), "acme"));
-      currentCtx = currentCtx.with(Baggage.builder().put("baggage.key", "baggage.value").build());
+          ContextAttributes.set(Context.current(), Attributes.of(stringKey("tenant.id"), "acme"))
+              .with(Baggage.builder().put("baggage.key", "baggage.value").build());
 
       try (Scope ignored = currentCtx.makeCurrent()) {
-        Span span = tracer.spanBuilder("span").setNoParent().startSpan();
-        span.end();
+        tracer.spanBuilder("span").setNoParent().startSpan().end();
       }
     } finally {
       parent.end();
     }
 
-    Context capturedSamplerCtx = samplerParentContext.get();
-    assertThat(capturedSamplerCtx).isNotNull();
-    // Ambient Baggage is detached from parentContext per review comment A
+    ArgumentCaptor<Context> samplerContextCaptor = ArgumentCaptor.forClass(Context.class);
+    ArgumentCaptor<Attributes> samplerAttributesCaptor = ArgumentCaptor.forClass(Attributes.class);
+    verify(sampler, times(2))
+        .shouldSample(
+            samplerContextCaptor.capture(),
+            any(),
+            any(),
+            any(),
+            samplerAttributesCaptor.capture(),
+            any());
+
+    Context capturedSamplerCtx = samplerContextCaptor.getAllValues().get(1);
     assertThat(Baggage.fromContext(capturedSamplerCtx).isEmpty()).isTrue();
     assertThat(Span.fromContext(capturedSamplerCtx).getSpanContext().isValid()).isFalse();
-
-    // But sampler receives inherited context attributes in its Attributes parameter
-    assertThat(samplerAttributes.get().asMap())
+    assertThat(samplerAttributesCaptor.getAllValues().get(1).asMap())
         .isEqualTo(Attributes.of(stringKey("tenant.id"), "acme").asMap());
 
-    Context capturedProcessorCtx = processorParentContext.get();
-    assertThat(capturedProcessorCtx).isNotNull();
-    // Ambient Baggage is detached from processor parentContext
+    ArgumentCaptor<Context> processorContextCaptor = ArgumentCaptor.forClass(Context.class);
+    verify(processor, times(2)).onStart(processorContextCaptor.capture(), any());
+    Context capturedProcessorCtx = processorContextCaptor.getAllValues().get(1);
     assertThat(Baggage.fromContext(capturedProcessorCtx).isEmpty()).isTrue();
     assertThat(Span.fromContext(capturedProcessorCtx).getSpanContext().isValid()).isFalse();
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
-    assertThat(spans).hasSize(2);
-    SpanData child = spans.get(0);
-    assertThat(child).hasAttributes(Attributes.of(stringKey("tenant.id"), "acme"));
-    assertThat(child.getParentSpanContext().isValid()).isFalse();
-    assertThat(child.getSpanContext().getTraceId())
-        .isNotEqualTo(parent.getSpanContext().getTraceId());
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactly(
+            child -> {
+              assertThat(child).hasAttributes(attributeEntry("tenant.id", "acme"));
+              assertThat(child.getParentSpanContext().isValid()).isFalse();
+              assertThat(child.getSpanContext().getTraceId())
+                  .isNotEqualTo(parent.getSpanContext().getTraceId());
+            },
+            parentSpan -> assertThat(parentSpan.getSpanContext().isValid()).isTrue());
   }
 
   @Test
-  void contextScopedAttributes_sameNameDifferentType_explicitWins() {
-    InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    SdkTracerProviderBuilder builder =
-        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
+  void sameNameDifferentType_explicitWins() {
     SdkTracerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkTracerProvider provider = builder.build();
     Tracer tracer = provider.get("test");
 
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.current(), Attributes.of(stringKey("collision"), "contextString"));
     try (Scope ignored = ctx.makeCurrent()) {
-      Span span = tracer.spanBuilder("span").setAttribute(longKey("collision"), 12345L).startSpan();
-      span.end();
+      tracer.spanBuilder("span").setAttribute(longKey("collision"), 12345L).startSpan().end();
     }
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
-    assertThat(spans).hasSize(1);
-    assertThat(spans.get(0)).hasAttributes(Attributes.of(longKey("collision"), 12345L));
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactly(
+            span -> assertThat(span).hasAttributes(attributeEntry("collision", 12345L)));
   }
 
   @Test
-  void contextScopedAttributes_filterPredicate_filtersByScopeAndKey() {
-    InMemorySpanExporter exporter = InMemorySpanExporter.create();
-    SdkTracerProviderBuilder builder =
-        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter));
+  void filterPredicate_filtersByScopeAndKey() {
     SdkTracerProviderUtil.setContextScopedAttributesFilter(
         builder,
         (scope, key) ->
@@ -343,25 +244,20 @@ class ContextScopedAttributesSpanTest {
     Tracer otherTracer = provider.get("other-scope");
 
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.current(),
             Attributes.of(
                 stringKey("allowed.key"), "val1",
                 stringKey("denied.key"), "val2"));
 
     try (Scope ignored = ctx.makeCurrent()) {
-      Span s1 = allowedTracer.spanBuilder("s1").startSpan();
-      s1.end();
-      Span s2 = otherTracer.spanBuilder("s2").startSpan();
-      s2.end();
+      allowedTracer.spanBuilder("s1").startSpan().end();
+      otherTracer.spanBuilder("s2").startSpan().end();
     }
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
-    assertThat(spans).hasSize(2);
-    SpanData s1Data = spans.get(0);
-    SpanData s2Data = spans.get(1);
-
-    assertThat(s1Data).hasAttributes(Attributes.of(stringKey("allowed.key"), "val1"));
-    assertThat(s2Data.getAttributes()).isEmpty();
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactly(
+            s1 -> assertThat(s1).hasAttributes(attributeEntry("allowed.key", "val1")),
+            s2 -> assertThat(s2).hasAttributes(Attributes.empty()));
   }
 }

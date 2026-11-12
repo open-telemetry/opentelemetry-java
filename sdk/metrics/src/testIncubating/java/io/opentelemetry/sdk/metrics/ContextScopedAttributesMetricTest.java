@@ -21,21 +21,33 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Collections;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class ContextScopedAttributesMetricTest {
 
+  private InMemoryMetricReader reader;
+  private SdkMeterProviderBuilder builder;
+
+  @BeforeEach
+  void setUp() {
+    reader = InMemoryMetricReader.create();
+    builder = SdkMeterProvider.builder().registerMetricReader(reader);
+  }
+
   @Test
-  void contextScopedAttributes_disabledByDefault() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProvider provider = SdkMeterProvider.builder().registerMetricReader(reader).build();
+  void disabledByDefault() {
+    SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     LongCounter counter = meter.counterBuilder("counter").build();
 
-    Context ctx = ContextAttributes.add(Context.current(), Attributes.of(stringKey("k1"), "v1"));
+    Context ctx = ContextAttributes.set(Context.current(), Attributes.of(stringKey("k1"), "v1"));
     try (Scope ignored = ctx.makeCurrent()) {
       counter.add(1);
     }
@@ -44,22 +56,15 @@ class ContextScopedAttributesMetricTest {
         .satisfiesExactly(metric ->
             assertThat(metric)
                 .hasName("counter")
-                .hasLongSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(
-                        point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
+                .hasLongSumPointsSatisfying(
+                    point -> point.hasValue(1).hasAttributes(Attributes.empty())));
   }
 
   @Test
-  void contextScopedAttributes_enabled_mergesWithExplicitPrecedenceAndAppliesViewFilter() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder =
-        SdkMeterProvider.builder()
-            .registerMetricReader(reader)
-            .registerView(
-                InstrumentSelector.builder().setName("filtered_counter").build(),
-                View.builder()
-                    .setAttributeFilter(Collections.singleton("allowed_ctx_key"))
-                    .build());
+  void enabled_mergesWithExplicitPrecedenceAndAppliesViewFilter() {
+    builder.registerView(
+        InstrumentSelector.builder().setName("filtered_counter").build(),
+        View.builder().setAttributeFilter(Collections.singleton("allowed_ctx_key")).build());
     SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
@@ -67,7 +72,7 @@ class ContextScopedAttributesMetricTest {
     LongCounter filteredCounter = meter.counterBuilder("filtered_counter").build();
 
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.current(),
             Attributes.of(
                 stringKey("k1"),
@@ -86,31 +91,34 @@ class ContextScopedAttributesMetricTest {
             metric ->
                 assertThat(metric)
                     .hasName("counter")
-                    .hasLongSumSatisfying(sum ->
-                        sum.hasPointsSatisfying(point ->
-                            point
-                                .hasValue(5)
-                                .hasAttributes(
-                                    attributeEntry("k1", "from-context"),
-                                    attributeEntry("k2", "explicit"),
-                                    attributeEntry("k3", "v3"),
-                                    attributeEntry("allowed_ctx_key", "allowed")))),
+                    .hasLongSumPointsSatisfying(point ->
+                        point
+                            .hasValue(5)
+                            .hasAttributes(
+                                attributeEntry("k1", "from-context"),
+                                attributeEntry("k2", "explicit"),
+                                attributeEntry("k3", "v3"),
+                                attributeEntry("allowed_ctx_key", "allowed"))),
             metric ->
                 assertThat(metric)
                     .hasName("filtered_counter")
-                    .hasLongSumSatisfying(sum ->
-                        sum.hasPointsSatisfying(point ->
-                            point
-                                .hasValue(3)
-                                .hasAttributes(attributeEntry("allowed_ctx_key", "allowed")))));
+                    .hasLongSumPointsSatisfying(point ->
+                        point
+                            .hasValue(3)
+                            .hasAttributes(attributeEntry("allowed_ctx_key", "allowed"))));
   }
 
-  @Test
-  void contextScopedAttributes_boundCounter_cumulative() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
-    SdkMeterProvider provider = builder.build();
+  @ParameterizedTest
+  @EnumSource(AggregationTemporality.class)
+  void boundLongCounter(AggregationTemporality temporality) {
+    InMemoryMetricReader localReader =
+        temporality == AggregationTemporality.DELTA
+            ? InMemoryMetricReader.createDelta()
+            : InMemoryMetricReader.create();
+    SdkMeterProviderBuilder localBuilder =
+        SdkMeterProvider.builder().registerMetricReader(localReader);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(localBuilder, (scope, key) -> true);
+    SdkMeterProvider provider = localBuilder.build();
     Meter meter = provider.get("test");
     ExtendedLongCounter counter =
         (ExtendedLongCounter) meter.counterBuilder("bound_counter").build();
@@ -118,72 +126,77 @@ class ContextScopedAttributesMetricTest {
         counter.bind(
             Attributes.of(stringKey("k_bound"), "bound", stringKey("k_clash"), "bound-win"));
 
-    Context ctx =
-        ContextAttributes.add(
-            Context.current(),
-            Attributes.of(stringKey("k_ctx"), "ctx", stringKey("k_clash"), "ctx-lose"));
-    try (Scope ignored = ctx.makeCurrent()) {
-      bound.add(10);
-    }
-
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(metric ->
-            assertThat(metric)
-                .hasName("bound_counter")
-                .hasLongSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(point ->
-                        point
-                            .hasValue(10)
-                            .hasAttributes(
-                                attributeEntry("k_bound", "bound"),
-                                attributeEntry("k_clash", "bound-win")))));
-  }
-
-  @Test
-  void contextScopedAttributes_boundCounter_delta() {
-    InMemoryMetricReader reader = InMemoryMetricReader.createDelta();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
-    SdkMeterProvider provider = builder.build();
-    Meter meter = provider.get("test");
-    ExtendedLongCounter counter =
-        (ExtendedLongCounter) meter.counterBuilder("bound_counter_delta").build();
-    BoundLongCounter bound =
-        counter.bind(
-            Attributes.of(stringKey("k_bound"), "bound", stringKey("k_clash"), "bound-win"));
+    bound.add(3);
 
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.current(),
             Attributes.of(stringKey("k_ctx"), "ctx", stringKey("k_clash"), "ctx-lose"));
     try (Scope ignored = ctx.makeCurrent()) {
       bound.add(7);
     }
 
-    assertThat(reader.collectAllMetrics())
+    assertThat(localReader.collectAllMetrics())
         .satisfiesExactly(metric ->
             assertThat(metric)
-                .hasName("bound_counter_delta")
-                .hasLongSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(point ->
-                        point
-                            .hasValue(7)
-                            .hasAttributes(
-                                attributeEntry("k_bound", "bound"),
-                                attributeEntry("k_clash", "bound-win")))));
+                .hasName("bound_counter")
+                .hasLongSumPointsSatisfying(point ->
+                    point
+                        .hasValue(10)
+                        .hasAttributes(
+                            attributeEntry("k_bound", "bound"),
+                            attributeEntry("k_clash", "bound-win"))));
+  }
+
+  @ParameterizedTest
+  @EnumSource(AggregationTemporality.class)
+  void boundDoubleCounter(AggregationTemporality temporality) {
+    InMemoryMetricReader localReader =
+        temporality == AggregationTemporality.DELTA
+            ? InMemoryMetricReader.createDelta()
+            : InMemoryMetricReader.create();
+    SdkMeterProviderBuilder localBuilder =
+        SdkMeterProvider.builder().registerMetricReader(localReader);
+    SdkMeterProviderUtil.setContextScopedAttributesFilter(localBuilder, (scope, key) -> true);
+    SdkMeterProvider provider = localBuilder.build();
+    Meter meter = provider.get("test");
+    ExtendedDoubleCounter counter =
+        (ExtendedDoubleCounter) meter.counterBuilder("bound_double").ofDoubles().build();
+    BoundDoubleCounter bound =
+        counter.bind(
+            Attributes.of(stringKey("k_bound"), "bound", stringKey("k_clash"), "bound-win"));
+
+    bound.add(1.5);
+
+    Context ctx =
+        ContextAttributes.set(
+            Context.current(),
+            Attributes.of(stringKey("k_ctx"), "ctx", stringKey("k_clash"), "ctx-lose"));
+    try (Scope ignored = ctx.makeCurrent()) {
+      bound.add(2.5);
+    }
+
+    assertThat(localReader.collectAllMetrics())
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("bound_double")
+                .hasDoubleSumPointsSatisfying(point ->
+                    point
+                        .hasValue(4.0)
+                        .hasAttributes(
+                            attributeEntry("k_bound", "bound"),
+                            attributeEntry("k_clash", "bound-win"))));
   }
 
   @Test
-  void contextScopedAttributes_doubleCounter_explicitContext() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+  void doubleCounter_explicitContext() {
     SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     DoubleCounter counter = meter.counterBuilder("double_counter").ofDoubles().build();
 
     Context explicitCtx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.root(),
             Attributes.of(stringKey("k_ctx"), "ctx", stringKey("k_clash"), "ctx-lose"));
 
@@ -196,141 +209,20 @@ class ContextScopedAttributesMetricTest {
         .satisfiesExactly(metric ->
             assertThat(metric)
                 .hasName("double_counter")
-                .hasDoubleSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(point ->
-                        point
-                            .hasValue(2.5)
-                            .hasAttributes(
-                                attributeEntry("k_explicit", "val"),
-                                attributeEntry("k_clash", "explicit-win"),
-                                attributeEntry("k_ctx", "ctx")))));
+                .hasDoubleSumPointsSatisfying(point ->
+                    point
+                        .hasValue(2.5)
+                        .hasAttributes(
+                            attributeEntry("k_explicit", "val"),
+                            attributeEntry("k_clash", "explicit-win"),
+                            attributeEntry("k_ctx", "ctx"))));
   }
 
   @Test
-  void contextScopedAttributes_boundCounter_cumulative_noContextAttributes() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
-    SdkMeterProvider provider = builder.build();
-    Meter meter = provider.get("test");
-    ExtendedLongCounter counter =
-        (ExtendedLongCounter) meter.counterBuilder("bound_counter_no_ctx").build();
-    BoundLongCounter bound = counter.bind(Attributes.of(stringKey("k_bound"), "bound"));
-
-    bound.add(10);
-
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(metric ->
-            assertThat(metric)
-                .hasName("bound_counter_no_ctx")
-                .hasLongSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(point ->
-                        point.hasValue(10).hasAttributes(attributeEntry("k_bound", "bound")))));
-  }
-
-  @Test
-  void contextScopedAttributes_boundCounter_delta_noContextAttributes() {
-    InMemoryMetricReader reader = InMemoryMetricReader.createDelta();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
-    SdkMeterProvider provider = builder.build();
-    Meter meter = provider.get("test");
-    ExtendedLongCounter counter =
-        (ExtendedLongCounter) meter.counterBuilder("bound_counter_delta_no_ctx").build();
-    BoundLongCounter bound = counter.bind(Attributes.of(stringKey("k_bound"), "bound"));
-
-    bound.add(7);
-
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(metric ->
-            assertThat(metric)
-                .hasName("bound_counter_delta_no_ctx")
-                .hasLongSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(point ->
-                        point.hasValue(7).hasAttributes(attributeEntry("k_bound", "bound")))));
-  }
-
-  @Test
-  void contextScopedAttributes_boundDoubleCounter_cumulative() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
-    SdkMeterProvider provider = builder.build();
-    Meter meter = provider.get("test");
-    ExtendedDoubleCounter counter =
-        (ExtendedDoubleCounter) meter.counterBuilder("bound_double_cumulative").ofDoubles().build();
-    BoundDoubleCounter bound =
-        counter.bind(
-            Attributes.of(stringKey("k_bound"), "bound", stringKey("k_clash"), "bound-win"));
-
-    bound.add(1.5);
-
-    Context ctx =
-        ContextAttributes.add(
-            Context.current(),
-            Attributes.of(stringKey("k_ctx"), "ctx", stringKey("k_clash"), "ctx-lose"));
-    try (Scope ignored = ctx.makeCurrent()) {
-      bound.add(2.5);
-    }
-
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(metric ->
-            assertThat(metric)
-                .hasName("bound_double_cumulative")
-                .hasDoubleSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(point ->
-                        point
-                            .hasValue(4.0)
-                            .hasAttributes(
-                                attributeEntry("k_bound", "bound"),
-                                attributeEntry("k_clash", "bound-win")))));
-  }
-
-  @Test
-  void contextScopedAttributes_boundDoubleCounter_delta() {
-    InMemoryMetricReader reader = InMemoryMetricReader.createDelta();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-    SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
-    SdkMeterProvider provider = builder.build();
-    Meter meter = provider.get("test");
-    ExtendedDoubleCounter counter =
-        (ExtendedDoubleCounter) meter.counterBuilder("bound_double_delta").ofDoubles().build();
-    BoundDoubleCounter bound =
-        counter.bind(
-            Attributes.of(stringKey("k_bound"), "bound", stringKey("k_clash"), "bound-win"));
-
-    bound.add(1.5);
-
-    Context ctx =
-        ContextAttributes.add(
-            Context.current(),
-            Attributes.of(stringKey("k_ctx"), "ctx", stringKey("k_clash"), "ctx-lose"));
-    try (Scope ignored = ctx.makeCurrent()) {
-      bound.add(2.5);
-    }
-
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(metric ->
-            assertThat(metric)
-                .hasName("bound_double_delta")
-                .hasDoubleSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(point ->
-                        point
-                            .hasValue(4.0)
-                            .hasAttributes(
-                                attributeEntry("k_bound", "bound"),
-                                attributeEntry("k_clash", "bound-win")))));
-  }
-
-  @Test
-  void contextScopedAttributes_boundCounter_droppedInstrument() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder =
-        SdkMeterProvider.builder()
-            .registerMetricReader(reader)
-            .registerView(
-                InstrumentSelector.builder().setName("dropped_*").build(),
-                View.builder().setAggregation(Aggregation.drop()).build());
+  void boundCounter_droppedInstrument() {
+    builder.registerView(
+        InstrumentSelector.builder().setName("dropped_*").build(),
+        View.builder().setAggregation(Aggregation.drop()).build());
     SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
@@ -349,16 +241,14 @@ class ContextScopedAttributesMetricTest {
   }
 
   @Test
-  void contextScopedAttributes_unboundCounter_emptyAttributesUsesContextAttributesDirectly() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+  void unboundCounter_emptyAttributesUsesContextAttributesDirectly() {
     SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     LongCounter counter = meter.counterBuilder("counter_empty_attrs").build();
 
     Context ctx =
-        ContextAttributes.add(Context.current(), Attributes.of(stringKey("k_ctx"), "ctx"));
+        ContextAttributes.set(Context.current(), Attributes.of(stringKey("k_ctx"), "ctx"));
     try (Scope ignored = ctx.makeCurrent()) {
       counter.add(1, Attributes.empty());
     }
@@ -367,22 +257,19 @@ class ContextScopedAttributesMetricTest {
         .satisfiesExactly(metric ->
             assertThat(metric)
                 .hasName("counter_empty_attrs")
-                .hasLongSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(
-                        point -> point.hasValue(1).hasAttributes(attributeEntry("k_ctx", "ctx")))));
+                .hasLongSumPointsSatisfying(
+                    point -> point.hasValue(1).hasAttributes(attributeEntry("k_ctx", "ctx"))));
   }
 
   @Test
-  void contextScopedAttributes_doubleCounter_nanDropped() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+  void doubleCounter_nanDropped() {
     SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
     DoubleCounter counter = meter.counterBuilder("double_nan").ofDoubles().build();
 
     Context ctx =
-        ContextAttributes.add(Context.current(), Attributes.of(stringKey("k_ctx"), "ctx"));
+        ContextAttributes.set(Context.current(), Attributes.of(stringKey("k_ctx"), "ctx"));
     try (Scope ignored = ctx.makeCurrent()) {
       counter.add(Double.NaN, Attributes.empty());
     }
@@ -397,9 +284,7 @@ class ContextScopedAttributesMetricTest {
   }
 
   @Test
-  void contextScopedAttributes_boundAndUnbound_isolationInSameContext() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+  void boundAndUnbound_isolationInSameContext() {
     SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
@@ -411,7 +296,7 @@ class ContextScopedAttributesMetricTest {
         extendedCounter.bind(Attributes.of(stringKey("pool"), "shared-infra"));
 
     Context ctx =
-        ContextAttributes.add(Context.current(), Attributes.of(stringKey("tenant.id"), "acme"));
+        ContextAttributes.set(Context.current(), Attributes.of(stringKey("tenant.id"), "acme"));
 
     try (Scope ignored = ctx.makeCurrent()) {
       unboundCounter.add(1, Attributes.of(stringKey("route"), "/api"));
@@ -423,34 +308,28 @@ class ContextScopedAttributesMetricTest {
             metric ->
                 assertThat(metric)
                     .hasName("unbound_requests")
-                    .hasLongSumSatisfying(sum ->
-                        sum.hasPointsSatisfying(point ->
-                            point
-                                .hasValue(1)
-                                .hasAttributes(
-                                    attributeEntry("route", "/api"),
-                                    attributeEntry("tenant.id", "acme")))),
+                    .hasLongSumPointsSatisfying(point ->
+                        point
+                            .hasValue(1)
+                            .hasAttributes(
+                                attributeEntry("route", "/api"),
+                                attributeEntry("tenant.id", "acme"))),
             metric ->
                 assertThat(metric)
                     .hasName("bound_infra")
-                    .hasLongSumSatisfying(sum ->
-                        sum.hasPointsSatisfying(point ->
-                            point
-                                .hasValue(1)
-                                .hasAttributes(attributeEntry("pool", "shared-infra")))));
+                    .hasLongSumPointsSatisfying(point ->
+                        point.hasValue(1).hasAttributes(attributeEntry("pool", "shared-infra"))));
   }
 
   @Test
-  void contextScopedAttributes_sameNameDifferentType_explicitWins() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+  void sameNameDifferentType_explicitWins() {
     SdkMeterProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkMeterProvider provider = builder.build();
     Meter meter = provider.get("test");
 
     LongCounter counter = meter.counterBuilder("collision_counter").build();
     Context ctx =
-        ContextAttributes.add(Context.current(), Attributes.of(stringKey("code"), "context_ok"));
+        ContextAttributes.set(Context.current(), Attributes.of(stringKey("code"), "context_ok"));
 
     try (Scope ignored = ctx.makeCurrent()) {
       counter.add(1, Attributes.of(longKey("code"), 200L));
@@ -460,15 +339,12 @@ class ContextScopedAttributesMetricTest {
         .satisfiesExactly(metric ->
             assertThat(metric)
                 .hasName("collision_counter")
-                .hasLongSumSatisfying(sum ->
-                    sum.hasPointsSatisfying(
-                        point -> point.hasValue(1).hasAttributes(attributeEntry("code", 200L)))));
+                .hasLongSumPointsSatisfying(
+                    point -> point.hasValue(1).hasAttributes(attributeEntry("code", 200L))));
   }
 
   @Test
-  void contextScopedAttributes_filterPredicate_filtersByScopeAndKey() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
+  void filterPredicate_filtersByScopeAndKey() {
     SdkMeterProviderUtil.setContextScopedAttributesFilter(
         builder,
         (scope, key) ->
@@ -482,7 +358,7 @@ class ContextScopedAttributesMetricTest {
     LongCounter otherCounter = otherMeter.counterBuilder("m2").build();
 
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.current(),
             Attributes.of(
                 stringKey("allowed.k"), "v1",
@@ -498,14 +374,12 @@ class ContextScopedAttributesMetricTest {
             metric ->
                 assertThat(metric)
                     .hasName("m1")
-                    .hasLongSumSatisfying(sum ->
-                        sum.hasPointsSatisfying(point ->
-                            point.hasValue(1).hasAttributes(attributeEntry("allowed.k", "v1")))),
+                    .hasLongSumPointsSatisfying(point ->
+                        point.hasValue(1).hasAttributes(attributeEntry("allowed.k", "v1"))),
             metric ->
                 assertThat(metric)
                     .hasName("m2")
-                    .hasLongSumSatisfying(sum ->
-                        sum.hasPointsSatisfying(
-                            point -> point.hasValue(1).hasAttributes(Attributes.empty()))));
+                    .hasLongSumPointsSatisfying(
+                        point -> point.hasValue(1).hasAttributes(Attributes.empty())));
   }
 }

@@ -219,7 +219,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
         severity,
         severityText,
         body,
-        this.attributes,
+        attributes,
         eventName);
   }
 }

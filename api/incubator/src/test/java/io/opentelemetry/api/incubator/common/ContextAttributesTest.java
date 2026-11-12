@@ -23,20 +23,6 @@ class ContextAttributesTest {
   }
 
   @Test
-  void addNullValidation() {
-    Context root = Context.root();
-    Attributes attrs = Attributes.of(stringKey("k"), "v");
-    assertThat(ContextAttributes.add(null, attrs)).isEqualTo(Context.root());
-    assertThat(ContextAttributes.add(root, null)).isSameAs(root);
-  }
-
-  @Test
-  void addEmptyAttributes_returnsSameContext() {
-    Context root = Context.root();
-    assertThat(ContextAttributes.add(root, Attributes.empty())).isSameAs(root);
-  }
-
-  @Test
   void setNullValidation() {
     Context root = Context.root();
     Attributes attrs = Attributes.of(stringKey("k"), "v");
@@ -65,48 +51,23 @@ class ContextAttributesTest {
   }
 
   @Test
-  void addAndGet_singleLayer() {
+  void setAndGet_singleLayer() {
     Attributes attrs = Attributes.of(stringKey("user.id"), "u123", longKey("retry"), 1L);
-    Context ctx = ContextAttributes.add(Context.root(), attrs);
+    Context ctx = ContextAttributes.set(Context.root(), attrs);
 
     assertThat(ContextAttributes.get(ctx)).isEqualTo(attrs);
     assertThat(ContextAttributes.get(Context.root())).isEqualTo(Attributes.empty());
   }
 
   @Test
-  void addAndGet_nestedContextsMergeAndOverride() {
-    Context outer =
-        ContextAttributes.add(
-            Context.root(), Attributes.of(stringKey("k1"), "v1", stringKey("k2"), "v2"));
-    Context inner =
-        ContextAttributes.add(
-            outer, Attributes.of(stringKey("k2"), "v2-override", stringKey("k3"), "v3"));
-
-    assertThat(ContextAttributes.get(outer))
-        .isEqualTo(Attributes.of(stringKey("k1"), "v1", stringKey("k2"), "v2"));
-    assertThat(ContextAttributes.get(inner))
-        .isEqualTo(
-            Attributes.of(
-                stringKey("k1"), "v1", stringKey("k2"), "v2-override", stringKey("k3"), "v3"));
-  }
-
-  @Test
-  void addWithSameNameDifferentType_overwritesExisting() {
-    Context ctx1 =
-        ContextAttributes.add(Context.root(), Attributes.of(stringKey("foo"), "stringVal"));
-    Context ctx2 = ContextAttributes.add(ctx1, Attributes.of(longKey("foo"), 42L));
-    assertThat(ContextAttributes.get(ctx2)).isEqualTo(Attributes.of(longKey("foo"), 42L));
-  }
-
-  @Test
   void scopeAttachment_restoresOuterContextAttributesOnClose() {
-    Context outer = ContextAttributes.add(Context.root(), Attributes.of(stringKey("env"), "prod"));
+    Context outer = ContextAttributes.set(Context.root(), Attributes.of(stringKey("env"), "prod"));
     try (Scope ignoredOuter = outer.makeCurrent()) {
       assertThat(ContextAttributes.get(Context.current()))
           .isEqualTo(Attributes.of(stringKey("env"), "prod"));
 
       Context inner =
-          ContextAttributes.add(
+          ContextAttributes.set(
               Context.current(),
               Attributes.of(stringKey("env"), "staging", stringKey("req"), "r1"));
       try (Scope ignoredInner = inner.makeCurrent()) {

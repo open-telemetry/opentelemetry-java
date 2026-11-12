@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributeUtil;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
@@ -49,6 +50,8 @@ class SdkSpanBuilder implements SpanBuilder {
   // Pre-built for the common case where parentContext is root (no extra context to preserve).
   private static final Context ROOT_CONTEXT_WITH_RANDOM_TRACE_ID_BIT =
       Context.root().with(RANDOM_TRACE_ID_PRIMORDIAL_SPAN);
+  private static final Context NO_PARENT =
+      Context.root().with(ContextKey.named("opentelemetry-no-parent"), Boolean.TRUE);
 
   private final String spanName;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -56,7 +59,6 @@ class SdkSpanBuilder implements SpanBuilder {
   private final SpanLimits spanLimits;
 
   @Nullable private Context parent; // null means: Use current context.
-  private boolean noParent = false;
   private SpanKind spanKind = SpanKind.INTERNAL;
   @Nullable private AttributesMap attributes;
   @Nullable private List<LinkData> links;
@@ -80,14 +82,12 @@ class SdkSpanBuilder implements SpanBuilder {
       return this;
     }
     this.parent = context;
-    this.noParent = false;
     return this;
   }
 
   @Override
   public SpanBuilder setNoParent() {
-    this.parent = Context.root();
-    this.noParent = true;
+    this.parent = NO_PARENT;
     return this;
   }
 
@@ -187,10 +187,9 @@ class SdkSpanBuilder implements SpanBuilder {
   @Override
   @SuppressWarnings({"rawtypes", "ReferenceEquality"})
   public Span startSpan() {
-    Context parentContext = parent == null ? Context.current() : parent;
-    if (noParent) {
-      parentContext = Context.root();
-    }
+    boolean isNoParent = parent == NO_PARENT;
+    Context parentContext =
+        isNoParent ? Context.root() : (parent == null ? Context.current() : parent);
     Span parentSpan = Span.fromContext(parentContext);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;
@@ -228,7 +227,7 @@ class SdkSpanBuilder implements SpanBuilder {
     BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter =
         tracerSharedState.getContextScopedAttributesFilter();
     if (filter != null && SdkTracer.INCUBATOR_AVAILABLE) {
-      Context contextForAttributes = noParent ? Context.current() : parentContext;
+      Context contextForAttributes = isNoParent ? Context.current() : parentContext;
       Attributes contextAttributes = IncubatingUtil.getContextAttributes(contextForAttributes);
       if (!contextAttributes.isEmpty()) {
         AttributesMap spanAttributes = attributes();

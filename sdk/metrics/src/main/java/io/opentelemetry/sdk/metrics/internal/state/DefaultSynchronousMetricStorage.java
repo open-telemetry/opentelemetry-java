@@ -36,6 +36,18 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   private static final Logger internalLogger =
       Logger.getLogger(DefaultSynchronousMetricStorage.class.getName());
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.common.ContextAttributes");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
 
   final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
   final UnaryOperator<Attributes> attributesFilter;
@@ -99,19 +111,6 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             maxCardinality,
             enabled,
             contextScopedAttributesFilter);
-  }
-
-  private static final boolean INCUBATOR_AVAILABLE;
-
-  static {
-    boolean incubatorAvailable = false;
-    try {
-      Class.forName("io.opentelemetry.api.incubator.common.ContextAttributes");
-      incubatorAvailable = true;
-    } catch (ClassNotFoundException e) {
-      // Not available
-    }
-    INCUBATOR_AVAILABLE = incubatorAvailable;
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})

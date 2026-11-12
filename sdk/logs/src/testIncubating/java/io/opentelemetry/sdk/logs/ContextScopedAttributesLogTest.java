@@ -8,17 +8,16 @@ package io.opentelemetry.sdk.logs;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.common.ContextAttributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,28 +35,28 @@ class ContextScopedAttributesLogTest {
   }
 
   @Test
-  void contextScopedAttributes_disabledByDefault() {
+  void disabledByDefault() {
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
-    Context ctx = ContextAttributes.add(Context.current(), Attributes.of(stringKey("k1"), "v1"));
+    Context ctx = ContextAttributes.set(Context.current(), Attributes.of(stringKey("k1"), "v1"));
     try (Scope ignored = ctx.makeCurrent()) {
       logger.logRecordBuilder().setBody("hello").emit();
     }
 
-    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
-    assertThat(logs).hasSize(1);
-    assertThat(logs.get(0).getAttributes()).isEmpty();
+    assertThat(exporter.getFinishedLogRecordItems())
+        .satisfiesExactly(
+            log -> assertThat(log).hasBody("hello").hasAttributes(Attributes.empty()));
   }
 
   @Test
-  void contextScopedAttributes_enabled_mergesWithExplicitPrecedence() {
+  void enabled_mergesWithExplicitPrecedence() {
     SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.current(),
             Attributes.of(stringKey("k1"), "from-context", stringKey("k2"), "from-context"));
     try (Scope ignored = ctx.makeCurrent()) {
@@ -69,47 +68,44 @@ class ContextScopedAttributesLogTest {
           .emit();
     }
 
-    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
-    assertThat(logs).hasSize(1);
-    assertThat(logs.get(0).getAttributes())
-        .isEqualTo(
-            Attributes.of(
-                stringKey("k1"),
-                "from-context",
-                stringKey("k2"),
-                "explicit",
-                stringKey("k3"),
-                "v3"));
+    assertThat(exporter.getFinishedLogRecordItems())
+        .satisfiesExactly(log ->
+            assertThat(log)
+                .hasBody("hello")
+                .hasAttributes(
+                    attributeEntry("k1", "from-context"),
+                    attributeEntry("k2", "explicit"),
+                    attributeEntry("k3", "v3")));
   }
 
   @Test
-  void contextScopedAttributes_usesExplicitContext() {
+  void usesExplicitContext() {
     SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
     Context explicitCtx =
-        ContextAttributes.add(Context.root(), Attributes.of(stringKey("ctx"), "explicit"));
+        ContextAttributes.set(Context.root(), Attributes.of(stringKey("ctx"), "explicit"));
     Context currentCtx =
-        ContextAttributes.add(Context.root(), Attributes.of(stringKey("ctx"), "current"));
+        ContextAttributes.set(Context.root(), Attributes.of(stringKey("ctx"), "current"));
 
     try (Scope ignored = currentCtx.makeCurrent()) {
       logger.logRecordBuilder().setContext(explicitCtx).setBody("hello").emit();
     }
 
-    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
-    assertThat(logs).hasSize(1);
-    assertThat(logs.get(0).getAttributes()).isEqualTo(Attributes.of(stringKey("ctx"), "explicit"));
+    assertThat(exporter.getFinishedLogRecordItems())
+        .satisfiesExactly(log ->
+            assertThat(log).hasBody("hello").hasAttributes(attributeEntry("ctx", "explicit")));
   }
 
   @Test
-  void contextScopedAttributes_sameNameDifferentType_explicitWins() {
+  void sameNameDifferentType_explicitWins() {
     SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.current(), Attributes.of(stringKey("collision"), "contextString"));
     try (Scope ignored = ctx.makeCurrent()) {
       logger
@@ -119,13 +115,15 @@ class ContextScopedAttributesLogTest {
           .emit();
     }
 
-    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
-    assertThat(logs).hasSize(1);
-    assertThat(logs.get(0).getAttributes()).isEqualTo(Attributes.of(longKey("collision"), 999L));
+    assertThat(exporter.getFinishedLogRecordItems())
+        .satisfiesExactly(log ->
+            assertThat(log)
+                .hasBody("collision test")
+                .hasAttributes(attributeEntry("collision", 999L)));
   }
 
   @Test
-  void contextScopedAttributes_filterPredicate_filtersByScopeAndKey() {
+  void filterPredicate_filtersByScopeAndKey() {
     SdkLoggerProviderUtil.setContextScopedAttributesFilter(
         builder,
         (scope, key) ->
@@ -136,64 +134,55 @@ class ContextScopedAttributesLogTest {
     Logger otherLogger = provider.get("other-logger");
 
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.current(),
-            Attributes.of(
-                stringKey("allowed.k"), "v1",
-                stringKey("denied.k"), "v2"));
+            Attributes.of(stringKey("allowed.k"), "v1", stringKey("denied.k"), "v2"));
 
     try (Scope ignored = ctx.makeCurrent()) {
       allowedLogger.logRecordBuilder().setBody("msg1").emit();
       otherLogger.logRecordBuilder().setBody("msg2").emit();
     }
 
-    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
-    assertThat(logs).hasSize(2);
-    LogRecordData log1 = logs.get(0);
-    LogRecordData log2 = logs.get(1);
-
-    assertThat(log1.getAttributes()).isEqualTo(Attributes.of(stringKey("allowed.k"), "v1"));
-    assertThat(log2.getAttributes()).isEmpty();
+    assertThat(exporter.getFinishedLogRecordItems())
+        .satisfiesExactly(
+            log1 ->
+                assertThat(log1).hasBody("msg1").hasAttributes(attributeEntry("allowed.k", "v1")),
+            log2 -> assertThat(log2).hasBody("msg2").hasAttributes(Attributes.empty()));
   }
 
   @Test
-  void contextScopedAttributes_logRecordAttributeLimit() {
+  void logRecordAttributeLimit() {
     builder.setLogLimits(() -> LogLimits.builder().setMaxNumberOfAttributes(1).build());
     SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
-    Context ctx = ContextAttributes.add(Context.root(), Attributes.of(stringKey("scope"), "ctx"));
+    Context ctx = ContextAttributes.set(Context.root(), Attributes.of(stringKey("scope"), "ctx"));
 
     try (Scope ignored = ctx.makeCurrent()) {
       logger.logRecordBuilder().setAttribute(stringKey("explicit"), "val").emit();
     }
 
-    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
-    assertThat(logs).hasSize(1);
-    LogRecordData record = logs.get(0);
-    assertThat(record.getAttributes()).isEqualTo(Attributes.of(stringKey("explicit"), "val"));
-    assertThat(record.getTotalAttributeCount()).isEqualTo(2);
+    assertThat(exporter.getFinishedLogRecordItems())
+        .satisfiesExactly(record ->
+            assertThat(record)
+                .hasAttributes(attributeEntry("explicit", "val"))
+                .hasTotalAttributeCount(2));
   }
 
   @Test
-  void
-      contextScopedAttributes_explicitExceedsLimitAndContextPresent_tracksDroppedAttributesCorrectly() {
-    int maxNumberOfAttributes = 2;
-    builder.setLogLimits(
-        () -> LogLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build());
+  void explicitExceedsLimitAndContextPresent_tracksDroppedAttributesCorrectly() {
+    builder.setLogLimits(() -> LogLimits.builder().setMaxNumberOfAttributes(2).build());
     SdkLoggerProviderUtil.setContextScopedAttributesFilter(builder, (scope, key) -> true);
     SdkLoggerProvider provider = builder.build();
     Logger logger = provider.get("test");
 
-    // 2 distinct context attributes
     Context ctx =
-        ContextAttributes.add(
+        ContextAttributes.set(
             Context.root(),
             Attributes.of(stringKey("ctx1"), "ctxVal1", stringKey("ctx2"), "ctxVal2"));
 
     try (Scope ignored = ctx.makeCurrent()) {
-      // 3 explicit attributes (1 dropped on builder) + 2 context attributes (both dropped on merge)
       logger
           .logRecordBuilder()
           .setAttribute(stringKey("exp1"), "expVal1")
@@ -203,20 +192,11 @@ class ContextScopedAttributesLogTest {
           .emit();
     }
 
-    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
-    assertThat(logs).hasSize(1);
-    LogRecordData record = logs.get(0);
-
-    // Explicit attributes take precedence and are retained up to limit (2)
-    assertThat(record.getAttributes())
-        .isEqualTo(Attributes.of(stringKey("exp1"), "expVal1", stringKey("exp2"), "expVal2"));
-    assertThat(record.getAttributes().size()).isEqualTo(2);
-
-    // Total offered: 3 explicit + 2 context = 5
-    assertThat(record.getTotalAttributeCount()).isEqualTo(5);
-
-    // Dropped count: 5 total - 2 retained = 3 dropped
-    int droppedAttributesCount = record.getTotalAttributeCount() - record.getAttributes().size();
-    assertThat(droppedAttributesCount).isEqualTo(3);
+    assertThat(exporter.getFinishedLogRecordItems())
+        .satisfiesExactly(record ->
+            assertThat(record)
+                .hasBody("test log with dropped attributes")
+                .hasAttributes(attributeEntry("exp1", "expVal1"), attributeEntry("exp2", "expVal2"))
+                .hasTotalAttributeCount(5));
   }
 }
