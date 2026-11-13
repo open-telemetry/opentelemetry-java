@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -104,5 +105,37 @@ public abstract class View {
     joiner.add("attributeFilter=" + getAttributeFilter());
     joiner.add("cardinalityLimit=" + getCardinalityLimit());
     return joiner.toString();
+  }
+
+  @Override
+  public final boolean equals(@Nullable Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (o instanceof View) {
+      View that = (View) o;
+      return Objects.equals(this.getName(), that.getName())
+          && Objects.equals(this.getDescription(), that.getDescription())
+          && this.getAggregation().equals(that.getAggregation())
+          && this.getAttributeFilter().equals(that.getAttributeFilter())
+          && this.getCardinalityLimit() == that.getCardinalityLimit();
+    }
+    return false;
+  }
+
+  @Override
+  public final int hashCode() {
+    int hash = 1;
+    hash *= 1000003;
+    hash ^= (getName() == null) ? 0 : getName().hashCode();
+    hash *= 1000003;
+    hash ^= (getDescription() == null) ? 0 : getDescription().hashCode();
+    hash *= 1000003;
+    hash ^= getAggregation().hashCode();
+    hash *= 1000003;
+    hash ^= getAttributeFilter().hashCode();
+    hash *= 1000003;
+    hash ^= getCardinalityLimit();
+    return hash;
   }
 }

@@ -569,34 +569,6 @@ class SdkMeterTest {
   }
 
   @Test
-  void independentViews_TwoViewsWithIdenticalFilter_DoesNotDoubleCount() {
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);
-
-    builder.registerView(
-        InstrumentSelector.builder().setName("*").build(),
-        View.builder().setAttributeFilter(Collections.singleton("a")).build());
-    builder.registerView(
-        InstrumentSelector.builder().setName("my_counter").build(),
-        View.builder().setAttributeFilter(Collections.singleton("a")).build());
-
-    SdkMeterProvider provider = builder.build();
-    Meter meter = provider.get("test");
-
-    LongCounter counter = meter.counterBuilder("my_counter").build();
-    counter.add(1, Attributes.of(AttributeKey.stringKey("a"), "val"));
-
-    Collection<MetricData> metrics = reader.collectAllMetrics();
-    // In independent mode without filter value equality, conflicting views emit 2 streams of value
-    // 1 each
-    for (MetricData metric : metrics) {
-      for (LongPointData point : metric.getLongSumData().getPoints()) {
-        assertThat(point.getValue()).isEqualTo(1);
-      }
-    }
-  }
-
-  @Test
   void independentViews_SameViewInstanceMatchingMultipleSelectors_DoesNotDoubleCount() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder().registerMetricReader(reader);

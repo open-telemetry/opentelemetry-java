@@ -50,16 +50,16 @@ class ViewTest {
     assertThat(defaultView)
         .isEqualTo(defaultViewCopy)
         .hasSameHashCodeAs(defaultViewCopy)
-        .isNotEqualTo(explicitDefaultAggregation)
-        .isNotEqualTo(explicitDefaultCardinality)
-        .isNotEqualTo(explicitDefaultFilter);
-
-    assertThat(explicitDefaultAggregation.hashCode()).isNotEqualTo(defaultView.hashCode());
-    assertThat(explicitDefaultCardinality.hashCode()).isNotEqualTo(defaultView.hashCode());
-    assertThat(explicitDefaultFilter.hashCode()).isNotEqualTo(defaultView.hashCode());
+        .isEqualTo(explicitDefaultAggregation)
+        .hasSameHashCodeAs(explicitDefaultAggregation)
+        .isEqualTo(explicitDefaultCardinality)
+        .hasSameHashCodeAs(explicitDefaultCardinality)
+        .isEqualTo(explicitDefaultFilter)
+        .hasSameHashCodeAs(explicitDefaultFilter);
 
     View sum1 = View.builder().setAggregation(Aggregation.sum()).build();
     View sum2 = View.builder().setAggregation(Aggregation.sum()).build();
     assertThat(sum1).isEqualTo(sum2).hasSameHashCodeAs(sum2);
+    assertThat(sum1).isNotEqualTo(defaultView);
   }
 }
