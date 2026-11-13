@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
-class SamplingStrategyResponse {
+final class SamplingStrategyResponse {
 
   enum SamplingStrategyType {
     PROBABILISTIC,
@@ -18,7 +18,7 @@ class SamplingStrategyResponse {
     UNRECOGNIZED,
   }
 
-  static class RateLimitingSamplingStrategy {
+  static final class RateLimitingSamplingStrategy {
     final int maxTracesPerSecond;
 
     private RateLimitingSamplingStrategy(Builder builder) {
@@ -53,7 +53,7 @@ class SamplingStrategyResponse {
     }
   }
 
-  static class ProbabilisticSamplingStrategy {
+  static final class ProbabilisticSamplingStrategy {
     final double samplingRate;
 
     ProbabilisticSamplingStrategy(Builder builder) {
@@ -88,7 +88,7 @@ class SamplingStrategyResponse {
     }
   }
 
-  static class PerOperationSamplingStrategies {
+  static final class PerOperationSamplingStrategies {
     final double defaultSamplingProbability;
     final double defaultLowerBoundTracesPerSecond;
     final double defaultUpperBoundTracesPerSecond;
@@ -157,7 +157,7 @@ class SamplingStrategyResponse {
     }
   }
 
-  static class OperationSamplingStrategy {
+  static final class OperationSamplingStrategy {
     final String operation;
     final ProbabilisticSamplingStrategy probabilisticSamplingStrategy;
 
