@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.common.internal.AttributeUtil;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.InstrumentationScopeUtil;
+import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.ExceptionEventData;
@@ -575,7 +576,12 @@ final class SdkSpan implements ReadWriteSpan {
     if (spanProcessor instanceof ExtendedSpanProcessor) {
       ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
       if (extendedSpanProcessor.isOnEndingRequired()) {
-        extendedSpanProcessor.onEnding(this);
+        try {
+          extendedSpanProcessor.onEnding(this);
+        } catch (Throwable t) {
+          ThrowableUtil.propagateIfFatal(t);
+          logger.log(Level.WARNING, "SpanProcessor threw an Exception in onEnding", t);
+        }
       }
     }
     synchronized (lock) {
