@@ -8,8 +8,9 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 
-class SamplingStrategyResponse {
+final class SamplingStrategyResponse {
 
   enum SamplingStrategyType {
     PROBABILISTIC,
@@ -17,11 +18,25 @@ class SamplingStrategyResponse {
     UNRECOGNIZED,
   }
 
-  static class RateLimitingSamplingStrategy {
+  static final class RateLimitingSamplingStrategy {
     final int maxTracesPerSecond;
 
     private RateLimitingSamplingStrategy(Builder builder) {
       this.maxTracesPerSecond = builder.maxTracesPerSecond;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (!(o instanceof RateLimitingSamplingStrategy)) {
+        return false;
+      }
+      RateLimitingSamplingStrategy that = (RateLimitingSamplingStrategy) o;
+      return maxTracesPerSecond == that.maxTracesPerSecond;
+    }
+
+    @Override
+    public int hashCode() {
+      return Integer.hashCode(maxTracesPerSecond);
     }
 
     static class Builder {
@@ -38,11 +53,25 @@ class SamplingStrategyResponse {
     }
   }
 
-  static class ProbabilisticSamplingStrategy {
+  static final class ProbabilisticSamplingStrategy {
     final double samplingRate;
 
     ProbabilisticSamplingStrategy(Builder builder) {
       this.samplingRate = builder.samplingRate;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (!(o instanceof ProbabilisticSamplingStrategy)) {
+        return false;
+      }
+      ProbabilisticSamplingStrategy that = (ProbabilisticSamplingStrategy) o;
+      return Double.doubleToLongBits(samplingRate) == Double.doubleToLongBits(that.samplingRate);
+    }
+
+    @Override
+    public int hashCode() {
+      return Double.hashCode(samplingRate);
     }
 
     static class Builder {
@@ -59,7 +88,7 @@ class SamplingStrategyResponse {
     }
   }
 
-  static class PerOperationSamplingStrategies {
+  static final class PerOperationSamplingStrategies {
     final double defaultSamplingProbability;
     final double defaultLowerBoundTracesPerSecond;
     final double defaultUpperBoundTracesPerSecond;
@@ -70,6 +99,30 @@ class SamplingStrategyResponse {
       this.defaultLowerBoundTracesPerSecond = builder.defaultLowerBoundTracesPerSecond;
       this.defaultUpperBoundTracesPerSecond = builder.defaultUpperBoundTracesPerSecond;
       this.strategies = Collections.unmodifiableList(builder.strategies);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (!(o instanceof PerOperationSamplingStrategies)) {
+        return false;
+      }
+      PerOperationSamplingStrategies that = (PerOperationSamplingStrategies) o;
+      return Double.doubleToLongBits(defaultSamplingProbability)
+              == Double.doubleToLongBits(that.defaultSamplingProbability)
+          && Double.doubleToLongBits(defaultLowerBoundTracesPerSecond)
+              == Double.doubleToLongBits(that.defaultLowerBoundTracesPerSecond)
+          && Double.doubleToLongBits(defaultUpperBoundTracesPerSecond)
+              == Double.doubleToLongBits(that.defaultUpperBoundTracesPerSecond)
+          && strategies.equals(that.strategies);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = Double.hashCode(defaultSamplingProbability);
+      result = 31 * result + Double.hashCode(defaultLowerBoundTracesPerSecond);
+      result = 31 * result + Double.hashCode(defaultUpperBoundTracesPerSecond);
+      result = 31 * result + strategies.hashCode();
+      return result;
     }
 
     static class Builder {
@@ -104,13 +157,28 @@ class SamplingStrategyResponse {
     }
   }
 
-  static class OperationSamplingStrategy {
+  static final class OperationSamplingStrategy {
     final String operation;
     final ProbabilisticSamplingStrategy probabilisticSamplingStrategy;
 
     private OperationSamplingStrategy(Builder builder) {
       this.operation = builder.operation;
       this.probabilisticSamplingStrategy = builder.probabilisticSamplingStrategy;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (!(o instanceof OperationSamplingStrategy)) {
+        return false;
+      }
+      OperationSamplingStrategy that = (OperationSamplingStrategy) o;
+      return operation.equals(that.operation)
+          && probabilisticSamplingStrategy.equals(that.probabilisticSamplingStrategy);
+    }
+
+    @Override
+    public int hashCode() {
+      return 31 * operation.hashCode() + probabilisticSamplingStrategy.hashCode();
     }
 
     static class Builder {
@@ -145,6 +213,27 @@ class SamplingStrategyResponse {
     this.rateLimitingSamplingStrategy = builder.rateLimitingSamplingStrategy;
     this.probabilisticSamplingStrategy = builder.probabilisticSamplingStrategy;
     this.perOperationSamplingStrategies = builder.perOperationSamplingStrategies;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (!(o instanceof SamplingStrategyResponse)) {
+      return false;
+    }
+    SamplingStrategyResponse that = (SamplingStrategyResponse) o;
+    return strategyType == that.strategyType
+        && rateLimitingSamplingStrategy.equals(that.rateLimitingSamplingStrategy)
+        && probabilisticSamplingStrategy.equals(that.probabilisticSamplingStrategy)
+        && perOperationSamplingStrategies.equals(that.perOperationSamplingStrategies);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = strategyType.hashCode();
+    result = 31 * result + rateLimitingSamplingStrategy.hashCode();
+    result = 31 * result + probabilisticSamplingStrategy.hashCode();
+    result = 31 * result + perOperationSamplingStrategies.hashCode();
+    return result;
   }
 
   static class Builder {
