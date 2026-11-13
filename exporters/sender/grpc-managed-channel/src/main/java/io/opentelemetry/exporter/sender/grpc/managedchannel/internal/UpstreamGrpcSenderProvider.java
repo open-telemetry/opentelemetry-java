@@ -68,7 +68,9 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
    */
   private static ManagedChannel minimalFallbackManagedChannel(URI endpoint) {
     // grpc-java parses host names with java.net.URI, which returns null for some valid DNS names
-    // (JDK-8188305) that EndpointUtil accepts, so fail with a clear message.
+    // (JDK-8188305) that EndpointUtil accepts, so fail with a clear message. Filed upstream as
+    // https://github.com/grpc/grpc-java/issues/13075; this check can be relaxed if grpc-java
+    // fixes host validation on their side.
     if (endpoint.getHost() == null) {
       throw new IllegalArgumentException(
           "Invalid endpoint, host not supported by grpc-java: "
