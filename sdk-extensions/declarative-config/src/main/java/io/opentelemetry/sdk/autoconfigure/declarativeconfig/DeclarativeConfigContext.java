@@ -5,13 +5,13 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
+import io.opentelemetry.api.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.sdk.autoconfigure.spi.declarativeconfig.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.io.Closeable;
@@ -43,6 +43,12 @@ class DeclarativeConfigContext implements ComponentLoader {
   @Nullable private volatile MeterProvider meterProvider;
   @Nullable private ConfigProvider configProvider;
   @Nullable private List<ComponentProvider> componentProviders = null;
+
+  @Nullable
+  @SuppressWarnings("deprecation")
+  private List<io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider>
+      legacyComponentProviders = null;
+
   @Nullable private DeclarativeConfigurationBuilder builder;
 
   DeclarativeConfigContext(ComponentLoader componentLoader) {
@@ -139,7 +145,7 @@ class DeclarativeConfigContext implements ComponentLoader {
    * @throws DeclarativeConfigException if no matching providers are found, or if multiple are found
    *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties)} throws
    */
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings({"unchecked", "deprecation"})
   <T> T loadComponent(Class<T> type, ConfigKeyValue configKeyValue) {
     String name = configKeyValue.getKey();
     ExtendedDeclarativeConfigProperties config =
@@ -147,34 +153,60 @@ class DeclarativeConfigContext implements ComponentLoader {
             configKeyValue.getValue(),
             configProvider == null ? ConfigProvider.noop() : configProvider);
 
-    if (componentProviders == null) {
-      componentProviders = ComponentLoader.loadList(this, ComponentProvider.class);
+    List<ComponentProvider> providers = this.componentProviders;
+    List<io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider> legacyProviders =
+        this.legacyComponentProviders;
+    if (providers == null || legacyProviders == null) {
+      providers = ComponentLoader.loadList(this, ComponentProvider.class);
+      legacyProviders =
+          ComponentLoader.loadList(
+              this, io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider.class);
+      this.componentProviders = providers;
+      this.legacyComponentProviders = legacyProviders;
     }
     List<ComponentProvider> matchedProviders =
-        componentProviders.stream()
+        providers.stream()
             .filter(componentProvider ->
                 componentProvider.getType() == type && name.equals(componentProvider.getName()))
             .collect(Collectors.toList());
-    if (matchedProviders.isEmpty()) {
+    List<io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider> matchedLegacyProviders =
+        legacyProviders.stream()
+            .filter(componentProvider ->
+                componentProvider.getType() == type && name.equals(componentProvider.getName()))
+            .collect(Collectors.toList());
+
+    int totalMatches = matchedProviders.size() + matchedLegacyProviders.size();
+    if (totalMatches == 0) {
       throw new DeclarativeConfigException(
           "No component provider detected for " + type.getName() + " with name \"" + name + "\".");
     }
-    if (matchedProviders.size() > 1) {
+    if (totalMatches > 1) {
+      List<String> providerClassNames = new ArrayList<>();
+      matchedProviders.forEach(provider -> providerClassNames.add(provider.getClass().getName()));
+      matchedLegacyProviders.forEach(
+          provider -> providerClassNames.add(provider.getClass().getName()));
       throw new DeclarativeConfigException(
           "Component provider conflict. Multiple providers detected for "
               + type.getName()
               + " with name \""
               + name
               + "\": "
-              + componentProviders.stream()
-                  .map(provider -> provider.getClass().getName())
-                  .collect(Collectors.joining(",", "[", "]")));
+              + providerClassNames.stream().collect(Collectors.joining(",", "[", "]")));
     }
-    // Exactly one matching component provider
-    ComponentProvider provider = matchedProviders.get(0);
 
+    Object component;
+    String providerClassName;
     try {
-      Object component = provider.create(config);
+      if (!matchedProviders.isEmpty()) {
+        ComponentProvider provider = matchedProviders.get(0);
+        providerClassName = provider.getClass().getName();
+        component = provider.create(config);
+      } else {
+        io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider provider =
+            matchedLegacyProviders.get(0);
+        providerClassName = provider.getClass().getName();
+        component = provider.create(new LegacyYamlDeclarativeConfigProperties(config));
+      }
       if (component instanceof Closeable) {
         closeables.add((Closeable) component);
       }
@@ -185,7 +217,7 @@ class DeclarativeConfigContext implements ComponentLoader {
                 + " with name \""
                 + name
                 + "\". Component provider "
-                + provider.getClass().getName()
+                + providerClassName
                 + " returned an unexpected component type: "
                 + component.getClass().getName());
       }

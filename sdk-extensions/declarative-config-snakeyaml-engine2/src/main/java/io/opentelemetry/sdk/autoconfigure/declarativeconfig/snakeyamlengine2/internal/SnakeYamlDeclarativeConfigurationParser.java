@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.snakeyamlengine2.internal;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser;
 import java.io.InputStream;
 import java.util.Map;

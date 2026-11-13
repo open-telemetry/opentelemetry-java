@@ -13,6 +13,5 @@ otelJava.osgiServiceLoaderProvides.set(listOf(
 
 dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
-  implementation(project(":api:incubator"))
   implementation("com.fasterxml.jackson.core:jackson-databind")
 }

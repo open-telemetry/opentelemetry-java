@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2.internal;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import org.junit.jupiter.api.Test;
 
 class JacksonDeclarativeConfigurationMapperTest {

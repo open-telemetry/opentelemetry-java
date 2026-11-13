@@ -22,7 +22,11 @@ import javax.annotation.Nullable;
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
+ *
+ * @deprecated Use {@link io.opentelemetry.api.config.DeclarativeConfigProperties} instead.
+ *     Scheduled for removal after 1.68.0.
  */
+@Deprecated
 public interface DeclarativeConfigProperties {
 
   /**

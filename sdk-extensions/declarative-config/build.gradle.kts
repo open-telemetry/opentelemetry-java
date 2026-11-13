@@ -15,7 +15,7 @@ otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig")
 otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
-  "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.declarativeconfig.ComponentProvider",
 ))
 // declarative-config discovers these providers at runtime via ServiceLoader
 otelJava.osgiServiceLoaderRequires.set(listOf(

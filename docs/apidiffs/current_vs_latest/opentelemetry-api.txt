@@ -1,2 +1,46 @@
 Comparing source compatibility of opentelemetry-api-1.69.0-SNAPSHOT.jar against opentelemetry-api-1.68.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.api.config.DeclarativeConfigException  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.RuntimeException
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DeclarativeConfigException(java.lang.String)
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DeclarativeConfigException(java.lang.String, java.lang.Throwable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.config.DeclarativeConfigProperties  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.config.DeclarativeConfigProperties empty()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.config.DeclarativeConfigProperties get(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Boolean getBoolean(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) boolean getBoolean(java.lang.String, boolean)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.common.ComponentLoader getComponentLoader()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Double getDouble(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) double getDouble(java.lang.String, double)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Integer getInt(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) int getInt(java.lang.String, int)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Long getLong(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) long getLong(java.lang.String, long)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Set<java.lang.String> getPropertyKeys()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List<T> getScalarList(java.lang.String, java.lang.Class<T>)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) java.util.List<T> getScalarList(java.lang.String, java.lang.Class<T>, java.util.List<T>)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getString(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) java.lang.String getString(java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.config.DeclarativeConfigProperties getStructured(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.config.DeclarativeConfigProperties getStructured(java.lang.String, io.opentelemetry.api.config.DeclarativeConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List<io.opentelemetry.api.config.DeclarativeConfigProperties> getStructuredList(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) java.util.List<io.opentelemetry.api.config.DeclarativeConfigProperties> getStructuredList(java.lang.String, java.util.List<io.opentelemetry.api.config.DeclarativeConfigProperties>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isBoolean(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isDouble(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isInt(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isLong(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isString(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.Map<java.lang.String,java.lang.Object> toMap(io.opentelemetry.api.config.DeclarativeConfigProperties)

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import java.util.Map;
 import javax.annotation.Nullable;
 

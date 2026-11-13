@@ -16,14 +16,9 @@ try (FileInputStream yamlConfigFileInputStream = new FileInputStream("/path/to/c
 Notes:
 * Environment variable substitution is supported as [defined in the spec](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#environment-variable-substitution)
 * Customization is limited to customizing the in-memory config model, or exporters. See `DeclarativeConfigurationCustomizer` SPI for details.
-* The parser and mapper are internal, unstable SPIs in
-  `opentelemetry-sdk-extension-autoconfigure-spi` (`io.opentelemetry.sdk.autoconfigure.spi.internal`).
-  `ServiceLoader` loads providers; when several are present, the first is used with a warning unless
-  selected through the corresponding system property or environment variable.
-* The SnakeYAML parser and Jackson 2 mapper adapters are included by default. Exclude an adapter to
-  use a custom provider. If no provider is available, the operation fails with a
-  `DeclarativeConfigException`.
-* Custom SDK extension components which reference the [ComponentProvider](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure-spi/src/main/java/io/opentelemetry/sdk/autoconfigure/spi/internal/ComponentProvider.java) SPI can be referenced in declarative configuration. Supported types include:
+* The parser and mapper are internal, unstable SPIs in `opentelemetry-sdk-extension-autoconfigure-spi` (`io.opentelemetry.sdk.autoconfigure.spi.internal`). `ServiceLoader` loads providers; when several are present, the first is used with a warning unless selected through the corresponding system property or environment variable.
+* The SnakeYAML parser and Jackson 2 mapper adapters are included by default. Exclude an adapter to use a custom provider. If no provider is available, the operation fails with a `DeclarativeConfigException`.
+* Custom SDK extension components which reference the [ComponentProvider](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure-spi/src/main/java/io/opentelemetry/sdk/autoconfigure/spi/declarativeconfig/ComponentProvider.java) SPI can be referenced in declarative configuration. Supported types include:
   * `Resource`
   * `SpanExporter`
   * `MetricExporter`

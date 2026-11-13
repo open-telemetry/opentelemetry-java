@@ -1,0 +1,288 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.api.config;
+
+import io.opentelemetry.common.ComponentLoader;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+
+/**
+ * An interface for accessing declarative configuration data.
+ *
+ * <p>An instance of {@link DeclarativeConfigProperties} is equivalent to a <a
+ * href="https://yaml.org/spec/1.2.2/#3211-nodes">YAML mapping node</a>. It has accessors for
+ * reading scalar properties, {@link #getStructured(String)} for reading children which are
+ * themselves mappings, and {@link #getStructuredList(String)} for reading children which are
+ * sequences of mappings.
+ */
+public interface DeclarativeConfigProperties {
+
+  /**
+   * Return an empty {@link DeclarativeConfigProperties} instance.
+   *
+   * <p>Useful for walking the tree without checking for null. For example, to access a string key
+   * nested at .foo.bar.baz, call: {@code config.getStructured("foo", empty()).getStructured("bar",
+   * empty()).getString("baz")}.
+   */
+  static DeclarativeConfigProperties empty() {
+    return EmptyDeclarativeConfigProperties.getInstance();
+  }
+
+  /** Return a map representation of the {@code declarativeConfigProperties}. */
+  static Map<String, Object> toMap(DeclarativeConfigProperties declarativeConfigProperties) {
+    return DeclarativeConfigPropertyUtil.toMap(declarativeConfigProperties);
+  }
+
+  /**
+   * Returns a {@link String} configuration property.
+   *
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     string
+   */
+  @Nullable
+  String getString(String name);
+
+  /**
+   * Returns a {@link String} configuration property.
+   *
+   * @return a {@link String} configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured or is not a valid scalar string
+   */
+  default String getString(String name, String defaultValue) {
+    String value = getString(name);
+    return value == null ? defaultValue : value;
+  }
+
+  /**
+   * Returns a {@link Boolean} configuration property. Implementations should use the same rules as
+   * {@link Boolean#parseBoolean(String)} for handling the values.
+   *
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     boolean
+   */
+  @Nullable
+  Boolean getBoolean(String name);
+
+  /**
+   * Returns a {@link Boolean} configuration property.
+   *
+   * @return a {@link Boolean} configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured or is not a valid scalar boolean
+   */
+  default boolean getBoolean(String name, boolean defaultValue) {
+    Boolean value = getBoolean(name);
+    return value == null ? defaultValue : value;
+  }
+
+  /**
+   * Returns a {@link Integer} configuration property.
+   *
+   * <p>If the underlying config property is {@link Long}, it is converted to {@link Integer} with
+   * {@link Long#intValue()} which may result in loss of precision.
+   *
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     integer
+   */
+  @Nullable
+  Integer getInt(String name);
+
+  /**
+   * Returns a {@link Integer} configuration property.
+   *
+   * <p>If the underlying config property is {@link Long}, it is converted to {@link Integer} with
+   * {@link Long#intValue()} which may result in loss of precision.
+   *
+   * @return a {@link Integer} configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured or is not a valid scalar integer
+   */
+  default int getInt(String name, int defaultValue) {
+    Integer value = getInt(name);
+    return value == null ? defaultValue : value;
+  }
+
+  /**
+   * Returns a {@link Long} configuration property.
+   *
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     long
+   */
+  @Nullable
+  Long getLong(String name);
+
+  /**
+   * Returns a {@link Long} configuration property.
+   *
+   * @return a {@link Long} configuration property or {@code defaultValue} if a property with {@code
+   *     name} has not been configured or is not a valid scalar long
+   */
+  default long getLong(String name, long defaultValue) {
+    Long value = getLong(name);
+    return value == null ? defaultValue : value;
+  }
+
+  /**
+   * Returns a {@link Double} configuration property.
+   *
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     double
+   */
+  @Nullable
+  Double getDouble(String name);
+
+  /**
+   * Returns a {@link Double} configuration property.
+   *
+   * @return a {@link Double} configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured or is not a valid scalar double
+   */
+  default double getDouble(String name, double defaultValue) {
+    Double value = getDouble(name);
+    return value == null ? defaultValue : value;
+  }
+
+  /**
+   * Returns a {@link List} configuration property. Empty values and values which do not map to the
+   * {@code scalarType} will be removed.
+   *
+   * @param name the property name
+   * @param scalarType the scalar type, one of {@link String}, {@link Boolean}, {@link Long} or
+   *     {@link Double}
+   * @return a {@link List} configuration property, or null if the property has not been configured
+   *     or if the property is not a valid sequence of scalars
+   * @throws DeclarativeConfigException if {@code scalarType} is not supported
+   */
+  @Nullable
+  <T> List<T> getScalarList(String name, Class<T> scalarType);
+
+  /**
+   * Returns a {@link List} configuration property. Empty values and values which do not map to the
+   * {@code scalarType} will be removed.
+   *
+   * @param name the property name
+   * @param scalarType the scalar type, one of {@link String}, {@link Boolean}, {@link Long} or
+   *     {@link Double}
+   * @return a {@link List} configuration property or {@code defaultValue} if a property with {@code
+   *     name} has not been configured or is not a valid sequence of scalars
+   */
+  default <T> List<T> getScalarList(String name, Class<T> scalarType, List<T> defaultValue) {
+    List<T> value = getScalarList(name, scalarType);
+    return value == null ? defaultValue : value;
+  }
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getString(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar string,
+   *     false otherwise, including when the property is null
+   */
+  boolean isString(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getBoolean(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar boolean,
+   *     false otherwise, including when the property is null
+   */
+  boolean isBoolean(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getInt(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar integer,
+   *     false otherwise, including when the property is null
+   */
+  boolean isInt(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getLong(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar long,
+   *     false otherwise, including when the property is null
+   */
+  boolean isLong(String name);
+
+  /**
+   * Returns whether the property with {@code name} holds a value which {@link #getDouble(String)}
+   * accepts.
+   *
+   * @return true if a property with {@code name} has been configured and is a valid scalar double,
+   *     false otherwise, including when the property is null
+   */
+  boolean isDouble(String name);
+
+  /**
+   * Returns a {@link DeclarativeConfigProperties} configuration property.
+   *
+   * @return a map-valued configuration property, or {@code null} if {@code name} has not been
+   *     configured or is not a mapping
+   */
+  @Nullable
+  DeclarativeConfigProperties getStructured(String name);
+
+  /**
+   * Returns a {@link DeclarativeConfigProperties} configuration property.
+   *
+   * @return a map-valued configuration property, or {@code defaultValue} if {@code name} has not
+   *     been configured or is not a mapping
+   */
+  default DeclarativeConfigProperties getStructured(
+      String name, DeclarativeConfigProperties defaultValue) {
+    DeclarativeConfigProperties value = getStructured(name);
+    return value == null ? defaultValue : value;
+  }
+
+  /**
+   * Returns a {@link DeclarativeConfigProperties} configuration property, or {@link #empty()} if a
+   * property with {@code name} has not been configured.
+   *
+   * <p>This is syntactic sugar for the common operation of calling {@code
+   * config.getStructured(name, empty())}. If you need to distinguish between a property being set
+   * but empty vs. not set, use {@link #getStructured(String)}.
+   *
+   * @return a map-valued configuration property, or an empty {@link DeclarativeConfigProperties}
+   *     instance if {@code name} has not been configured or is not a mapping
+   */
+  default DeclarativeConfigProperties get(String name) {
+    return getStructured(name, empty());
+  }
+
+  /**
+   * Returns a list of {@link DeclarativeConfigProperties} configuration property.
+   *
+   * @return a list of map-valued configuration property, or {@code null} if {@code name} has not
+   *     been configured or is not a sequence of mappings
+   */
+  @Nullable
+  List<DeclarativeConfigProperties> getStructuredList(String name);
+
+  /**
+   * Returns a list of {@link DeclarativeConfigProperties} configuration property.
+   *
+   * @return a list of map-valued configuration property, or {@code defaultValue} if {@code name}
+   *     has not been configured or is not a sequence of mappings
+   */
+  default List<DeclarativeConfigProperties> getStructuredList(
+      String name, List<DeclarativeConfigProperties> defaultValue) {
+    List<DeclarativeConfigProperties> value = getStructuredList(name);
+    return value == null ? defaultValue : value;
+  }
+
+  /**
+   * Returns a set of all configuration property keys.
+   *
+   * @return the configuration property keys
+   */
+  Set<String> getPropertyKeys();
+
+  /** Return a {@link ComponentLoader} that should be used to load SPIs. */
+  ComponentLoader getComponentLoader();
+}
