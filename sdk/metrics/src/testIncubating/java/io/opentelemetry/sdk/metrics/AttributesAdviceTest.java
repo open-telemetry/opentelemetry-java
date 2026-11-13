@@ -48,6 +48,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -166,6 +167,102 @@ class AttributesAdviceTest {
                         equalTo(stringKey("key1"), "1"),
                         equalTo(stringKey("key2"), "2"),
                         equalTo(stringKey("key3"), "3"))));
+  }
+
+  // Per spec, attributes dropped from a metric point by the Attributes advisory parameter are
+  // still retained on sampled Exemplars as filtered attributes, so that joining an Exemplar's
+  // filtered attributes with its metric point's attributes reconstructs the original measurement.
+  // See https://github.com/open-telemetry/opentelemetry-specification/pull/5392.
+  @Test
+  void adviceDroppedAttributesRetainedAsExemplarFilteredAttributes_counter() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    meterProvider =
+        SdkMeterProvider.builder()
+            .setExemplarFilter(ExemplarFilter.alwaysOn())
+            .registerMetricReader(reader)
+            .build();
+
+    LongCounter counter =
+        ((ExtendedLongCounterBuilder) meterProvider.get("meter").counterBuilder("test"))
+            .setAttributesAdvice(asList(stringKey("key1"), stringKey("key2")))
+            .build();
+    counter.add(1, ATTRIBUTES);
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasAttributesSatisfyingExactly(
+                                equalTo(stringKey("key1"), "1"), equalTo(stringKey("key2"), "2"))
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar.hasFilteredAttributes(
+                                    Attributes.builder().put(stringKey("key3"), "3").build())))));
+  }
+
+  @Test
+  void adviceDroppedAttributesRetainedAsExemplarFilteredAttributes_histogram() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    meterProvider =
+        SdkMeterProvider.builder()
+            .setExemplarFilter(ExemplarFilter.alwaysOn())
+            .registerMetricReader(reader)
+            .build();
+
+    DoubleHistogram histogram =
+        ((ExtendedDoubleHistogramBuilder) meterProvider.get("meter").histogramBuilder("test"))
+            .setAttributesAdvice(asList(stringKey("key1"), stringKey("key2")))
+            .build();
+    histogram.record(1.0, ATTRIBUTES);
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasHistogramSatisfying(h ->
+                    h.hasPointsSatisfying(point ->
+                        point
+                            .hasAttributesSatisfyingExactly(
+                                equalTo(stringKey("key1"), "1"), equalTo(stringKey("key2"), "2"))
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar.hasFilteredAttributes(
+                                    Attributes.builder().put(stringKey("key3"), "3").build())))));
+  }
+
+  // When a View matches, it supersedes the instrument's Attributes advice for the metric point.
+  // The Exemplar's filtered attributes must still reconstruct the original measurement, so they
+  // reflect the attributes dropped by the View rather than by the superseded advice.
+  @Test
+  void adviceAndView_exemplarRetainsAttributesDroppedByView() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    meterProvider =
+        SdkMeterProvider.builder()
+            .setExemplarFilter(ExemplarFilter.alwaysOn())
+            .registerMetricReader(reader)
+            .registerView(
+                InstrumentSelector.builder().setName("test").build(),
+                View.builder()
+                    .setAttributeFilter(key -> "key2".equals(key) || "key3".equals(key))
+                    .build())
+            .build();
+
+    LongCounter counter =
+        ((ExtendedLongCounterBuilder) meterProvider.get("meter").counterBuilder("test"))
+            .setAttributesAdvice(asList(stringKey("key1"), stringKey("key2")))
+            .build();
+    counter.add(1, ATTRIBUTES);
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasLongSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasAttributesSatisfyingExactly(
+                                equalTo(stringKey("key2"), "2"), equalTo(stringKey("key3"), "3"))
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar.hasFilteredAttributes(
+                                    Attributes.builder().put(stringKey("key1"), "1").build())))));
   }
 
   static final class InstrumentsProvider implements ArgumentsProvider {
