@@ -7,10 +7,13 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -28,9 +31,29 @@ public abstract class RegisteredView {
       View view,
       UnaryOperator<Attributes> attributesFilter,
       int cardinalityLimit,
-      SourceInfo viewSourceInfo) {
+      SourceInfo viewSourceInfo,
+      @Nullable Aggregation explicitAggregation,
+      @Nullable Predicate<String> explicitAttributeFilter,
+      @Nullable Integer explicitCardinalityLimit) {
     return new AutoValue_RegisteredView(
-        selector, view, attributesFilter, cardinalityLimit, viewSourceInfo);
+        selector,
+        view,
+        attributesFilter,
+        cardinalityLimit,
+        viewSourceInfo,
+        explicitAggregation,
+        explicitAttributeFilter,
+        explicitCardinalityLimit);
+  }
+
+  public static RegisteredView create(
+      InstrumentSelector selector,
+      View view,
+      UnaryOperator<Attributes> attributesFilter,
+      int cardinalityLimit,
+      SourceInfo viewSourceInfo) {
+    return create(
+        selector, view, attributesFilter, cardinalityLimit, viewSourceInfo, null, null, null);
   }
 
   RegisteredView() {}
@@ -53,6 +76,15 @@ public abstract class RegisteredView {
 
   /** The {@link SourceInfo} from where the view was registered. */
   public abstract SourceInfo getViewSourceInfo();
+
+  @Nullable
+  public abstract Aggregation getExplicitAggregation();
+
+  @Nullable
+  public abstract Predicate<String> getExplicitAttributeFilter();
+
+  @Nullable
+  public abstract Integer getExplicitCardinalityLimit();
 
   @Override
   public final String toString() {

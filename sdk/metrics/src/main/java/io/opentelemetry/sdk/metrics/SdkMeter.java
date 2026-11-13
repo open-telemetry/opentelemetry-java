@@ -305,7 +305,7 @@ final class SdkMeter implements Meter {
         if (Aggregation.drop() == registeredView.getView().getAggregation()) {
           continue;
         }
-        registeredStorages.add(
+        SynchronousMetricStorage storage =
             registry.register(
                 SynchronousMetricStorage.create(
                     reader,
@@ -314,7 +314,10 @@ final class SdkMeter implements Meter {
                     instrument,
                     meterProviderSharedState.getExemplarFilter(),
                     meterEnabled,
-                    getContextScopedAttributesFilter())));
+                    getContextScopedAttributesFilter()));
+        if (!registeredStorages.contains(storage)) {
+          registeredStorages.add(storage);
+        }
       }
     }
 
@@ -339,7 +342,7 @@ final class SdkMeter implements Meter {
         if (Aggregation.drop() == registeredView.getView().getAggregation()) {
           continue;
         }
-        registeredStorages.add(
+        AsynchronousMetricStorage<?> storage =
             registry.register(
                 AsynchronousMetricStorage.create(
                     reader,
@@ -347,7 +350,10 @@ final class SdkMeter implements Meter {
                     meterProviderSharedState.getClock(),
                     instrumentDescriptor,
                     meterProviderSharedState.getExemplarFilter(),
-                    meterEnabled)));
+                    meterEnabled));
+        if (!registeredStorages.contains(storage)) {
+          registeredStorages.add(storage);
+        }
       }
     }
 
