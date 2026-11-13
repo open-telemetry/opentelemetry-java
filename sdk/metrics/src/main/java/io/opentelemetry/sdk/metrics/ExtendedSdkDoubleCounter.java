@@ -85,5 +85,11 @@ final class ExtendedSdkDoubleCounter extends SdkDoubleCounter
       builder.setAdviceAttributes(attributes);
       return this;
     }
+
+    @Override
+    public ExtendedDoubleCounterBuilder setOptInAdvice(boolean optIn) {
+      builder.setAdviceOptIn(optIn);
+      return this;
+    }
   }
 }
