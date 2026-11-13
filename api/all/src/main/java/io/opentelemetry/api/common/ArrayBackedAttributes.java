@@ -36,7 +36,11 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
    * @param data the raw data
    */
   ArrayBackedAttributes(Object[] data) {
-    super(data);
+    this(data, /* valuesNormalized= */ false);
+  }
+
+  ArrayBackedAttributes(Object[] data, boolean valuesNormalized) {
+    super(valuesNormalized ? data : normalizeValues(data));
   }
 
   @Override
@@ -160,7 +164,26 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
     return null;
   }
 
+  private static Object[] normalizeValues(Object[] data) {
+    for (int i = 0; i < data.length; i += 2) {
+      AttributeKey<?> key = (AttributeKey<?>) data[i];
+      if (key != null && key.getType() == AttributeType.VALUE && data[i + 1] instanceof Value) {
+        Value<?> value = (Value<?>) data[i + 1];
+        AttributeKey<?> convertedKey = AttributeValueConverter.toAttributeKey(key, value);
+        if (convertedKey.getType() != AttributeType.VALUE) {
+          data[i] = convertedKey;
+          data[i + 1] = AttributeValueConverter.toAttributeValue(value);
+        }
+      }
+    }
+    return data;
+  }
+
   static Attributes sortAndFilterToAttributes(Object... data) {
+    return sortAndFilterToAttributes(data, /* valuesNormalized= */ false);
+  }
+
+  static Attributes sortAndFilterToAttributes(Object[] data, boolean valuesNormalized) {
     // null out any empty keys or keys with null values
     // so they will then be removed by the sortAndFilter method.
     for (int i = 0; i < data.length; i += 2) {
@@ -168,6 +191,9 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
       if (key != null && key.getKey().isEmpty()) {
         data[i] = null;
       }
+    }
+    if (!valuesNormalized) {
+      normalizeValues(data);
     }
     return new ArrayBackedAttributes(data, KEY_COMPARATOR_FOR_CONSTRUCTION);
   }
