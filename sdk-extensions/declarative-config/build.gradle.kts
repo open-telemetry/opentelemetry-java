@@ -17,23 +17,25 @@ otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.declarativeconfig.ComponentProvider",
 ))
-// declarative-config discovers customizer providers at runtime via ServiceLoader
+// declarative-config discovers these providers at runtime via ServiceLoader
 otelJava.osgiServiceLoaderRequires.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationYamlParser",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.DeclarativeConfigurationMapper",
 ))
 
 dependencies {
   api(project(":sdk:all"))
   api(project(":api:incubator"))
   compileOnly(project(":sdk-extensions:autoconfigure-spi"))
+  runtimeOnly(project(":sdk-extensions:declarative-config-jackson2"))
+  runtimeOnly(project(":sdk-extensions:declarative-config-snakeyaml-engine2"))
   // Needed for composable samplers
   implementation(project(":sdk-extensions:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   api("com.fasterxml.jackson.core:jackson-annotations")
-  implementation("org.snakeyaml:snakeyaml-engine")
-  implementation("com.fasterxml.jackson.core:jackson-databind")
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure-spi"))
@@ -46,6 +48,8 @@ dependencies {
   testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-resources")
   testImplementation("com.linecorp.armeria:armeria-junit5")
+  testRuntimeOnly(project(":sdk-extensions:declarative-config-jackson2"))
+  testRuntimeOnly(project(":sdk-extensions:declarative-config-snakeyaml-engine2"))
 //
   testImplementation("com.google.guava:guava-testlib")
   testImplementation("nl.jqno.equalsverifier:equalsverifier")
@@ -108,8 +112,8 @@ val syncPojoModelsToSrc = tasks.register("syncPojoModelsToSrc") {
   val modelSrcDir = File(projectDir, "src/main/java")
   doLast {
     val modelDir = File(modelSrcDir, modelPackage.replace('.', '/'))
-    // Delete only @Generated files so hand-written files (ModelMapper, ExtensionPropertyUtil)
-    // in model.internal survive the regeneration cycle.
+    // Delete only @Generated files so hand-written files (ExtensionPropertyUtil) in model.internal
+    // survive the regeneration cycle.
     modelDir.walkTopDown()
       .filter { it.isFile && it.extension == "java" }
       .filter { it.readText().contains("@Generated(") }

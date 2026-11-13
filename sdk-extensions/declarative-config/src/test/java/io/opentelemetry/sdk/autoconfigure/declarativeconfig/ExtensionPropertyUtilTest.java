@@ -7,13 +7,13 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LoggerProviderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ModelMapper;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -23,6 +23,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
 
 class ExtensionPropertyUtilTest {
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @RegisterExtension
   LogCapturer logs =
@@ -181,20 +183,20 @@ class ExtensionPropertyUtilTest {
   @Test
   void stableModel_roundTripsGraduatedKey_emitsStableKeyOnly() throws Exception {
     String json = "{\"limits/development\":{}}";
-    LoggerProviderModel model = ModelMapper.MAPPER.readValue(json, LoggerProviderModel.class);
+    LoggerProviderModel model = mapper.readValue(json, LoggerProviderModel.class);
 
     assertThat(model.getLimits()).isNotNull().isInstanceOf(LogRecordLimitsModel.class);
 
-    String reserialized = ModelMapper.MAPPER.writeValueAsString(model);
+    String reserialized = mapper.writeValueAsString(model);
     assertThat(reserialized).contains("\"limits\":").doesNotContain("limits/development");
   }
 
   @Test
   void stableModel_roundTripsNonGraduatedDevelopmentKey_verbatim() throws Exception {
     String json = "{\"composite/development\":{}}";
-    SamplerModel model = ModelMapper.MAPPER.readValue(json, SamplerModel.class);
+    SamplerModel model = mapper.readValue(json, SamplerModel.class);
 
-    String reserialized = ModelMapper.MAPPER.writeValueAsString(model);
+    String reserialized = mapper.writeValueAsString(model);
     assertThat(reserialized).contains("composite/development");
   }
 }

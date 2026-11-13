@@ -67,9 +67,8 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   /**
    * Create a {@link YamlDeclarativeConfigProperties} from the {@code properties} map.
    *
-   * <p>{@code properties} is expected to be the output of YAML parsing (i.e. with Jackson {@code
-   * com.fasterxml.jackson.databind.ObjectMapper}), and have values which are scalars, lists of
-   * scalars, lists of maps, and maps.
+   * <p>{@code properties} is expected to have values which are scalars, lists of scalars, lists of
+   * maps, and maps.
    *
    * @see DeclarativeConfiguration#toConfigProperties(Object)
    */
