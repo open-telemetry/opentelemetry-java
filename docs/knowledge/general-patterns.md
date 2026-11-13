@@ -27,6 +27,10 @@ Use [AutoValue](https://github.com/google/auto/tree/master/value) for new value 
 - Add a package-private constructor to all AutoValue classes to prevent external extension.
 - `japicmp` allows new abstract methods on AutoValue classes — the `AllowNewAbstractMethodOnAutovalueClasses` rule handles this.
 
+## Changelog
+
+Do not add changelog entries to PRs. They are generated during the [release process](../../RELEASING.md).
+
 ## Class member ordering
 
 In general, order class members as follows:
