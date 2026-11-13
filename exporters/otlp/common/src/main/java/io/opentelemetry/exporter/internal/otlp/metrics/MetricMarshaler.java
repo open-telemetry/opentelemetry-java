@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
+import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
@@ -15,6 +16,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
 
 final class MetricMarshaler extends MarshalerWithSize {
+
+  private static final WeakConcurrentMap<String, byte[]> UTF8_CACHE =
+      new WeakConcurrentMap.WithInlinedExpunction<>();
+
   private final byte[] nameUtf8;
   private final byte[] descriptionUtf8;
   private final byte[] unitUtf8;
@@ -23,10 +28,9 @@ final class MetricMarshaler extends MarshalerWithSize {
   private final ProtoFieldInfo dataField;
 
   static Marshaler create(MetricData metric) {
-    // TODO(anuraaga): Cache these as they should be effectively singleton.
-    byte[] name = MarshalerUtil.toBytes(metric.getName());
-    byte[] description = MarshalerUtil.toBytes(metric.getDescription());
-    byte[] unit = MarshalerUtil.toBytes(metric.getUnit());
+    byte[] name = toBytes(metric.getName());
+    byte[] description = toBytes(metric.getDescription());
+    byte[] unit = toBytes(metric.getUnit());
 
     Marshaler dataMarshaler = null;
     ProtoFieldInfo dataField = null;
@@ -66,6 +70,19 @@ final class MetricMarshaler extends MarshalerWithSize {
     }
 
     return new MetricMarshaler(name, description, unit, dataMarshaler, dataField);
+  }
+
+  private static byte[] toBytes(String value) {
+    if (value.isEmpty()) {
+      return MarshalerUtil.toBytes(value);
+    }
+    byte[] cached = UTF8_CACHE.get(value);
+    if (cached == null) {
+      // Concurrent misses may encode the same string more than once, which is harmless.
+      cached = MarshalerUtil.toBytes(value);
+      UTF8_CACHE.put(value, cached);
+    }
+    return cached;
   }
 
   private MetricMarshaler(
