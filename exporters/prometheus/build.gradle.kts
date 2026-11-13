@@ -29,6 +29,7 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":api:incubator"))
   testImplementation(project(":sdk-extensions:autoconfigure-spi"))
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("com.sun.net.httpserver:http")
