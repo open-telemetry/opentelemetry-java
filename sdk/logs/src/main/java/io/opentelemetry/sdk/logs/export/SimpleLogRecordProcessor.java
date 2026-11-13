@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -139,7 +140,9 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
 
   @Override
   public CompletableResultCode forceFlush() {
-    return CompletableResultCode.ofAll(pendingExports);
+    // Snapshot pendingExports: completed exports are removed concurrently, and ofAll requires a
+    // collection whose size matches the elements it iterates, or the result may never complete.
+    return CompletableResultCode.ofAll(new ArrayList<>(pendingExports));
   }
 
   /**
