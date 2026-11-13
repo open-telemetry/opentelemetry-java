@@ -76,6 +76,66 @@ Follow specification-defined semantics. Relaxing an API to accept a previously
 rejected `0` is allowed, including in stable modules. Document and test zero
 behavior explicitly.
 
+## Convenience APIs
+
+Prefer a small, composable API. When in doubt, leave convenience APIs out and
+add them when demand demonstrates their value.
+
+### Bounded surface
+
+Do not provide every combination of optional arguments or configuration values.
+Prefer builders or options objects as combinations grow.
+
+For example, histogram aggregation options belong in
+`ExplicitBucketHistogramOptions`, rather than separate overloads for every
+combination of bucket boundaries and min/max recording.
+
+### Builder shortcuts
+
+Keep builders as the primary configuration entry point. Shortcuts should be
+justified by a concrete benefit, such as avoiding meaningful runtime overhead.
+For SDK objects constructed during initialization, shortcuts are rarely
+justified.
+
+For example, prefer `SdkMeterProvider.builder().build()` over adding an
+equivalent `SdkMeterProvider.create()`.
+
+### Common cases
+
+When an API accepts an expressive abstraction, consider providing convenience
+methods, constants, or implementations for common use cases.
+
+For example, `AggregationTemporalitySelector` supports arbitrary selection by
+instrument type, while `deltaPreferred()` and `alwaysCumulative()` provide
+common selection policies.
+
+### Existing patterns
+
+Follow the [API consistency](general-patterns.md#api-consistency) guidance when
+deciding which conveniences to provide. Within an established API, preserve
+consistent overload patterns rather than evaluating each method in isolation.
+
+For example, a new metric instrument should follow the existing recording
+overloads for omitted attributes and context.
+
+### Java representations
+
+Follow the representations accepted by related APIs before introducing
+alternatives. Supporting another representation should address a concrete use
+case, not merely an available conversion.
+
+For example, metric reader duration settings accept both `Duration` and `long`
+with `TimeUnit`. Follow that pattern for similar settings.
+
+### Optional arguments
+
+Prefer overloads with documented defaults over requiring callers to pass `null`
+to omit an argument. This avoids unnecessarily introducing `@Nullable` into the
+API.
+
+For example, `Span.addEvent(String)` uses empty attributes, while
+`Span.addEvent(String, Attributes)` accepts explicit attributes. Callers need
+not pass `null` to indicate that attributes are absent.
 ## Deprecating API
 
 Applies to both stable and alpha modules. Use plain `@Deprecated` — do **not** use
