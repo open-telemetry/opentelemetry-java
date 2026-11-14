@@ -49,6 +49,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       BatchLogRecordProcessor.class.getSimpleName() + "_WorkerThread";
 
   private final Worker worker;
+  private final Thread workerThread;
 
   /**
    * Returns a new Builder for {@link BatchLogRecordProcessor}.
@@ -79,8 +80,8 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
             exporterTimeoutNanos,
             new ArrayBlockingQueue<>(maxQueueSize),
             maxQueueSize); // TODO: use JcTools.newFixedSizeQueue(..)
-    Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
-    workerThread.start();
+    this.workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
+    this.workerThread.start();
   }
 
   @Override
@@ -113,6 +114,11 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
   // Visible for testing
   List<LogRecordData> getBatch() {
     return worker.batch;
+  }
+
+  // Visible for testing
+  Thread getWorkerThread() {
+    return workerThread;
   }
 
   @Override
@@ -199,51 +205,78 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
     @Override
     public void run() {
-      updateNextExportTime();
+      boolean normalExit = false;
+      try {
+        updateNextExportTime();
 
-      while (continueWork) {
-        if (flushRequested.get() != null) {
-          flush();
-        }
-        while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
-          batch.add(queue.poll().toLogRecordData());
-        }
-        if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
-          exportCurrentBatch();
-          updateNextExportTime();
-        }
-        if (queue.isEmpty()) {
-          try {
-            long pollWaitTime = nextExportTime - System.nanoTime();
-            if (pollWaitTime > 0) {
-              logsNeeded.set(maxExportBatchSize - batch.size());
-              signal.poll(pollWaitTime, TimeUnit.NANOSECONDS);
-              logsNeeded.set(Integer.MAX_VALUE);
+        while (continueWork) {
+          while (continueWork && flushRequested.get() != null) {
+            flush();
+          }
+          if (!continueWork) {
+            break;
+          }
+          while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
+            batch.add(queue.poll().toLogRecordData());
+          }
+          if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
+            exportCurrentBatch();
+            updateNextExportTime();
+          }
+          if (queue.isEmpty()) {
+            try {
+              long pollWaitTime = nextExportTime - System.nanoTime();
+              if (pollWaitTime > 0) {
+                logsNeeded.set(maxExportBatchSize - batch.size());
+                signal.poll(pollWaitTime, TimeUnit.NANOSECONDS);
+                logsNeeded.set(Integer.MAX_VALUE);
+              }
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              break;
             }
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return;
+          }
+        }
+        if (!continueWork) {
+          normalExit = true;
+        }
+      } finally {
+        continueWork = false;
+        CompletableResultCode sentinel =
+            normalExit ? CompletableResultCode.ofSuccess() : CompletableResultCode.ofFailure();
+        CompletableResultCode flushResult = flushRequested.getAndSet(sentinel);
+        if (flushResult != null) {
+          if (normalExit) {
+            flushResult.succeed();
+          } else {
+            flushResult.fail();
           }
         }
       }
     }
 
     private void flush() {
-      int logsToFlush = queue.size();
-      while (logsToFlush > 0) {
-        ReadWriteLogRecord logRecord = queue.poll();
-        assert logRecord != null;
-        batch.add(logRecord.toLogRecordData());
-        logsToFlush--;
-        if (batch.size() >= maxExportBatchSize) {
-          exportCurrentBatch();
+      CompletableResultCode flushResult = flushRequested.getAndSet(null);
+      try {
+        int logsToFlush = queue.size();
+        while (logsToFlush > 0) {
+          ReadWriteLogRecord logRecord = queue.poll();
+          assert logRecord != null;
+          batch.add(logRecord.toLogRecordData());
+          logsToFlush--;
+          if (batch.size() >= maxExportBatchSize) {
+            exportCurrentBatch();
+          }
         }
-      }
-      exportCurrentBatch();
-      CompletableResultCode flushResult = flushRequested.get();
-      if (flushResult != null) {
-        flushResult.succeed();
-        flushRequested.set(null);
+        exportCurrentBatch();
+        if (flushResult != null) {
+          flushResult.succeed();
+        }
+      } catch (Throwable t) {
+        if (flushResult != null) {
+          flushResult.fail();
+        }
+        throw t;
       }
     }
 
@@ -274,16 +307,25 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     }
 
     private CompletableResultCode forceFlush() {
-      CompletableResultCode flushResult = new CompletableResultCode();
-      // we set the atomic here to trigger the worker loop to do a flush of the entire queue.
-      if (flushRequested.compareAndSet(null, flushResult)) {
-        signal.offer(true);
+      CompletableResultCode flushResult = null;
+      while (true) {
+        CompletableResultCode current = flushRequested.get();
+        if (current != null) {
+          return current;
+        }
+        if (!continueWork) {
+          return isShutdown.get()
+              ? CompletableResultCode.ofSuccess()
+              : CompletableResultCode.ofFailure();
+        }
+        if (flushResult == null) {
+          flushResult = new CompletableResultCode();
+        }
+        if (flushRequested.compareAndSet(null, flushResult)) {
+          signal.offer(true);
+          return flushResult;
+        }
       }
-      CompletableResultCode possibleResult = flushRequested.get();
-      // there's a race here where the flush happening in the worker loop could complete before we
-      // get what's in the atomic. In that case, just return success, since we know it succeeded in
-      // the interim.
-      return possibleResult == null ? CompletableResultCode.ofSuccess() : possibleResult;
     }
 
     private void exportCurrentBatch() {

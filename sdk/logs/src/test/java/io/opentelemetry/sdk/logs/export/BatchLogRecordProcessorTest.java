@@ -29,10 +29,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -511,6 +513,168 @@ class BatchLogRecordProcessorTest {
                 + "}");
   }
 
+  @Test
+  void shutdown_whileForceFlushInFlight_exportsLogsEmittedBeforeShutdown() {
+    CompletableLogRecordExporter exporter = new CompletableLogRecordExporter();
+    BatchLogRecordProcessor processor =
+        BatchLogRecordProcessor.builder(exporter).setScheduleDelay(10, TimeUnit.SECONDS).build();
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(processor).build();
+
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
+    CompletableResultCode firstFlush = processor.forceFlush();
+
+    // Wait until the worker enters exportCurrentBatch() for LOG_MESSAGE_1 during flush().
+    await()
+        .untilAsserted(() ->
+            assertThat(exporter.getExported())
+                .satisfiesExactly(log -> assertThat(log).hasBody(LOG_MESSAGE_1)));
+
+    // Log 2 is emitted while the first forceFlush() is still in flight, before shutdown() is
+    // called.
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
+
+    // Trigger shutdown while the first forceFlush() is in flight.
+    CompletableResultCode shutdownResult = processor.shutdown();
+
+    // Unblock the in-flight export.
+    exporter.succeed();
+
+    firstFlush.join(10, TimeUnit.SECONDS);
+    shutdownResult.join(10, TimeUnit.SECONDS);
+    assertThat(firstFlush.isSuccess()).isTrue();
+    assertThat(shutdownResult.isSuccess()).isTrue();
+    assertThat(exporter.getExported())
+        .satisfiesExactly(
+            log -> assertThat(log).hasBody(LOG_MESSAGE_1),
+            log -> assertThat(log).hasBody(LOG_MESSAGE_2));
+    sdkLoggerProvider.shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Test
+  void forceFlush_whileForceFlushInFlight_queuesBehindIt() {
+    CompletableLogRecordExporter exporter = new CompletableLogRecordExporter();
+    BatchLogRecordProcessor processor =
+        BatchLogRecordProcessor.builder(exporter).setScheduleDelay(10, TimeUnit.SECONDS).build();
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(processor).build();
+
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
+    CompletableResultCode firstFlush = processor.forceFlush();
+
+    await()
+        .untilAsserted(() ->
+            assertThat(exporter.getExported())
+                .satisfiesExactly(log -> assertThat(log).hasBody(LOG_MESSAGE_1)));
+
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
+    CompletableResultCode secondFlush = processor.forceFlush();
+    CompletableResultCode thirdFlush = processor.forceFlush();
+
+    // Complete only the first export; secondFlush and thirdFlush must wait for the second export.
+    exporter.completeExport(0);
+    firstFlush.join(10, TimeUnit.SECONDS);
+    assertThat(firstFlush.isSuccess()).isTrue();
+
+    await()
+        .untilAsserted(() ->
+            assertThat(exporter.getExported())
+                .satisfiesExactly(
+                    log -> assertThat(log).hasBody(LOG_MESSAGE_1),
+                    log -> assertThat(log).hasBody(LOG_MESSAGE_2)));
+    assertThat(secondFlush.isDone()).isFalse();
+    assertThat(thirdFlush.isDone()).isFalse();
+
+    exporter.succeed();
+    secondFlush.join(10, TimeUnit.SECONDS);
+    thirdFlush.join(10, TimeUnit.SECONDS);
+    assertThat(secondFlush.isSuccess()).isTrue();
+    assertThat(thirdFlush.isSuccess()).isTrue();
+    sdkLoggerProvider.shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Test
+  void forceFlush_fromWhenCompleteCallback_exportsNewlyQueuedLogs() {
+    CompletableLogRecordExporter exporter = new CompletableLogRecordExporter();
+    BatchLogRecordProcessor processor =
+        BatchLogRecordProcessor.builder(exporter).setScheduleDelay(10, TimeUnit.SECONDS).build();
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(processor).build();
+
+    emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
+    CompletableResultCode firstFlush = processor.forceFlush();
+    AtomicReference<CompletableResultCode> secondFlushRef = new AtomicReference<>();
+
+    firstFlush.whenComplete(() -> {
+      emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
+      secondFlushRef.set(processor.forceFlush());
+    });
+
+    await()
+        .untilAsserted(() ->
+            assertThat(exporter.getExported())
+                .satisfiesExactly(log -> assertThat(log).hasBody(LOG_MESSAGE_1)));
+
+    exporter.succeed();
+
+    firstFlush.join(10, TimeUnit.SECONDS);
+    assertThat(firstFlush.isSuccess()).isTrue();
+    CompletableResultCode secondFlush = secondFlushRef.get();
+    assertThat(secondFlush).isNotNull();
+    secondFlush.join(10, TimeUnit.SECONDS);
+    assertThat(secondFlush.isSuccess()).isTrue();
+    assertThat(exporter.getExported())
+        .satisfiesExactly(
+            log -> assertThat(log).hasBody(LOG_MESSAGE_1),
+            log -> assertThat(log).hasBody(LOG_MESSAGE_2));
+    sdkLoggerProvider.shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Test
+  void forceFlush_afterShutdown_completes() {
+    BatchLogRecordProcessor processor =
+        BatchLogRecordProcessor.builder(mockLogRecordExporter).build();
+    CompletableResultCode shutdownResult = processor.shutdown();
+    shutdownResult.join(10, TimeUnit.SECONDS);
+    assertThat(shutdownResult.isSuccess()).isTrue();
+
+    CompletableResultCode secondShutdownResult = processor.shutdown();
+    secondShutdownResult.join(1, TimeUnit.SECONDS);
+    assertThat(secondShutdownResult.isDone()).isTrue();
+    assertThat(secondShutdownResult.isSuccess()).isTrue();
+
+    CompletableResultCode flushAfterShutdown = processor.forceFlush();
+    flushAfterShutdown.join(1, TimeUnit.SECONDS);
+    assertThat(flushAfterShutdown.isDone()).isTrue();
+    assertThat(flushAfterShutdown.isSuccess()).isTrue();
+  }
+
+  @Test
+  void forceFlush_whenWorkerInterrupted_failsPendingAndSubsequentFlushes() throws Exception {
+    BatchLogRecordProcessor processor =
+        BatchLogRecordProcessor.builder(mockLogRecordExporter)
+            .setScheduleDelay(10, TimeUnit.SECONDS)
+            .build();
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(processor).build();
+
+    processor.getWorkerThread().interrupt();
+    processor.getWorkerThread().join(5000);
+    assertThat(processor.getWorkerThread().isAlive()).isFalse();
+
+    CompletableResultCode flushAfterInterruption = processor.forceFlush();
+    flushAfterInterruption.join(1, TimeUnit.SECONDS);
+    assertThat(flushAfterInterruption.isDone()).isTrue();
+    assertThat(flushAfterInterruption.isSuccess()).isFalse();
+
+    CompletableResultCode shutdownResult = processor.shutdown();
+    shutdownResult.join(1, TimeUnit.SECONDS);
+    assertThat(shutdownResult.isDone()).isTrue();
+    assertThat(shutdownResult.isSuccess()).isFalse();
+
+    sdkLoggerProvider.shutdown().join(10, TimeUnit.SECONDS);
+  }
+
   private static final class BlockingLogRecordExporter implements LogRecordExporter {
 
     final Object monitor = new Object();
@@ -574,9 +738,11 @@ class BatchLogRecordProcessorTest {
 
   private static class CompletableLogRecordExporter implements LogRecordExporter {
 
-    private final List<CompletableResultCode> results = new ArrayList<>();
+    private final Object lock = new Object();
 
-    private final List<LogRecordData> exported = new ArrayList<>();
+    private final List<CompletableResultCode> results = new CopyOnWriteArrayList<>();
+
+    private final List<LogRecordData> exported = new CopyOnWriteArrayList<>();
 
     private volatile boolean succeeded;
 
@@ -584,20 +750,31 @@ class BatchLogRecordProcessorTest {
       return exported;
     }
 
+    void completeExport(int index) {
+      results.get(index).succeed();
+    }
+
     void succeed() {
-      succeeded = true;
-      results.forEach(CompletableResultCode::succeed);
+      List<CompletableResultCode> toComplete;
+      synchronized (lock) {
+        succeeded = true;
+        toComplete = new ArrayList<>(results);
+      }
+      toComplete.forEach(CompletableResultCode::succeed);
     }
 
     @Override
     public CompletableResultCode export(Collection<LogRecordData> logs) {
-      exported.addAll(logs);
-      if (succeeded) {
-        return CompletableResultCode.ofSuccess();
+      synchronized (lock) {
+        if (succeeded) {
+          exported.addAll(logs);
+          return CompletableResultCode.ofSuccess();
+        }
+        CompletableResultCode result = new CompletableResultCode();
+        results.add(result);
+        exported.addAll(logs);
+        return result;
       }
-      CompletableResultCode result = new CompletableResultCode();
-      results.add(result);
-      return result;
     }
 
     @Override

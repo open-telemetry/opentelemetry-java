@@ -34,9 +34,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -730,6 +732,147 @@ class BatchSpanProcessorTest {
     await().untilAsserted(() -> assertThat(batchSpanProcessor.getQueue()).isEmpty());
   }
 
+  @Test
+  void shutdown_whileForceFlushInFlight_exportsSpansEndedBeforeShutdown() {
+    CompletableSpanExporter exporter = new CompletableSpanExporter();
+    BatchSpanProcessor processor =
+        BatchSpanProcessor.builder(exporter).setScheduleDelay(10, TimeUnit.SECONDS).build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(processor).build();
+
+    ReadableSpan span1 = createEndedSpan(SPAN_NAME_1);
+    CompletableResultCode firstFlush = processor.forceFlush();
+
+    // Wait until the worker enters exportCurrentBatch() for span1 during flush().
+    await()
+        .untilAsserted(
+            () -> assertThat(exporter.getExported()).containsExactly(span1.toSpanData()));
+
+    // Span 2 ends while the first forceFlush() is still in flight, before shutdown() is called.
+    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
+    assertThat(processor.getQueue()).hasSize(1);
+
+    // Trigger shutdown while the first forceFlush() is in flight.
+    CompletableResultCode shutdownResult = processor.shutdown();
+
+    // Unblock the in-flight export.
+    exporter.succeed();
+
+    firstFlush.join(10, TimeUnit.SECONDS);
+    shutdownResult.join(10, TimeUnit.SECONDS);
+    assertThat(firstFlush.isSuccess()).isTrue();
+    assertThat(shutdownResult.isSuccess()).isTrue();
+    assertThat(exporter.getExported()).containsExactly(span1.toSpanData(), span2.toSpanData());
+  }
+
+  @Test
+  void forceFlush_whileForceFlushInFlight_queuesBehindIt() {
+    CompletableSpanExporter exporter = new CompletableSpanExporter();
+    BatchSpanProcessor processor =
+        BatchSpanProcessor.builder(exporter).setScheduleDelay(10, TimeUnit.SECONDS).build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(processor).build();
+
+    ReadableSpan span1 = createEndedSpan(SPAN_NAME_1);
+    CompletableResultCode firstFlush = processor.forceFlush();
+
+    await()
+        .untilAsserted(
+            () -> assertThat(exporter.getExported()).containsExactly(span1.toSpanData()));
+
+    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
+    CompletableResultCode secondFlush = processor.forceFlush();
+    CompletableResultCode thirdFlush = processor.forceFlush();
+
+    // Complete only the first export; secondFlush and thirdFlush must wait for the second export.
+    exporter.completeExport(0);
+    firstFlush.join(10, TimeUnit.SECONDS);
+    assertThat(firstFlush.isSuccess()).isTrue();
+
+    await()
+        .untilAsserted(() ->
+            assertThat(exporter.getExported())
+                .containsExactly(span1.toSpanData(), span2.toSpanData()));
+    assertThat(secondFlush.isDone()).isFalse();
+    assertThat(thirdFlush.isDone()).isFalse();
+
+    exporter.succeed();
+    secondFlush.join(10, TimeUnit.SECONDS);
+    thirdFlush.join(10, TimeUnit.SECONDS);
+    assertThat(secondFlush.isSuccess()).isTrue();
+    assertThat(thirdFlush.isSuccess()).isTrue();
+  }
+
+  @Test
+  void forceFlush_fromWhenCompleteCallback_exportsNewlyQueuedSpans() {
+    CompletableSpanExporter exporter = new CompletableSpanExporter();
+    BatchSpanProcessor processor =
+        BatchSpanProcessor.builder(exporter).setScheduleDelay(10, TimeUnit.SECONDS).build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(processor).build();
+
+    ReadableSpan span1 = createEndedSpan(SPAN_NAME_1);
+    CompletableResultCode firstFlush = processor.forceFlush();
+    AtomicReference<ReadableSpan> span2Ref = new AtomicReference<>();
+    AtomicReference<CompletableResultCode> secondFlushRef = new AtomicReference<>();
+
+    firstFlush.whenComplete(() -> {
+      span2Ref.set(createEndedSpan(SPAN_NAME_2));
+      secondFlushRef.set(processor.forceFlush());
+    });
+
+    await()
+        .untilAsserted(
+            () -> assertThat(exporter.getExported()).containsExactly(span1.toSpanData()));
+
+    exporter.succeed();
+
+    firstFlush.join(10, TimeUnit.SECONDS);
+    assertThat(firstFlush.isSuccess()).isTrue();
+    CompletableResultCode secondFlush = secondFlushRef.get();
+    assertThat(secondFlush).isNotNull();
+    secondFlush.join(10, TimeUnit.SECONDS);
+    assertThat(secondFlush.isSuccess()).isTrue();
+    assertThat(exporter.getExported())
+        .containsExactly(span1.toSpanData(), span2Ref.get().toSpanData());
+  }
+
+  @Test
+  void forceFlush_afterShutdown_completes() {
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
+    CompletableResultCode shutdownResult = processor.shutdown();
+    shutdownResult.join(10, TimeUnit.SECONDS);
+    assertThat(shutdownResult.isSuccess()).isTrue();
+
+    CompletableResultCode secondShutdownResult = processor.shutdown();
+    secondShutdownResult.join(1, TimeUnit.SECONDS);
+    assertThat(secondShutdownResult.isDone()).isTrue();
+    assertThat(secondShutdownResult.isSuccess()).isTrue();
+
+    CompletableResultCode flushAfterShutdown = processor.forceFlush();
+    flushAfterShutdown.join(1, TimeUnit.SECONDS);
+    assertThat(flushAfterShutdown.isDone()).isTrue();
+    assertThat(flushAfterShutdown.isSuccess()).isTrue();
+  }
+
+  @Test
+  void forceFlush_whenWorkerInterrupted_failsPendingAndSubsequentFlushes() throws Exception {
+    BatchSpanProcessor processor =
+        BatchSpanProcessor.builder(mockSpanExporter).setScheduleDelay(10, TimeUnit.SECONDS).build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(processor).build();
+
+    processor.getWorkerThread().interrupt();
+    processor.getWorkerThread().join(5000);
+    assertThat(processor.getWorkerThread().isAlive()).isFalse();
+
+    CompletableResultCode flushAfterInterruption = processor.forceFlush();
+    flushAfterInterruption.join(1, TimeUnit.SECONDS);
+    assertThat(flushAfterInterruption.isDone()).isTrue();
+    assertThat(flushAfterInterruption.isSuccess()).isFalse();
+
+    CompletableResultCode shutdownResult = processor.shutdown();
+    shutdownResult.join(1, TimeUnit.SECONDS);
+    assertThat(shutdownResult.isDone()).isTrue();
+    assertThat(shutdownResult.isSuccess()).isFalse();
+  }
+
   private static final class BlockingSpanExporter implements SpanExporter {
 
     final Object monitor = new Object();
@@ -793,9 +936,11 @@ class BatchSpanProcessorTest {
 
   private static class CompletableSpanExporter implements SpanExporter {
 
-    private final List<CompletableResultCode> results = new ArrayList<>();
+    private final Object lock = new Object();
 
-    private final List<SpanData> exported = new ArrayList<>();
+    private final List<CompletableResultCode> results = new CopyOnWriteArrayList<>();
+
+    private final List<SpanData> exported = new CopyOnWriteArrayList<>();
 
     private volatile boolean succeeded;
 
@@ -803,20 +948,31 @@ class BatchSpanProcessorTest {
       return exported;
     }
 
+    void completeExport(int index) {
+      results.get(index).succeed();
+    }
+
     void succeed() {
-      succeeded = true;
-      results.forEach(CompletableResultCode::succeed);
+      List<CompletableResultCode> toComplete;
+      synchronized (lock) {
+        succeeded = true;
+        toComplete = new ArrayList<>(results);
+      }
+      toComplete.forEach(CompletableResultCode::succeed);
     }
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
-      exported.addAll(spans);
-      if (succeeded) {
-        return CompletableResultCode.ofSuccess();
+      synchronized (lock) {
+        if (succeeded) {
+          exported.addAll(spans);
+          return CompletableResultCode.ofSuccess();
+        }
+        CompletableResultCode result = new CompletableResultCode();
+        results.add(result);
+        exported.addAll(spans);
+        return result;
       }
-      CompletableResultCode result = new CompletableResultCode();
-      results.add(result);
-      return result;
     }
 
     @Override
