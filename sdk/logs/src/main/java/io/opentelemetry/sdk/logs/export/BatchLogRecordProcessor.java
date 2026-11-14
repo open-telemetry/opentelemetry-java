@@ -209,11 +209,13 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       try {
         updateNextExportTime();
 
-        while (continueWork) {
-          while (continueWork && flushRequested.get() != null) {
+        while (!Thread.currentThread().isInterrupted() && continueWork) {
+          while (!Thread.currentThread().isInterrupted()
+              && continueWork
+              && flushRequested.get() != null) {
             flush();
           }
-          if (!continueWork) {
+          if (!continueWork || Thread.currentThread().isInterrupted()) {
             break;
           }
           while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
@@ -237,7 +239,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
             }
           }
         }
-        if (!continueWork) {
+        if (!continueWork && !Thread.currentThread().isInterrupted()) {
           normalExit = true;
         }
       } finally {
@@ -307,7 +309,6 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     }
 
     private CompletableResultCode forceFlush() {
-      CompletableResultCode flushResult = null;
       while (true) {
         CompletableResultCode current = flushRequested.get();
         if (current != null) {
@@ -318,9 +319,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
               ? CompletableResultCode.ofSuccess()
               : CompletableResultCode.ofFailure();
         }
-        if (flushResult == null) {
-          flushResult = new CompletableResultCode();
-        }
+        CompletableResultCode flushResult = new CompletableResultCode();
         if (flushRequested.compareAndSet(null, flushResult)) {
           signal.offer(true);
           return flushResult;

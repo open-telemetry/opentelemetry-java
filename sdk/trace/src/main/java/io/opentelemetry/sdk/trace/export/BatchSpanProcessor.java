@@ -253,11 +253,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
       try {
         updateNextExportTime();
 
-        while (continueWork) {
-          while (continueWork && flushRequested.get() != null) {
+        while (!Thread.currentThread().isInterrupted() && continueWork) {
+          while (!Thread.currentThread().isInterrupted()
+              && continueWork
+              && flushRequested.get() != null) {
             flush();
           }
-          if (!continueWork) {
+          if (!continueWork || Thread.currentThread().isInterrupted()) {
             break;
           }
           drain(maxExportBatchSize - batch.size());
@@ -280,7 +282,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
             }
           }
         }
-        if (!continueWork) {
+        if (!continueWork && !Thread.currentThread().isInterrupted()) {
           normalExit = true;
         }
       } finally {
@@ -311,9 +313,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
         while (spansToFlush > 0) {
           int drained = drain(maxExportBatchSize - batch.size());
           spansToFlush -= drained;
-          if (drained == 0 && batch.size() < maxExportBatchSize) {
-            break;
-          }
           if (batch.size() >= maxExportBatchSize) {
             exportCurrentBatch();
           }
@@ -357,7 +356,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
     }
 
     private CompletableResultCode forceFlush() {
-      CompletableResultCode flushResult = null;
       while (true) {
         CompletableResultCode current = flushRequested.get();
         if (current != null) {
@@ -368,9 +366,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
               ? CompletableResultCode.ofSuccess()
               : CompletableResultCode.ofFailure();
         }
-        if (flushResult == null) {
-          flushResult = new CompletableResultCode();
-        }
+        CompletableResultCode flushResult = new CompletableResultCode();
         if (flushRequested.compareAndSet(null, flushResult)) {
           signal.offer(true);
           return flushResult;
