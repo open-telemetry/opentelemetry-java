@@ -26,7 +26,7 @@ otelJava.osgiServiceLoaderRequires.set(listOf(
 
 dependencies {
   api(project(":sdk:all"))
-  api(project(":api:incubator"))
+  implementation(project(":api:incubator"))
   compileOnly(project(":sdk-extensions:autoconfigure-spi"))
   runtimeOnly(project(":sdk-extensions:declarative-config-jackson2"))
   runtimeOnly(project(":sdk-extensions:declarative-config-snakeyaml-engine2"))
