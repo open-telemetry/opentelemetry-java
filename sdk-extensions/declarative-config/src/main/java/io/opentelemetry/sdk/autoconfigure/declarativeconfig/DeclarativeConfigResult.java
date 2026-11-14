@@ -5,22 +5,22 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 
 /** The result of {@link DeclarativeConfiguration#create(OpenTelemetryConfigurationModel)}. */
 public final class DeclarativeConfigResult {
 
-  private final ExtendedOpenTelemetrySdk sdk;
+  private final OpenTelemetrySdk sdk;
   private final Resource resource;
 
-  DeclarativeConfigResult(ExtendedOpenTelemetrySdk sdk, Resource resource) {
+  DeclarativeConfigResult(OpenTelemetrySdk sdk, Resource resource) {
     this.sdk = sdk;
     this.resource = resource;
   }
 
-  public ExtendedOpenTelemetrySdk getSdk() {
+  public OpenTelemetrySdk getSdk() {
     return sdk;
   }
 
