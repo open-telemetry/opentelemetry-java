@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.impl.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;

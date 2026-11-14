@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal;
+package io.opentelemetry.exporter.impl;
 
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import java.time.Duration;
@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time.
+ * This class is not intended for use by application developers. Its API is stable and will not be
+ * changed or removed in a backwards-incompatible manner.
  */
 public final class RetryUtil {
 

@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
-import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.impl.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
