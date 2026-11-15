@@ -251,13 +251,14 @@ class W3CTraceContextPropagatorTest {
                 TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TRACE_STATE));
   }
 
-  @Test
-  void extract_multipleTraceStateHeaders() {
+  @ParameterizedTest
+  @MethodSource("repeatedTraceStateHeaders")
+  void extract_multipleTraceStateHeaders(List<String> traceStateHeaders) {
     Map<String, List<String>> carrier = new HashMap<>();
     carrier.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         Collections.singletonList(TRACEPARENT_HEADER_SAMPLED));
-    carrier.put(W3CTraceContextPropagator.TRACE_STATE, Arrays.asList("bar=baz", "foo=bar"));
+    carrier.put(W3CTraceContextPropagator.TRACE_STATE, traceStateHeaders);
     TextMapGetter<Map<String, List<String>>> multiGetter =
         new TextMapGetter<Map<String, List<String>>>() {
           @Override
@@ -280,6 +281,12 @@ class W3CTraceContextPropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TRACE_STATE));
+  }
+
+  private static Stream<Arguments> repeatedTraceStateHeaders() {
+    return Stream.of(
+        Arguments.argumentSet("two fields", Arrays.asList("bar=baz", "foo=bar")),
+        Arguments.argumentSet("empty first field", Arrays.asList("", "bar=baz", "foo=bar")));
   }
 
   @Test
