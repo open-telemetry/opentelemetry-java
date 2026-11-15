@@ -31,8 +31,8 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.exporter.impl.TlsUtil;
 import io.opentelemetry.exporter.internal.FailedExportException;
-import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.HttpExporter;
 import io.opentelemetry.exporter.otlp.internal.HttpExporterBuilder;

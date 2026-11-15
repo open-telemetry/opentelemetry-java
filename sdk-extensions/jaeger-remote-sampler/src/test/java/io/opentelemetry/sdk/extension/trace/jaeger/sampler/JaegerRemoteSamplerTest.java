@@ -21,7 +21,7 @@ import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.stub.StreamObserver;
 import io.netty.handler.ssl.ClientAuth;
-import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.impl.TlsUtil;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;

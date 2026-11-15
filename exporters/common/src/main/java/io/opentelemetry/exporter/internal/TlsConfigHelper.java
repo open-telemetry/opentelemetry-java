@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal;
 
+import io.opentelemetry.exporter.impl.TlsUtil;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import javax.annotation.Nullable;

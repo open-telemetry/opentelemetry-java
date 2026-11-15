@@ -51,8 +51,7 @@ class NoSharedInternalCodeTest {
           "opentelemetry-exporter-otlp",
           "opentelemetry-exporter-otlp-common",
           "opentelemetry-exporter-otlp-profiles",
-          "opentelemetry-exporter-sender-grpc-managed-channel",
-          "opentelemetry-exporter-sender-okhttp");
+          "opentelemetry-exporter-sender-grpc-managed-channel");
 
   private static final String OTEL_BASE_PACKAGE = "io.opentelemetry";
   private static final Logger logger = Logger.getLogger(NoSharedInternalCodeTest.class.getName());

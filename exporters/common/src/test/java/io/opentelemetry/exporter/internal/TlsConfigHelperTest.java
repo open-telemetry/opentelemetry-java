@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import io.opentelemetry.exporter.impl.TlsUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.security.cert.CertificateEncodingException;
 import javax.net.ssl.SSLContext;
