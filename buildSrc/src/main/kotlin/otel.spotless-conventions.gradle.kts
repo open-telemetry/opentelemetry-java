@@ -59,6 +59,7 @@ spotless {
   }
   if (project == rootProject) {
     flexmark {
+      lineEndings = com.diffplug.spotless.LineEnding.UNIX
       target("**/*.md")
       targetExclude(".git/**", "**/.gradle/**", "**/build/**", "**/node_modules/**")
       flexmark("0.64.8")
