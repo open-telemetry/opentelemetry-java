@@ -3,8 +3,8 @@
 ## AutoValue in build files
 
 See [general-patterns.md](general-patterns.md#autovalue) for the AutoValue usage pattern.
-`auto-value-annotations` is provided globally by `otel.java-conventions`. Only add the
-annotation processor if the module uses AutoValue in production code:
+`auto-value-annotations` is provided globally by `otel.java-conventions`. Only add the annotation
+processor if the module uses AutoValue in production code:
 
 ```kotlin
 dependencies {
@@ -17,14 +17,14 @@ dependencies {
 
 Every module applies a base set of convention plugins from `buildSrc/src/main/kotlin/`.
 
-| Plugin | Purpose | Who applies it |
-| --- | --- | --- |
-| `otel.java-conventions` | Base Java toolchain, Checkstyle, Spotless, Error Prone, test config | All modules |
-| `otel.publish-conventions` | Maven publishing, POM generation | Published (non-internal) modules |
-| `otel.animalsniffer-conventions` | Android API level compatibility checking | Modules targeting Android |
-| `otel.jmh-conventions` | JMH benchmark support | Modules with benchmarks |
-| `otel.japicmp-conventions` | API diff generation against the pinned `apidiffBaselineVersion` release | Published modules (applied by `otel.publish-conventions`) |
-| `otel.protobuf-conventions` | Protobuf code generation | Protobuf modules only |
+|              Plugin              |                                 Purpose                                 |                      Who applies it                       |
+|----------------------------------|-------------------------------------------------------------------------|-----------------------------------------------------------|
+| `otel.java-conventions`          | Base Java toolchain, Checkstyle, Spotless, Error Prone, test config     | All modules                                               |
+| `otel.publish-conventions`       | Maven publishing, POM generation                                        | Published (non-internal) modules                          |
+| `otel.animalsniffer-conventions` | Android API level compatibility checking                                | Modules targeting Android                                 |
+| `otel.jmh-conventions`           | JMH benchmark support                                                   | Modules with benchmarks                                   |
+| `otel.japicmp-conventions`       | API diff generation against the pinned `apidiffBaselineVersion` release | Published modules (applied by `otel.publish-conventions`) |
+| `otel.protobuf-conventions`      | Protobuf code generation                                                | Protobuf modules only                                     |
 
 A typical published module:
 
@@ -46,12 +46,12 @@ plugins {
 
 ## Dependency resolution
 
-All external dependency versions are managed by `:dependencyManagement` (a BOM). Do not
-specify versions directly in `build.gradle.kts` — add new entries to the BOM if a version
-needs to be pinned.
+All external dependency versions are managed by `:dependencyManagement` (a BOM). Do not specify
+versions directly in `build.gradle.kts` — add new entries to the BOM if a version needs to be
+pinned.
 
-`otel.java-conventions` configures `failOnVersionConflict()` and `preferProjectModules()`
-globally. Do not override these without a strong reason.
+`otel.java-conventions` configures `failOnVersionConflict()` and `preferProjectModules()` globally.
+Do not override these without a strong reason.
 
 ## Module naming
 
@@ -67,10 +67,11 @@ When the archive name cannot be derived correctly from the project name, set it 
 base.archivesName.set("opentelemetry-api")
 ```
 
-SPI implementation module names and base packages should include the key dependency's name and major version. For
-example, `opentelemetry-sdk-extension-declarative-config-jackson2` uses
-`io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2`. This allows a `declarative-config-jackson3`
-implementation to coexist later. See [dependency isolation](api-design.md#dependency-isolation).
+SPI implementation module names and base packages should include the key dependency's name and major
+version. For example, `opentelemetry-sdk-extension-declarative-config-jackson2` uses
+`io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2`. This allows a
+`declarative-config-jackson3` implementation to coexist later. See
+[dependency isolation](api-design.md#dependency-isolation).
 
 ## `settings.gradle.kts` ordering
 

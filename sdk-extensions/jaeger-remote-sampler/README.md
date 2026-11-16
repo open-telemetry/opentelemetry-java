@@ -1,7 +1,8 @@
 # Jaeger Remote Sampler
 
-This module implements [Jaeger remote sampler](https://www.jaegertracing.io/docs/latest/sampling/#remote-sampling).
-The sampler configuration is received from collector's gRPC endpoint.
+This module implements
+[Jaeger remote sampler](https://www.jaegertracing.io/docs/latest/sampling/#remote-sampling). The
+sampler configuration is received from collector's gRPC endpoint.
 
 ### Example
 

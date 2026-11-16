@@ -57,6 +57,22 @@ spotless {
       "ktlint_standard_wrapping" to "disabled"
     ))
   }
+  if (project == rootProject) {
+    flexmark {
+      target("**/*.md")
+      targetExclude(".git/**", "**/.gradle/**", "**/build/**", "**/node_modules/**")
+      flexmark("0.64.8")
+        .extensions("YamlFrontMatter")
+        .formatterOptions(mapOf(
+          "RIGHT_MARGIN" to "100",
+          "FENCED_CODE_MINIMIZE_INDENT" to "false",
+          "INDENTED_CODE_MINIMIZE_INDENT" to "false",
+          "LIST_RENUMBER_ITEMS" to "false"
+        ))
+      toggleOffOn()
+      endWithNewline()
+    }
+  }
   format("misc") {
     // not using "**/..." to help keep spotless fast
     target(
@@ -64,9 +80,6 @@ spotless {
       ".gitattributes",
       ".gitconfig",
       ".editorconfig",
-      "*.md",
-      "src/**/*.md",
-      "docs/**/*.md",
       "*.sh",
       "src/**/*.properties",
     )

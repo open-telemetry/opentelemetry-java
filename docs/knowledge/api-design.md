@@ -19,7 +19,8 @@ enforces this via japicmp — see [japicmp](#japicmp) below.
 
 ## Configuration
 
-There are [3 configuration interfaces](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/configuration#configuration-interfaces):
+There are
+[3 configuration interfaces](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/configuration#configuration-interfaces):
 
 - Programmatic configuration: invoke Java APIs to build components. This is the base of all other
   configuration interfaces.
@@ -38,20 +39,19 @@ the OpenTelemetry Java ecosystem. For example:
   configuring a global cardinality limit. This is not part of the spec, but it is an important and
   common enough use case that we added a Java-specific property for it.
 
-Configuration options outside the spec are added at maintainers' discretion. If proposing an
-option outside the spec, start with programmatic configuration, which we are much more likely to
-accept.
+Configuration options outside the spec are added at maintainers' discretion. If proposing an option
+outside the spec, start with programmatic configuration, which we are much more likely to accept.
 
 Declarative configuration is stable at the spec level and was designed to solve the expressiveness
 shortcomings of env var / system property configuration. It is the priority interface for current
-and future configuration enhancements. By default, new non-programmatic configuration options
-should target declarative configuration. This means:
+and future configuration enhancements. By default, new non-programmatic configuration options should
+target declarative configuration. This means:
 
 - We are judicious about extending the env var / system property configuration interface with new
   options. Additions are at maintainers' discretion. When proposing such an addition, also open a
   corresponding issue or discussion post describing the use-case and justification.
-- Declarative configuration must be a strict superset of env var / system property configuration.
-  In the event new env var / system properties are added, there must be equivalent capabilities in
+- Declarative configuration must be a strict superset of env var / system property configuration. In
+  the event new env var / system properties are added, there must be equivalent capabilities in
   declarative config, with the caveat that naming and structure do not need to be identical.
 
 Configuration is part of our public API surface area, subject to our
@@ -60,97 +60,91 @@ Configuration is part of our public API surface area, subject to our
 
 ### Zero values
 
-Prefer `0` to mean "no limit" for optional upper bounds, such as export timeouts
-and maximum request sizes, when disabling the bound has well-defined semantics
-and does not trigger a large up-front memory allocation.
+Prefer `0` to mean "no limit" for optional upper bounds, such as export timeouts and maximum request
+sizes, when disabling the bound has well-defined semantics and does not trigger a large up-front
+memory allocation.
 
-The litmus test is: "Can we disable this bound coherently without treating
-infinity as an allocation size or changing the component's operating model?"
+The litmus test is: "Can we disable this bound coherently without treating infinity as an allocation
+size or changing the component's operating model?"
 
-Require positive values for concrete allocation capacities, such as batch
-processor queue and batch sizes, or when unlimited behavior would require a
-materially different implementation. Preserve meaningful literal-zero semantics,
-such as no delay, rather than interpreting zero intervals as infinity.
+Require positive values for concrete allocation capacities, such as batch processor queue and batch
+sizes, or when unlimited behavior would require a materially different implementation. Preserve
+meaningful literal-zero semantics, such as no delay, rather than interpreting zero intervals as
+infinity.
 
-Follow specification-defined semantics. Relaxing an API to accept a previously
-rejected `0` is allowed, including in stable modules. Document and test zero
-behavior explicitly.
+Follow specification-defined semantics. Relaxing an API to accept a previously rejected `0` is
+allowed, including in stable modules. Document and test zero behavior explicitly.
 
 ## Convenience APIs
 
-Prefer a small, composable API. When in doubt, leave convenience APIs out and
-add them when demand demonstrates their value.
+Prefer a small, composable API. When in doubt, leave convenience APIs out and add them when demand
+demonstrates their value.
 
 ### Bounded surface
 
-Do not provide every combination of optional arguments or configuration values.
-Prefer builders or options objects as combinations grow.
+Do not provide every combination of optional arguments or configuration values. Prefer builders or
+options objects as combinations grow.
 
-For example, histogram aggregation options belong in
-`ExplicitBucketHistogramOptions`, rather than separate overloads for every
-combination of bucket boundaries and min/max recording.
+For example, histogram aggregation options belong in `ExplicitBucketHistogramOptions`, rather than
+separate overloads for every combination of bucket boundaries and min/max recording.
 
 ### Builder shortcuts
 
-Keep builders as the primary configuration entry point. Shortcuts should be
-justified by a concrete benefit, such as avoiding meaningful runtime overhead.
-For SDK objects constructed during initialization, shortcuts are rarely
-justified.
+Keep builders as the primary configuration entry point. Shortcuts should be justified by a concrete
+benefit, such as avoiding meaningful runtime overhead. For SDK objects constructed during
+initialization, shortcuts are rarely justified.
 
-For example, prefer `SdkMeterProvider.builder().build()` over adding an
-equivalent `SdkMeterProvider.create()`.
+For example, prefer `SdkMeterProvider.builder().build()` over adding an equivalent
+`SdkMeterProvider.create()`.
 
 ### Common cases
 
-When an API accepts an expressive abstraction, consider providing convenience
-methods, constants, or implementations for common use cases.
+When an API accepts an expressive abstraction, consider providing convenience methods, constants, or
+implementations for common use cases.
 
-For example, `AggregationTemporalitySelector` supports arbitrary selection by
-instrument type, while `deltaPreferred()` and `alwaysCumulative()` provide
-common selection policies.
+For example, `AggregationTemporalitySelector` supports arbitrary selection by instrument type, while
+`deltaPreferred()` and `alwaysCumulative()` provide common selection policies.
 
 ### Existing patterns
 
-Follow the [API consistency](general-patterns.md#api-consistency) guidance when
-deciding which conveniences to provide. Within an established API, preserve
-consistent overload patterns rather than evaluating each method in isolation.
+Follow the [API consistency](general-patterns.md#api-consistency) guidance when deciding which
+conveniences to provide. Within an established API, preserve consistent overload patterns rather
+than evaluating each method in isolation.
 
-For example, a new metric instrument should follow the existing recording
-overloads for omitted attributes and context.
+For example, a new metric instrument should follow the existing recording overloads for omitted
+attributes and context.
 
 ### Java representations
 
-Follow the representations accepted by related APIs before introducing
-alternatives. Supporting another representation should address a concrete use
-case, not merely an available conversion.
+Follow the representations accepted by related APIs before introducing alternatives. Supporting
+another representation should address a concrete use case, not merely an available conversion.
 
-For example, metric reader duration settings accept both `Duration` and `long`
-with `TimeUnit`. Follow that pattern for similar settings.
+For example, metric reader duration settings accept both `Duration` and `long` with `TimeUnit`.
+Follow that pattern for similar settings.
 
 ### Optional arguments
 
-Prefer overloads with documented defaults over requiring callers to pass `null`
-to omit an argument. This avoids unnecessarily introducing `@Nullable` into the
-API.
+Prefer overloads with documented defaults over requiring callers to pass `null` to omit an argument.
+This avoids unnecessarily introducing `@Nullable` into the API.
 
-For example, `Span.addEvent(String)` uses empty attributes, while
-`Span.addEvent(String, Attributes)` accepts explicit attributes. Callers need
-not pass `null` to indicate that attributes are absent.
+For example, `Span.addEvent(String)` uses empty attributes, while `Span.addEvent(String,
+Attributes)` accepts explicit attributes. Callers need not pass `null` to indicate that attributes
+are absent.
 
 ## Dependency isolation
 
-Make interactions with load-bearing dependencies pluggable via SPI, with implementations in separate modules. This lets
-users replace toxic dependencies or accommodate version conflicts and library preferences. Examples include YAML parsing
-and object conversion in declarative config, and HTTP transport in `exporters/sender/`. Include the dependency's name
-and major version in implementation module names and base packages:
-`opentelemetry-sdk-extension-declarative-config-jackson2` and
-`io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2` allow a Jackson 3 implementation to coexist later. See
-[module naming](gradle-conventions.md#module-naming).
+Make interactions with load-bearing dependencies pluggable via SPI, with implementations in separate
+modules. This lets users replace toxic dependencies or accommodate version conflicts and library
+preferences. Examples include YAML parsing and object conversion in declarative config, and HTTP
+transport in `exporters/sender/`. Include the dependency's name and major version in implementation
+module names and base packages: `opentelemetry-sdk-extension-declarative-config-jackson2` and
+`io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2` allow a Jackson 3 implementation to
+coexist later. See [module naming](gradle-conventions.md#module-naming).
 
 ## Deprecating API
 
-Applies to both stable and alpha modules. Use plain `@Deprecated` — do **not** use
-`forRemoval = true` or `since = "..."` (Java 8 compatibility requirement).
+Applies to both stable and alpha modules. Use plain `@Deprecated` — do **not** use `forRemoval =
+true` or `since = "..."` (Java 8 compatibility requirement).
 
 ```java
 /**
@@ -163,19 +157,20 @@ public ReturnType oldMethod() {
 ```
 
 Rules:
+
 - Include a `@deprecated` Javadoc tag naming the replacement.
 - The deprecated method must delegate to its replacement, not the other way around — this ensures
   overriders of the old method still get called.
 - Deprecated items in stable modules cannot be removed until the next major version.
-- Deprecated items in alpha modules should indicate when they will be removed (e.g.
-  `// to be removed in 1.X.0`). It is also common to log a warning when a deprecated-for-removal
-  feature is used, to increase visibility for consumers.
+- Deprecated items in alpha modules should indicate when they will be removed (e.g. `// to be
+  removed in 1.X.0`). It is also common to log a warning when a deprecated-for-removal feature is
+  used, to increase visibility for consumers.
 - Add the `deprecation` label to the PR.
 
 ## japicmp
 
-`otel.japicmp-conventions` runs the `jApiCmp` task as part of `check` for every published module.
-It compares the locally-built jar against the release pinned by `apidiffBaselineVersion` in
+`otel.japicmp-conventions` runs the `jApiCmp` task as part of `check` for every published module. It
+compares the locally-built jar against the release pinned by `apidiffBaselineVersion` in
 `version.gradle.kts` to detect breaking changes, and writes a human-readable diff to
 `docs/apidiffs/current_vs_latest/<artifact>.txt`.
 
@@ -188,10 +183,10 @@ It compares the locally-built jar against the release pinned by `apidiffBaseline
 ## Null guards
 
 `@Nullable` annotations (see [general-patterns.md](general-patterns.md)) and
-[NullAway](https://github.com/uber/NullAway) enforce null contracts at build time within this
-repo. At runtime there is no such guarantee — callers in other
-codebases can pass `null` regardless of annotations. Add null guards only at **public API entry
-points**; once inside the implementation, trust NullAway.
+[NullAway](https://github.com/uber/NullAway) enforce null contracts at build time within this repo.
+At runtime there is no such guarantee — callers in other codebases can pass `null` regardless of
+annotations. Add null guards only at **public API entry points**; once inside the implementation,
+trust NullAway.
 
 ### Configuration-time boundaries (SDK builders, provider factories)
 
@@ -234,31 +229,31 @@ tolerate null.
 Check non-`@Nullable` reference arguments in declaration order, logging each null once unless an
 early return ends the call.
 
-The class and method arguments identify the problem immediately in the log message without
-requiring stack trace analysis. Use `ApiUsageLogger.log(...)` directly when the message is not
-simply "X is null" (e.g. `"spanIdBytes is null or too short"`). `FINEST` is silent by default, so there is no production noise.
-To investigate misuse, enable the logger named `io.opentelemetry.usage` at `FINEST` in
-development, or periodically in staging/production. Check each argument once, at the first
-public entry point — internal methods called by that entry point do not need to re-validate.
+The class and method arguments identify the problem immediately in the log message without requiring
+stack trace analysis. Use `ApiUsageLogger.log(...)` directly when the message is not simply "X is
+null" (e.g. `"spanIdBytes is null or too short"`). `FINEST` is silent by default, so there is no
+production noise. To investigate misuse, enable the logger named `io.opentelemetry.usage` at
+`FINEST` in development, or periodically in staging/production. Check each argument once, at the
+first public entry point — internal methods called by that entry point do not need to re-validate.
 
 ### SDK extension interfaces and SPIs
 
-These interfaces are called by the SDK, not directly by application developers.
-Examples include `Sampler`, `SpanExporter`, `SpanProcessor`, `LogRecordExporter`,
-`MetricExporter`, `MetricReader`, `ComponentProvider`, and SPI interfaces such as those in
-`sdk-extensions/autoconfigure-spi` (`ResourceProvider`, `AutoConfigurationCustomizerProvider`,
-etc.), `HttpSenderProvider`, and `ContextStorageProvider`.
+These interfaces are called by the SDK, not directly by application developers. Examples include
+`Sampler`, `SpanExporter`, `SpanProcessor`, `LogRecordExporter`, `MetricExporter`, `MetricReader`,
+`ComponentProvider`, and SPI interfaces such as those in `sdk-extensions/autoconfigure-spi`
+(`ResourceProvider`, `AutoConfigurationCustomizerProvider`, etc.), `HttpSenderProvider`, and
+`ContextStorageProvider`.
 
-Because the SDK is NullAway-verified, a null argument here indicates a bug in the SDK itself,
-not misuse by an application developer. Use `Objects.requireNonNull` — a hard failure surfaces
-the bug immediately and unambiguously, which is preferable to silent degradation that would
-mask the underlying SDK defect.
+Because the SDK is NullAway-verified, a null argument here indicates a bug in the SDK itself, not
+misuse by an application developer. Use `Objects.requireNonNull` — a hard failure surfaces the bug
+immediately and unambiguously, which is preferable to silent degradation that would mask the
+underlying SDK defect.
 
 ### Where to implement guards
 
-Add guards in the concrete implementation class, or in an existing `default` interface method
-that would otherwise NPE. Do **not** add new `default` methods to interfaces solely for null
-safety — that expands the interface surface without a functional benefit.
+Add guards in the concrete implementation class, or in an existing `default` interface method that
+would otherwise NPE. Do **not** add new `default` methods to interfaces solely for null safety —
+that expands the interface surface without a functional benefit.
 
 ## Stable vs alpha modules
 
@@ -272,8 +267,8 @@ To mark a module as alpha, add a `gradle.properties` file at the module root con
 otel.release=alpha
 ```
 
-See [`exporters/prometheus/gradle.properties`](../../exporters/prometheus/gradle.properties) for
-an example.
+See [`exporters/prometheus/gradle.properties`](../../exporters/prometheus/gradle.properties) for an
+example.
 
 See [VERSIONING.md](../../VERSIONING.md) for the full compatibility policy, including what
 constitutes a source-incompatible vs binary-incompatible change.
