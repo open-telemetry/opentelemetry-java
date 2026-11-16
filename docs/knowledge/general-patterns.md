@@ -14,9 +14,10 @@ For null guard behavior at public API boundaries, see [api-design.md](api-design
 
 ## API consistency
 
-The project aims to provide a consistent experience across all public APIs. When designing new
-API, look for prior art in the project before introducing new patterns — prefer the style already
-established in the same package, then the same module, then the broader project.
+The project aims to provide a consistent experience across all public APIs. When
+designing new API, look for prior art before introducing new patterns. Give the
+most weight to precedent in the same file, then the same package, then similar
+APIs in other packages, then the broader project.
 
 ## AutoValue
 
