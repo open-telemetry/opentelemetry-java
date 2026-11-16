@@ -133,6 +133,7 @@ final class PanamaProcessContextPublisher implements ProcessContextPublisher {
   @Nullable private Arena payloadArena = null;
 
   @Override
+  @SuppressWarnings("MustBeClosedChecker") // externally visible memory must exceed method lifetime
   public synchronized void publish(ProcessContextData processContextData, Clock clock)
       throws IOException {
 
