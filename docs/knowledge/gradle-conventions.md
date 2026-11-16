@@ -67,6 +67,11 @@ When the archive name cannot be derived correctly from the project name, set it 
 base.archivesName.set("opentelemetry-api")
 ```
 
+SPI implementation module names and base packages should include the key dependency's name and major version. For
+example, `opentelemetry-sdk-extension-declarative-config-jackson2` uses
+`io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2`. This allows a `declarative-config-jackson3`
+implementation to coexist later. See [dependency isolation](api-design.md#dependency-isolation).
+
 ## `settings.gradle.kts` ordering
 
 New `include(...)` entries must be in **alphabetical order** within their surrounding group. The

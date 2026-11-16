@@ -136,6 +136,17 @@ API.
 For example, `Span.addEvent(String)` uses empty attributes, while
 `Span.addEvent(String, Attributes)` accepts explicit attributes. Callers need
 not pass `null` to indicate that attributes are absent.
+
+## Dependency isolation
+
+Make interactions with load-bearing dependencies pluggable via SPI, with implementations in separate modules. This lets
+users replace toxic dependencies or accommodate version conflicts and library preferences. Examples include YAML parsing
+and object conversion in declarative config, and HTTP transport in `exporters/sender/`. Include the dependency's name
+and major version in implementation module names and base packages:
+`opentelemetry-sdk-extension-declarative-config-jackson2` and
+`io.opentelemetry.sdk.autoconfigure.declarativeconfig.jackson2` allow a Jackson 3 implementation to coexist later. See
+[module naming](gradle-conventions.md#module-naming).
+
 ## Deprecating API
 
 Applies to both stable and alpha modules. Use plain `@Deprecated` — do **not** use
