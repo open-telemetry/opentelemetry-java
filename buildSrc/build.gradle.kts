@@ -33,8 +33,8 @@ repositories {
 }
 
 dependencies {
-  implementation("biz.aQute.bnd:biz.aQute.bnd.gradle:7.4.0")
-  implementation(enforcedPlatform("com.squareup.wire:wire-bom:7.1.2"))
+  implementation("biz.aQute.bnd:biz.aQute.bnd.gradle:7.5.0")
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:7.2.1"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.1")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:8.11.0")

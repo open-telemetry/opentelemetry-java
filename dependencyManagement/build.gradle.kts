@@ -33,7 +33,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.18.2", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.85.1",
-  "io.netty:netty-bom:4.2.20.Final",
+  "io.netty:netty-bom:4.2.21.Final",
   "org.assertj:assertj-bom:3.27.7",
   "org.osgi:org.osgi.test.bom:1.3.0",
   "org.testcontainers:testcontainers-bom:2.0.5",
@@ -77,7 +77,7 @@ val DEPENDENCIES = listOf(
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp:$okhttpVersion",
   "com.tngtech.archunit:archunit-junit5:1.5.1",
-  "com.uber.nullaway:nullaway:0.14.3",
+  "com.uber.nullaway:nullaway:0.14.4",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.11",
   "io.github.crac:org-crac:0.1.3",
