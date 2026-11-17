@@ -22,15 +22,14 @@ final class Client {
   /** Send a request....... */
   public Future<String> send(Object message) {
 
-    return executor.submit(
-        () -> {
-          TestUtils.sleep();
-          requestHandler.beforeRequest(message);
+    return executor.submit(() -> {
+      TestUtils.sleep();
+      requestHandler.beforeRequest(message);
 
-          TestUtils.sleep();
-          requestHandler.afterResponse(message);
+      TestUtils.sleep();
+      requestHandler.afterResponse(message);
 
-          return message + ":response";
-        });
+      return message + ":response";
+    });
   }
 }

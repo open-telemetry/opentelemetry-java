@@ -100,12 +100,13 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
-   * Sets the maximum OTLP HTTP request body size in bytes. If unset, defaults to 64 MiB.
+   * Sets the maximum OTLP HTTP request body size in bytes. If unset, defaults to 64 MiB. A value of
+   * 0 means no limit.
    *
    * @since 1.67.0
    */
   public OtlpHttpLogRecordExporterBuilder setMaxRequestBodySize(long maxRequestBodySizeBytes) {
-    checkArgument(maxRequestBodySizeBytes > 0, "maxRequestBodySizeBytes must be positive");
+    checkArgument(maxRequestBodySizeBytes >= 0, "maxRequestBodySizeBytes must be non-negative");
     delegate.setMaxRequestBodySize(maxRequestBodySizeBytes);
     return this;
   }
@@ -162,7 +163,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
-   * Sets ths client key and the certificate chain to use for verifying client when TLS is enabled.
+   * Sets the client key and the certificate chain to use for verifying client when TLS is enabled.
    * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpHttpLogRecordExporterBuilder setClientTls(

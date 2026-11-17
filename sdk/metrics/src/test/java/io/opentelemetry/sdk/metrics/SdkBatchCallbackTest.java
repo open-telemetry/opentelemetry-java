@@ -84,77 +84,53 @@ class SdkBatchCallbackTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("longCounter")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.isMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasValue(1)
-                                            .hasAttributes(attributeEntry("key", "val1")))),
+                    .hasLongSumSatisfying(sum ->
+                        sum.isMonotonic()
+                            .hasPointsSatisfying(point ->
+                                point.hasValue(1).hasAttributes(attributeEntry("key", "val1")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("doubleCounter")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasValue(1.1)
-                                            .hasAttributes(attributeEntry("key", "val2")))),
+                    .hasDoubleSumSatisfying(sum ->
+                        sum.isMonotonic()
+                            .hasPointsSatisfying(point ->
+                                point.hasValue(1.1).hasAttributes(attributeEntry("key", "val2")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("longUpDownCounter")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.isNotMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasValue(2)
-                                            .hasAttributes(attributeEntry("key", "val3")))),
+                    .hasLongSumSatisfying(sum ->
+                        sum.isNotMonotonic()
+                            .hasPointsSatisfying(point ->
+                                point.hasValue(2).hasAttributes(attributeEntry("key", "val3")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("doubleUpDownCounter")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isNotMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasValue(2.2)
-                                            .hasAttributes(attributeEntry("key", "val4")))),
+                    .hasDoubleSumSatisfying(sum ->
+                        sum.isNotMonotonic()
+                            .hasPointsSatisfying(point ->
+                                point.hasValue(2.2).hasAttributes(attributeEntry("key", "val4")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("longGauge")
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(3)
-                                        .hasAttributes(attributeEntry("key", "val5")))),
+                    .hasLongGaugeSatisfying(gauge ->
+                        gauge.hasPointsSatisfying(point ->
+                            point.hasValue(3).hasAttributes(attributeEntry("key", "val5")))),
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
                     .hasName("doubleGauge")
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(3.3)
-                                        .hasAttributes(attributeEntry("key", "val6")))));
+                    .hasDoubleGaugeSatisfying(gauge ->
+                        gauge.hasPointsSatisfying(point ->
+                            point.hasValue(3.3).hasAttributes(attributeEntry("key", "val6")))));
 
     // Should not be called after closed
     batchCallback.close();
@@ -175,14 +151,13 @@ class SdkBatchCallbackTest {
 
     // counter2 is not registered and measurements should be ignored
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("counter1")
-                    .hasLongSumSatisfying(
-                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("counter1")
+                .hasLongSumSatisfying(
+                    sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
 
     observableMeasurementLogs.assertContains(
         "Measurement recorded for instrument counter2 outside callback registered to instrument. Dropping measurement.");
@@ -199,20 +174,15 @@ class SdkBatchCallbackTest {
         () -> counter1.record(1, Attributes.builder().put("key", "value2").build()), counter1);
 
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("counter1")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.isMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasValue(1)
-                                            .hasAttributes(attributeEntry("key", "value2")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("counter1")
+                .hasLongSumSatisfying(sum ->
+                    sum.isMonotonic()
+                        .hasPointsSatisfying(point ->
+                            point.hasValue(1).hasAttributes(attributeEntry("key", "value2")))));
 
     observableMeasurementLogs.assertContains(
         "Measurement recorded for instrument counter1 outside callback registered to instrument. Dropping measurement.");
@@ -235,14 +205,13 @@ class SdkBatchCallbackTest {
 
     // counter2 belongs to another meter and measurements should be ignored
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("counter1")
-                    .hasLongSumSatisfying(
-                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("counter1")
+                .hasLongSumSatisfying(
+                    sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
 
     sdkMeterLogs.assertContains(
         "batchCallback called with instruments that belong to a different Meter.");
@@ -271,14 +240,13 @@ class SdkBatchCallbackTest {
 
     // counter2 was not obtained from the sdk and its measurements should be ignored.
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("counter1")
-                    .hasLongSumSatisfying(
-                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("counter1")
+                .hasLongSumSatisfying(
+                    sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(1))));
 
     sdkMeterLogs.assertContains(
         "batchCallback called with instruments that were not created by the SDK.");

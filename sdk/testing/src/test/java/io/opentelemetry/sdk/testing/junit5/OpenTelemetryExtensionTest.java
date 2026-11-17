@@ -139,11 +139,8 @@ class OpenTelemetryExtensionTest {
                             s -> s.hasName("testb2"),
                             s -> s.hasName("testexception")))));
 
-    assertThatThrownBy(
-            () ->
-                otelTesting
-                    .assertTraces()
-                    .hasTracesSatisfyingExactly(trace -> trace.hasTraceId("foo")))
+    assertThatThrownBy(() ->
+            otelTesting.assertTraces().hasTracesSatisfyingExactly(trace -> trace.hasTraceId("foo")))
         .isInstanceOf(AssertionError.class);
 
     otelTesting
@@ -153,10 +150,8 @@ class OpenTelemetryExtensionTest {
     otelTesting
         .assertTraces()
         .filteredOn(trace -> trace.size() == 2)
-        .hasTracesSatisfyingExactly(
-            trace ->
-                trace.hasSpansSatisfyingExactly(
-                    s -> s.hasName("testa1"), s -> s.hasName("testa2")));
+        .hasTracesSatisfyingExactly(trace ->
+            trace.hasSpansSatisfyingExactly(s -> s.hasName("testa1"), s -> s.hasName("testa2")));
   }
 
   @Test
@@ -165,12 +160,10 @@ class OpenTelemetryExtensionTest {
     counter.add(1);
 
     assertThat(otelTesting.getMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                assertThat(metricData)
-                    .hasName("counter")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            assertThat(metricData)
+                .hasName("counter")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
   }
 
   // We have two tests to verify metrics get cleared up between tests.
@@ -180,12 +173,10 @@ class OpenTelemetryExtensionTest {
     counter.add(1);
 
     assertThat(otelTesting.getMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                assertThat(metricData)
-                    .hasName("counter")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            assertThat(metricData)
+                .hasName("counter")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
   }
 
   @Test

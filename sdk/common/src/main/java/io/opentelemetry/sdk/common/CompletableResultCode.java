@@ -65,23 +65,22 @@ public final class CompletableResultCode {
     AtomicBoolean failed = new AtomicBoolean();
     AtomicReference<Throwable> throwableRef = new AtomicReference<>();
     for (CompletableResultCode code : codes) {
-      code.whenComplete(
-          () -> {
-            if (!code.isSuccess()) {
-              failed.set(true);
-              Throwable codeThrowable = code.getFailureThrowable();
-              if (codeThrowable != null) {
-                throwableRef.compareAndSet(null, codeThrowable);
-              }
-            }
-            if (pending.decrementAndGet() == 0) {
-              if (failed.get()) {
-                result.failInternal(throwableRef.get());
-              } else {
-                result.succeed();
-              }
-            }
-          });
+      code.whenComplete(() -> {
+        if (!code.isSuccess()) {
+          failed.set(true);
+          Throwable codeThrowable = code.getFailureThrowable();
+          if (codeThrowable != null) {
+            throwableRef.compareAndSet(null, codeThrowable);
+          }
+        }
+        if (pending.decrementAndGet() == 0) {
+          if (failed.get()) {
+            result.failInternal(throwableRef.get());
+          } else {
+            result.succeed();
+          }
+        }
+      });
     }
     return result;
   }

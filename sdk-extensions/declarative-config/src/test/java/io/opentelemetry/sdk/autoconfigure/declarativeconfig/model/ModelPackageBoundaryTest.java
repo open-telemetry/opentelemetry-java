@@ -49,21 +49,20 @@ class ModelPackageBoundaryTest {
         .isNotEmpty();
 
     assertThat(generated)
-        .allSatisfy(
-            clazz -> {
-              boolean inInternal = clazz.getPackage().getName().equals(INTERNAL_PACKAGE);
-              boolean experimental = clazz.getSimpleName().startsWith(EXPERIMENTAL_PREFIX);
-              // Internal utility classes are exempt from the Experimental prefix requirement.
-              boolean isInfrastructure =
-                  clazz.getSimpleName().endsWith("Accessor")
-                      || clazz.getSimpleName().equals("ModelMapper")
-                      || clazz.getSimpleName().equals("ExtensionPropertyUtil");
-              assertThat(experimental || isInfrastructure)
-                  .as(
-                      "%s: experimental types (name starts with %s) and internal infrastructure "
-                          + "classes must live in %s, all other types in %s",
-                      clazz.getName(), EXPERIMENTAL_PREFIX, INTERNAL_PACKAGE, MODEL_PACKAGE)
-                  .isEqualTo(inInternal);
-            });
+        .allSatisfy(clazz -> {
+          boolean inInternal = clazz.getPackage().getName().equals(INTERNAL_PACKAGE);
+          boolean experimental = clazz.getSimpleName().startsWith(EXPERIMENTAL_PREFIX);
+          // Internal utility classes are exempt from the Experimental prefix requirement.
+          boolean isInfrastructure =
+              clazz.getSimpleName().endsWith("Accessor")
+                  || clazz.getSimpleName().equals("ModelMapper")
+                  || clazz.getSimpleName().equals("ExtensionPropertyUtil");
+          assertThat(experimental || isInfrastructure)
+              .as(
+                  "%s: experimental types (name starts with %s) and internal infrastructure "
+                      + "classes must live in %s, all other types in %s",
+                  clazz.getName(), EXPERIMENTAL_PREFIX, INTERNAL_PACKAGE, MODEL_PACKAGE)
+              .isEqualTo(inInternal);
+        });
   }
 }

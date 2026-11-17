@@ -39,34 +39,32 @@ final class Promise<T> {
   @SuppressWarnings("FutureReturnValueIgnored")
   void success(T result) {
     for (SuccessCallback<T> callback : successCallbacks) {
-      context.submit(
-          () -> {
-            Span childSpan = tracer.spanBuilder("success").setParent(parent).startSpan();
-            childSpan.setAttribute("component", "success");
-            try (Scope ignored = childSpan.makeCurrent()) {
-              callback.accept(result);
-            } finally {
-              childSpan.end();
-            }
-            context.getPhaser().arriveAndAwaitAdvance(); // trace reported
-          });
+      context.submit(() -> {
+        Span childSpan = tracer.spanBuilder("success").setParent(parent).startSpan();
+        childSpan.setAttribute("component", "success");
+        try (Scope ignored = childSpan.makeCurrent()) {
+          callback.accept(result);
+        } finally {
+          childSpan.end();
+        }
+        context.getPhaser().arriveAndAwaitAdvance(); // trace reported
+      });
     }
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
   void error(Throwable error) {
     for (ErrorCallback callback : errorCallbacks) {
-      context.submit(
-          () -> {
-            Span childSpan = tracer.spanBuilder("error").setParent(parent).startSpan();
-            childSpan.setAttribute("component", "error");
-            try (Scope ignored = childSpan.makeCurrent()) {
-              callback.accept(error);
-            } finally {
-              childSpan.end();
-            }
-            context.getPhaser().arriveAndAwaitAdvance(); // trace reported
-          });
+      context.submit(() -> {
+        Span childSpan = tracer.spanBuilder("error").setParent(parent).startSpan();
+        childSpan.setAttribute("component", "error");
+        try (Scope ignored = childSpan.makeCurrent()) {
+          callback.accept(error);
+        } finally {
+          childSpan.end();
+        }
+        context.getPhaser().arriveAndAwaitAdvance(); // trace reported
+      });
     }
   }
 

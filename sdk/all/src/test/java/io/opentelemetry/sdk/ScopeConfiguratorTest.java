@@ -82,35 +82,31 @@ class ScopeConfiguratorTest {
     // Collect all the telemetry. Ensure we don't see any from scopeB, and that the telemetry from
     // scopeA and scopeC is valid.
     assertThat(spanExporter.getFinishedSpanItems())
-        .satisfies(
-            spans -> {
-              Map<InstrumentationScopeInfo, List<SpanData>> spansByScope =
-                  spans.stream()
-                      .collect(Collectors.groupingBy(SpanData::getInstrumentationScopeInfo));
-              assertThat(spansByScope.get(scopeA)).hasSize(1);
-              assertThat(spansByScope.get(scopeB)).isNull();
-              assertThat(spansByScope.get(scopeC)).hasSize(1);
-            });
+        .satisfies(spans -> {
+          Map<InstrumentationScopeInfo, List<SpanData>> spansByScope =
+              spans.stream().collect(Collectors.groupingBy(SpanData::getInstrumentationScopeInfo));
+          assertThat(spansByScope.get(scopeA)).hasSize(1);
+          assertThat(spansByScope.get(scopeB)).isNull();
+          assertThat(spansByScope.get(scopeC)).hasSize(1);
+        });
     assertThat(metricReader.collectAllMetrics())
-        .satisfies(
-            metrics -> {
-              Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
-                  metrics.stream()
-                      .collect(Collectors.groupingBy(MetricData::getInstrumentationScopeInfo));
-              assertThat(metricsByScope.get(scopeA)).hasSize(1);
-              assertThat(metricsByScope.get(scopeB)).isNull();
-              assertThat(metricsByScope.get(scopeC)).hasSize(1);
-            });
+        .satisfies(metrics -> {
+          Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
+              metrics.stream()
+                  .collect(Collectors.groupingBy(MetricData::getInstrumentationScopeInfo));
+          assertThat(metricsByScope.get(scopeA)).hasSize(1);
+          assertThat(metricsByScope.get(scopeB)).isNull();
+          assertThat(metricsByScope.get(scopeC)).hasSize(1);
+        });
     assertThat(logRecordExporter.getFinishedLogRecordItems())
-        .satisfies(
-            logs -> {
-              Map<InstrumentationScopeInfo, List<LogRecordData>> logsByScope =
-                  logs.stream()
-                      .collect(Collectors.groupingBy(LogRecordData::getInstrumentationScopeInfo));
-              assertThat(logsByScope.get(scopeA)).hasSize(1);
-              assertThat(logsByScope.get(scopeB)).isNull();
-              assertThat(logsByScope.get(scopeC)).hasSize(1);
-            });
+        .satisfies(logs -> {
+          Map<InstrumentationScopeInfo, List<LogRecordData>> logsByScope =
+              logs.stream()
+                  .collect(Collectors.groupingBy(LogRecordData::getInstrumentationScopeInfo));
+          assertThat(logsByScope.get(scopeA)).hasSize(1);
+          assertThat(logsByScope.get(scopeB)).isNull();
+          assertThat(logsByScope.get(scopeC)).hasSize(1);
+        });
   }
 
   /** Disable all scopes by default and enable a single scope. */
@@ -157,35 +153,31 @@ class ScopeConfiguratorTest {
     // Collect all the telemetry. Ensure we only see telemetry from scopeB, since other scopes have
     // been disabled by default.
     assertThat(spanExporter.getFinishedSpanItems())
-        .satisfies(
-            spans -> {
-              Map<InstrumentationScopeInfo, List<SpanData>> spansByScope =
-                  spans.stream()
-                      .collect(Collectors.groupingBy(SpanData::getInstrumentationScopeInfo));
-              assertThat(spansByScope.get(scopeA)).isNull();
-              assertThat(spansByScope.get(scopeB)).hasSize(1);
-              assertThat(spansByScope.get(scopeC)).isNull();
-            });
+        .satisfies(spans -> {
+          Map<InstrumentationScopeInfo, List<SpanData>> spansByScope =
+              spans.stream().collect(Collectors.groupingBy(SpanData::getInstrumentationScopeInfo));
+          assertThat(spansByScope.get(scopeA)).isNull();
+          assertThat(spansByScope.get(scopeB)).hasSize(1);
+          assertThat(spansByScope.get(scopeC)).isNull();
+        });
     assertThat(metricReader.collectAllMetrics())
-        .satisfies(
-            metrics -> {
-              Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
-                  metrics.stream()
-                      .collect(Collectors.groupingBy(MetricData::getInstrumentationScopeInfo));
-              assertThat(metricsByScope.get(scopeA)).isNull();
-              assertThat(metricsByScope.get(scopeB)).hasSize(1);
-              assertThat(metricsByScope.get(scopeC)).isNull();
-            });
+        .satisfies(metrics -> {
+          Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
+              metrics.stream()
+                  .collect(Collectors.groupingBy(MetricData::getInstrumentationScopeInfo));
+          assertThat(metricsByScope.get(scopeA)).isNull();
+          assertThat(metricsByScope.get(scopeB)).hasSize(1);
+          assertThat(metricsByScope.get(scopeC)).isNull();
+        });
     assertThat(logRecordExporter.getFinishedLogRecordItems())
-        .satisfies(
-            logs -> {
-              Map<InstrumentationScopeInfo, List<LogRecordData>> logsByScope =
-                  logs.stream()
-                      .collect(Collectors.groupingBy(LogRecordData::getInstrumentationScopeInfo));
-              assertThat(logsByScope.get(scopeA)).isNull();
-              assertThat(logsByScope.get(scopeB)).hasSize(1);
-              assertThat(logsByScope.get(scopeC)).isNull();
-            });
+        .satisfies(logs -> {
+          Map<InstrumentationScopeInfo, List<LogRecordData>> logsByScope =
+              logs.stream()
+                  .collect(Collectors.groupingBy(LogRecordData::getInstrumentationScopeInfo));
+          assertThat(logsByScope.get(scopeA)).isNull();
+          assertThat(logsByScope.get(scopeB)).hasSize(1);
+          assertThat(logsByScope.get(scopeC)).isNull();
+        });
   }
 
   /**

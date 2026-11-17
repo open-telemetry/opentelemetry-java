@@ -243,15 +243,13 @@ class DoubleLastValueAggregatorTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasDoubleGaugeSatisfying(
-            gauge ->
-                gauge.hasPointsSatisfying(
-                    point ->
-                        point
-                            .hasAttributes(Attributes.empty())
-                            .hasStartEpochNanos(10)
-                            .hasEpochNanos(100)
-                            .hasValue(10)));
+        .hasDoubleGaugeSatisfying(gauge ->
+            gauge.hasPointsSatisfying(point ->
+                point
+                    .hasAttributes(Attributes.empty())
+                    .hasStartEpochNanos(10)
+                    .hasEpochNanos(100)
+                    .hasValue(10)));
   }
 
   @Test

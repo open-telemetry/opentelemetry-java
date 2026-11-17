@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
@@ -23,6 +24,7 @@ import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
@@ -63,7 +65,9 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
       Clock clock,
       ScopeConfigurator<LoggerConfig> loggerConfigurator,
       ExceptionAttributeResolver exceptionAttributeResolver,
-      Supplier<MeterProvider> meterProvider) {
+      Supplier<MeterProvider> meterProvider,
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
     this.resourceProvider = resourceProvider;
     LogRecordProcessor logRecordProcessor = LogRecordProcessor.composite(processors);
     this.sharedState =
@@ -73,14 +77,12 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
             logRecordProcessor,
             clock,
             exceptionAttributeResolver,
-            new SdkLoggerInstrumentation(meterProvider));
+            new SdkLoggerInstrumentation(meterProvider),
+            contextScopedAttributesFilter);
     this.loggerComponentRegistry =
-        new ComponentRegistry<>(
-            instrumentationScopeInfo ->
-                SdkLogger.create(
-                    sharedState,
-                    instrumentationScopeInfo,
-                    getLoggerConfig(instrumentationScopeInfo)));
+        new ComponentRegistry<>(instrumentationScopeInfo ->
+            SdkLogger.create(
+                sharedState, instrumentationScopeInfo, getLoggerConfig(instrumentationScopeInfo)));
     this.loggerConfigurator = loggerConfigurator;
     this.isNoopLogRecordProcessor = logRecordProcessor instanceof NoopLogRecordProcessor;
   }
@@ -141,10 +143,8 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
     this.loggerConfigurator = loggerConfigurator;
     this.loggerComponentRegistry
         .getComponents()
-        .forEach(
-            sdkLogger ->
-                sdkLogger.updateLoggerConfig(
-                    getLoggerConfig(sdkLogger.getInstrumentationScopeInfo())));
+        .forEach(sdkLogger ->
+            sdkLogger.updateLoggerConfig(getLoggerConfig(sdkLogger.getInstrumentationScopeInfo())));
   }
 
   /**

@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * A {@link MetricExporter} implementation that can be used to test OpenTelemetry integration.
  *
- * <p>Can be created using {@code InMemoryMetricExporter.create()}
+ * <p>Can be created using {@link #create()} or configured using {@link #builder()}.
  *
  * <p>Example usage:
  *
@@ -47,24 +48,33 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public final class InMemoryMetricExporter implements MetricExporter {
   private final Queue<MetricData> finishedMetricItems = new ConcurrentLinkedQueue<>();
-  private final AggregationTemporality aggregationTemporality;
+  private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private boolean isStopped = false;
 
-  private InMemoryMetricExporter(AggregationTemporality aggregationTemporality) {
-    this.aggregationTemporality = aggregationTemporality;
+  InMemoryMetricExporter(AggregationTemporalitySelector aggregationTemporalitySelector) {
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
   }
 
   /**
-   * Returns a new {@link InMemoryMetricExporter} with a aggregation temporality of {@link
-   * AggregationTemporality#CUMULATIVE}.
+   * Creates an {@link InMemoryMetricExporterBuilder} with defaults.
+   *
+   * @return a builder with always-cumulative {@link AggregationTemporalitySelector}
+   */
+  public static InMemoryMetricExporterBuilder builder() {
+    return new InMemoryMetricExporterBuilder();
+  }
+
+  /**
+   * Returns a new {@link InMemoryMetricExporter} with cumulative aggregation temporality for all
+   * instrument types.
    */
   public static InMemoryMetricExporter create() {
-    return create(AggregationTemporality.CUMULATIVE);
+    return builder().build();
   }
 
   /** Returns a new {@link InMemoryMetricExporter} with the given {@code aggregationTemporality}. */
   public static InMemoryMetricExporter create(AggregationTemporality aggregationTemporality) {
-    return new InMemoryMetricExporter(aggregationTemporality);
+    return builder().setAggregationTemporalitySelector(unused -> aggregationTemporality).build();
   }
 
   /**
@@ -87,7 +97,7 @@ public final class InMemoryMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return aggregationTemporality;
+    return aggregationTemporalitySelector.getAggregationTemporality(instrumentType);
   }
 
   /**

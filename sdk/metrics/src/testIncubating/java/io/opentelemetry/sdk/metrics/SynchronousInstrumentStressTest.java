@@ -161,21 +161,20 @@ class SynchronousInstrumentStressTest {
     AtomicLong zeroCount = new AtomicLong(0);
     LongStream.range(0, threadCount)
         .flatMap(i -> measurements.stream().mapToLong(l -> l))
-        .forEach(
-            measurement -> {
-              lastValue.set(measurement);
-              sum.addAndGet(measurement);
-              min.updateAndGet(v -> Math.min(v, measurement));
-              max.updateAndGet(v -> Math.max(v, measurement));
-              totalCount.incrementAndGet();
-              int bucketIndex =
-                  ExplicitBucketHistogramUtils.findBucketIndex(
-                      BUCKET_BOUNDARIES_ARR, (double) measurement);
-              bucketCounts.set(bucketIndex, bucketCounts.get(bucketIndex) + 1);
-              if (measurement == 0) {
-                zeroCount.incrementAndGet();
-              }
-            });
+        .forEach(measurement -> {
+          lastValue.set(measurement);
+          sum.addAndGet(measurement);
+          min.updateAndGet(v -> Math.min(v, measurement));
+          max.updateAndGet(v -> Math.max(v, measurement));
+          totalCount.incrementAndGet();
+          int bucketIndex =
+              ExplicitBucketHistogramUtils.findBucketIndex(
+                  BUCKET_BOUNDARIES_ARR, (double) measurement);
+          bucketCounts.set(bucketIndex, bucketCounts.get(bucketIndex) + 1);
+          if (measurement == 0) {
+            zeroCount.incrementAndGet();
+          }
+        });
 
     boolean isCumulative = aggregationTemporality == AggregationTemporality.CUMULATIVE;
     List<PointData> points =
@@ -185,72 +184,65 @@ class SynchronousInstrumentStressTest {
     if (aggregation == Aggregation.sum()) {
       if (instrumentValueType == InstrumentValueType.DOUBLE) {
         assertThat(points)
-            .allSatisfy(
-                point ->
-                    assertThat(point)
-                        .isInstanceOfSatisfying(
-                            DoublePointData.class,
-                            p -> assertThat(p.getValue()).isEqualTo((double) sum.get())));
+            .allSatisfy(point ->
+                assertThat(point)
+                    .isInstanceOfSatisfying(
+                        DoublePointData.class,
+                        p -> assertThat(p.getValue()).isEqualTo((double) sum.get())));
 
       } else {
         assertThat(points)
-            .allSatisfy(
-                point ->
-                    assertThat(point)
-                        .isInstanceOfSatisfying(
-                            LongPointData.class,
-                            p -> assertThat(p.getValue()).isEqualTo(sum.get())));
+            .allSatisfy(point ->
+                assertThat(point)
+                    .isInstanceOfSatisfying(
+                        LongPointData.class, p -> assertThat(p.getValue()).isEqualTo(sum.get())));
       }
     } else if (aggregation == Aggregation.lastValue()) {
       if (instrumentValueType == InstrumentValueType.DOUBLE) {
         assertThat(points)
-            .allSatisfy(
-                point ->
-                    assertThat(point)
-                        .isInstanceOfSatisfying(
-                            DoublePointData.class,
-                            p -> assertThat(p.getValue()).isEqualTo((double) lastValue.get())));
+            .allSatisfy(point ->
+                assertThat(point)
+                    .isInstanceOfSatisfying(
+                        DoublePointData.class,
+                        p -> assertThat(p.getValue()).isEqualTo((double) lastValue.get())));
       } else {
         assertThat(points)
-            .allSatisfy(
-                point ->
-                    assertThat(point)
-                        .isInstanceOfSatisfying(
-                            LongPointData.class,
-                            p -> assertThat(p.getValue()).isEqualTo(lastValue.get())));
+            .allSatisfy(point ->
+                assertThat(point)
+                    .isInstanceOfSatisfying(
+                        LongPointData.class,
+                        p -> assertThat(p.getValue()).isEqualTo(lastValue.get())));
       }
     } else if (aggregation == Aggregation.explicitBucketHistogram()) {
       assertThat(points)
-          .allSatisfy(
-              point ->
-                  assertThat(point)
-                      .isInstanceOfSatisfying(
-                          HistogramPointData.class,
-                          p -> {
-                            assertThat(p.getSum()).isEqualTo((double) sum.get());
-                            assertThat(p.getMin()).isEqualTo((double) min.get());
-                            assertThat(p.getMax()).isEqualTo((double) max.get());
-                            assertThat(p.getCount())
-                                .isEqualTo(bucketCounts.stream().reduce(0L, Long::sum));
-                            assertThat(p.getCounts()).isEqualTo(bucketCounts);
-                          }));
+          .allSatisfy(point ->
+              assertThat(point)
+                  .isInstanceOfSatisfying(
+                      HistogramPointData.class,
+                      p -> {
+                        assertThat(p.getSum()).isEqualTo((double) sum.get());
+                        assertThat(p.getMin()).isEqualTo((double) min.get());
+                        assertThat(p.getMax()).isEqualTo((double) max.get());
+                        assertThat(p.getCount())
+                            .isEqualTo(bucketCounts.stream().reduce(0L, Long::sum));
+                        assertThat(p.getCounts()).isEqualTo(bucketCounts);
+                      }));
     } else if (aggregation == Aggregation.base2ExponentialBucketHistogram()) {
       assertThat(points)
-          .allSatisfy(
-              point ->
-                  assertThat(point)
-                      .isInstanceOfSatisfying(
-                          ExponentialHistogramPointData.class,
-                          p -> {
-                            assertThat(p.getSum()).isEqualTo((double) sum.get());
-                            assertThat(p.getMin()).isEqualTo((double) min.get());
-                            assertThat(p.getMax()).isEqualTo((double) max.get());
-                            assertThat(p.getZeroCount()).isEqualTo(zeroCount.get());
-                            assertThat(
-                                    p.getPositiveBuckets().getBucketCounts().stream()
-                                        .reduce(0L, Long::sum))
-                                .isEqualTo(totalCount.get() - zeroCount.get());
-                          }));
+          .allSatisfy(point ->
+              assertThat(point)
+                  .isInstanceOfSatisfying(
+                      ExponentialHistogramPointData.class,
+                      p -> {
+                        assertThat(p.getSum()).isEqualTo((double) sum.get());
+                        assertThat(p.getMin()).isEqualTo((double) min.get());
+                        assertThat(p.getMax()).isEqualTo((double) max.get());
+                        assertThat(p.getZeroCount()).isEqualTo(zeroCount.get());
+                        assertThat(
+                                p.getPositiveBuckets().getBucketCounts().stream()
+                                    .reduce(0L, Long::sum))
+                            .isEqualTo(totalCount.get() - zeroCount.get());
+                      }));
     } else {
       throw new IllegalArgumentException();
     }
@@ -321,54 +313,49 @@ class SynchronousInstrumentStressTest {
     if (aggregation == Aggregation.explicitBucketHistogram()) {
       collectedMetrics.stream()
           .flatMap(m -> m.getHistogramData().getPoints().stream())
-          .forEach(
-              p -> {
-                long bucketSum = p.getCounts().stream().reduce(0L, Long::sum);
-                assertThat(p.getCount()).as("count == sum of bucket counts").isEqualTo(bucketSum);
-                assertThat(p.getSum())
-                    .as("sum == count (uniform value=1)")
-                    .isEqualTo((double) p.getCount());
-                if (p.getCount() > 0) {
-                  assertThat(p.hasMin()).isTrue();
-                  assertThat(p.getMin()).as("min == 1 (uniform value)").isEqualTo(1.0);
-                  assertThat(p.hasMax()).isTrue();
-                  assertThat(p.getMax()).as("max == 1 (uniform value)").isEqualTo(1.0);
-                }
-              });
+          .forEach(p -> {
+            long bucketSum = p.getCounts().stream().reduce(0L, Long::sum);
+            assertThat(p.getCount()).as("count == sum of bucket counts").isEqualTo(bucketSum);
+            assertThat(p.getSum())
+                .as("sum == count (uniform value=1)")
+                .isEqualTo((double) p.getCount());
+            if (p.getCount() > 0) {
+              assertThat(p.hasMin()).isTrue();
+              assertThat(p.getMin()).as("min == 1 (uniform value)").isEqualTo(1.0);
+              assertThat(p.hasMax()).isTrue();
+              assertThat(p.getMax()).as("max == 1 (uniform value)").isEqualTo(1.0);
+            }
+          });
     } else if (aggregation == Aggregation.base2ExponentialBucketHistogram()) {
       collectedMetrics.stream()
           .flatMap(m -> m.getExponentialHistogramData().getPoints().stream())
-          .forEach(
-              p -> {
-                long positiveBucketSum =
-                    p.getPositiveBuckets().getBucketCounts().stream().reduce(0L, Long::sum);
-                long negativeBucketSum =
-                    p.getNegativeBuckets().getBucketCounts().stream().reduce(0L, Long::sum);
-                assertThat(p.getCount())
-                    .as("count == pos + neg + zero bucket counts")
-                    .isEqualTo(positiveBucketSum + negativeBucketSum + p.getZeroCount());
-                assertThat(p.getSum())
-                    .as("sum == count (uniform value=1)")
-                    .isEqualTo((double) p.getCount());
-                if (p.getCount() > 0) {
-                  assertThat(p.hasMin()).isTrue();
-                  assertThat(p.getMin()).as("min == 1 (uniform value)").isEqualTo(1.0);
-                  assertThat(p.hasMax()).isTrue();
-                  assertThat(p.getMax()).as("max == 1 (uniform value)").isEqualTo(1.0);
-                }
-              });
+          .forEach(p -> {
+            long positiveBucketSum =
+                p.getPositiveBuckets().getBucketCounts().stream().reduce(0L, Long::sum);
+            long negativeBucketSum =
+                p.getNegativeBuckets().getBucketCounts().stream().reduce(0L, Long::sum);
+            assertThat(p.getCount())
+                .as("count == pos + neg + zero bucket counts")
+                .isEqualTo(positiveBucketSum + negativeBucketSum + p.getZeroCount());
+            assertThat(p.getSum())
+                .as("sum == count (uniform value=1)")
+                .isEqualTo((double) p.getCount());
+            if (p.getCount() > 0) {
+              assertThat(p.hasMin()).isTrue();
+              assertThat(p.getMin()).as("min == 1 (uniform value)").isEqualTo(1.0);
+              assertThat(p.hasMax()).isTrue();
+              assertThat(p.getMax()).as("max == 1 (uniform value)").isEqualTo(1.0);
+            }
+          });
     } else if (aggregation == Aggregation.sum()) {
       // Uniform value=1 adds only. Sum should be a non-negative whole number.
       if (instrumentValueType == InstrumentValueType.DOUBLE) {
         collectedMetrics.stream()
             .flatMap(m -> m.getDoubleSumData().getPoints().stream())
-            .forEach(
-                p -> {
-                  assertThat(p.getValue()).as("sum non-negative").isGreaterThanOrEqualTo(0.0);
-                  assertThat(p.getValue())
-                      .as("sum is integral")
-                      .isEqualTo(Math.floor(p.getValue()));
-                });
+            .forEach(p -> {
+              assertThat(p.getValue()).as("sum non-negative").isGreaterThanOrEqualTo(0.0);
+              assertThat(p.getValue()).as("sum is integral").isEqualTo(Math.floor(p.getValue()));
+            });
       } else {
         collectedMetrics.stream()
             .flatMap(m -> m.getLongSumData().getPoints().stream())
@@ -439,45 +426,43 @@ class SynchronousInstrumentStressTest {
     CountDownLatch startSignal = new CountDownLatch(1);
     for (int i = 0; i < threadCount; i++) {
       recordThreads.add(
-          new Thread(
-              () -> {
-                Uninterruptibles.awaitUninterruptibly(startSignal);
-                if (bound) {
-                  for (Long measurement : measurements) {
-                    for (BoundInstrument boundInstrument : boundInstruments) {
-                      boundInstrument.record(measurement);
-                    }
-                    Thread.yield();
-                  }
-                } else {
-                  for (Long measurement : measurements) {
-                    for (Attributes attr : attributes) {
-                      instrument.record(measurement, attr);
-                    }
-                    Thread.yield();
-                  }
+          new Thread(() -> {
+            Uninterruptibles.awaitUninterruptibly(startSignal);
+            if (bound) {
+              for (Long measurement : measurements) {
+                for (BoundInstrument boundInstrument : boundInstruments) {
+                  boundInstrument.record(measurement);
                 }
-                latch.countDown();
-              }));
+                Thread.yield();
+              }
+            } else {
+              for (Long measurement : measurements) {
+                for (Attributes attr : attributes) {
+                  instrument.record(measurement, attr);
+                }
+                Thread.yield();
+              }
+            }
+            latch.countDown();
+          }));
     }
 
     List<MetricData> collectedMetrics = new ArrayList<>();
     Thread collectThread =
-        new Thread(
-            () -> {
-              Uninterruptibles.awaitUninterruptibly(startSignal);
-              while (latch.getCount() != 0) {
-                Thread.yield();
-                collectedMetrics.addAll(
-                    reader.collectAllMetrics().stream()
-                        .map(SynchronousInstrumentStressTest::copy)
-                        .collect(toList()));
-              }
-              collectedMetrics.addAll(
-                  reader.collectAllMetrics().stream()
-                      .map(SynchronousInstrumentStressTest::copy)
-                      .collect(toList()));
-            });
+        new Thread(() -> {
+          Uninterruptibles.awaitUninterruptibly(startSignal);
+          while (latch.getCount() != 0) {
+            Thread.yield();
+            collectedMetrics.addAll(
+                reader.collectAllMetrics().stream()
+                    .map(SynchronousInstrumentStressTest::copy)
+                    .collect(toList()));
+          }
+          collectedMetrics.addAll(
+              reader.collectAllMetrics().stream()
+                  .map(SynchronousInstrumentStressTest::copy)
+                  .collect(toList()));
+        });
 
     // Start all the threads, then release the start signal so they begin simultaneously
     collectThread.start();
@@ -635,14 +620,13 @@ class SynchronousInstrumentStressTest {
             m.getUnit(),
             ImmutableGaugeData.create(
                 m.getLongGaugeData().getPoints().stream()
-                    .map(
-                        p ->
-                            ImmutableLongPointData.create(
-                                p.getStartEpochNanos(),
-                                p.getEpochNanos(),
-                                p.getAttributes(),
-                                p.getValue(),
-                                p.getExemplars()))
+                    .map(p ->
+                        ImmutableLongPointData.create(
+                            p.getStartEpochNanos(),
+                            p.getEpochNanos(),
+                            p.getAttributes(),
+                            p.getValue(),
+                            p.getExemplars()))
                     .collect(toList())));
       case DOUBLE_GAUGE:
         return ImmutableMetricData.createDoubleGauge(
@@ -653,14 +637,13 @@ class SynchronousInstrumentStressTest {
             m.getUnit(),
             ImmutableGaugeData.create(
                 m.getDoubleGaugeData().getPoints().stream()
-                    .map(
-                        p ->
-                            ImmutableDoublePointData.create(
-                                p.getStartEpochNanos(),
-                                p.getEpochNanos(),
-                                p.getAttributes(),
-                                p.getValue(),
-                                p.getExemplars()))
+                    .map(p ->
+                        ImmutableDoublePointData.create(
+                            p.getStartEpochNanos(),
+                            p.getEpochNanos(),
+                            p.getAttributes(),
+                            p.getValue(),
+                            p.getExemplars()))
                     .collect(toList())));
       case LONG_SUM:
         return ImmutableMetricData.createLongSum(
@@ -673,14 +656,13 @@ class SynchronousInstrumentStressTest {
                 m.getLongSumData().isMonotonic(),
                 m.getLongSumData().getAggregationTemporality(),
                 m.getLongSumData().getPoints().stream()
-                    .map(
-                        p ->
-                            ImmutableLongPointData.create(
-                                p.getStartEpochNanos(),
-                                p.getEpochNanos(),
-                                p.getAttributes(),
-                                p.getValue(),
-                                p.getExemplars()))
+                    .map(p ->
+                        ImmutableLongPointData.create(
+                            p.getStartEpochNanos(),
+                            p.getEpochNanos(),
+                            p.getAttributes(),
+                            p.getValue(),
+                            p.getExemplars()))
                     .collect(toList())));
       case DOUBLE_SUM:
         return ImmutableMetricData.createDoubleSum(
@@ -693,14 +675,13 @@ class SynchronousInstrumentStressTest {
                 m.getDoubleSumData().isMonotonic(),
                 m.getDoubleSumData().getAggregationTemporality(),
                 m.getDoubleSumData().getPoints().stream()
-                    .map(
-                        p ->
-                            ImmutableDoublePointData.create(
-                                p.getStartEpochNanos(),
-                                p.getEpochNanos(),
-                                p.getAttributes(),
-                                p.getValue(),
-                                p.getExemplars()))
+                    .map(p ->
+                        ImmutableDoublePointData.create(
+                            p.getStartEpochNanos(),
+                            p.getEpochNanos(),
+                            p.getAttributes(),
+                            p.getValue(),
+                            p.getExemplars()))
                     .collect(toList())));
       case HISTOGRAM:
         return ImmutableMetricData.createDoubleHistogram(
@@ -712,20 +693,19 @@ class SynchronousInstrumentStressTest {
             ImmutableHistogramData.create(
                 m.getHistogramData().getAggregationTemporality(),
                 m.getHistogramData().getPoints().stream()
-                    .map(
-                        p ->
-                            ImmutableHistogramPointData.create(
-                                p.getStartEpochNanos(),
-                                p.getEpochNanos(),
-                                p.getAttributes(),
-                                p.getSum(),
-                                p.hasMin(),
-                                p.getMin(),
-                                p.hasMax(),
-                                p.getMax(),
-                                p.getBoundaries(),
-                                new ArrayList<>(p.getCounts()),
-                                p.getExemplars()))
+                    .map(p ->
+                        ImmutableHistogramPointData.create(
+                            p.getStartEpochNanos(),
+                            p.getEpochNanos(),
+                            p.getAttributes(),
+                            p.getSum(),
+                            p.hasMin(),
+                            p.getMin(),
+                            p.hasMax(),
+                            p.getMax(),
+                            p.getBoundaries(),
+                            new ArrayList<>(p.getCounts()),
+                            p.getExemplars()))
                     .collect(toList())));
       case EXPONENTIAL_HISTOGRAM:
         return ImmutableMetricData.createExponentialHistogram(
@@ -737,28 +717,27 @@ class SynchronousInstrumentStressTest {
             ImmutableExponentialHistogramData.create(
                 m.getExponentialHistogramData().getAggregationTemporality(),
                 m.getExponentialHistogramData().getPoints().stream()
-                    .map(
-                        p ->
-                            ImmutableExponentialHistogramPointData.create(
-                                p.getScale(),
-                                p.getSum(),
-                                p.getZeroCount(),
-                                p.hasMin(),
-                                p.getMin(),
-                                p.hasMax(),
-                                p.getMax(),
-                                ExponentialHistogramBuckets.create(
-                                    p.getPositiveBuckets().getScale(),
-                                    p.getPositiveBuckets().getOffset(),
-                                    new ArrayList<>(p.getPositiveBuckets().getBucketCounts())),
-                                ExponentialHistogramBuckets.create(
-                                    p.getNegativeBuckets().getScale(),
-                                    p.getNegativeBuckets().getOffset(),
-                                    new ArrayList<>(p.getNegativeBuckets().getBucketCounts())),
-                                p.getStartEpochNanos(),
-                                p.getEpochNanos(),
-                                p.getAttributes(),
-                                p.getExemplars()))
+                    .map(p ->
+                        ImmutableExponentialHistogramPointData.create(
+                            p.getScale(),
+                            p.getSum(),
+                            p.getZeroCount(),
+                            p.hasMin(),
+                            p.getMin(),
+                            p.hasMax(),
+                            p.getMax(),
+                            ExponentialHistogramBuckets.create(
+                                p.getPositiveBuckets().getScale(),
+                                p.getPositiveBuckets().getOffset(),
+                                new ArrayList<>(p.getPositiveBuckets().getBucketCounts())),
+                            ExponentialHistogramBuckets.create(
+                                p.getNegativeBuckets().getScale(),
+                                p.getNegativeBuckets().getOffset(),
+                                new ArrayList<>(p.getNegativeBuckets().getBucketCounts())),
+                            p.getStartEpochNanos(),
+                            p.getEpochNanos(),
+                            p.getAttributes(),
+                            p.getExemplars()))
                     .collect(toList())));
       case SUMMARY:
     }

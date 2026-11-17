@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.trace.internal.TracerConfig;
 class SdkTracer implements Tracer {
   static final String FALLBACK_SPAN_NAME = "<unspecified span name>";
   private static final Tracer NOOP_TRACER = TracerProvider.noop().get("noop");
-  private static final boolean INCUBATOR_AVAILABLE;
+  static final boolean INCUBATOR_AVAILABLE;
 
   static {
     boolean incubatorAvailable = false;

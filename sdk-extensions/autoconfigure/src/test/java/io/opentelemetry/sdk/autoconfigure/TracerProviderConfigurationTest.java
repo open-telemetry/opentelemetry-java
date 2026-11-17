@@ -88,11 +88,10 @@ class TracerProviderConfigurationTest {
 
       assertThat(tracerProvider)
           .extracting("sharedState")
-          .satisfies(
-              sharedState ->
-                  assertThat(sharedState)
-                      .extracting("activeSpanProcessor")
-                      .isEqualTo(SpanProcessor.composite()));
+          .satisfies(sharedState ->
+              assertThat(sharedState)
+                  .extracting("activeSpanProcessor")
+                  .isEqualTo(SpanProcessor.composite()));
       assertThat(closeables).isEmpty();
     }
   }
@@ -104,21 +103,20 @@ class TracerProviderConfigurationTest {
             EMPTY, mockSpanExporter, InternalTelemetryVersion.LEGACY, MeterProvider.noop())) {
       assertThat(processor)
           .extracting("worker")
-          .satisfies(
-              worker -> {
-                assertThat(worker)
-                    .extracting("scheduleDelayNanos")
-                    .isEqualTo(TimeUnit.MILLISECONDS.toNanos(5000));
-                assertThat(worker)
-                    .extracting("exporterTimeoutNanos")
-                    .isEqualTo(TimeUnit.MILLISECONDS.toNanos(30000));
-                assertThat(worker).extracting("maxExportBatchSize").isEqualTo(512);
-                assertThat(worker)
-                    .extracting("queue")
-                    .isInstanceOfSatisfying(
-                        Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2048));
-                assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
-              });
+          .satisfies(worker -> {
+            assertThat(worker)
+                .extracting("scheduleDelayNanos")
+                .isEqualTo(TimeUnit.MILLISECONDS.toNanos(5000));
+            assertThat(worker)
+                .extracting("exporterTimeoutNanos")
+                .isEqualTo(TimeUnit.MILLISECONDS.toNanos(30000));
+            assertThat(worker).extracting("maxExportBatchSize").isEqualTo(512);
+            assertThat(worker)
+                .extracting("queue")
+                .isInstanceOfSatisfying(
+                    Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2048));
+            assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
+          });
     }
   }
 
@@ -138,21 +136,20 @@ class TracerProviderConfigurationTest {
             MeterProvider.noop())) {
       assertThat(processor)
           .extracting("worker")
-          .satisfies(
-              worker -> {
-                assertThat(worker)
-                    .extracting("scheduleDelayNanos")
-                    .isEqualTo(TimeUnit.MILLISECONDS.toNanos(100000));
-                assertThat(worker)
-                    .extracting("exporterTimeoutNanos")
-                    .isEqualTo(TimeUnit.MILLISECONDS.toNanos(4));
-                assertThat(worker).extracting("maxExportBatchSize").isEqualTo(2);
-                assertThat(worker)
-                    .extracting("queue")
-                    .isInstanceOfSatisfying(
-                        Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2));
-                assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
-              });
+          .satisfies(worker -> {
+            assertThat(worker)
+                .extracting("scheduleDelayNanos")
+                .isEqualTo(TimeUnit.MILLISECONDS.toNanos(100000));
+            assertThat(worker)
+                .extracting("exporterTimeoutNanos")
+                .isEqualTo(TimeUnit.MILLISECONDS.toNanos(4));
+            assertThat(worker).extracting("maxExportBatchSize").isEqualTo(2);
+            assertThat(worker)
+                .extracting("queue")
+                .isInstanceOfSatisfying(
+                    Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2));
+            assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
+          });
     }
   }
 
@@ -232,10 +229,9 @@ class TracerProviderConfigurationTest {
             () -> TracerProviderConfiguration.configureSampler("catsampler", EMPTY, spiHelper))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Unrecognized value for otel.traces.sampler: catsampler");
-    assertThatThrownBy(
-            () ->
-                TracerProviderConfiguration.configureSampler(
-                    "parentbased_jaeger_remote", EMPTY, spiHelper))
+    assertThatThrownBy(() ->
+            TracerProviderConfiguration.configureSampler(
+                "parentbased_jaeger_remote", EMPTY, spiHelper))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage(
             "parentbased_jaeger_remote configured but opentelemetry-sdk-extension-jaeger-remote-sampler not on classpath");

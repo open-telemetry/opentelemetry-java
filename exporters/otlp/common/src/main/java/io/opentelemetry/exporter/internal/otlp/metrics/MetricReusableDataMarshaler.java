@@ -46,11 +46,10 @@ public class MetricReusableDataMarshaler {
       exportMarshaler.initialize(metrics);
       return doExport
           .apply(exportMarshaler, metrics.size())
-          .whenComplete(
-              () -> {
-                exportMarshaler.reset();
-                marshalerPool.add(exportMarshaler);
-              });
+          .whenComplete(() -> {
+            exportMarshaler.reset();
+            marshalerPool.add(exportMarshaler);
+          });
     }
     // MemoryMode == MemoryMode.IMMUTABLE_DATA
     MetricsRequestMarshaler request = MetricsRequestMarshaler.create(metrics);

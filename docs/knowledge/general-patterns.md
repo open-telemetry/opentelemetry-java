@@ -14,9 +14,10 @@ For null guard behavior at public API boundaries, see [api-design.md](api-design
 
 ## API consistency
 
-The project aims to provide a consistent experience across all public APIs. When designing new
-API, look for prior art in the project before introducing new patterns — prefer the style already
-established in the same package, then the same module, then the broader project.
+The project aims to provide a consistent experience across all public APIs. When
+designing new API, look for prior art before introducing new patterns. Give the
+most weight to precedent in the same file, then the same package, then similar
+APIs in other packages, then the broader project.
 
 ## AutoValue
 
@@ -26,6 +27,10 @@ Use [AutoValue](https://github.com/google/auto/tree/master/value) for new value 
 - `auto-value-annotations` is already available via `otel.java-conventions`.
 - Add a package-private constructor to all AutoValue classes to prevent external extension.
 - `japicmp` allows new abstract methods on AutoValue classes — the `AllowNewAbstractMethodOnAutovalueClasses` rule handles this.
+
+## Changelog
+
+Do not add changelog entries to PRs. They are generated during the [release process](../../RELEASING.md).
 
 ## Class member ordering
 

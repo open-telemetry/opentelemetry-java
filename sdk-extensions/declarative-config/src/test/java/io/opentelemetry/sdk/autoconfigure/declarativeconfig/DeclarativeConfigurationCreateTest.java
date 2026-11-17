@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -142,10 +142,9 @@ class DeclarativeConfigurationCreateTest {
             + "        exporter:\n"
             + "          foo: {}\n";
 
-    assertThatThrownBy(
-            () ->
-                DeclarativeConfiguration.parseAndCreate(
-                    new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
+    assertThatThrownBy(() ->
+            DeclarativeConfiguration.parseAndCreate(
+                new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"foo\".");
@@ -167,10 +166,9 @@ class DeclarativeConfigurationCreateTest {
             + "  processors:\n"
             + "    - test:\n";
 
-    assertThatCode(
-            () ->
-                DeclarativeConfiguration.parseAndCreate(
-                    new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
+    assertThatCode(() ->
+            DeclarativeConfiguration.parseAndCreate(
+                new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .doesNotThrowAnyException();
   }
 
@@ -205,15 +203,13 @@ class DeclarativeConfigurationCreateTest {
     DeclarativeConfigContext context = mock(DeclarativeConfigContext.class);
     when(context.getListeners())
         .thenReturn(
-            Collections.singleton(
-                sdk -> {
-                  throw new RuntimeException("Test exception from AutoConfigureListener");
-                }));
+            Collections.singleton(sdk -> {
+              throw new RuntimeException("Test exception from AutoConfigureListener");
+            }));
 
-    assertThatCode(
-            () ->
-                DeclarativeConfiguration.callAutoConfigureListeners(
-                    context, OpenTelemetrySdk.builder().build()))
+    assertThatCode(() ->
+            DeclarativeConfiguration.callAutoConfigureListeners(
+                context, OpenTelemetrySdk.builder().build()))
         .doesNotThrowAnyException();
   }
 }

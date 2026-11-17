@@ -87,10 +87,9 @@ class BatchLogRecordProcessorTest {
 
   @Test
   void builderInvalidConfig() {
-    assertThatThrownBy(
-            () ->
-                BatchLogRecordProcessor.builder(mockLogRecordExporter)
-                    .setScheduleDelay(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(() ->
+            BatchLogRecordProcessor.builder(mockLogRecordExporter)
+                .setScheduleDelay(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("delay must be non-negative");
     assertThatThrownBy(
@@ -101,15 +100,13 @@ class BatchLogRecordProcessorTest {
             () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setScheduleDelay(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("delay");
-    assertThatThrownBy(
-            () ->
-                BatchLogRecordProcessor.builder(mockLogRecordExporter)
-                    .setExporterTimeout(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(() ->
+            BatchLogRecordProcessor.builder(mockLogRecordExporter)
+                .setExporterTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("timeout must be non-negative");
-    assertThatThrownBy(
-            () ->
-                BatchLogRecordProcessor.builder(mockLogRecordExporter).setExporterTimeout(1, null))
+    assertThatThrownBy(() ->
+            BatchLogRecordProcessor.builder(mockLogRecordExporter).setExporterTimeout(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
     assertThatThrownBy(
@@ -207,11 +204,10 @@ class BatchLogRecordProcessorTest {
     logRecordExporter.succeed();
 
     await()
-        .untilAsserted(
-            () ->
-                assertThat(logRecordExporter.getExported())
-                    .hasSize(6)
-                    .allSatisfy(logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_1)));
+        .untilAsserted(() ->
+            assertThat(logRecordExporter.getExported())
+                .hasSize(6)
+                .allSatisfy(logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_1)));
   }
 
   @Test
@@ -423,12 +419,11 @@ class BatchLogRecordProcessorTest {
     CountDownLatch exported = new CountDownLatch(1);
     // We return a result we never complete, meaning it will timeout.
     when(mockLogRecordExporter.export(
-            argThat(
-                logs -> {
-                  assertThat(logs).anySatisfy(log -> assertThat(log).hasBody(LOG_MESSAGE_1));
-                  exported.countDown();
-                  return true;
-                })))
+            argThat(logs -> {
+              assertThat(logs).anySatisfy(log -> assertThat(log).hasBody(LOG_MESSAGE_1));
+              exported.countDown();
+              return true;
+            })))
         .thenReturn(new CompletableResultCode());
     emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
     exported.await();
@@ -440,12 +435,11 @@ class BatchLogRecordProcessorTest {
     reset(mockLogRecordExporter);
     when(mockLogRecordExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(mockLogRecordExporter.export(
-            argThat(
-                logs -> {
-                  assertThat(logs).anySatisfy(log -> assertThat(log).hasBody(LOG_MESSAGE_2));
-                  exportedAgain.countDown();
-                  return true;
-                })))
+            argThat(logs -> {
+              assertThat(logs).anySatisfy(log -> assertThat(log).hasBody(LOG_MESSAGE_2));
+              exportedAgain.countDown();
+              return true;
+            })))
         .thenReturn(CompletableResultCode.ofSuccess());
     emitLog(sdkLoggerProvider, LOG_MESSAGE_2);
     exported.await();

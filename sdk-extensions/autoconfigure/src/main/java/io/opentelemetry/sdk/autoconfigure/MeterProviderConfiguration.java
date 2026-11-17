@@ -59,10 +59,9 @@ final class MeterProviderConfiguration {
 
     configureMetricReaders(
             config, spiHelper, metricReaderCustomizer, metricExporterCustomizer, closeables)
-        .forEach(
-            reader ->
-                meterProviderBuilder.registerMetricReader(
-                    reader, instrumentType -> resolvedCardinalityLimit));
+        .forEach(reader ->
+            meterProviderBuilder.registerMetricReader(
+                reader, instrumentType -> resolvedCardinalityLimit));
   }
 
   static List<MetricReader> configureMetricReaders(
@@ -86,15 +85,14 @@ final class MeterProviderConfiguration {
       exporterNames = Collections.singleton("otlp");
     }
     return exporterNames.stream()
-        .map(
-            exporterName ->
-                MetricExporterConfiguration.configureReader(
-                    exporterName,
-                    config,
-                    spiHelper,
-                    metricReaderCustomizer,
-                    metricExporterCustomizer,
-                    closeables))
+        .map(exporterName ->
+            MetricExporterConfiguration.configureReader(
+                exporterName,
+                config,
+                spiHelper,
+                metricReaderCustomizer,
+                metricExporterCustomizer,
+                closeables))
         .collect(Collectors.toList());
   }
 

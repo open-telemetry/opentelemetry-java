@@ -58,10 +58,9 @@ final class LoggerProviderFactory
 
     List<LogRecordProcessorModel> processors = loggerProviderModel.getProcessors();
     if (processors != null) {
-      processors.forEach(
-          processor ->
-              builder.addLogRecordProcessor(
-                  LogRecordProcessorFactory.getInstance().create(processor, context)));
+      processors.forEach(processor ->
+          builder.addLogRecordProcessor(
+              LogRecordProcessorFactory.getInstance().create(processor, context)));
     }
 
     ExperimentalLoggerConfiguratorModel loggerConfiguratorModel =

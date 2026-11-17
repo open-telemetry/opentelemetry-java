@@ -101,33 +101,30 @@ class MarshalerTest {
     return Stream.of(
         Arguments.argumentSet(
             "repeated message collection",
-            asWriter(
-                output ->
-                    output.serializeRepeatedMessageWithContext(
-                        fieldInfo,
-                        Collections.singleton("value"),
-                        throwingMarshaler,
-                        context,
-                        MarshalerContext.key()))),
+            asWriter(output ->
+                output.serializeRepeatedMessageWithContext(
+                    fieldInfo,
+                    Collections.singleton("value"),
+                    throwingMarshaler,
+                    context,
+                    MarshalerContext.key()))),
         Arguments.argumentSet(
             "repeated message map",
-            asWriter(
-                output ->
-                    output.serializeRepeatedMessageWithContext(
-                        fieldInfo,
-                        Collections.singletonMap("key", "value"),
-                        throwingMarshaler2,
-                        context,
-                        MarshalerContext.key()))),
+            asWriter(output ->
+                output.serializeRepeatedMessageWithContext(
+                    fieldInfo,
+                    Collections.singletonMap("key", "value"),
+                    throwingMarshaler2,
+                    context,
+                    MarshalerContext.key()))),
         Arguments.argumentSet(
             "repeated message attributes",
-            asWriter(
-                output ->
-                    output.serializeRepeatedMessageWithContext(
-                        fieldInfo,
-                        Attributes.builder().put("key", "value").build(),
-                        throwingMarshaler2Attributes,
-                        context))));
+            asWriter(output ->
+                output.serializeRepeatedMessageWithContext(
+                    fieldInfo,
+                    Attributes.builder().put("key", "value").build(),
+                    throwingMarshaler2Attributes,
+                    context))));
   }
 
   private static Writer asWriter(Writer writer) {

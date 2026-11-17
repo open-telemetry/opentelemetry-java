@@ -1,2 +1,0 @@
-io.opentelemetry.extension.trace.propagation.internal.B3ComponentProvider
-io.opentelemetry.extension.trace.propagation.internal.B3MultiComponentProvider

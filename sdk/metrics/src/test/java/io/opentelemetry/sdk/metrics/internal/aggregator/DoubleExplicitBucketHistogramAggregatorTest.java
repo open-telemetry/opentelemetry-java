@@ -240,17 +240,15 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                 METRIC_DESCRIPTOR,
                 Collections.singletonList(histPoint),
                 AggregationTemporality.CUMULATIVE))
-        .hasHistogramSatisfying(
-            histogram ->
-                histogram.hasPointsSatisfying(
-                    point ->
-                        point
-                            .hasSum(2)
-                            .hasMin(2)
-                            .hasMax(2)
-                            .hasBucketCounts(1, 0, 0, 0)
-                            .hasCount(1)
-                            .hasExemplars(exemplar)));
+        .hasHistogramSatisfying(histogram ->
+            histogram.hasPointsSatisfying(point ->
+                point
+                    .hasSum(2)
+                    .hasMin(2)
+                    .hasMax(2)
+                    .hasBucketCounts(1, 0, 0, 0)
+                    .hasCount(1)
+                    .hasExemplars(exemplar)));
   }
 
   @ParameterizedTest

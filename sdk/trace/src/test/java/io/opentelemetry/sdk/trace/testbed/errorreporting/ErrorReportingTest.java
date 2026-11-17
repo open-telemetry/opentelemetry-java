@@ -57,16 +57,15 @@ public final class ErrorReportingTest {
   @Test
   void testCallbackError() {
     Span span = tracer.spanBuilder("one").startSpan();
-    executor.submit(
-        () -> {
-          try (Scope ignored = span.makeCurrent()) {
-            throw new RuntimeException("Invalid state");
-          } catch (RuntimeException exc) {
-            span.setStatus(StatusCode.ERROR);
-          } finally {
-            span.end();
-          }
-        });
+    executor.submit(() -> {
+      try (Scope ignored = span.makeCurrent()) {
+        throw new RuntimeException("Invalid state");
+      } catch (RuntimeException exc) {
+        span.setStatus(StatusCode.ERROR);
+      } finally {
+        span.end();
+      }
+    });
 
     await()
         .atMost(Duration.ofSeconds(5))
@@ -115,16 +114,15 @@ public final class ErrorReportingTest {
     Span span = tracer.spanBuilder("one").startSpan();
     try (Scope ignored = span.makeCurrent()) {
       executor.submit(
-          new ScopedRunnable(
-              () -> {
-                try {
-                  throw new RuntimeException("Invalid state");
-                } catch (RuntimeException exc) {
-                  Span.current().setStatus(StatusCode.ERROR);
-                } finally {
-                  Span.current().end();
-                }
-              }));
+          new ScopedRunnable(() -> {
+            try {
+              throw new RuntimeException("Invalid state");
+            } catch (RuntimeException exc) {
+              Span.current().setStatus(StatusCode.ERROR);
+            } finally {
+              Span.current().end();
+            }
+          }));
     }
 
     await()

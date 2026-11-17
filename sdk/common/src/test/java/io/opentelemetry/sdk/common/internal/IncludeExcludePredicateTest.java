@@ -159,19 +159,18 @@ class IncludeExcludePredicateTest {
   private static void shouldIncludeAll(
       @Nullable Collection<String> included, @Nullable Collection<String> excluded) {
     Arrays.asList("foo", "fooo", "fOo", "FOO", "bar", "bAr", "barr", "bArr", "baz")
-        .forEach(
-            s -> {
-              Predicate<String> exactMatching =
-                  IncludeExcludePredicate.createExactMatching(included, excluded);
-              assertThat(exactMatching.test(s)).isTrue();
-              assertThat(exactMatching.toString())
-                  .isEqualTo("IncludeExcludePredicate{globMatchingEnabled=false}");
-              Predicate<String> patternMatching =
-                  IncludeExcludePredicate.createPatternMatching(included, excluded);
-              assertThat(patternMatching.test(s)).isTrue();
-              assertThat(patternMatching.toString())
-                  .isEqualTo("IncludeExcludePredicate{globMatchingEnabled=true}");
-            });
+        .forEach(s -> {
+          Predicate<String> exactMatching =
+              IncludeExcludePredicate.createExactMatching(included, excluded);
+          assertThat(exactMatching.test(s)).isTrue();
+          assertThat(exactMatching.toString())
+              .isEqualTo("IncludeExcludePredicate{globMatchingEnabled=false}");
+          Predicate<String> patternMatching =
+              IncludeExcludePredicate.createPatternMatching(included, excluded);
+          assertThat(patternMatching.test(s)).isTrue();
+          assertThat(patternMatching.toString())
+              .isEqualTo("IncludeExcludePredicate{globMatchingEnabled=true}");
+        });
   }
 
   @Test

@@ -97,11 +97,10 @@ class OtlpMetricExporterProviderTest {
 
   @Test
   void createExporter_UnsupportedProtocol() {
-    assertThatThrownBy(
-            () ->
-                provider.createExporter(
-                    DefaultConfigProperties.createFromMap(
-                        singletonMap("otel.exporter.otlp.protocol", "foo"))))
+    assertThatThrownBy(() ->
+            provider.createExporter(
+                DefaultConfigProperties.createFromMap(
+                    singletonMap("otel.exporter.otlp.protocol", "foo"))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
   }

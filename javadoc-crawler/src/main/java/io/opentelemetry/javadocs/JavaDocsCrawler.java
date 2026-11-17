@@ -91,12 +91,11 @@ public final class JavaDocsCrawler {
         Optional.ofNullable(map)
             .map(mavenResult -> (Map<?, ?>) mavenResult.get("response"))
             .map(response -> (Integer) response.get("numFound"))
-            .orElseThrow(
-                () ->
-                    new IOException(
-                        "Maven Central response for group "
-                            + group
-                            + " did not contain response.numFound"));
+            .orElseThrow(() ->
+                new IOException(
+                    "Maven Central response for group "
+                        + group
+                        + " did not contain response.numFound"));
 
     List<Artifact> artifacts = convertToArtifacts(map);
     if (artifacts.size() < numFound) {
@@ -116,19 +115,18 @@ public final class JavaDocsCrawler {
     return Optional.ofNullable(map)
         .map(mavenResults -> (Map<?, ?>) mavenResults.get("response"))
         .map(response -> (List<?>) response.get("docs"))
-        .map(
-            docs -> {
-              List<Artifact> artifacts = new ArrayList<>();
-              for (Object doc : docs) {
-                Map<?, ?> docMap = (Map<?, ?>) doc;
-                String group = Objects.requireNonNull((String) docMap.get("g"), "g");
-                String artifact = Objects.requireNonNull((String) docMap.get("a"), "a");
-                String version =
-                    Objects.requireNonNull((String) docMap.get("latestVersion"), "latestVersion");
-                artifacts.add(new Artifact(Objects.requireNonNull(group), artifact, version));
-              }
-              return artifacts;
-            })
+        .map(docs -> {
+          List<Artifact> artifacts = new ArrayList<>();
+          for (Object doc : docs) {
+            Map<?, ?> docMap = (Map<?, ?>) doc;
+            String group = Objects.requireNonNull((String) docMap.get("g"), "g");
+            String artifact = Objects.requireNonNull((String) docMap.get("a"), "a");
+            String version =
+                Objects.requireNonNull((String) docMap.get("latestVersion"), "latestVersion");
+            artifacts.add(new Artifact(Objects.requireNonNull(group), artifact, version));
+          }
+          return artifacts;
+        })
         .orElseGet(ArrayList::new);
   }
 

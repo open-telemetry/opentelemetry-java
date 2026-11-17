@@ -32,24 +32,23 @@ class Client {
   public Future<Object> send(Object message) {
     SpanContext parentSpanContext = tracer.activeSpan().context();
 
-    return executor.submit(
-        () -> {
-          logger.info("Child thread with message '{}' started", message);
+    return executor.submit(() -> {
+      logger.info("Child thread with message '{}' started", message);
 
-          Span span =
-              tracer
-                  .buildSpan("subtask")
-                  .addReference(References.FOLLOWS_FROM, parentSpanContext)
-                  .start();
-          try (Scope subtaskScope = tracer.activateSpan(span)) {
-            // Simulate work - make sure we finish *after* the parent Span.
-            parentDoneLatch.await();
-          } finally {
-            span.finish();
-          }
+      Span span =
+          tracer
+              .buildSpan("subtask")
+              .addReference(References.FOLLOWS_FROM, parentSpanContext)
+              .start();
+      try (Scope subtaskScope = tracer.activateSpan(span)) {
+        // Simulate work - make sure we finish *after* the parent Span.
+        parentDoneLatch.await();
+      } finally {
+        span.finish();
+      }
 
-          logger.info("Child thread with message '{}' finished", message);
-          return message + "::response";
-        });
+      logger.info("Child thread with message '{}' finished", message);
+      return message + "::response";
+    });
   }
 }

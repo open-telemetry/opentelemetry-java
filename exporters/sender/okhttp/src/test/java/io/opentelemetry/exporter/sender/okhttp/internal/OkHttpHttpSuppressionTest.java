@@ -30,7 +30,7 @@ class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttp
             return content.length;
           }
         };
-    sender.send(requestBodyWriter, (response) -> onSuccess.run(), (error) -> onFailure.run());
+    sender.send(requestBodyWriter, response -> onSuccess.run(), error -> onFailure.run());
   }
 
   @Override

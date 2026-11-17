@@ -46,11 +46,10 @@ public class SpanReusableDataMarshaler {
       exportMarshaler.initialize(spans);
       return doExport
           .apply(exportMarshaler, spans.size())
-          .whenComplete(
-              () -> {
-                exportMarshaler.reset();
-                marshalerPool.add(exportMarshaler);
-              });
+          .whenComplete(() -> {
+            exportMarshaler.reset();
+            marshalerPool.add(exportMarshaler);
+          });
     }
     // MemoryMode == MemoryMode.IMMUTABLE_DATA
     TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);

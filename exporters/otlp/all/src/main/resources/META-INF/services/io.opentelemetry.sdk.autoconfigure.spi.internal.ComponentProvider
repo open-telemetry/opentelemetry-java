@@ -1,6 +1,0 @@
-io.opentelemetry.exporter.otlp.internal.OtlpHttpMetricExporterComponentProvider
-io.opentelemetry.exporter.otlp.internal.OtlpHttpSpanExporterComponentProvider
-io.opentelemetry.exporter.otlp.internal.OtlpHttpLogRecordExporterComponentProvider
-io.opentelemetry.exporter.otlp.internal.OtlpGrpcMetricExporterComponentProvider
-io.opentelemetry.exporter.otlp.internal.OtlpGrpcSpanExporterComponentProvider
-io.opentelemetry.exporter.otlp.internal.OtlpGrpcLogRecordExporterComponentProvider

@@ -30,13 +30,12 @@ public class AsyncCounterTester implements TestInstrumentType.InstrumentTester {
       sdkMeterProvider
           .get("meter")
           .counterBuilder("counter" + i)
-          .buildWithCallback(
-              observableLongMeasurement -> {
-                for (int j = 0; j < attributesList.size(); j++) {
-                  Attributes attributes = attributesList.get(j);
-                  observableLongMeasurement.record(random.nextInt(10_000), attributes);
-                }
-              });
+          .buildWithCallback(observableLongMeasurement -> {
+            for (int j = 0; j < attributesList.size(); j++) {
+              Attributes attributes = attributesList.get(j);
+              observableLongMeasurement.record(random.nextInt(10_000), attributes);
+            }
+          });
     }
     return new EmptyInstrumentsState();
   }

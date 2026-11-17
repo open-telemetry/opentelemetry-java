@@ -41,18 +41,16 @@ public class LeakDetectingSpanProcessorTest {
 
     await()
         .atMost(Duration.ofSeconds(30))
-        .untilAsserted(
-            () -> {
-              System.gc();
-              assertThat(logs)
-                  .singleElement()
-                  .satisfies(
-                      callerStackTrace ->
-                          assertThat(callerStackTrace.getMessage())
-                              .matches(
-                                  "Span garbage collected before being ended\\. "
-                                      + "Thread: \\[.*\\] started span : .*"));
-            });
+        .untilAsserted(() -> {
+          System.gc();
+          assertThat(logs)
+              .singleElement()
+              .satisfies(callerStackTrace ->
+                  assertThat(callerStackTrace.getMessage())
+                      .matches(
+                          "Span garbage collected before being ended\\. "
+                              + "Thread: \\[.*\\] started span : .*"));
+        });
   }
 
   @Test

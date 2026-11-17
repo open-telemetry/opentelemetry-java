@@ -80,11 +80,10 @@ class B3PropagationIntegrationTest {
                 .get()
                 .get("/backend")
                 .aggregate()
-                .thenApply(
-                    unused -> {
-                      span.end();
-                      return HttpResponse.of("OK");
-                    }));
+                .thenApply(unused -> {
+                  span.end();
+                  return HttpResponse.of("OK");
+                }));
       }
     }
   }
@@ -196,12 +195,11 @@ class B3PropagationIntegrationTest {
 
   private static WebClient createPropagatingClient(URI uri, TextMapPropagator propagator) {
     return WebClient.builder(uri)
-        .decorator(
-            (delegate, ctx, req) -> {
-              propagator.inject(
-                  Context.current(), ctx, ClientRequestContext::addAdditionalRequestHeader);
-              return delegate.execute(ctx, req);
-            })
+        .decorator((delegate, ctx, req) -> {
+          propagator.inject(
+              Context.current(), ctx, ClientRequestContext::addAdditionalRequestHeader);
+          return delegate.execute(ctx, req);
+        })
         .build();
   }
 

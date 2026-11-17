@@ -115,20 +115,17 @@ class SdkMeterRegistryTest {
     longCounter2.add(10, Attributes.empty());
 
     assertThat(sdkMeterReader.collectAllMetrics())
-        .allSatisfy(
-            metric ->
-                assertThat(metric)
-                    .hasName("testLongCounter")
-                    .hasLongSumSatisfying(
-                        sum ->
-                            sum.isCumulative()
-                                .isMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasValue(10)
-                                            .hasStartEpochNanos(testClock.now())
-                                            .hasEpochNanos(testClock.now()))))
+        .allSatisfy(metric ->
+            assertThat(metric)
+                .hasName("testLongCounter")
+                .hasLongSumSatisfying(sum ->
+                    sum.isCumulative()
+                        .isMonotonic()
+                        .hasPointsSatisfying(point ->
+                            point
+                                .hasValue(10)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now()))))
         .extracting(MetricData::getInstrumentationScopeInfo)
         .containsExactlyInAnyOrder(
             ((SdkMeter) sdkMeter1).getInstrumentationScopeInfo(),

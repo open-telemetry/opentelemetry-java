@@ -93,10 +93,9 @@ class SimpleSpanProcessorTest {
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData()).thenReturn(spanData);
     when(spanExporter.export(anyCollection()))
-        .thenAnswer(
-            invocation -> {
-              throw new Exception("No export for you.");
-            });
+        .thenAnswer(invocation -> {
+          throw new Exception("No export for you.");
+        });
 
     assertThatCode(() -> simpleSampledSpansProcessor.onEnd(readableSpan))
         .doesNotThrowAnyException();

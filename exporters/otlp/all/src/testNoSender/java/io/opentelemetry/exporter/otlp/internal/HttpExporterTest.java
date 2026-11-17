@@ -14,12 +14,10 @@ class HttpExporterTest {
 
   @Test
   void build_NoHttpSenderProvider() {
-    assertThatThrownBy(
-            () ->
-                new HttpExporterBuilder(
-                        StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
-                        "http://localhost")
-                    .build())
+    assertThatThrownBy(() ->
+            new HttpExporterBuilder(
+                    StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
+                .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
             "No HttpSenderProvider found on classpath. Please add dependency on "

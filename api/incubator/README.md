@@ -34,3 +34,11 @@ Features:
 * Utility methods to reduce boilerplate using span API, including extracting context, and wrapping runnables / callables with spans
 
 See [ExtendedTraceApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/trace/ExtendedTraceApiUsageTest.java).
+
+## Context-Scoped Attributes
+
+Features:
+
+* Associate attributes with a context for automatic stamping across telemetry signals
+
+See [ContextAttributesUsageTest](./src/test/java/io/opentelemetry/api/incubator/common/ContextAttributesUsageTest.java).

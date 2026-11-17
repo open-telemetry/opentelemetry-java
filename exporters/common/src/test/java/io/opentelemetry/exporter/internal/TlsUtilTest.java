@@ -58,19 +58,16 @@ class TlsUtilTest {
 
   @Test
   void keyManager_Rsa() {
-    assertThatCode(
-            () ->
-                TlsUtil.keyManager(
-                    rsaCertificate.key().getEncoded(), rsaCertificate.cert().getEncoded()))
+    assertThatCode(() ->
+            TlsUtil.keyManager(
+                rsaCertificate.key().getEncoded(), rsaCertificate.cert().getEncoded()))
         .doesNotThrowAnyException();
   }
 
   @Test
   void keyManager_Ec() {
-    assertThatCode(
-            () ->
-                TlsUtil.keyManager(
-                    ecCertificate.key().getEncoded(), ecCertificate.cert().getEncoded()))
+    assertThatCode(() ->
+            TlsUtil.keyManager(ecCertificate.key().getEncoded(), ecCertificate.cert().getEncoded()))
         .doesNotThrowAnyException();
   }
 
@@ -78,10 +75,9 @@ class TlsUtilTest {
   void generatePrivateKey_Invalid() {
     PKCS8EncodedKeySpec keySpec =
         new PKCS8EncodedKeySpec(TlsUtil.decodePem(rsaCertificate.key().getEncoded()));
-    assertThatCode(
-            () ->
-                TlsUtil.generatePrivateKey(
-                    keySpec, Collections.singletonList(KeyFactory.getInstance("EC"))))
+    assertThatCode(() ->
+            TlsUtil.generatePrivateKey(
+                keySpec, Collections.singletonList(KeyFactory.getInstance("EC"))))
         .isInstanceOf(SSLException.class)
         .hasMessage("Unable to generate key from supported algorithms: [EC]");
   }
@@ -137,11 +133,10 @@ class TlsUtilTest {
         StandardOpenOption.APPEND);
     Files.write(certificate, "\n".getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
 
-    assertThatCode(
-            () ->
-                TlsUtil.keyManager(
-                    com.google.common.io.Files.toByteArray(selfSignedCertificate.privateKey()),
-                    com.google.common.io.Files.toByteArray(new File(certificate.toString()))))
+    assertThatCode(() ->
+            TlsUtil.keyManager(
+                com.google.common.io.Files.toByteArray(selfSignedCertificate.privateKey()),
+                com.google.common.io.Files.toByteArray(new File(certificate.toString()))))
         .doesNotThrowAnyException();
   }
 

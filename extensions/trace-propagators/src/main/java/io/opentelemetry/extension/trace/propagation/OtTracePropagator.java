@@ -91,19 +91,18 @@ public final class OtTracePropagator implements TextMapPropagator {
       // Metadata is not supported by OpenTracing
       int[] entriesEmitted = {0};
       int[] bytesEmitted = {0};
-      baggage.forEach(
-          (key, baggageEntry) -> {
-            if (entriesEmitted[0] >= MAX_BAGGAGE_ENTRIES) {
-              return;
-            }
-            String value = baggageEntry.getValue();
-            if (bytesEmitted[0] + key.length() + value.length() > MAX_BAGGAGE_BYTES) {
-              return;
-            }
-            setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, value);
-            entriesEmitted[0]++;
-            bytesEmitted[0] += key.length() + value.length();
-          });
+      baggage.forEach((key, baggageEntry) -> {
+        if (entriesEmitted[0] >= MAX_BAGGAGE_ENTRIES) {
+          return;
+        }
+        String value = baggageEntry.getValue();
+        if (bytesEmitted[0] + key.length() + value.length() > MAX_BAGGAGE_BYTES) {
+          return;
+        }
+        setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, value);
+        entriesEmitted[0]++;
+        bytesEmitted[0] += key.length() + value.length();
+      });
     }
   }
 

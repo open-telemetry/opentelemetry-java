@@ -1229,11 +1229,9 @@ class MetricsRequestMarshalerTest {
   private static List<ExponentialHistogramDataPoint> toExponentialHistogramDataPoints(
       MarshalerSource marshalerSource, Collection<ExponentialHistogramPointData> points) {
     return points.stream()
-        .map(
-            point ->
-                parse(
-                    ExponentialHistogramDataPoint.getDefaultInstance(),
-                    marshalerSource.create(point)))
+        .map(point ->
+            parse(
+                ExponentialHistogramDataPoint.getDefaultInstance(), marshalerSource.create(point)))
         .collect(Collectors.toList());
   }
 

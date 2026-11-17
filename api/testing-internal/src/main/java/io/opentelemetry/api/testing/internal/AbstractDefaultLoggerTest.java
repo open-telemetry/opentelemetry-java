@@ -32,13 +32,12 @@ public abstract class AbstractDefaultLoggerTest {
 
     assertThat(provider).isSameAs(getLoggerProvider());
     assertThatCode(() -> provider.get("scope-name")).doesNotThrowAnyException();
-    assertThatCode(
-            () ->
-                provider
-                    .loggerBuilder("scope-name")
-                    .setInstrumentationVersion("1.0")
-                    .setSchemaUrl("http://schema.com")
-                    .build())
+    assertThatCode(() ->
+            provider
+                .loggerBuilder("scope-name")
+                .setInstrumentationVersion("1.0")
+                .setSchemaUrl("http://schema.com")
+                .build())
         .doesNotThrowAnyException();
 
     assertThatCode(() -> provider.loggerBuilder("scope-name").build().logRecordBuilder())
@@ -53,30 +52,29 @@ public abstract class AbstractDefaultLoggerTest {
 
   @Test
   void buildAndEmit() {
-    assertThatCode(
-            () ->
-                getLogger()
-                    .logRecordBuilder()
-                    .setEventName("event name")
-                    .setTimestamp(100, TimeUnit.SECONDS)
-                    .setTimestamp(Instant.now())
-                    .setObservedTimestamp(100, TimeUnit.SECONDS)
-                    .setObservedTimestamp(Instant.now())
-                    .setContext(Context.root())
-                    .setSeverity(Severity.DEBUG)
-                    .setSeverityText("debug")
-                    .setBody("body")
-                    .setBody(Value.of("body"))
-                    .setAttribute(AttributeKey.stringKey("key1"), "value1")
-                    .setAttribute("stringKey", "value")
-                    .setAttribute("longKey", 100L)
-                    .setAttribute("intKey", 100)
-                    .setAttribute("doubleKey", 1.23)
-                    .setAttribute("boolKey", true)
-                    .setAttribute("valueKey", Value.of("value"))
-                    .setAllAttributes(Attributes.builder().put("key2", "value2").build())
-                    .setException(new RuntimeException("error"))
-                    .emit())
+    assertThatCode(() ->
+            getLogger()
+                .logRecordBuilder()
+                .setEventName("event name")
+                .setTimestamp(100, TimeUnit.SECONDS)
+                .setTimestamp(Instant.now())
+                .setObservedTimestamp(100, TimeUnit.SECONDS)
+                .setObservedTimestamp(Instant.now())
+                .setContext(Context.root())
+                .setSeverity(Severity.DEBUG)
+                .setSeverityText("debug")
+                .setBody("body")
+                .setBody(Value.of("body"))
+                .setAttribute(AttributeKey.stringKey("key1"), "value1")
+                .setAttribute("stringKey", "value")
+                .setAttribute("longKey", 100L)
+                .setAttribute("intKey", 100)
+                .setAttribute("doubleKey", 1.23)
+                .setAttribute("boolKey", true)
+                .setAttribute("valueKey", Value.of("value"))
+                .setAllAttributes(Attributes.builder().put("key2", "value2").build())
+                .setException(new RuntimeException("error"))
+                .emit())
         .doesNotThrowAnyException();
   }
 }

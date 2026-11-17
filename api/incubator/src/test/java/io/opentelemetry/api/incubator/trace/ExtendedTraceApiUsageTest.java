@@ -80,9 +80,8 @@ class ExtendedTraceApiUsageTest {
     // omitted from the results even if spans were recorded. The check if enabled simply avoids
     // unnecessary computation.
     assertThat(exporter.getFinishedSpanItems())
-        .allSatisfy(
-            spanData ->
-                assertThat(spanData.getInstrumentationScopeInfo().getName()).isEqualTo("tracerA"));
+        .allSatisfy(spanData ->
+            assertThat(spanData.getInstrumentationScopeInfo().getName()).isEqualTo("tracerA"));
   }
 
   private static final Random random = new Random();
@@ -138,12 +137,11 @@ class ExtendedTraceApiUsageTest {
 
     // Verify the span has the correct parent context
     assertThat(spanExporter.getFinishedSpanItems())
-        .satisfiesExactly(
-            span ->
-                assertThat(span)
-                    .hasName("local_root")
-                    .hasParentSpanId(remoteParentContext.getSpanId())
-                    .hasTraceId(remoteParentContext.getTraceId()));
+        .satisfiesExactly(span ->
+            assertThat(span)
+                .hasName("local_root")
+                .hasParentSpanId(remoteParentContext.getSpanId())
+                .hasTraceId(remoteParentContext.getTraceId()));
   }
 
   /**

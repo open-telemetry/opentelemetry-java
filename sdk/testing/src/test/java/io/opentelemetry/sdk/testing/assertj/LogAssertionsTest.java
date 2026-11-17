@@ -77,36 +77,30 @@ public class LogAssertionsTest {
   void passing() {
     assertThat(LOG_DATA)
         .hasResource(RESOURCE)
-        .hasResourceSatisfying(
-            resource ->
-                resource
-                    .hasSchemaUrl(null)
-                    .hasAttribute(DOG, "bark")
-                    .hasAttributes(
-                        Attributes.of(DOG, "bark", AttributeKey.booleanKey("dog is cute"), true))
-                    .hasAttributes(
-                        attributeEntry("dog", "bark"), attributeEntry("dog is cute", true))
-                    .hasAttributesSatisfying(
-                        attributes ->
-                            assertThat(attributes)
-                                .hasSize(2)
-                                .containsEntry(stringKey("dog"), "bark")
-                                .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
-                                .hasEntrySatisfying(
-                                    AttributeKey.booleanKey("dog is cute"),
-                                    value -> assertThat(value).isTrue())))
-        .hasResourceSatisfying(
-            resource ->
-                resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("bark"))))
-        .hasResourceSatisfying(
-            resource ->
-                resource.hasAttributesSatisfyingExactly(
-                    equalTo(DOG, "bark"), equalTo(AttributeKey.booleanKey("dog is cute"), true)))
-        .hasResourceSatisfying(
-            resource ->
-                resource.hasAttributesSatisfyingExactly(
-                    satisfies(DOG, val -> val.startsWith("bar")),
-                    satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
+        .hasResourceSatisfying(resource ->
+            resource
+                .hasSchemaUrl(null)
+                .hasAttribute(DOG, "bark")
+                .hasAttributes(
+                    Attributes.of(DOG, "bark", AttributeKey.booleanKey("dog is cute"), true))
+                .hasAttributes(attributeEntry("dog", "bark"), attributeEntry("dog is cute", true))
+                .hasAttributesSatisfying(attributes ->
+                    assertThat(attributes)
+                        .hasSize(2)
+                        .containsEntry(stringKey("dog"), "bark")
+                        .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
+                        .hasEntrySatisfying(
+                            AttributeKey.booleanKey("dog is cute"),
+                            value -> assertThat(value).isTrue())))
+        .hasResourceSatisfying(resource ->
+            resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("bark"))))
+        .hasResourceSatisfying(resource ->
+            resource.hasAttributesSatisfyingExactly(
+                equalTo(DOG, "bark"), equalTo(AttributeKey.booleanKey("dog is cute"), true)))
+        .hasResourceSatisfying(resource ->
+            resource.hasAttributesSatisfyingExactly(
+                satisfies(DOG, val -> val.startsWith("bar")),
+                satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
         .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
         .hasEventName("event name")
         .hasTimestamp(100)
@@ -127,39 +121,38 @@ public class LogAssertionsTest {
             attributeEntry("scores", 0L, 1L),
             attributeEntry("coins", 0.01, 0.05, 0.1),
             attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
-        .hasAttributesSatisfying(
-            attributes ->
-                OpenTelemetryAssertions.assertThat(attributes)
-                    .hasSize(9)
-                    .containsEntry(stringKey("bear"), "mya")
-                    .hasEntrySatisfying(stringKey("bear"), value -> assertThat(value).hasSize(3))
-                    .containsEntry("bear", "mya")
-                    .containsEntry("warm", true)
-                    .containsEntry("temperature", 30)
-                    .containsEntry(longKey("temperature"), 30L)
-                    .containsEntry(longKey("temperature"), 30)
-                    .containsEntry("length", 1.2)
-                    .containsEntry("colors", "red", "blue")
-                    .containsEntryWithStringValuesOf("colors", Arrays.asList("red", "blue"))
-                    .containsEntry("conditions", false, true)
-                    .containsEntryWithBooleanValuesOf("conditions", Arrays.asList(false, true))
-                    .containsEntry("scores", 0L, 1L)
-                    .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
-                    .containsEntry("coins", 0.01, 0.05, 0.1)
-                    .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
-                    .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
-                    .containsKey(stringKey("bear"))
-                    .containsKey("bear")
-                    .containsOnly(
-                        attributeEntry("bear", "mya"),
-                        attributeEntry("warm", true),
-                        attributeEntry("temperature", 30),
-                        attributeEntry("length", 1.2),
-                        attributeEntry("colors", "red", "blue"),
-                        attributeEntry("conditions", false, true),
-                        attributeEntry("scores", 0L, 1L),
-                        attributeEntry("coins", 0.01, 0.05, 0.1),
-                        attributeEntry("bytes", Value.of(new byte[] {1, 2, 3}))))
+        .hasAttributesSatisfying(attributes ->
+            OpenTelemetryAssertions.assertThat(attributes)
+                .hasSize(9)
+                .containsEntry(stringKey("bear"), "mya")
+                .hasEntrySatisfying(stringKey("bear"), value -> assertThat(value).hasSize(3))
+                .containsEntry("bear", "mya")
+                .containsEntry("warm", true)
+                .containsEntry("temperature", 30)
+                .containsEntry(longKey("temperature"), 30L)
+                .containsEntry(longKey("temperature"), 30)
+                .containsEntry("length", 1.2)
+                .containsEntry("colors", "red", "blue")
+                .containsEntryWithStringValuesOf("colors", Arrays.asList("red", "blue"))
+                .containsEntry("conditions", false, true)
+                .containsEntryWithBooleanValuesOf("conditions", Arrays.asList(false, true))
+                .containsEntry("scores", 0L, 1L)
+                .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
+                .containsEntry("coins", 0.01, 0.05, 0.1)
+                .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
+                .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
+                .containsKey(stringKey("bear"))
+                .containsKey("bear")
+                .containsOnly(
+                    attributeEntry("bear", "mya"),
+                    attributeEntry("warm", true),
+                    attributeEntry("temperature", 30),
+                    attributeEntry("length", 1.2),
+                    attributeEntry("colors", "red", "blue"),
+                    attributeEntry("conditions", false, true),
+                    attributeEntry("scores", 0L, 1L),
+                    attributeEntry("coins", 0.01, 0.05, 0.1),
+                    attributeEntry("bytes", Value.of(new byte[] {1, 2, 3}))))
         .hasAttributesSatisfying(
             equalTo(stringKey("bear"), "mya"),
             equalTo(AttributeKey.booleanArrayKey("conditions"), Arrays.asList(false, true)))
@@ -179,35 +172,29 @@ public class LogAssertionsTest {
   @Test
   void failure() {
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasResource(Resource.empty()));
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasResourceSatisfying(resource -> resource.hasSchemaUrl("http://example.com")))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasResourceSatisfying(resource -> resource.hasSchemaUrl("http://example.com")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasResourceSatisfying(resource -> resource.hasAttribute(DOG, "meow")))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasResourceSatisfying(resource -> resource.hasAttribute(DOG, "meow")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasResourceSatisfying(
-                        resource -> resource.hasAttributes(Attributes.of(DOG, "bark"))))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasResourceSatisfying(
+                    resource -> resource.hasAttributes(Attributes.of(DOG, "bark"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasResourceSatisfying(
-                        resource -> resource.hasAttributes(attributeEntry("dog is cute", true))))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasResourceSatisfying(
+                    resource -> resource.hasAttributes(attributeEntry("dog is cute", true))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasResourceSatisfying(
-                        resource ->
-                            resource.hasAttributesSatisfying(
-                                attributes -> assertThat(attributes).hasSize(1))))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasResourceSatisfying(resource ->
+                    resource.hasAttributesSatisfying(
+                        attributes -> assertThat(attributes).hasSize(1))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
         () -> assertThat(LOG_DATA).hasInstrumentationScope(InstrumentationScopeInfo.empty()));
@@ -231,61 +218,48 @@ public class LogAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasAttributes(attributeEntry("food", "burger")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasAttributesSatisfying(
-                        attributes ->
-                            OpenTelemetryAssertions.assertThat(attributes)
-                                .containsEntry("cat", "bark")))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasAttributesSatisfying(attributes ->
+                    OpenTelemetryAssertions.assertThat(attributes).containsEntry("cat", "bark")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasAttributesSatisfying(
-                        attributes ->
-                            OpenTelemetryAssertions.assertThat(attributes)
-                                .containsKey(stringKey("cat"))))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasAttributesSatisfying(attributes ->
+                    OpenTelemetryAssertions.assertThat(attributes).containsKey(stringKey("cat"))))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasAttributesSatisfying(
-                        attributes ->
-                            OpenTelemetryAssertions.assertThat(attributes).containsKey("cat")))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasAttributesSatisfying(attributes ->
+                    OpenTelemetryAssertions.assertThat(attributes).containsKey("cat")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasAttributesSatisfying(
-                        attributes -> OpenTelemetryAssertions.assertThat(attributes).isEmpty()))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasAttributesSatisfying(
+                    attributes -> OpenTelemetryAssertions.assertThat(attributes).isEmpty()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasAttributesSatisfying(
-                        attributes -> OpenTelemetryAssertions.assertThat(attributes).hasSize(33)))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasAttributesSatisfying(
+                    attributes -> OpenTelemetryAssertions.assertThat(attributes).hasSize(33)))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasAttributesSatisfying(
-                        attributes ->
-                            OpenTelemetryAssertions.assertThat(attributes)
-                                .hasEntrySatisfying(
-                                    stringKey("bear"), value -> assertThat(value).hasSize(2))))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasAttributesSatisfying(attributes ->
+                    OpenTelemetryAssertions.assertThat(attributes)
+                        .hasEntrySatisfying(
+                            stringKey("bear"), value -> assertThat(value).hasSize(2))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(LOG_DATA).hasAttributesSatisfying(equalTo(stringKey("bear"), "moo")))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasAttributesSatisfyingExactly(
-                        equalTo(stringKey("bear"), "mya"),
-                        equalTo(AttributeKey.booleanKey("warm"), true),
-                        equalTo(longKey("temperature"), 30L),
-                        equalTo(AttributeKey.doubleKey("length"), 1.2)))
+    assertThatThrownBy(() ->
+            assertThat(LOG_DATA)
+                .hasAttributesSatisfyingExactly(
+                    equalTo(stringKey("bear"), "mya"),
+                    equalTo(AttributeKey.booleanKey("warm"), true),
+                    equalTo(longKey("temperature"), 30L),
+                    equalTo(AttributeKey.doubleKey("length"), 1.2)))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasTotalAttributeCount(11))
         .isInstanceOf(AssertionError.class);
