@@ -55,8 +55,6 @@ public interface SpanProcessor extends Closeable {
    * trace and span ids, are recording, and propagate to downstream services. Only export is
    * skipped. This is <em>not</em> a way to disable tracing. To disable tracing, register no span
    * processors at all, or disable the tracer via scope configuration.
-   *
-   * @since 1.68.0
    */
   static SpanProcessor noop() {
     return NoopSpanProcessor.getInstance();

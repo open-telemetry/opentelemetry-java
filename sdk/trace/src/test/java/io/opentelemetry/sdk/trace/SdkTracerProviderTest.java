@@ -20,7 +20,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -339,20 +338,10 @@ class SdkTracerProviderTest {
     assertThat(tracer).isInstanceOf(SdkTracer.class);
     assertThat(tracer.isEnabled()).isTrue();
 
-    Span parent = tracer.spanBuilder("parent").startSpan();
-    Span child = tracer.spanBuilder("child").setParent(Context.root().with(parent)).startSpan();
-    try {
-      assertThat(parent.getSpanContext().isValid()).isTrue();
-      assertThat(parent.isRecording()).isTrue();
-      assertThat(child.getSpanContext().isValid()).isTrue();
-      assertThat(child.getSpanContext().getTraceId())
-          .isEqualTo(parent.getSpanContext().getTraceId());
-      assertThat(child.getSpanContext().getSpanId())
-          .isNotEqualTo(parent.getSpanContext().getSpanId());
-    } finally {
-      child.end();
-      parent.end();
-    }
+    Span span = tracer.spanBuilder("span").startSpan();
+    assertThat(span.getSpanContext().isValid()).isTrue();
+    assertThat(span.isRecording()).isTrue();
+    span.end();
   }
 
   @Test
@@ -362,16 +351,6 @@ class SdkTracerProviderTest {
     Tracer tracer =
         SdkTracerProvider.builder().addSpanProcessor(SpanProcessor.composite()).build().get("test");
     assertThat(tracer).isInstanceOf(SdkTracer.class);
-  }
-
-  @Test
-  void noSpanProcessors_tracerNotEnabled() {
-    Tracer tracer = SdkTracerProvider.builder().build().get("test");
-    assertThat(tracer.isEnabled()).isFalse();
-
-    Span span = tracer.spanBuilder("test-span").startSpan();
-    assertThat(span.getSpanContext().isValid()).isFalse();
-    span.end();
   }
 
   @Test

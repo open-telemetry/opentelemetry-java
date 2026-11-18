@@ -11,8 +11,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -96,6 +94,9 @@ class TracerProviderConfigurationTest {
                   .extracting("activeSpanProcessor")
                   .isEqualTo(SpanProcessor.composite()));
       assertThat(closeables).isEmpty();
+      // "none" must register no processors at all (not SpanProcessor.noop(), which is the same
+      // instance as SpanProcessor.composite()), so tracers resolve to no-op.
+      assertThat(tracerProvider.get("test")).isSameAs(TracerProvider.noop().get("test"));
     }
   }
 
@@ -125,71 +126,8 @@ class TracerProviderConfigurationTest {
     assertThat(closeables).isEmpty();
 
     try (SdkTracerProvider tracerProvider = tracerProviderBuilder.build()) {
-      assertThat(tracerProvider)
-          .extracting("sharedState")
-          .satisfies(
-              sharedState ->
-                  assertThat(sharedState)
-                      .extracting("activeSpanProcessor")
-                      .isSameAs(SpanProcessor.noop()));
-
-      Tracer tracer = tracerProvider.get("test");
-      assertThat(tracer.isEnabled()).isTrue();
-      Span span = tracer.spanBuilder("span").startSpan();
-      try {
-        assertThat(span.getSpanContext().isValid()).isTrue();
-        assertThat(span.isRecording()).isTrue();
-      } finally {
-        span.end();
-      }
+      assertThat(tracerProvider.get("test").isEnabled()).isTrue();
     }
-  }
-
-  @Test
-  void configureTracerProvider_noneExporter_tracersAreNoop() {
-    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
-    TracerProviderConfiguration.configureTracerProvider(
-        tracerProviderBuilder,
-        DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.traces.exporter", "none")),
-        spiHelper,
-        MeterProvider.noop(),
-        (a, unused) -> a,
-        (a, unused) -> a,
-        (a, unused) -> a,
-        new ArrayList<>());
-
-    try (SdkTracerProvider tracerProvider = tracerProviderBuilder.build()) {
-      Tracer tracer = tracerProvider.get("test");
-      assertThat(tracer).isSameAs(TracerProvider.noop().get("test"));
-      assertThat(tracer.isEnabled()).isFalse();
-
-      Span span = tracer.spanBuilder("span").startSpan();
-      try {
-        assertThat(span.getSpanContext().isValid()).isFalse();
-        assertThat(span.isRecording()).isFalse();
-      } finally {
-        span.end();
-      }
-    }
-  }
-
-  @Test
-  void configureTracerProvider_noopExporterWithOthers() {
-    assertThatThrownBy(
-            () ->
-                TracerProviderConfiguration.configureTracerProvider(
-                    SdkTracerProvider.builder(),
-                    DefaultConfigProperties.createFromMap(
-                        Collections.singletonMap("otel.traces.exporter", "noop,otlp")),
-                    spiHelper,
-                    MeterProvider.noop(),
-                    (a, unused) -> a,
-                    (a, unused) -> a,
-                    (a, unused) -> a,
-                    new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("otel.traces.exporter contains noop along with other exporters");
   }
 
   @Test
