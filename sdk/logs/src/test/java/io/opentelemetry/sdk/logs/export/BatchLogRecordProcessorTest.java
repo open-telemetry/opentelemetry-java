@@ -622,8 +622,8 @@ class BatchLogRecordProcessorTest {
 
     firstFlush.join(10, TimeUnit.SECONDS);
     assertThat(firstFlush.isSuccess()).isTrue();
+    await().untilAsserted(() -> assertThat(secondFlushRef.get()).isNotNull());
     CompletableResultCode secondFlush = secondFlushRef.get();
-    assertThat(secondFlush).isNotNull();
     secondFlush.join(10, TimeUnit.SECONDS);
     assertThat(secondFlush.isSuccess()).isTrue();
     assertThat(exporter.getExported())
@@ -774,7 +774,9 @@ class BatchLogRecordProcessorTest {
         .thenAnswer(invocation -> {
           exportStarted.countDown();
           try {
-            exportBlocker.await();
+            if (!exportBlocker.await(10, TimeUnit.SECONDS)) {
+              throw new AssertionError("Timed out waiting for exportBlocker");
+            }
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
           }
@@ -791,7 +793,7 @@ class BatchLogRecordProcessorTest {
     emitLog(sdkLoggerProvider, LOG_MESSAGE_1);
     processor.forceFlush();
 
-    exportStarted.await();
+    assertThat(exportStarted.await(10, TimeUnit.SECONDS)).isTrue();
 
     // Queue a second flush while worker is inside export
     CompletableResultCode secondFlush = processor.forceFlush();
@@ -819,7 +821,9 @@ class BatchLogRecordProcessorTest {
         .thenAnswer(invocation -> {
           shutdownStarted.countDown();
           try {
-            shutdownBlocker.await();
+            if (!shutdownBlocker.await(10, TimeUnit.SECONDS)) {
+              throw new AssertionError("Timed out waiting for shutdownBlocker");
+            }
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
           }
@@ -836,7 +840,7 @@ class BatchLogRecordProcessorTest {
     CompletableResultCode shutdownResult = processor.shutdown();
 
     // Wait until exporter.shutdown() is in flight
-    shutdownStarted.await();
+    assertThat(shutdownStarted.await(10, TimeUnit.SECONDS)).isTrue();
 
     // While exporter.shutdown() is in flight, continueWork is false and flushRequested is null
     CompletableResultCode flushDuringShutdown = processor.forceFlush();
@@ -892,15 +896,21 @@ class BatchLogRecordProcessorTest {
     CountDownLatch startLatch = new CountDownLatch(1);
     CountDownLatch doneLatch = new CountDownLatch(threadCount);
     List<CompletableResultCode> results = new CopyOnWriteArrayList<>();
+    List<Throwable> threadErrors = new CopyOnWriteArrayList<>();
 
     for (int i = 0; i < threadCount; i++) {
       new Thread(
               () -> {
                 try {
-                  startLatch.await();
+                  if (!startLatch.await(10, TimeUnit.SECONDS)) {
+                    throw new AssertionError("Timed out waiting for startLatch");
+                  }
                   results.add(processor.forceFlush());
-                } catch (InterruptedException e) {
-                  Thread.currentThread().interrupt();
+                } catch (Throwable t) {
+                  threadErrors.add(t);
+                  if (t instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                  }
                 } finally {
                   doneLatch.countDown();
                 }
@@ -909,7 +919,8 @@ class BatchLogRecordProcessorTest {
     }
 
     startLatch.countDown();
-    doneLatch.await(5, TimeUnit.SECONDS);
+    assertThat(doneLatch.await(10, TimeUnit.SECONDS)).isTrue();
+    assertThat(threadErrors).isEmpty();
 
     assertThat(results).hasSize(threadCount);
     for (CompletableResultCode result : results) {
