@@ -1,2 +1,16 @@
 Comparing source compatibility of opentelemetry-exporter-common-1.69.0-SNAPSHOT.jar against opentelemetry-exporter-common-1.68.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.exporter.impl.RetryUtil  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.Set<java.lang.String> retryableGrpcStatusCodes()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.Set<java.lang.Integer> retryableHttpResponseCodes()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.OptionalLong retryAfterNanos(java.lang.String)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.exporter.impl.TlsUtil  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) javax.net.ssl.X509TrustManager defaultTrustManager()
+		+++  NEW EXCEPTION: javax.net.ssl.SSLException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) javax.net.ssl.X509KeyManager keyManager(byte[], byte[])
+		+++  NEW EXCEPTION: javax.net.ssl.SSLException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) javax.net.ssl.X509TrustManager trustManager(byte[])
+		+++  NEW EXCEPTION: javax.net.ssl.SSLException

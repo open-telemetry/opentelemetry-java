@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.sender.jdk.internal;
 
 import io.opentelemetry.api.impl.InstrumentationUtil;
-import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.impl.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.HttpResponse;
@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.impl.DaemonThreadFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;

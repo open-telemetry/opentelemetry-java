@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
-import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.impl.TlsUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.MessageWriter;

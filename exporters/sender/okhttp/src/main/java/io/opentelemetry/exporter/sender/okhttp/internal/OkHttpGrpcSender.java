@@ -24,8 +24,8 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.impl.InstrumentationUtil;
-import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.impl.RetryUtil;
+import io.opentelemetry.exporter.impl.TlsUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.GrpcResponse;

@@ -19,7 +19,7 @@ import io.grpc.okhttp.OkHttpChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.impl.RetryUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;

@@ -1,2 +1,8 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.69.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.68.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.impl.DaemonThreadFactory  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.util.concurrent.ThreadFactory
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DaemonThreadFactory(java.lang.String, java.util.concurrent.ThreadFactory)
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DaemonThreadFactory(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) java.lang.Thread newThread(java.lang.Runnable)

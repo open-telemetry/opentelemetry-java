@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.common.internal;
+package io.opentelemetry.sdk.common.impl;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -14,8 +14,8 @@ import javax.annotation.Nullable;
  * A {@link ThreadFactory} that delegates to {@code Executors.defaultThreadFactory()} and marks all
  * threads as daemon.
  *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * <p>This class is not intended for use by application developers. Its API is stable and will not
+ * be changed or removed in a backwards-incompatible manner.
  */
 public final class DaemonThreadFactory implements ThreadFactory {
   private final String namePrefix;

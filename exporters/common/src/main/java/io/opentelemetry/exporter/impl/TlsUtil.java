@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal;
+package io.opentelemetry.exporter.impl;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
@@ -36,8 +36,8 @@ import javax.net.ssl.X509TrustManager;
 /**
  * Utilities for working with TLS.
  *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * <p>This class is not intended for use by application developers. Its API is stable and will not
+ * be changed or removed in a backwards-incompatible manner.
  */
 public final class TlsUtil {
 

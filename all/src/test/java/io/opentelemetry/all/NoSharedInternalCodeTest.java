@@ -36,7 +36,6 @@ class NoSharedInternalCodeTest {
           "opentelemetry-exporter-common",
           "opentelemetry-exporter-logging-otlp",
           "opentelemetry-exporter-prometheus",
-          "opentelemetry-extension-trace-propagators",
           "opentelemetry-opencensus-shim",
           "opentelemetry-sdk",
           "opentelemetry-sdk-logs",
@@ -52,9 +51,7 @@ class NoSharedInternalCodeTest {
           "opentelemetry-exporter-otlp",
           "opentelemetry-exporter-otlp-common",
           "opentelemetry-exporter-otlp-profiles",
-          "opentelemetry-exporter-sender-grpc-managed-channel",
-          "opentelemetry-exporter-sender-jdk",
-          "opentelemetry-exporter-sender-okhttp");
+          "opentelemetry-exporter-sender-grpc-managed-channel");
 
   private static final String OTEL_BASE_PACKAGE = "io.opentelemetry";
   private static final Logger logger = Logger.getLogger(NoSharedInternalCodeTest.class.getName());
