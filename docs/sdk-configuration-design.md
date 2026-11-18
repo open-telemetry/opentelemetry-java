@@ -1,31 +1,34 @@
 # 🚨 Archival Use Only! 	🚨
+
 > This is a historical design document and is not updated with evolving APIs. For up-to-date
 > examples of SDK configuration see the
 > [manual instrumentation documentation](https://opentelemetry.io/docs/languages/java/instrumentation/)
-> and the [SDK configuration documentation](https://opentelemetry.io/docs/languages/java/configuration/).
-> This document is maintained here for historical purposes only, and it is intended to
-> help future readers to understand the rationale behind certain design decisions.
+> and the
+> [SDK configuration documentation](https://opentelemetry.io/docs/languages/java/configuration/).
+> This document is maintained here for historical purposes only, and it is intended to help future
+> readers to understand the rationale behind certain design decisions.
 
 # Design for configuring the SDK
 
 This document outlines some of the goals we have for user configuration of the SDK. It is a
-continuation of discussion started with https://github.com/open-telemetry/opentelemetry-java/issues/2022.
+continuation of discussion started with
+https://github.com/open-telemetry/opentelemetry-java/issues/2022.
 
 ## Target audiences
 
 There are a few different target audiences that are related to our configuration story.
 
 - Application developers, aka end-users. Often have no knowledge of tracing but want to add
-OpenTelemetry to their app and see traces show up in a console. Application developers will increase
-in number forever, while the below are more constant.
+  OpenTelemetry to their app and see traces show up in a console. Application developers will
+  increase in number forever, while the below are more constant.
 
 - Dev-ops / framework developers. Write components or frameworks to support providing tracing to
-their application developers. May write custom SDK extensions such as exporters, samplers, to fit
-with their internal infrastructure and as such have some familiarity with tracing at least as the
-SDK presents it.
+  their application developers. May write custom SDK extensions such as exporters, samplers, to fit
+  with their internal infrastructure and as such have some familiarity with tracing at least as the
+  SDK presents it.
 
 - Telemetry extension authors. Write custom SDK extensions, often to support a particular backend.
-Very familiar with telemetry.
+  Very familiar with telemetry.
 
 - OpenTelemetry maintainers. Write the SDK code.
 
@@ -40,9 +43,9 @@ to be much more of them than other audiences.
 ### Goals
 
 - Provide a single entrypoint to configuring the SDK. For end-users, less familiar with the SDK, we
-want to have everything together to provide discoverability and simpler end-user code. If there are
-several, clear use cases which benefit from different entrypoints, we could have multiple
-corresponding to each one.
+  want to have everything together to provide discoverability and simpler end-user code. If there
+  are several, clear use cases which benefit from different entrypoints, we could have multiple
+  corresponding to each one.
 
 - Fit well with common Java idioms such as dependency injection, or common frameworks like Spring.
 
@@ -53,13 +56,13 @@ corresponding to each one.
 ### Non-goals
 
 - Provide the best possible experience for custom SDKs. Generally the burden of the experience for
-custom SDKs can fall on their authors, we optimize for our standard usage, the full SDK. Any
-reference to "the SDK" in this document refers to the full SDK with all signals.
+  custom SDKs can fall on their authors, we optimize for our standard usage, the full SDK. Any
+  reference to "the SDK" in this document refers to the full SDK with all signals.
 
 - Make sure everything is auto-configurable. This is out of the scope of the SDK, and instead is
-left to auto-configuration layers, which are also described below but not as part of the core SDK.
-The SDK provides an autoconfiguration extension as an option which is not internal to the main SDK
-components.
+  left to auto-configuration layers, which are also described below but not as part of the core SDK.
+  The SDK provides an autoconfiguration extension as an option which is not internal to the main SDK
+  components.
 
 ## Configuring an instance of the SDK
 
@@ -79,8 +82,8 @@ In Java, the builder pattern is common for configuring instances. Let's look at 
 like. The simplest configuration will be when a user wants to get a default experience, exporting
 with a specific exporter to an endpoint.
 
-The SDK builder will simply accept its components as builder parameters. It only allows
-setting SDK implementations and is not meant for use with partial SDKs.
+The SDK builder will simply accept its components as builder parameters. It only allows setting SDK
+implementations and is not meant for use with partial SDKs.
 
 ```java
 class OpenTelemetrySdkBuilder {
@@ -139,7 +142,7 @@ This
 - Uses ParentBased(AlwaysOn) sampler
 - Uses standard random IDs
 - Uses a default Resource which simply consists of the SDK (or any other resources we decide to)
-include in the core SDK, not extensions
+  include in the core SDK, not extensions
 - Uses the default Clock, which uses Java 8 / 9+ optimized APIs for getting time
   - The only real reason a user would set this is for unit tests, not for production
 - Enforces default numeric limits related to number of attribute, etc
@@ -216,20 +219,20 @@ class HelloWorld {
 }
 ```
 
-This configures resource, clock, exporters, span processors, propagators, sampler, trace limits, and metrics.
-It configures two SDKs with different propagators. We unfortunately cannot achieve our goal of only
-setting a property once - `Resource` and `Clock` are shared among signals but configured repeatedly.
-An alternative is to flatten all settings onto `OpenTelemetrySdkBuilder` - this has a downside that
-it makes it very natural to create new tracer / meter providers for each configuration of the SDK,
-which could result in a lot of duplication of resources like threads, workers, TCP connections. So
-instead, this can make it clearer that those signals themselves are full-featured, and
-`OpenTelemetry` is just a bag of signals.
+This configures resource, clock, exporters, span processors, propagators, sampler, trace limits, and
+metrics. It configures two SDKs with different propagators. We unfortunately cannot achieve our goal
+of only setting a property once - `Resource` and `Clock` are shared among signals but configured
+repeatedly. An alternative is to flatten all settings onto `OpenTelemetrySdkBuilder` - this has a
+downside that it makes it very natural to create new tracer / meter providers for each configuration
+of the SDK, which could result in a lot of duplication of resources like threads, workers, TCP
+connections. So instead, this can make it clearer that those signals themselves are full-featured,
+and `OpenTelemetry` is just a bag of signals.
 
 Keep in mind, reconfiguring `Clock` is expected to be an extremely uncommon operation.
 
-Another thing to keep in mind is that it will be less common for an application developer to go this far
-and we can expect it is actually framework developers that use the full configuration capabilities
-of the SDK, likely by tying it to a separate configuration system.
+Another thing to keep in mind is that it will be less common for an application developer to go this
+far and we can expect it is actually framework developers that use the full configuration
+capabilities of the SDK, likely by tying it to a separate configuration system.
 
 ### Why build instances
 
@@ -239,7 +242,7 @@ the SDK.
 - Integrates with dependency injection, e.g., Spring, in a similar way as many other libraries
 - Can allow having multiple instances in the same app, in multi-concern single-classloader scenarios
 - Allow managing lifecycle of SDK, e.g., shutting down and starting along with the lifecycle of a
-serverless runtime
+  serverless runtime
 
 ### Configuring the SDK in a framework
 
@@ -396,9 +399,9 @@ public class MyService {
 ## The global instance of the SDK
 
 A built instance is convenient to use in most Java apps because of dependency injection. Because it
-has a easy-to-reason initialization ordering, being tied into the dependency ordering (even if dependency
-injection happened to be done manually through constructor invocation), we encourage application
-developers to only use it.
+has a easy-to-reason initialization ordering, being tied into the dependency ordering (even if
+dependency injection happened to be done manually through constructor invocation), we encourage
+application developers to only use it.
 
 However, there are corner cases where an instance cannot be injected. The famous example is MySQL -
 MySQL interceptors are initialized by calling a default constructor, and there is no way to pass a
@@ -411,10 +414,10 @@ Before an SDK has been set, access to the global `OpenTelemetry` will return a n
 and it may even use it during the processing of a request (rather than only at initialization time).
 For this reason, we cannot throw an exception. Instead, if the SDK is detected on the classpath, we
 will log a `SEVERE` warning once-only indicating the API has been accessed before the SDK configured
-with directions on how a user could solve the problem. SDKs must be configured early
-in an application to ensure it applies to all of the logic in the app, and this will generally be
-ensured by the configuration framework such as Spring. For application developers, this restriction
-should not have any effect one way or the other in the vast majority of cases.
+with directions on how a user could solve the problem. SDKs must be configured early in an
+application to ensure it applies to all of the logic in the app, and this will generally be ensured
+by the configuration framework such as Spring. For application developers, this restriction should
+not have any effect one way or the other in the vast majority of cases.
 
 MySQL is the only known corner case that requires the global SDK instance. If such a corner case
 didn't exist, we may not even support it in the first place.
@@ -425,11 +428,11 @@ See special note about Java Agent below though.
 
 SDK components, such as exporters or remote samplers, may want to emit telemetry for their own
 processing. However, the SDK components must be initialized before the SDK can be fully built. We do
-not support partially built SDK because one cannot reason about the behavior of it. Similarly we
-do not support using the global instance of the SDK before it has been built. Therefore, SDK
-components that require `OpenTelemetry` must accept it lazily. This is a restriction, but given
-such components are rarely developed by application developers, and generally developed by either
-framework authors or OpenTelemetry maintainers, this restriction is deemed reasonable.
+not support partially built SDK because one cannot reason about the behavior of it. Similarly we do
+not support using the global instance of the SDK before it has been built. Therefore, SDK components
+that require `OpenTelemetry` must accept it lazily. This is a restriction, but given such components
+are rarely developed by application developers, and generally developed by either framework authors
+or OpenTelemetry maintainers, this restriction is deemed reasonable.
 
 If this mechanism was built into the SDK, it may look like
 
@@ -476,8 +479,8 @@ public class OpenTelemetrySdkBuilder {
 }
 ```
 
-A framework author will have an even easier time since most dependency injection frameworks
-natively support lazy injection.
+A framework author will have an even easier time since most dependency injection frameworks natively
+support lazy injection.
 
 ```java
 @Component
@@ -509,26 +512,28 @@ public class MyExporter implements SpanExporter {
 
 ## Immutability of OpenTelemetry configuration
 
-The above attempts to avoid allowing a built SDK to be mutated, e.g., it is shallow immutable. Allowing mutation can make code
-harder to reason about (any component, even deep in business logic, could update the SDK without
-hindrance), can reduce performance (require volatile read on most operations), and produce thread
-safety issues if not well implemented. In particular, compared to the current state as of writing,
+The above attempts to avoid allowing a built SDK to be mutated, e.g., it is shallow immutable.
+Allowing mutation can make code harder to reason about (any component, even deep in business logic,
+could update the SDK without hindrance), can reduce performance (require volatile read on most
+operations), and produce thread safety issues if not well implemented. In particular, compared to
+the current state as of writing,
 
 - `TracerSdkManagement.addSpanProcessor` is not needed. We needed a mutable SDK to allow span
-processors to use global APIs for telemetry, but because we instead push the complexity of handling
-[telemetry within SDK components](#Telemetry within SDK components) to those components, where the
-maintainers will have more domain knowledge. It allows this mutator method to be removed from the
-end-user API.
+  processors to use global APIs for telemetry, but because we instead push the complexity of
+  handling [telemetry within SDK components](#Telemetry within SDK components) to those components,
+  where the maintainers will have more domain knowledge. It allows this mutator method to be removed
+  from the end-user API.
 
-- `TracerSdkManagement.updateTraceConfig` - instead of allowing replacing of the config at the top level, we should consider making
-`TraceConfig` an interface, and the SDK default implementation is a simple implementation that always returns
-a constant configuration. It allows the above benefits of immutability to be in place for the common case where dynamic updates are not needed.
-Where dynamic updates are needed, it can be replaced with a mutable implementation instead of making
-the SDK configuration mutable. This keeps update methods out of the end-user APIs and will generally
-give framework developers more control by handling dynamicism themselves without the chance of
-end-users to affect it negatively. For example, spring-boot may wire trace config updates to
-actuator, its admin interface, and does not have to worry about business logic side-stepping this
-mechanism by calling `updateTraceConfig`.
+- `TracerSdkManagement.updateTraceConfig` - instead of allowing replacing of the config at the top
+  level, we should consider making `TraceConfig` an interface, and the SDK default implementation is
+  a simple implementation that always returns a constant configuration. It allows the above benefits
+  of immutability to be in place for the common case where dynamic updates are not needed. Where
+  dynamic updates are needed, it can be replaced with a mutable implementation instead of making the
+  SDK configuration mutable. This keeps update methods out of the end-user APIs and will generally
+  give framework developers more control by handling dynamicism themselves without the chance of
+  end-users to affect it negatively. For example, spring-boot may wire trace config updates to
+  actuator, its admin interface, and does not have to worry about business logic side-stepping this
+  mechanism by calling `updateTraceConfig`.
 
 Some highly buggy code that could be enabled by mutability.
 
@@ -557,10 +562,10 @@ tracing interceptor, when configuring observability.
 ## Auto-configuration
 
 The above presents programmatic configuration for the SDK and proposes that the core SDK has no
-other mechanism for configuration. There is no SPI nor processing of environment variables or
-system properties. There are many mechanisms for configuration, for example Spring Boot.
-Integration with these systems becomes easier to reason about if we consider auto-configuration at
-a layer above the core SDK.
+other mechanism for configuration. There is no SPI nor processing of environment variables or system
+properties. There are many mechanisms for configuration, for example Spring Boot. Integration with
+these systems becomes easier to reason about if we consider auto-configuration at a layer above the
+core SDK.
 
 ### Java Auto-Instrumentation Agent
 
@@ -572,8 +577,8 @@ configuration is automatic in the core SDK and some in the agent, we can move it
 The agent already exposes exporter SPIs - it can also expose SPIs for customization of the SDK
 components that are manually configured above.
 
-- We could consider having a very similar autoconfiguration wrapper artifact as an SDK extension too.
-But we would assume the core SDK is always manually configured.
+- We could consider having a very similar autoconfiguration wrapper artifact as an SDK extension
+  too. But we would assume the core SDK is always manually configured.
 
 To allow users of the agent to apply tracing to their own code, the agent should attempt to
 instrument dependency injection to provide an instance of `OpenTelemetry` using the agent-configured
@@ -585,8 +590,8 @@ Sleuth.
 
 ### SDK Auto-Configuration Wrapper
 
-For non-agent users, we can still provide a non-programmatic solution for configuring the SDK -
-it can be a different artifact which contains SPIs similar to what we have currently, supports
+For non-agent users, we can still provide a non-programmatic solution for configuring the SDK - it
+can be a different artifact which contains SPIs similar to what we have currently, supports
 environment variables and other auto-configuration. A single entrypoint method, `initialize()` could
 determine the configuration, initialize `OpenTelemetry`, and set it as the global. As this artifact
 is in our control, it would be reasonable for `opentelemetry-api` to check the classpath for the
@@ -594,9 +599,9 @@ presence of the wrapper and invoke it automatically.
 
 ### Spring Sleuth
 
-Spring Sleuth (or any similar observability-aware server framework
-or internal frameworks developed by devops teams at companies) is also a mechanism for automatically
-configuring the SDK. In general, we would expect Sleuth users to not be using the java agent.
+Spring Sleuth (or any similar observability-aware server framework or internal frameworks developed
+by devops teams at companies) is also a mechanism for automatically configuring the SDK. In general,
+we would expect Sleuth users to not be using the java agent.
 
 Examples of how Sleuth could work are presented above in examples using `@Bean`. In particular, we
 expect it to have its own set of configuration properties - by making sure we don't implement
@@ -606,12 +611,12 @@ practice, OpenTelemetry naming would likely be ignored and overwritten by Spring
 
 ## Partial SDKs
 
-We allow implementing particular signals of the OpenTelemetry API without using our SDK. For example,
-a MeterProvider may be implemented with micrometer. For this reason, each signal must also present
-all of its options in the form of, e.g., `TracerSdkProviderBuilder`. We expect the vast majority of
-users to use `OpenTelemetrySdkBuilder` - while there is some duplication with the signal provider
-builder, it is work maintainers can do to present the simplest interface for the most common use
-case of using the whole SDK.
+We allow implementing particular signals of the OpenTelemetry API without using our SDK. For
+example, a MeterProvider may be implemented with micrometer. For this reason, each signal must also
+present all of its options in the form of, e.g., `TracerSdkProviderBuilder`. We expect the vast
+majority of users to use `OpenTelemetrySdkBuilder` - while there is some duplication with the signal
+provider builder, it is work maintainers can do to present the simplest interface for the most
+common use case of using the whole SDK.
 
 Without SPI, the way to initialize a partial SDK would be to use `DefaultOpenTelemetry`.
 
@@ -647,14 +652,14 @@ We discuss some [advantages](#Immutability of OpenTelemetry configuration) of `O
 being mutable. One of the main side effects of this decision is not allowing the global to be used
 before it is configured. An alternative approach may start with a core that is mutated when
 configured, and global usage would still be valid even if references are made before configuration.
-The lifecycle becomes difficult to reason about i.e., when is `OpenTelemetry` actually ready for use?
-Dependency injection makes it explicit, global doesn't. It also seems to have performance
+The lifecycle becomes difficult to reason about i.e., when is `OpenTelemetry` actually ready for
+use? Dependency injection makes it explicit, global doesn't. It also seems to have performance
 implications for less common end-user use cases (dynamic config) or for reasons that non-end-users
 can handle (telemetry within telemetry).
 
 ### SPI loading of OpenTelemetry components
 
-We could detect OpenTelemetry components using SPI, but we don't expect partial SDKs to be so common.
-Instead of an inside-out approach of initializing a partial SDK within our code, we can instead just
-encourage an outside-in approach where a partial-SDK-specific wrapper is created. This reduces the
-magic in configuring `OpenTelemetry`, it all happens through our single entry-point.
+We could detect OpenTelemetry components using SPI, but we don't expect partial SDKs to be so
+common. Instead of an inside-out approach of initializing a partial SDK within our code, we can
+instead just encourage an outside-in approach where a partial-SDK-specific wrapper is created. This
+reduces the magic in configuring `OpenTelemetry`, it all happens through our single entry-point.

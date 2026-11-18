@@ -1,7 +1,7 @@
 # SnakeYAML Engine 2 Declarative Configuration Parser
 
-This module provides the default `DeclarativeConfigurationYamlParser` implementation using
-SnakeYAML Engine 2. It is included as a runtime dependency by
+This module provides the default `DeclarativeConfigurationYamlParser` implementation using SnakeYAML
+Engine 2. It is included as a runtime dependency by
 `opentelemetry-sdk-extension-declarative-config`.
 
 Applications that provide a custom YAML parser can exclude this module from the declarative config

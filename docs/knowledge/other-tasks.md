@@ -15,35 +15,35 @@ Benchmark sources live in `jmh/` directories within their respective modules.
 
 The following JMH parameters can be configured via `-P` flags:
 
-| Flag | JMH setting | Example |
-|---|---|---|
-| `-PjmhIncludeSingleClass=<class>` | Run only this benchmark class | `-PjmhIncludeSingleClass=BatchSpanProcessorBenchmark` |
-| `-PjmhFork=<n>` | Number of forks | `-PjmhFork=1` |
-| `-PjmhIterations=<n>` | Measurement iterations | `-PjmhIterations=5` |
-| `-PjmhTime=<duration>` | Time per measurement iteration | `-PjmhTime=2s` |
-| `-PjmhWarmupIterations=<n>` | Warmup iterations | `-PjmhWarmupIterations=3` |
-| `-PjmhWarmup=<duration>` | Time per warmup iteration | `-PjmhWarmup=1s` |
-| `-PjmhResultsDir=<path>` | Copy JSON results to this directory after the run | `-PjmhResultsDir=scratch/benchmarks` |
-| `-PjmhLabel=<stem>` | Filename stem for the copied JSON; only used when `jmhResultsDir` is set (default: sanitized project path, e.g. `sdk-all`) | `-PjmhLabel=baseline` |
+|               Flag                |                                                        JMH setting                                                         |                        Example                        |
+|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
+| `-PjmhIncludeSingleClass=<class>` | Run only this benchmark class                                                                                              | `-PjmhIncludeSingleClass=BatchSpanProcessorBenchmark` |
+| `-PjmhFork=<n>`                   | Number of forks                                                                                                            | `-PjmhFork=1`                                         |
+| `-PjmhIterations=<n>`             | Measurement iterations                                                                                                     | `-PjmhIterations=5`                                   |
+| `-PjmhTime=<duration>`            | Time per measurement iteration                                                                                             | `-PjmhTime=2s`                                        |
+| `-PjmhWarmupIterations=<n>`       | Warmup iterations                                                                                                          | `-PjmhWarmupIterations=3`                             |
+| `-PjmhWarmup=<duration>`          | Time per warmup iteration                                                                                                  | `-PjmhWarmup=1s`                                      |
+| `-PjmhResultsDir=<path>`          | Copy JSON results to this directory after the run                                                                          | `-PjmhResultsDir=scratch/benchmarks`                  |
+| `-PjmhLabel=<stem>`               | Filename stem for the copied JSON; only used when `jmhResultsDir` is set (default: sanitized project path, e.g. `sdk-all`) | `-PjmhLabel=baseline`                                 |
 
 ## Composite builds
 
 > **No compatibility guarantees**: this process can change at any time. Steps that work for one
 > commit may break with the next.
 
-To test local changes to this repo against another project (e.g. instrumentation or an app),
-use Gradle [composite builds](https://docs.gradle.org/current/userguide/composite_builds.html).
+To test local changes to this repo against another project (e.g. instrumentation or an app), use
+Gradle [composite builds](https://docs.gradle.org/current/userguide/composite_builds.html).
 
-This repo does not work with composite builds out of the box because Gradle cannot automatically
-map project names to the customized Maven artifact coordinates (see
-[gradle/gradle#18291](https://github.com/gradle/gradle/issues/18291)). A helper task generates
-the required substitution mappings.
+This repo does not work with composite builds out of the box because Gradle cannot automatically map
+project names to the customized Maven artifact coordinates (see
+[gradle/gradle#18291](https://github.com/gradle/gradle/issues/18291)). A helper task generates the
+required substitution mappings.
 
-1. Run `./gradlew generateBuildSubstitutions` — generates `build/substitutions.gradle.kts` in
-   the `bom/` and `bom-alpha/` directories, containing substitutions for stable and alpha
-   projects respectively.
-2. In the consuming project's `settings.gradle.kts`, add an `includeBuild` block and paste in
-   the generated `dependencySubstitution` content:
+1. Run `./gradlew generateBuildSubstitutions` — generates `build/substitutions.gradle.kts` in the
+   `bom/` and `bom-alpha/` directories, containing substitutions for stable and alpha projects
+   respectively.
+2. In the consuming project's `settings.gradle.kts`, add an `includeBuild` block and paste in the
+   generated `dependencySubstitution` content:
 
    ```kotlin
    includeBuild("PATH/TO/OPENTELEMETRY-JAVA/ROOT/DIRECTORY") {
@@ -55,11 +55,10 @@ the required substitution mappings.
      }
    }
    ```
-
-3. Confirm the local version aligns with the version declared in the consuming project —
-   if they differ, `dependencySubstitution` may not take effect.
-4. Use the prefix `:DIRECTORY:` to invoke tasks within the included build, where `DIRECTORY`
-   is the last path component of the included build's root directory.
+3. Confirm the local version aligns with the version declared in the consuming project — if they
+   differ, `dependencySubstitution` may not take effect.
+4. Use the prefix `:DIRECTORY:` to invoke tasks within the included build, where `DIRECTORY` is the
+   last path component of the included build's root directory.
 
 See [discussions/6551](https://github.com/open-telemetry/opentelemetry-java/discussions/6551) for
 known issues and solutions.
@@ -68,9 +67,9 @@ known issues and solutions.
 
 ### EditorConfig
 
-An `.editorconfig` file is provided and automatically applied by IntelliJ to match project style.
-It doesn't cover all formatting rules — `./gradlew spotlessApply` is still required — but it
-reduces friction for common cases.
+An `.editorconfig` file is provided and automatically applied by IntelliJ to match project style. It
+doesn't cover all formatting rules — `./gradlew spotlessApply` is still required — but it reduces
+friction for common cases.
 
 ### Pre-commit hook
 
@@ -86,8 +85,8 @@ ln -s ../../buildscripts/pre-commit .git/hooks/pre-commit
 ## Native image tests (GraalVM)
 
 GraalVM native image integration tests live in `integration-tests/graal` and
-`integration-tests/graal-incubating`. They are **not** part of the standard `build` task and
-require a GraalVM JDK with `native-image` installed.
+`integration-tests/graal-incubating`. They are **not** part of the standard `build` task and require
+a GraalVM JDK with `native-image` installed.
 
 ```bash
 # Both flags required due to https://github.com/graalvm/native-build-tools/issues/477:
@@ -100,13 +99,12 @@ require a GraalVM JDK with `native-image` installed.
 ## Updating OTLP protobufs
 
 OTLP protobuf Java bindings are published via
-[opentelemetry-proto-java](https://github.com/open-telemetry/opentelemetry-proto-java). This
-project uses the `.proto` files published in that binding jar, not the generated Java bindings
-themselves.
+[opentelemetry-proto-java](https://github.com/open-telemetry/opentelemetry-proto-java). This project
+uses the `.proto` files published in that binding jar, not the generated Java bindings themselves.
 
 When a new version of the upstream proto definitions is released, the process is:
 
 1. [Release a new version of the java bindings](https://github.com/open-telemetry/opentelemetry-proto-java/blob/main/RELEASING.md)
    in the `opentelemetry-proto-java` repo (which we maintain).
-2. Renovate will automatically open a PR to update `io.opentelemetry.proto:opentelemetry-proto`
-   in this repo once the new version is published.
+2. Renovate will automatically open a PR to update `io.opentelemetry.proto:opentelemetry-proto` in
+   this repo once the new version is published.
