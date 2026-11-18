@@ -34,6 +34,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -837,21 +840,28 @@ class BatchLogRecordProcessorTest {
     SdkLoggerProvider sdkLoggerProvider =
         SdkLoggerProvider.builder().addLogRecordProcessor(processor).build();
 
-    CompletableResultCode shutdownResult = processor.shutdown();
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    try {
+      Future<CompletableResultCode> shutdownFuture = executor.submit(processor::shutdown);
 
-    // Wait until exporter.shutdown() is in flight
-    assertThat(shutdownStarted.await(10, TimeUnit.SECONDS)).isTrue();
+      // Wait until exporter.shutdown() is in flight
+      assertThat(shutdownStarted.await(10, TimeUnit.SECONDS)).isTrue();
 
-    // While exporter.shutdown() is in flight, continueWork is false and flushRequested is null
-    CompletableResultCode flushDuringShutdown = processor.forceFlush();
-    assertThat(flushDuringShutdown.isDone()).isTrue();
-    assertThat(flushDuringShutdown.isSuccess()).isTrue();
+      // While exporter.shutdown() is in flight, continueWork is false and flushRequested is null
+      CompletableResultCode flushDuringShutdown = processor.forceFlush();
+      assertThat(flushDuringShutdown.isDone()).isTrue();
+      assertThat(flushDuringShutdown.isSuccess()).isTrue();
 
-    shutdownBlocker.countDown();
-    shutdownResult.join(10, TimeUnit.SECONDS);
-    assertThat(shutdownResult.isSuccess()).isTrue();
-
-    sdkLoggerProvider.shutdown().join(10, TimeUnit.SECONDS);
+      shutdownBlocker.countDown();
+      CompletableResultCode shutdownResult = shutdownFuture.get(10, TimeUnit.SECONDS);
+      shutdownResult.join(10, TimeUnit.SECONDS);
+      assertThat(shutdownResult.isSuccess()).isTrue();
+    } finally {
+      shutdownBlocker.countDown();
+      executor.shutdownNow();
+      assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+      sdkLoggerProvider.shutdown().join(10, TimeUnit.SECONDS);
+    }
   }
 
   @Test
