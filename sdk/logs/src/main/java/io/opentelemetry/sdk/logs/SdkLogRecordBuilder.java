@@ -150,6 +150,11 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     if (loggerSharedState.hasBeenShutdown()) {
       return;
     }
+
+    if (logger.canEmit()) {
+      loggerSharedState.getLoggerInstrumentation().emitLog();
+    }
+
     Context context = this.context == null ? Context.current() : this.context;
     if (!logger.isEnabled(severity, context)) {
       return;
@@ -159,7 +164,6 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
             ? this.loggerSharedState.getClock().now()
             : this.observedTimestampEpochNanos;
 
-    loggerSharedState.getLoggerInstrumentation().emitLog();
     loggerSharedState
         .getLogRecordProcessor()
         .onEmit(context, createLogRecord(context, observedTimestampEpochNanos));

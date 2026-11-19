@@ -80,6 +80,11 @@ class SdkLogger implements Logger {
     return true;
   }
 
+  /** Returns whether this logger can ever emit any log records. */
+  boolean canEmit() {
+    return loggerEnabled;
+  }
+
   @Override
   public LogRecordBuilder logRecordBuilder() {
     if (loggerEnabled) {
