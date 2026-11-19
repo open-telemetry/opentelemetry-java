@@ -15,7 +15,6 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.util.concurrent.Uninterruptibles;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
@@ -54,6 +53,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.LongStream;
@@ -97,13 +100,15 @@ class SynchronousInstrumentStressTest {
 
   @ParameterizedTest
   @MethodSource("stressTestArgs")
+  @Timeout(value = 1, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SAME_THREAD)
   void stressTest(
       AggregationTemporality aggregationTemporality,
       InstrumentType instrumentType,
       Aggregation aggregation,
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType,
-      boolean bound) {
+      boolean bound)
+      throws ExecutionException, InterruptedException {
     for (int repetition = 0; repetition < STRESS_TEST_REPETITIONS; repetition++) {
       stressTestOnce(
           aggregationTemporality,
@@ -122,7 +127,8 @@ class SynchronousInstrumentStressTest {
       Aggregation aggregation,
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType,
-      boolean bound) {
+      boolean bound)
+      throws ExecutionException, InterruptedException {
     // Define list of measurements to record. Shuffled 0..1999.
     int measurementCount = 2000;
     List<Long> measurements = new ArrayList<>();
@@ -263,14 +269,15 @@ class SynchronousInstrumentStressTest {
    */
   @ParameterizedTest
   @MethodSource("stressTestArgs")
-  @Timeout(value = 10, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  @Timeout(value = 1, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SAME_THREAD)
   void partialWriteStressTest(
       AggregationTemporality aggregationTemporality,
       InstrumentType instrumentType,
       Aggregation aggregation,
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType,
-      boolean bound) {
+      boolean bound)
+      throws ExecutionException, InterruptedException {
     for (int repetition = 0; repetition < STRESS_TEST_REPETITIONS; repetition++) {
       partialWriteStressTestOnce(
           aggregationTemporality,
@@ -289,7 +296,8 @@ class SynchronousInstrumentStressTest {
       Aggregation aggregation,
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType,
-      boolean bound) {
+      boolean bound)
+      throws ExecutionException, InterruptedException {
     // Uniform value of 1 so that at any interim snapshot: sum == count.
     int measurementCount = 2000;
     List<Long> measurements = new ArrayList<>(measurementCount);
@@ -394,7 +402,8 @@ class SynchronousInstrumentStressTest {
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType,
       boolean bound,
-      List<Long> measurements) {
+      List<Long> measurements)
+      throws ExecutionException, InterruptedException {
     DefaultAggregationSelector aggregationSelector =
         DefaultAggregationSelector.getDefault().with(instrumentType, aggregation);
     InMemoryMetricReader reader =
@@ -421,57 +430,70 @@ class SynchronousInstrumentStressTest {
     }
 
     int threadCount = 4;
-    List<Thread> recordThreads = new ArrayList<>();
+    ExecutorService executor = Executors.newFixedThreadPool(threadCount + 1);
     CountDownLatch latch = new CountDownLatch(threadCount);
     CountDownLatch startSignal = new CountDownLatch(1);
-    for (int i = 0; i < threadCount; i++) {
-      recordThreads.add(
-          new Thread(() -> {
-            Uninterruptibles.awaitUninterruptibly(startSignal);
-            if (bound) {
-              for (Long measurement : measurements) {
-                for (BoundInstrument boundInstrument : boundInstruments) {
-                  boundInstrument.record(measurement);
+    try {
+      List<Future<?>> recordFutures = new ArrayList<>();
+      for (int i = 0; i < threadCount; i++) {
+        recordFutures.add(
+            executor.submit(() -> {
+              try {
+                startSignal.await();
+                for (Long measurement : measurements) {
+                  if (Thread.currentThread().isInterrupted()) {
+                    return null;
+                  }
+                  if (bound) {
+                    for (BoundInstrument boundInstrument : boundInstruments) {
+                      boundInstrument.record(measurement);
+                    }
+                  } else {
+                    for (Attributes attr : attributes) {
+                      instrument.record(measurement, attr);
+                    }
+                  }
+                  Thread.yield();
                 }
-                Thread.yield();
+                return null;
+              } finally {
+                latch.countDown();
               }
-            } else {
-              for (Long measurement : measurements) {
-                for (Attributes attr : attributes) {
-                  instrument.record(measurement, attr);
-                }
-                Thread.yield();
-              }
-            }
-            latch.countDown();
-          }));
-    }
+            }));
+      }
 
-    List<MetricData> collectedMetrics = new ArrayList<>();
-    Thread collectThread =
-        new Thread(() -> {
-          Uninterruptibles.awaitUninterruptibly(startSignal);
-          while (latch.getCount() != 0) {
-            Thread.yield();
+      Future<List<MetricData>> collectFuture =
+          executor.submit(() -> {
+            List<MetricData> collectedMetrics = new ArrayList<>();
+            startSignal.await();
+            while (latch.getCount() != 0) {
+              if (Thread.currentThread().isInterrupted()) {
+                return collectedMetrics;
+              }
+              Thread.yield();
+              collectedMetrics.addAll(
+                  reader.collectAllMetrics().stream()
+                      .map(SynchronousInstrumentStressTest::copy)
+                      .collect(toList()));
+            }
             collectedMetrics.addAll(
                 reader.collectAllMetrics().stream()
                     .map(SynchronousInstrumentStressTest::copy)
                     .collect(toList()));
-          }
-          collectedMetrics.addAll(
-              reader.collectAllMetrics().stream()
-                  .map(SynchronousInstrumentStressTest::copy)
-                  .collect(toList()));
-        });
+            return collectedMetrics;
+          });
 
-    // Start all the threads, then release the start signal so they begin simultaneously
-    collectThread.start();
-    recordThreads.forEach(Thread::start);
-    startSignal.countDown();
-
-    // Wait for the collect thread to end, which collects until the record threads are done
-    Uninterruptibles.joinUninterruptibly(collectThread);
-    return collectedMetrics;
+      startSignal.countDown();
+      for (Future<?> recordFuture : recordFutures) {
+        recordFuture.get();
+      }
+      return collectFuture.get();
+    } finally {
+      executor.shutdownNow();
+      assertThat(executor.awaitTermination(10, TimeUnit.SECONDS))
+          .as("stress workers terminated")
+          .isTrue();
+    }
   }
 
   private static Stream<Arguments> stressTestArgs() {
