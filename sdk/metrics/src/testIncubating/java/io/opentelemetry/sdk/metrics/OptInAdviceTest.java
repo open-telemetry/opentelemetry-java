@@ -93,10 +93,9 @@ class OptInAdviceTest {
     instrument.record(1, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                pointsAssert.hasPointSatisfying(
-                    assertThat(metric), point -> point.hasAttributes(ATTRIBUTES)));
+        .satisfiesExactly(metric ->
+            pointsAssert.hasPointSatisfying(
+                assertThat(metric), point -> point.hasAttributes(ATTRIBUTES)));
   }
 
   @ParameterizedTest
@@ -117,10 +116,9 @@ class OptInAdviceTest {
     instrument.record(1, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                pointsAssert.hasPointSatisfying(
-                    assertThat(metric), point -> point.hasAttributes(ATTRIBUTES)));
+        .satisfiesExactly(metric ->
+            pointsAssert.hasPointSatisfying(
+                assertThat(metric), point -> point.hasAttributes(ATTRIBUTES)));
   }
 
   @ParameterizedTest
@@ -236,19 +234,16 @@ class OptInAdviceTest {
     histogram.record(7.0, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("test_histogram")
-                    .hasHistogramSatisfying(
-                        hist ->
-                            hist.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasBucketBoundaries(5.0, 10.0, 25.0)
-                                        .hasAttributesSatisfyingExactly(
-                                            equalTo(stringKey("key1"), "1"),
-                                            equalTo(stringKey("key2"), "2")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("test_histogram")
+                .hasHistogramSatisfying(hist ->
+                    hist.hasPointsSatisfying(point ->
+                        point
+                            .hasBucketBoundaries(5.0, 10.0, 25.0)
+                            .hasAttributesSatisfyingExactly(
+                                equalTo(stringKey("key1"), "1"),
+                                equalTo(stringKey("key2"), "2")))));
   }
 
   @Test
@@ -282,18 +277,14 @@ class OptInAdviceTest {
     histogram.record(1.5, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("test_histogram")
-                    .hasHistogramSatisfying(
-                        hist ->
-                            hist.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasBucketBoundaries(1.0, 2.0)
-                                        .hasAttributesSatisfyingExactly(
-                                            equalTo(stringKey("key3"), "3")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("test_histogram")
+                .hasHistogramSatisfying(hist ->
+                    hist.hasPointsSatisfying(point ->
+                        point
+                            .hasBucketBoundaries(1.0, 2.0)
+                            .hasAttributesSatisfyingExactly(equalTo(stringKey("key3"), "3")))));
   }
 
   @Test
@@ -320,32 +311,28 @@ class OptInAdviceTest {
 
     ((ExtendedLongCounterBuilder) meter.counterBuilder("dropped_opt_in_counter"))
         .setOptInAdvice(true)
-        .buildWithCallback(
-            measurement -> {
-              droppedCallbackCount.incrementAndGet();
-              measurement.record(1);
-            });
+        .buildWithCallback(measurement -> {
+          droppedCallbackCount.incrementAndGet();
+          measurement.record(1);
+        });
     ((ExtendedDoubleGaugeBuilder) meter.gaugeBuilder("dropped_opt_in_gauge"))
         .setOptInAdvice(true)
-        .buildWithCallback(
-            measurement -> {
-              droppedCallbackCount.incrementAndGet();
-              measurement.record(1.0);
-            });
+        .buildWithCallback(measurement -> {
+          droppedCallbackCount.incrementAndGet();
+          measurement.record(1.0);
+        });
     ((ExtendedLongUpDownCounterBuilder) meter.upDownCounterBuilder("dropped_opt_in_updown"))
         .setOptInAdvice(true)
-        .buildWithCallback(
-            measurement -> {
-              droppedCallbackCount.incrementAndGet();
-              measurement.record(1);
-            });
+        .buildWithCallback(measurement -> {
+          droppedCallbackCount.incrementAndGet();
+          measurement.record(1);
+        });
     meter
         .counterBuilder("disabled_by_view")
-        .buildWithCallback(
-            measurement -> {
-              droppedCallbackCount.incrementAndGet();
-              measurement.record(1);
-            });
+        .buildWithCallback(measurement -> {
+          droppedCallbackCount.incrementAndGet();
+          measurement.record(1);
+        });
 
     ObservableDoubleMeasurement droppedBatchMeasurement =
         ((ExtendedDoubleCounterBuilder) meter.counterBuilder("dropped_opt_in_batch").ofDoubles())
@@ -360,19 +347,17 @@ class OptInAdviceTest {
 
     ((ExtendedLongCounterBuilder) meter.counterBuilder("enabled_opt_in_counter"))
         .setOptInAdvice(true)
-        .buildWithCallback(
-            measurement -> {
-              enabledCallbackCount.incrementAndGet();
-              measurement.record(42);
-            });
+        .buildWithCallback(measurement -> {
+          enabledCallbackCount.incrementAndGet();
+          measurement.record(42);
+        });
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("enabled_opt_in_counter")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(42L))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("enabled_opt_in_counter")
+                .hasLongSumSatisfying(
+                    sum -> sum.hasPointsSatisfying(point -> point.hasValue(42L))));
     assertThat(droppedCallbackCount.get()).isEqualTo(0);
     assertThat(enabledCallbackCount.get()).isEqualTo(1);
   }

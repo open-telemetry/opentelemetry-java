@@ -180,11 +180,10 @@ class ExtendedMetricsApiUsageTest {
     // Verify that only counter1 is collected and measurements recorded to disabled counter2 are
     // dropped
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metricData ->
-                assertThat(metricData)
-                    .hasName("counter1")
-                    .hasLongSumSatisfying(
-                        sumAssert -> sumAssert.hasPointsSatisfying(point -> point.hasValue(1L))));
+        .satisfiesExactly(metricData ->
+            assertThat(metricData)
+                .hasName("counter1")
+                .hasLongSumSatisfying(
+                    sumAssert -> sumAssert.hasPointsSatisfying(point -> point.hasValue(1L))));
   }
 }
