@@ -147,7 +147,8 @@ public final class OkHttpHttpSender implements HttpSender {
     this.maxResponseBodySize = maxResponseBodySize;
   }
 
-  private static OptionalLong retryDelayNanos(Response response) {
+  // Visible for testing
+  static OptionalLong retryDelayNanos(Response response) {
     return RetryUtil.retryAfterNanos(response.header("Retry-After"));
   }
 
