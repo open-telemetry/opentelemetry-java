@@ -208,10 +208,9 @@ class SdkSpanTest {
               ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
 
               Thread concurrent =
-                  new Thread(
-                      () -> {
-                        sp.setAttribute(concurrentAttrib, "concurrent_bar");
-                      });
+                  new Thread(() -> {
+                    sp.setAttribute(concurrentAttrib, "concurrent_bar");
+                  });
               concurrent.start();
               concurrent.join();
 
@@ -818,50 +817,43 @@ class SdkSpanTest {
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(6);
     assertThat(events.get(0))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event1");
-              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
-              assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event1");
+          assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+          assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+        });
     assertThat(events.get(1))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event2");
-              assertThat(event.getAttributes())
-                  .isEqualTo(Attributes.of(stringKey("e1key"), "e1Value"));
-              assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event2");
+          assertThat(event.getAttributes()).isEqualTo(Attributes.of(stringKey("e1key"), "e1Value"));
+          assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+        });
     assertThat(events.get(2))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event3");
-              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
-              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(10));
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event3");
+          assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+          assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(10));
+        });
     assertThat(events.get(3))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event4");
-              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
-              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(20));
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event4");
+          assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+          assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(20));
+        });
     assertThat(events.get(4))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event5");
-              assertThat(event.getAttributes())
-                  .isEqualTo(Attributes.builder().put("foo", "bar").build());
-              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(30));
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event5");
+          assertThat(event.getAttributes())
+              .isEqualTo(Attributes.builder().put("foo", "bar").build());
+          assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(30));
+        });
     assertThat(events.get(5))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event6");
-              assertThat(event.getAttributes())
-                  .isEqualTo(Attributes.builder().put("foo", "bar").build());
-              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(1000));
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event6");
+          assertThat(event.getAttributes())
+              .isEqualTo(Attributes.builder().put("foo", "bar").build());
+          assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(1000));
+        });
   }
 
   @Test
@@ -1185,10 +1177,9 @@ class SdkSpanTest {
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getTotalRecordedLinks()).isEqualTo(1);
     assertThat(spanData.getLinks())
-        .satisfiesExactly(
-            link -> {
-              assertThat(link.getSpanContext()).isEqualTo(linkedSpan.getSpanContext());
-            });
+        .satisfiesExactly(link -> {
+          assertThat(link.getSpanContext()).isEqualTo(linkedSpan.getSpanContext());
+        });
   }
 
   @Test
@@ -1591,19 +1582,17 @@ class SdkSpanTest {
             StatusData.ok()),
         Arguments.argumentSet(
             "setStatus OK after end ignored",
-            spanConsumer(
-                span -> {
-                  span.end();
-                  span.setStatus(StatusCode.OK);
-                }),
+            spanConsumer(span -> {
+              span.end();
+              span.setStatus(StatusCode.OK);
+            }),
             StatusData.unset()),
         Arguments.argumentSet(
             "setStatus ERROR after end ignored",
-            spanConsumer(
-                span -> {
-                  span.end();
-                  span.setStatus(StatusCode.ERROR);
-                }),
+            spanConsumer(span -> {
+              span.end();
+              span.setStatus(StatusCode.ERROR);
+            }),
             StatusData.unset()));
   }
 
@@ -1815,12 +1804,11 @@ class SdkSpanTest {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     ExecutorService es = Executors.newSingleThreadExecutor();
     Future<?> modifierFuture =
-        es.submit(
-            () -> {
-              for (int i = 0; i < 5096 * 5; ++i) {
-                span.setAttribute("hey" + i, "");
-              }
-            });
+        es.submit(() -> {
+          for (int i = 0; i < 5096 * 5; ++i) {
+            span.setAttribute("hey" + i, "");
+          }
+        });
     try {
       for (int i = 0; i < 5096 * 5; ++i) {
         span.toSpanData();

@@ -137,19 +137,18 @@ public final class JaegerPropagator implements TextMapPropagator {
       Baggage baggage, @Nullable C carrier, TextMapSetter<C> setter) {
     int[] entriesEmitted = {0};
     int[] bytesEmitted = {0};
-    baggage.forEach(
-        (key, baggageEntry) -> {
-          if (entriesEmitted[0] >= MAX_BAGGAGE_ENTRIES) {
-            return;
-          }
-          String value = baggageEntry.getValue();
-          if (bytesEmitted[0] + key.length() + value.length() > MAX_BAGGAGE_BYTES) {
-            return;
-          }
-          setter.set(carrier, BAGGAGE_PREFIX + key, value);
-          entriesEmitted[0]++;
-          bytesEmitted[0] += key.length() + value.length();
-        });
+    baggage.forEach((key, baggageEntry) -> {
+      if (entriesEmitted[0] >= MAX_BAGGAGE_ENTRIES) {
+        return;
+      }
+      String value = baggageEntry.getValue();
+      if (bytesEmitted[0] + key.length() + value.length() > MAX_BAGGAGE_BYTES) {
+        return;
+      }
+      setter.set(carrier, BAGGAGE_PREFIX + key, value);
+      entriesEmitted[0]++;
+      bytesEmitted[0] += key.length() + value.length();
+    });
   }
 
   @Override

@@ -79,31 +79,27 @@ class SdkLongHistogramTest {
     longHistogram.record(12);
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testHistogram")
-                    .hasDescription("description")
-                    .hasUnit("By")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram
-                                .isCumulative()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasAttributes(Attributes.empty())
-                                            .hasCount(2)
-                                            .hasSum(24)
-                                            .hasBucketBoundaries(
-                                                0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1_000,
-                                                2_500, 5_000, 7_500, 10_000)
-                                            .hasBucketCounts(
-                                                0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testHistogram")
+                .hasDescription("description")
+                .hasUnit("By")
+                .hasHistogramSatisfying(histogram ->
+                    histogram
+                        .isCumulative()
+                        .hasPointsSatisfying(point ->
+                            point
+                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasCount(2)
+                                .hasSum(24)
+                                .hasBucketBoundaries(
+                                    0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1_000, 2_500, 5_000,
+                                    7_500, 10_000)
+                                .hasBucketCounts(0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))));
   }
 
   @Test
@@ -118,66 +114,58 @@ class SdkLongHistogramTest {
     longHistogram.record(321, Attributes.builder().put("K", "V").build());
     longHistogram.record(1, Attributes.builder().put("K", "V").build());
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testHistogram")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(3)
-                                        .hasSum(445)
-                                        .hasBucketCounts(
-                                            0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry("K", "V")),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(2)
-                                        .hasSum(23)
-                                        .hasBucketCounts(
-                                            0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(Attributes.empty()))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testHistogram")
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasCount(3)
+                                .hasSum(445)
+                                .hasBucketCounts(0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
+                                .hasAttributes(attributeEntry("K", "V")),
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasCount(2)
+                                .hasSum(23)
+                                .hasBucketCounts(0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                .hasAttributes(Attributes.empty()))));
 
     // Histograms are cumulative by default.
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longHistogram.record(222, Attributes.builder().put("K", "V").build());
     longHistogram.record(17, Attributes.empty());
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testHistogram")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(4)
-                                        .hasSum(667)
-                                        .hasBucketCounts(
-                                            0, 1, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry("K", "V")),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(3)
-                                        .hasSum(40)
-                                        .hasBucketCounts(
-                                            0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(Attributes.empty()))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testHistogram")
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasCount(4)
+                                .hasSum(667)
+                                .hasBucketCounts(0, 1, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
+                                .hasAttributes(attributeEntry("K", "V")),
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasCount(3)
+                                .hasSum(40)
+                                .hasBucketCounts(0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                .hasAttributes(Attributes.empty()))));
   }
 
   /**
@@ -220,65 +208,53 @@ class SdkLongHistogramTest {
     // Both deltaReader and cumulativeReader should read out the same values, with the attributes1
     // point having a scale that accommodates the range of measurements.
     assertThat(deltaReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("histogram")
-                    .hasExponentialHistogramSatisfying(
-                        expHistogram ->
-                            expHistogram
-                                .isDelta()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasAttributes(attributes1)
-                                            .hasScale(0)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(-1)
-                                                        .hasCounts(
-                                                            Arrays.asList(1L, 0L, 0L, 0L, 1L))),
-                                    point ->
-                                        point
-                                            .hasAttributes(attributes2)
-                                            .hasScale(20)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(-1)
-                                                        .hasCounts(
-                                                            Collections.singletonList(1L))))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("histogram")
+                .hasExponentialHistogramSatisfying(expHistogram ->
+                    expHistogram
+                        .isDelta()
+                        .hasPointsSatisfying(
+                            point ->
+                                point
+                                    .hasAttributes(attributes1)
+                                    .hasScale(0)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(-1)
+                                            .hasCounts(Arrays.asList(1L, 0L, 0L, 0L, 1L))),
+                            point ->
+                                point
+                                    .hasAttributes(attributes2)
+                                    .hasScale(20)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(-1)
+                                            .hasCounts(Collections.singletonList(1L))))));
     assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("histogram")
-                    .hasExponentialHistogramSatisfying(
-                        expHistogram ->
-                            expHistogram
-                                .isCumulative()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasAttributes(attributes1)
-                                            .hasScale(0)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(-1)
-                                                        .hasCounts(
-                                                            Arrays.asList(1L, 0L, 0L, 0L, 1L))),
-                                    point ->
-                                        point
-                                            .hasAttributes(attributes2)
-                                            .hasScale(20)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(-1)
-                                                        .hasCounts(
-                                                            Collections.singletonList(1L))))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("histogram")
+                .hasExponentialHistogramSatisfying(expHistogram ->
+                    expHistogram
+                        .isCumulative()
+                        .hasPointsSatisfying(
+                            point ->
+                                point
+                                    .hasAttributes(attributes1)
+                                    .hasScale(0)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(-1)
+                                            .hasCounts(Arrays.asList(1L, 0L, 0L, 0L, 1L))),
+                            point ->
+                                point
+                                    .hasAttributes(attributes2)
+                                    .hasScale(20)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(-1)
+                                            .hasCounts(Collections.singletonList(1L))))));
 
     // Record 1 measurement to attributes1 such that scale doesn't change, 2 measurement to
     // attributes2 such that scale changes.
@@ -290,66 +266,55 @@ class SdkLongHistogramTest {
     // now has scale 20, the attributes2 point now has scale 0 to accommodate the range of
     // measurements.
     assertThat(deltaReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("histogram")
-                    .hasExponentialHistogramSatisfying(
-                        expHistogram ->
-                            expHistogram
-                                .isDelta()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasAttributes(attributes1)
-                                            .hasScale(20)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(-1)
-                                                        .hasCounts(Collections.singletonList(1L))),
-                                    point ->
-                                        point
-                                            .hasAttributes(attributes2)
-                                            .hasScale(0)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(-1)
-                                                        .hasCounts(
-                                                            Arrays.asList(1L, 0L, 0L, 0L, 1L))))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("histogram")
+                .hasExponentialHistogramSatisfying(expHistogram ->
+                    expHistogram
+                        .isDelta()
+                        .hasPointsSatisfying(
+                            point ->
+                                point
+                                    .hasAttributes(attributes1)
+                                    .hasScale(20)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(-1)
+                                            .hasCounts(Collections.singletonList(1L))),
+                            point ->
+                                point
+                                    .hasAttributes(attributes2)
+                                    .hasScale(0)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(-1)
+                                            .hasCounts(Arrays.asList(1L, 0L, 0L, 0L, 1L))))));
     // The cumulativeReader does not reset after collection, so both attributes1 and attributes2
     // points should now have scale 0.
     assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("histogram")
-                    .hasExponentialHistogramSatisfying(
-                        expHistogram ->
-                            expHistogram
-                                .isCumulative()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasAttributes(attributes1)
-                                            .hasScale(0)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(-1)
-                                                        .hasCounts(
-                                                            Arrays.asList(2L, 0L, 0L, 0L, 1L))),
-                                    point ->
-                                        point
-                                            .hasAttributes(attributes2)
-                                            .hasScale(0)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(-1)
-                                                        .hasCounts(
-                                                            Arrays.asList(2L, 0L, 0L, 0L, 1L))))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("histogram")
+                .hasExponentialHistogramSatisfying(expHistogram ->
+                    expHistogram
+                        .isCumulative()
+                        .hasPointsSatisfying(
+                            point ->
+                                point
+                                    .hasAttributes(attributes1)
+                                    .hasScale(0)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(-1)
+                                            .hasCounts(Arrays.asList(2L, 0L, 0L, 0L, 1L))),
+                            point ->
+                                point
+                                    .hasAttributes(attributes2)
+                                    .hasScale(0)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(-1)
+                                            .hasCounts(Arrays.asList(2L, 0L, 0L, 0L, 1L))))));
   }
 
   @Test
@@ -385,63 +350,51 @@ class SdkLongHistogramTest {
     longHistogram.record(13L);
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testHistogram")
-                    .hasDescription("description")
-                    .hasUnit("ms")
-                    .hasExponentialHistogramSatisfying(
-                        expHistogram ->
-                            expHistogram
-                                .isCumulative()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasAttributes(Attributes.empty())
-                                            .hasCount(2)
-                                            .hasSum(25)
-                                            .hasMin(12)
-                                            .hasMax(13)
-                                            .hasScale(5)
-                                            .hasZeroCount(0)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(114)
-                                                        .hasCounts(
-                                                            Arrays.asList(1L, 0L, 0L, 0L, 1L)))
-                                            .hasNegativeBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(0)
-                                                        .hasCounts(Collections.emptyList())),
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasAttributes(
-                                                Attributes.builder().put("key", "value").build())
-                                            .hasCount(1)
-                                            .hasSum(12)
-                                            .hasMin(12)
-                                            .hasMax(12)
-                                            .hasScale(20)
-                                            .hasZeroCount(0)
-                                            .hasPositiveBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(3759105)
-                                                        .hasCounts(Collections.singletonList(1L)))
-                                            .hasNegativeBucketsSatisfying(
-                                                buckets ->
-                                                    buckets
-                                                        .hasOffset(0)
-                                                        .hasCounts(Collections.emptyList())))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testHistogram")
+                .hasDescription("description")
+                .hasUnit("ms")
+                .hasExponentialHistogramSatisfying(expHistogram ->
+                    expHistogram
+                        .isCumulative()
+                        .hasPointsSatisfying(
+                            point ->
+                                point
+                                    .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                    .hasEpochNanos(testClock.now())
+                                    .hasAttributes(Attributes.empty())
+                                    .hasCount(2)
+                                    .hasSum(25)
+                                    .hasMin(12)
+                                    .hasMax(13)
+                                    .hasScale(5)
+                                    .hasZeroCount(0)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(114)
+                                            .hasCounts(Arrays.asList(1L, 0L, 0L, 0L, 1L)))
+                                    .hasNegativeBucketsSatisfying(buckets ->
+                                        buckets.hasOffset(0).hasCounts(Collections.emptyList())),
+                            point ->
+                                point
+                                    .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
+                                    .hasEpochNanos(testClock.now())
+                                    .hasAttributes(Attributes.builder().put("key", "value").build())
+                                    .hasCount(1)
+                                    .hasSum(12)
+                                    .hasMin(12)
+                                    .hasMax(12)
+                                    .hasScale(20)
+                                    .hasZeroCount(0)
+                                    .hasPositiveBucketsSatisfying(buckets ->
+                                        buckets
+                                            .hasOffset(3759105)
+                                            .hasCounts(Collections.singletonList(1L)))
+                                    .hasNegativeBucketsSatisfying(buckets ->
+                                        buckets.hasOffset(0).hasCounts(Collections.emptyList())))));
   }
 
   @Test
@@ -484,24 +437,18 @@ class SdkLongHistogramTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasExponentialHistogramSatisfying(
-                        exponentialHistogram ->
-                            exponentialHistogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasSum(10.0)
-                                        .hasAttributes(Attributes.empty())
-                                        .hasExemplarsSatisfying(
-                                            exemplar ->
-                                                exemplar
-                                                    .hasValue(10.0)
-                                                    .hasFilteredAttributes(
-                                                        Attributes.builder()
-                                                            .put("key", "value")
-                                                            .build())))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasExponentialHistogramSatisfying(exponentialHistogram ->
+                    exponentialHistogram.hasPointsSatisfying(point ->
+                        point
+                            .hasSum(10.0)
+                            .hasAttributes(Attributes.empty())
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar
+                                    .hasValue(10.0)
+                                    .hasFilteredAttributes(
+                                        Attributes.builder().put("key", "value").build())))));
   }
 
   @Test
@@ -531,23 +478,17 @@ class SdkLongHistogramTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasHistogramSatisfying(
-                        explicitHistogram ->
-                            explicitHistogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasSum(10)
-                                        .hasAttributes(Attributes.empty())
-                                        .hasExemplarsSatisfying(
-                                            exemplar ->
-                                                exemplar
-                                                    .hasValue(10.0)
-                                                    .hasFilteredAttributes(
-                                                        Attributes.builder()
-                                                            .put("key", "value")
-                                                            .build())))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasHistogramSatisfying(explicitHistogram ->
+                    explicitHistogram.hasPointsSatisfying(point ->
+                        point
+                            .hasSum(10)
+                            .hasAttributes(Attributes.empty())
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar
+                                    .hasValue(10.0)
+                                    .hasFilteredAttributes(
+                                        Attributes.builder().put("key", "value").build())))));
   }
 }

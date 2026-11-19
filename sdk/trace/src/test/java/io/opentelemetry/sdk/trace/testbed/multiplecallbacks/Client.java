@@ -27,17 +27,16 @@ class Client {
   public Future<Object> send(Object message) {
     Context parent = Context.current();
 
-    return executor.submit(
-        () -> {
-          Span span = tracer.spanBuilder("subtask").setParent(parent).startSpan();
-          try (Scope subtaskScope = span.makeCurrent()) {
-            // Simulate work - make sure we finish *after* the parent Span.
-            parentDoneLatch.await();
-          } finally {
-            span.end();
-          }
+    return executor.submit(() -> {
+      Span span = tracer.spanBuilder("subtask").setParent(parent).startSpan();
+      try (Scope subtaskScope = span.makeCurrent()) {
+        // Simulate work - make sure we finish *after* the parent Span.
+        parentDoneLatch.await();
+      } finally {
+        span.end();
+      }
 
-          return message + "::response";
-        });
+      return message + "::response";
+    });
   }
 }

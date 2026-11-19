@@ -90,47 +90,46 @@ class PrometheusIntegrationTest {
     WebClient promClient = WebClient.of("http://localhost:" + prometheus.getMappedPort(9090));
     JSON json = JSON.builder().register(new JrSimpleTreeExtension()).build();
     await()
-        .untilAsserted(
-            () -> {
-              TreeNode response =
-                  json.treeFrom(
-                      promClient
-                          .get("/api/v1/query?query=requests_total")
-                          .aggregate()
-                          .join()
-                          .contentUtf8());
-              assertThat(response.get("status"))
-                  .isInstanceOfSatisfying(
-                      JrsString.class, s -> assertThat(s.getValue()).isEqualTo("success"));
-              TreeNode result = response.get("data").get("result").get(0);
-              assertThat(result).isNotNull();
-              assertThat(result.get("metric").get("__name__"))
-                  .isInstanceOfSatisfying(
-                      JrsString.class, s -> assertThat(s.getValue()).isEqualTo("requests_total"));
-              assertThat(result.get("metric").get("animal"))
-                  .isInstanceOfSatisfying(
-                      JrsString.class, s -> assertThat(s.getValue()).isEqualTo("bear"));
-              assertThat(result.get("value").get(1))
-                  .isInstanceOfSatisfying(
-                      JrsString.class, s -> assertThat(s.getValue()).isEqualTo("3"));
+        .untilAsserted(() -> {
+          TreeNode response =
+              json.treeFrom(
+                  promClient
+                      .get("/api/v1/query?query=requests_total")
+                      .aggregate()
+                      .join()
+                      .contentUtf8());
+          assertThat(response.get("status"))
+              .isInstanceOfSatisfying(
+                  JrsString.class, s -> assertThat(s.getValue()).isEqualTo("success"));
+          TreeNode result = response.get("data").get("result").get(0);
+          assertThat(result).isNotNull();
+          assertThat(result.get("metric").get("__name__"))
+              .isInstanceOfSatisfying(
+                  JrsString.class, s -> assertThat(s.getValue()).isEqualTo("requests_total"));
+          assertThat(result.get("metric").get("animal"))
+              .isInstanceOfSatisfying(
+                  JrsString.class, s -> assertThat(s.getValue()).isEqualTo("bear"));
+          assertThat(result.get("value").get(1))
+              .isInstanceOfSatisfying(
+                  JrsString.class, s -> assertThat(s.getValue()).isEqualTo("3"));
 
-              response =
-                  json.treeFrom(
-                      promClient.get("/api/v1/query?query=lives").aggregate().join().contentUtf8());
-              assertThat(response.get("status"))
-                  .isInstanceOfSatisfying(
-                      JrsString.class, s -> assertThat(s.getValue()).isEqualTo("success"));
-              result = response.get("data").get("result").get(0);
-              assertThat(result).isNotNull();
-              assertThat(result.get("metric").get("__name__"))
-                  .isInstanceOfSatisfying(
-                      JrsString.class, s -> assertThat(s.getValue()).isEqualTo("lives"));
-              assertThat(result.get("metric").get("animal"))
-                  .isInstanceOfSatisfying(
-                      JrsString.class, s -> assertThat(s.getValue()).isEqualTo("cat"));
-              assertThat(result.get("value").get(1))
-                  .isInstanceOfSatisfying(
-                      JrsString.class, s -> assertThat(s.getValue()).isEqualTo("9"));
-            });
+          response =
+              json.treeFrom(
+                  promClient.get("/api/v1/query?query=lives").aggregate().join().contentUtf8());
+          assertThat(response.get("status"))
+              .isInstanceOfSatisfying(
+                  JrsString.class, s -> assertThat(s.getValue()).isEqualTo("success"));
+          result = response.get("data").get("result").get(0);
+          assertThat(result).isNotNull();
+          assertThat(result.get("metric").get("__name__"))
+              .isInstanceOfSatisfying(
+                  JrsString.class, s -> assertThat(s.getValue()).isEqualTo("lives"));
+          assertThat(result.get("metric").get("animal"))
+              .isInstanceOfSatisfying(
+                  JrsString.class, s -> assertThat(s.getValue()).isEqualTo("cat"));
+          assertThat(result.get("value").get(1))
+              .isInstanceOfSatisfying(
+                  JrsString.class, s -> assertThat(s.getValue()).isEqualTo("9"));
+        });
   }
 }

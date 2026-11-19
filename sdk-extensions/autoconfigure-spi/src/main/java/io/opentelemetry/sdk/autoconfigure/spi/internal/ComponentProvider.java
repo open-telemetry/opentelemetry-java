@@ -30,7 +30,12 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
  * <p>Supported component types include: {@link SpanExporter}, {@link MetricExporter}, {@link
  * LogRecordExporter}, {@link SpanProcessor}, {@link LogRecordProcessor}, {@link TextMapPropagator},
  * {@link Sampler}, {@link Resource}.
+ *
+ * @deprecated Use {@link
+ *     io.opentelemetry.sdk.autoconfigure.spi.declarativeconfig.ComponentProvider} instead.
+ *     Scheduled for removal after 1.68.0.
  */
+@Deprecated
 public interface ComponentProvider {
 
   /**
@@ -56,7 +61,5 @@ public interface ComponentProvider {
    *     file.
    * @return an instance the SDK extension component
    */
-  // TODO (jack-berg): consider dynamic configuration use case before stabilizing in case that
-  // affects any API decisions
   Object create(DeclarativeConfigProperties config);
 }

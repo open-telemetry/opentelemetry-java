@@ -101,72 +101,65 @@ class ResourceConfigurationTest {
             "default",
             null,
             null,
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "test")
-                        .containsEntry("cat", "meow")
-                        .containsEntry("service.instance.id", "override-id"))),
+            attributeConsumer(attr ->
+                attr.containsEntry("service.name", "test")
+                    .containsEntry("cat", "meow")
+                    .containsEntry("service.instance.id", "override-id"))),
         Arguments.argumentSet(
             "only enabled animal provider",
             "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider",
             null,
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "unknown_service:java")
-                        .doesNotContainKey("cat")
-                        .containsEntry("animal", "cat")
-                        .doesNotContainKey("color"))),
+            attributeConsumer(attr ->
+                attr.containsEntry("service.name", "unknown_service:java")
+                    .doesNotContainKey("cat")
+                    .containsEntry("animal", "cat")
+                    .doesNotContainKey("color"))),
         Arguments.argumentSet(
             "only disabled color provider",
             null,
             "io.opentelemetry.sdk.autoconfigure.provider.TestColorResourceProvider",
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "test")
-                        .containsEntry("cat", "meow")
-                        .containsEntry("animal", "cat")
-                        .doesNotContainKey("color"))),
+            attributeConsumer(attr ->
+                attr.containsEntry("service.name", "test")
+                    .containsEntry("cat", "meow")
+                    .containsEntry("animal", "cat")
+                    .doesNotContainKey("color"))),
         Arguments.argumentSet(
             "enabled animal disabled color",
             "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider",
             "io.opentelemetry.sdk.autoconfigure.provider.TestColorResourceProvider",
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "unknown_service:java")
-                        .doesNotContainKey("cat")
-                        .containsEntry("animal", "cat")
-                        .doesNotContainKey("color"))),
+            attributeConsumer(attr ->
+                attr.containsEntry("service.name", "unknown_service:java")
+                    .doesNotContainKey("cat")
+                    .containsEntry("animal", "cat")
+                    .doesNotContainKey("color"))),
         Arguments.argumentSet(
             "enabled animal disabled color and animal",
             "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider",
             "io.opentelemetry.sdk.autoconfigure.provider.TestColorResourceProvider,io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider",
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "unknown_service:java")
-                        .doesNotContainKey("cat")
-                        .doesNotContainKey("animal")
-                        .doesNotContainKey("color"))),
+            attributeConsumer(attr ->
+                attr.containsEntry("service.name", "unknown_service:java")
+                    .doesNotContainKey("cat")
+                    .doesNotContainKey("animal")
+                    .doesNotContainKey("color"))),
         Arguments.argumentSet(
             "only environment provider enabled",
             "io.opentelemetry.sdk.autoconfigure.EnvironmentResourceProvider",
             null,
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "test")
-                        .containsEntry("cat", "meow")
-                        .doesNotContainKey("service.instance.id")
-                        .doesNotContainKey("animal")
-                        .doesNotContainKey("color"))),
+            attributeConsumer(attr ->
+                attr.containsEntry("service.name", "test")
+                    .containsEntry("cat", "meow")
+                    .doesNotContainKey("service.instance.id")
+                    .doesNotContainKey("animal")
+                    .doesNotContainKey("color"))),
         Arguments.argumentSet(
             "environment provider disabled",
             null,
             "io.opentelemetry.sdk.autoconfigure.EnvironmentResourceProvider",
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "unknown_service:java")
-                        .doesNotContainKey("cat")
-                        .containsEntry("animal", "cat")
-                        .containsEntry("color", "blue"))));
+            attributeConsumer(attr ->
+                attr.containsEntry("service.name", "unknown_service:java")
+                    .doesNotContainKey("cat")
+                    .containsEntry("animal", "cat")
+                    .containsEntry("color", "blue"))));
   }
 
   private static Consumer<AttributesAssert> attributeConsumer(

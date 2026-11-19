@@ -123,10 +123,9 @@ class BatchSpanProcessorTest {
 
   @Test
   void builderInvalidConfig() {
-    assertThatThrownBy(
-            () ->
-                BatchSpanProcessor.builder(mockSpanExporter)
-                    .setScheduleDelay(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(() ->
+            BatchSpanProcessor.builder(mockSpanExporter)
+                .setScheduleDelay(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("delay must be non-negative");
     assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).setScheduleDelay(1, null))
@@ -135,10 +134,9 @@ class BatchSpanProcessorTest {
     assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).setScheduleDelay(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("delay");
-    assertThatThrownBy(
-            () ->
-                BatchSpanProcessor.builder(mockSpanExporter)
-                    .setExporterTimeout(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(() ->
+            BatchSpanProcessor.builder(mockSpanExporter)
+                .setExporterTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("timeout must be non-negative");
     assertThatThrownBy(
@@ -244,16 +242,15 @@ class BatchSpanProcessorTest {
     spanExporter.succeed();
 
     await()
-        .untilAsserted(
-            () ->
-                assertThat(spanExporter.getExported())
-                    .containsExactly(
-                        span1.toSpanData(),
-                        span2.toSpanData(),
-                        span3.toSpanData(),
-                        span4.toSpanData(),
-                        span5.toSpanData(),
-                        span6.toSpanData()));
+        .untilAsserted(() ->
+            assertThat(spanExporter.getExported())
+                .containsExactly(
+                    span1.toSpanData(),
+                    span2.toSpanData(),
+                    span3.toSpanData(),
+                    span4.toSpanData(),
+                    span5.toSpanData(),
+                    span6.toSpanData()));
   }
 
   @Test
@@ -525,13 +522,12 @@ class BatchSpanProcessorTest {
     CountDownLatch exported = new CountDownLatch(1);
     // We return a result we never complete, meaning it will timeout.
     when(mockSpanExporter.export(
-            argThat(
-                spans -> {
-                  assertThat(spans)
-                      .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_1));
-                  exported.countDown();
-                  return true;
-                })))
+            argThat(spans -> {
+              assertThat(spans)
+                  .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_1));
+              exported.countDown();
+              return true;
+            })))
         .thenReturn(new CompletableResultCode());
     createEndedSpan(SPAN_NAME_1);
     exported.await();
@@ -543,13 +539,12 @@ class BatchSpanProcessorTest {
     reset(mockSpanExporter);
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(mockSpanExporter.export(
-            argThat(
-                spans -> {
-                  assertThat(spans)
-                      .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_2));
-                  exportedAgain.countDown();
-                  return true;
-                })))
+            argThat(spans -> {
+              assertThat(spans)
+                  .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_2));
+              exportedAgain.countDown();
+              return true;
+            })))
         .thenReturn(CompletableResultCode.ofSuccess());
     createEndedSpan(SPAN_NAME_2);
     exported.await();
@@ -718,10 +713,9 @@ class BatchSpanProcessorTest {
   @SuppressLogger(BatchSpanProcessor.class)
   void exporterThrowsNonRuntimeException() {
     when(mockSpanExporter.export(anyList()))
-        .thenAnswer(
-            invocation -> {
-              throw new Exception("No export for you.");
-            });
+        .thenAnswer(invocation -> {
+          throw new Exception("No export for you.");
+        });
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.builder(mockSpanExporter)
             .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)

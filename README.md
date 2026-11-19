@@ -18,26 +18,29 @@ See [opentelemetry.io Java Documentation](https://opentelemetry.io/docs/language
 * End-to-end working code examples
 * And more
 
+<!-- spotless:off -->
+
 > [!IMPORTANT]
 > We are currently seeking additional contributors! See [help wanted](#help-wanted) for details.
 
+<!-- spotless:on -->
+
 ## Requirements
 
-Unless otherwise noted, all published artifacts support Java 8 or higher.
-See [language version compatibility](VERSIONING.md#language-version-compatibility) for complete
-details.
+Unless otherwise noted, all published artifacts support Java 8 or higher. See
+[language version compatibility](VERSIONING.md#language-version-compatibility) for complete details.
 
-**Android Disclaimer:** For compatibility
-reasons, [library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring)
+**Android Disclaimer:** For compatibility reasons,
+[library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring)
 must be enabled.
 
 See [contributing](#contributing) for details on building this project locally.
 
 ## Releases
 
-Releases are published to maven central. We
-publish [minor releases monthly](RELEASING.md#release-cadence)
-and [patch releases as needed](RELEASING.md#preparing-a-new-patch-release).
+Releases are published to maven central. We publish
+[minor releases monthly](RELEASING.md#release-cadence) and
+[patch releases as needed](RELEASING.md#preparing-a-new-patch-release).
 
 See [releases](https://github.com/open-telemetry/opentelemetry-java/releases) for a listing of
 released versions and notes (see also [changelog](CHANGELOG.md)).
@@ -55,10 +58,11 @@ we strongly recommend [using one of our BOMs][dependencies-and-boms].
 
 A bill of materials (or BOM) helps sync dependency versions of related artifacts.
 
-| Component                                    | Description                            | Artifact ID               | Version                                                     | Javadoc |
+|                  Component                   |              Description               |        Artifact ID        |                           Version                           | Javadoc |
 |----------------------------------------------|----------------------------------------|---------------------------|-------------------------------------------------------------|---------|
 | [Bill of Materials (BOM)](./bom)             | Bill of materials for stable artifacts | `opentelemetry-bom`       | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | N/A     |
 | [Alpha Bill of Materials (BOM)](./bom-alpha) | Bill of materials for alpha artifacts  | `opentelemetry-bom-alpha` | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | N/A     |
+
 </details>
 
 <details open>
@@ -66,12 +70,13 @@ A bill of materials (or BOM) helps sync dependency versions of related artifacts
 
 The OpenTelemetry API for recording telemetry.
 
-| Component                         | Description                                                                          | Artifact ID                   | Version                                                     | Javadoc                                                                                                                                                               |
-|-----------------------------------|--------------------------------------------------------------------------------------|-------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context                       | `opentelemetry-api`           | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api)                     |
-| [API  Incubator](./api/incubator) | API incubator, including pass through propagator and extended tracer                 | `opentelemetry-api-incubator` | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api-incubator.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api-incubator) |
-| [Context API](./context)          | OpenTelemetry context API                                                            | `opentelemetry-context`       | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-context.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-context)             |
-| [Common](./common)                | Common utility methods used across API components                                    | `opentelemetry-common`        | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-common.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-common)               |
+|             Component             |                             Description                              |          Artifact ID          |                           Version                           |                                                                                Javadoc                                                                                |
+|-----------------------------------|----------------------------------------------------------------------|-------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context       | `opentelemetry-api`           | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api)                     |
+| [API  Incubator](./api/incubator) | API incubator, including pass through propagator and extended tracer | `opentelemetry-api-incubator` | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api-incubator.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api-incubator) |
+| [Context API](./context)          | OpenTelemetry context API                                            | `opentelemetry-context`       | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-context.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-context)             |
+| [Common](./common)                | Common utility methods used across API components                    | `opentelemetry-common`        | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-common.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-common)               |
+
 </details>
 
 <details>
@@ -79,10 +84,11 @@ The OpenTelemetry API for recording telemetry.
 
 Extensions to the OpenTelemetry API.
 
-| Component                                                     | Description                                                                                                                                                                             | Artifact ID                                 | Version                                                     | Javadoc                                                                                                                                                                                           |
-|---------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|-------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                                                                                                                                                        | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-extension-kotlin.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-extension-kotlin)                       |
-| [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace                                                                                                                                       | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-extension-trace-propagators.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-extension-trace-propagators) |
+|                           Component                           |                    Description                    |                 Artifact ID                 |                      Version                      |                                                                                              Javadoc                                                                                              |
+|---------------------------------------------------------------|---------------------------------------------------|---------------------------------------------|---------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Kotlin Extension](./extensions/kotlin)                       | Context extension for coroutines                  | `opentelemetry-extension-kotlin`            | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-extension-kotlin.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-extension-kotlin)                       |
+| [Trace Propagators Extension](./extensions/trace-propagators) | Trace propagators, including B3, Jaeger, OT Trace | `opentelemetry-extension-trace-propagators` | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-extension-trace-propagators.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-extension-trace-propagators) |
+
 </details>
 
 <details open>
@@ -90,15 +96,16 @@ Extensions to the OpenTelemetry API.
 
 The OpenTelemetry SDK for managing telemetry producing by the API.
 
-| Component                    | Description                                            | Artifact ID                 | Version                                           | Javadoc                                                                                                                                                             |
-|------------------------------|--------------------------------------------------------|-----------------------------|---------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [SDK](./sdk/all)             | OpenTelemetry SDK, including metrics, traces, and logs | `opentelemetry-sdk`         | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk)                   |
-| [Metrics SDK](./sdk/metrics) | OpenTelemetry metrics SDK                              | `opentelemetry-sdk-metrics` | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-metrics.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-metrics)   |
-| [Trace SDK](./sdk/trace)     | OpenTelemetry trace SDK                                | `opentelemetry-sdk-trace`   | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-trace.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-trace)       |
-| [Log SDK](./sdk/logs)        | OpenTelemetry log SDK                                  | `opentelemetry-sdk-logs`    | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-logs.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-logs)         |
-| [Profiles SDK](./sdk/profiles) | OpenTelemetry profiles SDK                           | `opentelemetry-sdk-profiles` | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE-->                 | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-profiles.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-profiles) |
-| [SDK Common](./sdk/common)   | Shared SDK components                                  | `opentelemetry-sdk-common`  | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-common.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-common)     |
-| [SDK Testing](./sdk/testing) | Components for testing OpenTelemetry instrumentation   | `opentelemetry-sdk-testing` | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-testing.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-testing)   |
+|           Component            |                      Description                       |         Artifact ID          |                           Version                           |                                                                               Javadoc                                                                               |
+|--------------------------------|--------------------------------------------------------|------------------------------|-------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [SDK](./sdk/all)               | OpenTelemetry SDK, including metrics, traces, and logs | `opentelemetry-sdk`          | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk)                   |
+| [Metrics SDK](./sdk/metrics)   | OpenTelemetry metrics SDK                              | `opentelemetry-sdk-metrics`  | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-metrics.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-metrics)   |
+| [Trace SDK](./sdk/trace)       | OpenTelemetry trace SDK                                | `opentelemetry-sdk-trace`    | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-trace.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-trace)       |
+| [Log SDK](./sdk/logs)          | OpenTelemetry log SDK                                  | `opentelemetry-sdk-logs`     | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-logs.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-logs)         |
+| [Profiles SDK](./sdk/profiles) | OpenTelemetry profiles SDK                             | `opentelemetry-sdk-profiles` | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-profiles.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-profiles) |
+| [SDK Common](./sdk/common)     | Shared SDK components                                  | `opentelemetry-sdk-common`   | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-common.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-common)     |
+| [SDK Testing](./sdk/testing)   | Components for testing OpenTelemetry instrumentation   | `opentelemetry-sdk-testing`  | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-testing.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-testing)   |
+
 </details>
 
 <details>
@@ -106,18 +113,19 @@ The OpenTelemetry SDK for managing telemetry producing by the API.
 
 SDK exporters for shipping traces, metrics, and logs out of process.
 
-| Component                                                             | Description                                                                  | Artifact ID                                          | Version                                                     | Javadoc                                                                                                                                                                                                             |
+|                               Component                               |                                 Description                                  |                     Artifact ID                      |                           Version                           |                                                                                                       Javadoc                                                                                                       |
 |-----------------------------------------------------------------------|------------------------------------------------------------------------------|------------------------------------------------------|-------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [OTLP Exporters](./exporters/otlp/all)                                | OTLP gRPC & HTTP exporters, including traces, metrics, and logs              | `opentelemetry-exporter-otlp`                        | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-otlp.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-otlp)                                               |
-| [OTLP Profiles Exporter](./exporters/otlp/profiles)                  | OTLP profiles exporter                                                       | `opentelemetry-exporter-otlp-profiles`               | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE-->                           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-otlp-profiles.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-otlp-profiles)                             |
+| [OTLP Profiles Exporter](./exporters/otlp/profiles)                   | OTLP profiles exporter                                                       | `opentelemetry-exporter-otlp-profiles`               | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-otlp-profiles.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-otlp-profiles)                             |
 | [OTLP Logging Exporters](./exporters/logging-otlp)                    | Logging exporters in OTLP JSON encoding, including traces, metrics, and logs | `opentelemetry-exporter-logging-otlp`                | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-logging-otlp.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-logging-otlp)                               |
 | [OTLP Common](./exporters/otlp/common)                                | Shared OTLP components (internal)                                            | `opentelemetry-exporter-otlp-common`                 | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-otlp-common.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-otlp-common)                                 |
 | [Logging Exporter](./exporters/logging)                               | Logging exporters, including metrics, traces, and logs                       | `opentelemetry-exporter-logging`                     | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-logging.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-logging)                                         |
 | [Prometheus Exporter](./exporters/prometheus)                         | Prometheus metric exporter                                                   | `opentelemetry-exporter-prometheus`                  | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-prometheus.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-prometheus)                                   |
 | [Exporter Common](./exporters/common)                                 | Shared exporter components (internal)                                        | `opentelemetry-exporter-common`                      | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-common.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-common)                                           |
 | [OkHttp Sender](./exporters/sender/okhttp)                            | OkHttp implementation of HttpSender (internal)                               | `opentelemetry-exporter-sender-okhttp`               | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-sender-okhttp.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-sender-okhttp)                             |
-| [JDK Sender](./exporters/sender/jdk)                                  | Java 11+ native HttpClient implementation of HttpSender (internal)           | `opentelemetry-exporter-sender-jdk`                  | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-sender-jdk.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-sender-jdk)                                   |                                                                                                                                                            |
-| [gRPC ManagedChannel Sender](./exporters/sender/grpc-managed-channel) | gRPC ManagedChannel implementation of GrpcSender (internal)                  | `opentelemetry-exporter-sender-grpc-managed-channel` | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-sender-grpc-managed-channel.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-sender-grpc-managed-channel) |                                                                                                                                                            |
+| [JDK Sender](./exporters/sender/jdk)                                  | Java 11+ native HttpClient implementation of HttpSender (internal)           | `opentelemetry-exporter-sender-jdk`                  | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-sender-jdk.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-sender-jdk)                                   |
+| [gRPC ManagedChannel Sender](./exporters/sender/grpc-managed-channel) | gRPC ManagedChannel implementation of GrpcSender (internal)                  | `opentelemetry-exporter-sender-grpc-managed-channel` | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-sender-grpc-managed-channel.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-sender-grpc-managed-channel) |
+
 </details>
 
 <details>
@@ -125,13 +133,16 @@ SDK exporters for shipping traces, metrics, and logs out of process.
 
 Extensions to the OpenTelemetry SDK.
 
-| Component                                                                     | Description                                                                        | Artifact ID                                         | Version                                                     | Javadoc                                                                                                                                                                                                           |
-|-------------------------------------------------------------------------------|------------------------------------------------------------------------------------|-----------------------------------------------------|-------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [SDK Autoconfigure](./sdk-extensions/autoconfigure)                           | Autoconfigure OpenTelemetry SDK from env vars, system properties, and SPI          | `opentelemetry-sdk-extension-autoconfigure`         | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure)                 |
-| [SDK Autoconfigure SPI](./sdk-extensions/autoconfigure-spi)                   | Service Provider Interface (SPI) definitions for autoconfigure                     | `opentelemetry-sdk-extension-autoconfigure-spi`     | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure-spi.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure-spi)         |
-| [SDK Declarative Config](./sdk-extensions/declarative-config)                 | Declarative config implementation for YAML-based SDK configuration                 | `opentelemetry-sdk-extension-declarative-config`    | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE-->                           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-declarative-config.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-declarative-config)                                                                                                                                                                                  |
-| [SDK Jaeger Remote Sampler Extension](./sdk-extensions/jaeger-remote-sampler) | Sampler which obtains sampling configuration from remote Jaeger server             | `opentelemetry-sdk-extension-jaeger-remote-sampler` | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-jaeger-remote-sampler.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-jaeger-remote-sampler) |
-| [SDK Incubator](./sdk-extensions/incubator)                                   | SDK incubator, including YAML based view configuration, LeakDetectingSpanProcessor | `opentelemetry-sdk-extension-incubator`             | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-incubator.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-incubator)                         |
+|                                                 Component                                                 |                                    Description                                     |                            Artifact ID                             |                           Version                           |                                                                                                      Javadoc                                                                                                      |
+|-----------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|--------------------------------------------------------------------|-------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [SDK Autoconfigure](./sdk-extensions/autoconfigure)                                                       | Autoconfigure OpenTelemetry SDK from env vars, system properties, and SPI          | `opentelemetry-sdk-extension-autoconfigure`                        | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure)                 |
+| [SDK Autoconfigure SPI](./sdk-extensions/autoconfigure-spi)                                               | Service Provider Interface (SPI) definitions for autoconfigure                     | `opentelemetry-sdk-extension-autoconfigure-spi`                    | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure-spi.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure-spi)         |
+| [SDK Declarative Config](./sdk-extensions/declarative-config)                                             | Declarative config implementation for YAML-based SDK configuration                 | `opentelemetry-sdk-extension-declarative-config`                   | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-declarative-config.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-declarative-config)       |
+| [SDK Declarative Config Jackson 2 Mapper](./sdk-extensions/declarative-config-jackson2)                   | Jackson 2 model mapper for declarative config                                      | `opentelemetry-sdk-extension-declarative-config-jackson2`          | TODO                                                        | TODO                                                                                                                                                                                                              |
+| [SDK Declarative Config SnakeYAML Engine 2 Parser](./sdk-extensions/declarative-config-snakeyaml-engine2) | SnakeYAML Engine 2 YAML parser for declarative config                              | `opentelemetry-sdk-extension-declarative-config-snakeyaml-engine2` | TODO                                                        | TODO                                                                                                                                                                                                              |
+| [SDK Jaeger Remote Sampler Extension](./sdk-extensions/jaeger-remote-sampler)                             | Sampler which obtains sampling configuration from remote Jaeger server             | `opentelemetry-sdk-extension-jaeger-remote-sampler`                | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-jaeger-remote-sampler.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-jaeger-remote-sampler) |
+| [SDK Incubator](./sdk-extensions/incubator)                                                               | SDK incubator, including YAML based view configuration, LeakDetectingSpanProcessor | `opentelemetry-sdk-extension-incubator`                            | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-incubator.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-incubator)                         |
+
 </details>
 
 <details>
@@ -139,21 +150,24 @@ Extensions to the OpenTelemetry SDK.
 
 Shims for bridging data from one observability library to another.
 
-| Component                              | Description                                                  | Artifact ID                      | Version                                                     | Javadoc                                                                                                                                                                     |
-|----------------------------------------|--------------------------------------------------------------|----------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|               Component                |                                 Description                                 |           Artifact ID            |                           Version                           |                                                                                   Javadoc                                                                                   |
+|----------------------------------------|-----------------------------------------------------------------------------|----------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [OpenCensus Shim](./opencensus-shim)   | **DEPRECATED** Bridge opencensus metrics into the OpenTelemetry metrics SDK | `opentelemetry-opencensus-shim`  | <!--VERSION_UNSTABLE-->1.68.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-opencensus-shim.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-opencensus-shim)   |
-| [OpenTracing Shim](./opentracing-shim) | **DEPRECATED** Bridge opentracing spans into the OpenTelemetry trace API    | `opentelemetry-opentracing-shim` | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->          | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-opentracing-shim.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-opentracing-shim) |
+| [OpenTracing Shim](./opentracing-shim) | **DEPRECATED** Bridge opentracing spans into the OpenTelemetry trace API    | `opentelemetry-opentracing-shim` | <!--VERSION_STABLE-->1.68.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-opentracing-shim.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-opentracing-shim) |
+
 </details>
 
 ### Verifying Artifacts
 
-All artifacts published to Maven Central are signed with GPG key [`17A27CE7A60FF5F0`](https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x17A27CE7A60FF5F0) (fingerprint: `3F05 DDA9 F317 301E 9271 36D4 17A2 7CE7 A60F F5F0`).
+All artifacts published to Maven Central are signed with GPG key
+[`17A27CE7A60FF5F0`](https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x17A27CE7A60FF5F0)
+(fingerprint: `3F05 DDA9 F317 301E 9271 36D4 17A2 7CE7 A60F F5F0`).
 
 ## Dependencies
 
 To take a dependency, [include a BOM][dependencies-and-boms] and specify the dependency as follows,
-replacing `{{artifact-id}}` with the value from the "Artifact ID" column
-from [artifacts](#artifacts):
+replacing `{{artifact-id}}` with the value from the "Artifact ID" column from
+[artifacts](#artifacts):
 
 <details open>
   <summary>Gradle</summary>
@@ -161,6 +175,7 @@ from [artifacts](#artifacts):
 ```groovy
   implementation('io.opentelemetry:{{artifact-id}}')
 ```
+
 </details>
 
 <details>
@@ -172,6 +187,7 @@ from [artifacts](#artifacts):
   <artifactId>{{artifact-id}}</artifactId>
 </dependency>
 ```
+
 </details>
 
 ### Snapshots
@@ -191,6 +207,7 @@ dependencies {
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
+
 </details>
 
 <details>
@@ -223,6 +240,7 @@ dependencies {
     </dependencies>
   </project>
 ```
+
 </details>
 
 ## Compatibility
@@ -234,28 +252,28 @@ compatibility guarantees for public APIs.
 
 Artifacts may depend on other artifacts from this repository, and may depend on internal APIs (i.e.
 non-public APIs) which are subject to change across minor versions. Therefore, it's critical to keep
-artifact versions in sync in order to avoid possible runtime exceptions. We strongly
-recommend [using one of our BOMs][dependencies-and-boms] to assist in keeping artifacts in sync.
+artifact versions in sync in order to avoid possible runtime exceptions. We strongly recommend
+[using one of our BOMs][dependencies-and-boms] to assist in keeping artifacts in sync.
 
 See the [VERSIONING.md](VERSIONING.md) for complete details on compatibility policy.
 
 ## Contacting us
 
-We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#implementation-sigs).
+We hold regular meetings. See details at
+[community page](https://github.com/open-telemetry/community#implementation-sigs).
 
-The meeting is open for all to join. We invite everyone to join our meeting,
-regardless of your experience level. Whether you're a seasoned OpenTelemetry
-developer, just starting your journey, or simply curious about the work we do,
-you're more than welcome to participate!
+The meeting is open for all to join. We invite everyone to join our meeting, regardless of your
+experience level. Whether you're a seasoned OpenTelemetry developer, just starting your journey, or
+simply curious about the work we do, you're more than welcome to participate!
 
-To report a bug, or request a new feature,
-please [open an issue](https://github.com/open-telemetry/opentelemetry-java/issues/new/choose).
+To report a bug, or request a new feature, please
+[open an issue](https://github.com/open-telemetry/opentelemetry-java/issues/new/choose).
 
-We use [GitHub Discussions](https://github.com/open-telemetry/opentelemetry-java/discussions)
-for support or general questions. Feel free to drop us a line.
+We use [GitHub Discussions](https://github.com/open-telemetry/opentelemetry-java/discussions) for
+support or general questions. Feel free to drop us a line.
 
-We are also present in the [`#otel-java`](https://cloud-native.slack.com/archives/C014L2KCTE3) channel in the [CNCF slack](https://slack.cncf.io/).
-Please join us for more informal discussions.
+We are also present in the [`#otel-java`](https://cloud-native.slack.com/archives/C014L2KCTE3)
+channel in the [CNCF slack](https://slack.cncf.io/). Please join us for more informal discussions.
 
 ## Contributing
 
@@ -271,7 +289,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - [Jack Berg](https://github.com/jack-berg), Grafana Labs
 - [John Watson](https://github.com/jkwatson), Sublime Security
 
-For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
+For more information about the maintainer role, see the
+[community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
 ### Approvers
 
@@ -282,13 +301,15 @@ For more information about the maintainer role, see the [community repository](h
 - [Pranav Sharma](https://github.com/psx95), Google
 - [Trask Stalnaker](https://github.com/trask), Microsoft
 
-For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
+For more information about the approver role, see the
+[community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
 ### Triagers
 
 None.
 
-For more information about the triager role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#triager).
+For more information about the triager role, see the
+[community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#triager).
 
 ### Emeritus
 
@@ -297,22 +318,36 @@ For more information about the triager role, see the [community repository](http
 - [Josh Suereth](https://github.com/jsuereth), Approver
 - [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek), Approver
 
-For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
+For more information about the emeritus role, see the
+[community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
 ### Help wanted
 
-We are currently resource constrained and are actively seeking new contributors interested in working towards [approver](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver) / [maintainer](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer) roles. In addition to the documentation for approver / maintainer roles and the [contributing](./CONTRIBUTING.md) guide, here are some additional notes on engaging:
+We are currently resource constrained and are actively seeking new contributors interested in
+working towards
+[approver](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver)
+/
+[maintainer](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer)
+roles. In addition to the documentation for approver / maintainer roles and the
+[contributing](./CONTRIBUTING.md) guide, here are some additional notes on engaging:
 
-- [Pull request](https://github.com/open-telemetry/opentelemetry-java/pulls) reviews are equally or more helpful than code contributions. Comments and approvals are valuable with or without a formal project role. They're also a great forcing function to explore a fairly complex codebase.
-- Attending the [Java: SDK + Automatic Instrumentation](https://github.com/open-telemetry/community?tab=readme-ov-file#implementation-sigs) Special Interest Group (SIG) is a great way to get to know community members and learn about project priorities.
-- Issues labeled [help wanted](https://github.com/open-telemetry/opentelemetry-java/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) are project priorities. Code contributions (or pull request reviews when a PR is linked) for these issues are particularly important.
+- [Pull request](https://github.com/open-telemetry/opentelemetry-java/pulls) reviews are equally or
+  more helpful than code contributions. Comments and approvals are valuable with or without a formal
+  project role. They're also a great forcing function to explore a fairly complex codebase.
+- Attending the
+  [Java: SDK + Automatic Instrumentation](https://github.com/open-telemetry/community?tab=readme-ov-file#implementation-sigs)
+  Special Interest Group (SIG) is a great way to get to know community members and learn about
+  project priorities.
+- Issues labeled
+  [help wanted](https://github.com/open-telemetry/opentelemetry-java/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+  are project priorities. Code contributions (or pull request reviews when a PR is linked) for these
+  issues are particularly important.
 - Triaging / responding to new issues and discussions is a great way to engage with the project.
 
 ### Thanks to all of our contributors!
 
-<a href="https://github.com/open-telemetry/opentelemetry-java/graphs/contributors">
-  <img alt="Repo contributors" src="https://contrib.rocks/image?repo=open-telemetry/opentelemetry-java" />
-</a>
+<a href="https://github.com/open-telemetry/opentelemetry-java/graphs/contributors"> <img alt="Repo
+contributors" src="https://contrib.rocks/image?repo=open-telemetry/opentelemetry-java" /> </a>
 
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/graph/badge.svg
 [codecov-url]: https://app.codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/

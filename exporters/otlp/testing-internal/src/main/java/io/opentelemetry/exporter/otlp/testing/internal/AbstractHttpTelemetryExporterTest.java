@@ -178,24 +178,23 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       attempts.incrementAndGet();
       CompletableFuture<HttpResponse> responseFuture =
           req.aggregate()
-              .thenApply(
-                  aggReq -> {
-                    T request;
-                    try {
-                      byte[] requestBody = maybeInflate(aggReq.headers(), aggReq.content().array());
-                      request = parse.extractThrows(requestBody);
-                    } catch (IOException e) {
-                      throw new UncheckedIOException(e);
-                    }
-                    exportedResourceTelemetry.addAll(getResourceTelemetry.apply(request));
-                    HttpResponse errorResponse = httpErrors.poll();
-                    return errorResponse != null
-                        ? errorResponse
-                        : HttpResponse.of(
-                            HttpStatus.OK,
-                            MediaType.parse("application/x-protobuf"),
-                            successResponseBytes);
-                  });
+              .thenApply(aggReq -> {
+                T request;
+                try {
+                  byte[] requestBody = maybeInflate(aggReq.headers(), aggReq.content().array());
+                  request = parse.extractThrows(requestBody);
+                } catch (IOException e) {
+                  throw new UncheckedIOException(e);
+                }
+                exportedResourceTelemetry.addAll(getResourceTelemetry.apply(request));
+                HttpResponse errorResponse = httpErrors.poll();
+                return errorResponse != null
+                    ? errorResponse
+                    : HttpResponse.of(
+                        HttpStatus.OK,
+                        MediaType.parse("application/x-protobuf"),
+                        successResponseBytes);
+              });
       return HttpResponse.of(responseFuture);
     }
 
@@ -290,10 +289,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     // Assert request contains OTLP spec compliant User-Agent header
     assertThat(httpRequests)
         .singleElement()
-        .satisfies(
-            req ->
-                assertThat(req.headers().get("User-Agent"))
-                    .matches("OTel-OTLP-Exporter-Java/1\\..*"));
+        .satisfies(req ->
+            assertThat(req.headers().get("User-Agent")).matches("OTel-OTLP-Exporter-Java/1\\..*"));
   }
 
   @Test
@@ -467,11 +464,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void tls_badCert() {
-    assertThatThrownBy(
-            () ->
-                exporterBuilder()
-                    .setEndpoint(server.httpsUri() + path)
-                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+    assertThatThrownBy(() ->
+            exporterBuilder()
+                .setEndpoint(server.httpsUri() + path)
+                .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Error creating X509TrustManager with provided certs");
   }
@@ -525,11 +521,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           .asInstanceOf(
               InstanceOfAssertFactories.throwable(FailedExportException.HttpExportException.class))
           .returns(false, Assertions.from(FailedExportException::failedWithResponse))
-          .satisfies(
-              ex -> {
-                assertThat(ex.getResponse()).isNull();
-                assertThat(ex.getCause()).isNotNull();
-              });
+          .satisfies(ex -> {
+            assertThat(ex.getResponse()).isNull();
+            assertThat(ex.getCause()).isNotNull();
+          });
 
       // Assert that the export request fails well before the default connect timeout of 10s
       // Note: Connection failures to non-routable IPs can take 1-5 seconds depending on OS/network
@@ -594,22 +589,19 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .asInstanceOf(
             InstanceOfAssertFactories.throwable(FailedExportException.HttpExportException.class))
         .returns(true, Assertions.from(FailedExportException::failedWithResponse))
-        .satisfies(
-            ex -> {
-              assertThat(ex.getResponse())
-                  .isNotNull()
-                  .satisfies(
-                      response -> {
-                        assertThat(response)
-                            .extracting(
-                                io.opentelemetry.sdk.common.export.HttpResponse::getStatusCode)
-                            .isEqualTo(statusCode);
+        .satisfies(ex -> {
+          assertThat(ex.getResponse())
+              .isNotNull()
+              .satisfies(response -> {
+                assertThat(response)
+                    .extracting(io.opentelemetry.sdk.common.export.HttpResponse::getStatusCode)
+                    .isEqualTo(statusCode);
 
-                        assertThatCode(response::getResponseBody).doesNotThrowAnyException();
-                      });
+                assertThatCode(response::getResponseBody).doesNotThrowAnyException();
+              });
 
-              assertThat(ex.getCause()).isNull();
-            });
+          assertThat(ex.getCause()).isNull();
+        });
 
     LoggingEvent log =
         logs.assertContains(
@@ -900,10 +892,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
     assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofMillis(0))))
         .doesNotThrowAnyException();
-    assertThatCode(
-            () ->
-                buildAndShutdown(
-                    exporterBuilder().setTimeout(Long.MAX_VALUE, TimeUnit.NANOSECONDS)))
+    assertThatCode(() ->
+            buildAndShutdown(exporterBuilder().setTimeout(Long.MAX_VALUE, TimeUnit.NANOSECONDS)))
         .doesNotThrowAnyException();
     assertThatCode(
             () -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofNanos(Long.MAX_VALUE))))
@@ -974,9 +964,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
-    assertThatThrownBy(
-            () ->
-                buildAndShutdown(exporterBuilder().setTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
+    assertThatThrownBy(() ->
+            buildAndShutdown(exporterBuilder().setTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
         .isInstanceOf(ArithmeticException.class);
 
     assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(-1, TimeUnit.MILLISECONDS))
@@ -988,10 +977,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
-    assertThatThrownBy(
-            () ->
-                buildAndShutdown(
-                    exporterBuilder().setConnectTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
+    assertThatThrownBy(() ->
+            buildAndShutdown(
+                exporterBuilder().setConnectTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
         .isInstanceOf(ArithmeticException.class);
 
     assertThatThrownBy(() -> exporterBuilder().setEndpoint(null))
@@ -1240,40 +1228,26 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
       assertThat(inMemoryMetrics.collectAllMetrics())
           .hasSize(3)
-          .anySatisfy(
-              metric ->
-                  assertThat(metric)
-                      .satisfies(
-                          m ->
-                              assertThat(m.getName())
-                                  .matches(
-                                      "otel.sdk.exporter.(span|metric_data_point|log).inflight"))
-                      .hasLongSumSatisfying(
-                          ma ->
-                              ma.hasPointsSatisfying(
-                                  pa -> pa.hasAttributesSatisfying(expectedAttributes))))
-          .anySatisfy(
-              metric ->
-                  assertThat(metric)
-                      .satisfies(
-                          m ->
-                              assertThat(m.getName())
-                                  .matches(
-                                      "otel.sdk.exporter.(span|metric_data_point|log).exported"))
-                      .hasLongSumSatisfying(
-                          ma ->
-                              ma.hasPointsSatisfying(
-                                  pa -> pa.hasAttributesSatisfying(expectedAttributes))))
-          .anySatisfy(
-              metric ->
-                  assertThat(metric)
-                      .hasName("otel.sdk.exporter.operation.duration")
-                      .hasHistogramSatisfying(
-                          ma ->
-                              ma.hasPointsSatisfying(
-                                  pa ->
-                                      pa.hasAttributesSatisfying(expectedAttributes)
-                                          .hasBucketCounts(1))));
+          .anySatisfy(metric ->
+              assertThat(metric)
+                  .satisfies(m ->
+                      assertThat(m.getName())
+                          .matches("otel.sdk.exporter.(span|metric_data_point|log).inflight"))
+                  .hasLongSumSatisfying(ma ->
+                      ma.hasPointsSatisfying(pa -> pa.hasAttributesSatisfying(expectedAttributes))))
+          .anySatisfy(metric ->
+              assertThat(metric)
+                  .satisfies(m ->
+                      assertThat(m.getName())
+                          .matches("otel.sdk.exporter.(span|metric_data_point|log).exported"))
+                  .hasLongSumSatisfying(ma ->
+                      ma.hasPointsSatisfying(pa -> pa.hasAttributesSatisfying(expectedAttributes))))
+          .anySatisfy(metric ->
+              assertThat(metric)
+                  .hasName("otel.sdk.exporter.operation.duration")
+                  .hasHistogramSatisfying(ma ->
+                      ma.hasPointsSatisfying(pa ->
+                          pa.hasAttributesSatisfying(expectedAttributes).hasBucketCounts(1))));
     }
   }
 
@@ -1293,30 +1267,22 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
       assertThat(inMemoryMetrics.collectAllMetrics())
           .hasSize(2)
-          .anySatisfy(
-              metric ->
-                  assertThat(metric)
-                      .hasName("otlp.exporter.seen")
-                      .hasLongSumSatisfying(
-                          ma ->
-                              ma.hasPointsSatisfying(
-                                  pa ->
-                                      pa.hasAttributesSatisfying(
-                                          satisfies(
-                                              stringKey("type"),
-                                              str -> str.matches("log|span|metric"))))))
-          .anySatisfy(
-              metric ->
-                  assertThat(metric)
-                      .hasName("otlp.exporter.exported")
-                      .hasLongSumSatisfying(
-                          ma ->
-                              ma.hasPointsSatisfying(
-                                  pa ->
-                                      pa.hasAttributesSatisfying(
-                                          satisfies(
-                                              stringKey("type"),
-                                              str -> str.matches("log|span|metric"))))));
+          .anySatisfy(metric ->
+              assertThat(metric)
+                  .hasName("otlp.exporter.seen")
+                  .hasLongSumSatisfying(ma ->
+                      ma.hasPointsSatisfying(pa ->
+                          pa.hasAttributesSatisfying(
+                              satisfies(
+                                  stringKey("type"), str -> str.matches("log|span|metric"))))))
+          .anySatisfy(metric ->
+              assertThat(metric)
+                  .hasName("otlp.exporter.exported")
+                  .hasLongSumSatisfying(ma ->
+                      ma.hasPointsSatisfying(pa ->
+                          pa.hasAttributesSatisfying(
+                              satisfies(
+                                  stringKey("type"), str -> str.matches("log|span|metric"))))));
     }
   }
 
@@ -1330,23 +1296,22 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   private List<U> toProto(List<T> telemetry) {
     return Arrays.stream(toMarshalers(telemetry))
-        .map(
-            marshaler -> {
-              ByteArrayOutputStream bos = new ByteArrayOutputStream();
-              try {
-                marshaler.writeBinaryTo(bos);
-                @SuppressWarnings("unchecked")
-                U result =
-                    (U)
-                        resourceTelemetryInstance
-                            .newBuilderForType()
-                            .mergeFrom(bos.toByteArray())
-                            .build();
-                return result;
-              } catch (IOException e) {
-                throw new UncheckedIOException(e);
-              }
-            })
+        .map(marshaler -> {
+          ByteArrayOutputStream bos = new ByteArrayOutputStream();
+          try {
+            marshaler.writeBinaryTo(bos);
+            @SuppressWarnings("unchecked")
+            U result =
+                (U)
+                    resourceTelemetryInstance
+                        .newBuilderForType()
+                        .mergeFrom(bos.toByteArray())
+                        .build();
+            return result;
+          } catch (IOException e) {
+            throw new UncheckedIOException(e);
+          }
+        })
         .collect(Collectors.toList());
   }
 

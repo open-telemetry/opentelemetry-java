@@ -207,83 +207,77 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable RetryState retryState) {
 
     try {
-      InstrumentationUtil.suppressInstrumentation(
-          () -> {
-            Call call = client.newCall(requestBuilder.build());
-            if (retryState != null && !retryState.configureCallTimeout(call)) {
-              onError.accept(new SocketTimeoutException("Call timed out"));
-              return;
-            }
-            startCall(
-                call,
-                attempt,
-                new Callback() {
-                  @Override
-                  public void onFailure(Call call, IOException e) {
-                    boolean retryable = retryState != null && retryState.shouldRetryOnException(e);
-                    if (retryState != null && logger.isLoggable(Level.FINER)) {
-                      logger.log(
-                          Level.FINER,
-                          "Attempt "
-                              + attempt
-                              + " failed with "
-                              + (retryable ? "retryable" : "non-retryable")
-                              + " exception",
-                          e);
-                    }
-                    if (!call.isCanceled()
-                        && retryState != null
-                        && retryState.canRetry(attempt)
-                        && retryable
-                        && retryState.backoff(OptionalLong.empty())) {
-                      sendAttempt(
-                          requestBuilder,
-                          messageWriter,
-                          onResponse,
-                          onError,
-                          attempt + 1,
-                          retryState);
-                    } else {
-                      onError.accept(e);
-                    }
-                  }
+      InstrumentationUtil.suppressInstrumentation(() -> {
+        Call call = client.newCall(requestBuilder.build());
+        if (retryState != null && !retryState.configureCallTimeout(call)) {
+          onError.accept(new SocketTimeoutException("Call timed out"));
+          return;
+        }
+        startCall(
+            call,
+            attempt,
+            new Callback() {
+              @Override
+              public void onFailure(Call call, IOException e) {
+                boolean retryable = retryState != null && retryState.shouldRetryOnException(e);
+                if (retryState != null && logger.isLoggable(Level.FINER)) {
+                  logger.log(
+                      Level.FINER,
+                      "Attempt "
+                          + attempt
+                          + " failed with "
+                          + (retryable ? "retryable" : "non-retryable")
+                          + " exception",
+                      e);
+                }
+                if (!call.isCanceled()
+                    && retryState != null
+                    && retryState.canRetry(attempt)
+                    && retryable
+                    && retryState.backoff(OptionalLong.empty())) {
+                  sendAttempt(
+                      requestBuilder, messageWriter, onResponse, onError, attempt + 1, retryState);
+                } else {
+                  onError.accept(e);
+                }
+              }
 
-                  @Override
-                  public void onResponse(Call call, Response response) {
-                    handleResponse(
-                        response,
-                        (resolvedResponse, canRetry) -> {
-                          boolean retryable = canRetry && isRetryable(resolvedResponse);
-                          if (retryState != null && logger.isLoggable(Level.FINER)) {
-                            logger.log(
-                                Level.FINER,
-                                "Attempt "
-                                    + attempt
-                                    + " returned "
-                                    + (retryable ? "retryable" : "non-retryable")
-                                    + " response: grpc-status="
-                                    + resolvedResponse.getStatusCode()
-                                    + ", grpc-message="
-                                    + resolvedResponse.getStatusDescription());
-                          }
-                          if (retryState != null
-                              && retryState.canRetry(attempt)
-                              && retryable
-                              && retryState.backoff(OptionalLong.empty())) {
-                            sendAttempt(
-                                requestBuilder,
-                                messageWriter,
-                                onResponse,
-                                onError,
-                                attempt + 1,
-                                retryState);
-                          } else {
-                            onResponse.accept(resolvedResponse);
-                          }
-                        });
-                  }
-                });
-          });
+              @Override
+              public void onResponse(Call call, Response response) {
+                handleResponse(
+                    response,
+                    (resolvedResponse, canRetry) -> {
+                      boolean retryable = canRetry && isRetryable(resolvedResponse);
+                      if (retryState != null && logger.isLoggable(Level.FINER)) {
+                        logger.log(
+                            Level.FINER,
+                            "Attempt "
+                                + attempt
+                                + " returned "
+                                + (retryable ? "retryable" : "non-retryable")
+                                + " response: grpc-status="
+                                + resolvedResponse.getStatusCode()
+                                + ", grpc-message="
+                                + resolvedResponse.getStatusDescription());
+                      }
+                      if (retryState != null
+                          && retryState.canRetry(attempt)
+                          && retryable
+                          && retryState.backoff(OptionalLong.empty())) {
+                        sendAttempt(
+                            requestBuilder,
+                            messageWriter,
+                            onResponse,
+                            onError,
+                            attempt + 1,
+                            retryState);
+                      } else {
+                        onResponse.accept(resolvedResponse);
+                      }
+                    });
+              }
+            });
+      });
     } catch (RejectedExecutionException e) {
       onError.accept(e);
     }
@@ -479,7 +473,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
                   if (!terminated) {
                     logger.log(
                         Level.WARNING,
-                        "Executor did not terminate within 5 seconds, proceeding with shutdown since threads are daemon threads.");
+                        "Executor did not terminate within 5 seconds, proceeding with shutdown"
+                            + " since threads are daemon threads.");
                   }
                 } catch (InterruptedException e) {
                   Thread.currentThread().interrupt();

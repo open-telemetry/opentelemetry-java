@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static java.util.stream.Collectors.toList;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
@@ -39,7 +40,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiPredicate;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * SDK implementation for {@link MeterProvider}.
@@ -73,27 +76,29 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       Clock clock,
       SdkResourceProvider resourceProvider,
       ExemplarFilterInternal exemplarFilter,
-      ScopeConfigurator<MeterConfig> meterConfigurator) {
+      ScopeConfigurator<MeterConfig> meterConfigurator,
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
     this.resourceProvider = resourceProvider;
     this.registeredViews = registeredViews;
     this.registeredReaders =
         metricReaders.entrySet().stream()
-            .map(
-                entry ->
-                    RegisteredReader.create(
-                        entry.getKey(),
-                        ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
+            .map(entry ->
+                RegisteredReader.create(
+                    entry.getKey(),
+                    ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
             .collect(toList());
     this.metricProducers = metricProducers;
-    this.sharedState = MeterProviderSharedState.create(clock, resourceProvider, exemplarFilter);
+    this.sharedState =
+        MeterProviderSharedState.create(
+            clock, resourceProvider, exemplarFilter, contextScopedAttributesFilter);
     this.registry =
-        new ComponentRegistry<>(
-            instrumentationLibraryInfo ->
-                new SdkMeter(
-                    sharedState,
-                    instrumentationLibraryInfo,
-                    registeredReaders,
-                    getMeterConfig(instrumentationLibraryInfo)));
+        new ComponentRegistry<>(instrumentationLibraryInfo ->
+            new SdkMeter(
+                sharedState,
+                instrumentationLibraryInfo,
+                registeredReaders,
+                getMeterConfig(instrumentationLibraryInfo)));
     this.meterConfigurator = meterConfigurator;
     for (RegisteredReader registeredReader : registeredReaders) {
       List<MetricProducer> readerMetricProducers = new ArrayList<>(metricProducers);
@@ -126,9 +131,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     this.meterConfigurator = meterConfigurator;
     this.registry
         .getComponents()
-        .forEach(
-            sdkMeter ->
-                sdkMeter.updateMeterConfig(getMeterConfig(sdkMeter.getInstrumentationScopeInfo())));
+        .forEach(sdkMeter ->
+            sdkMeter.updateMeterConfig(getMeterConfig(sdkMeter.getInstrumentationScopeInfo())));
   }
 
   @Override

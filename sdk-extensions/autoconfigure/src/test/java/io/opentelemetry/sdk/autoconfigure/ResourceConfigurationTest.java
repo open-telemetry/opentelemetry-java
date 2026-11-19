@@ -246,22 +246,20 @@ class ResourceConfigurationTest {
         resourceNoSchema.toBuilder().setSchemaUrl("http://example.com").build();
 
     assertThat(ResourceConfiguration.filterAttributes(resourceNoSchema, configProperties))
-        .satisfies(
-            resource -> {
-              assertThat(resource.getSchemaUrl()).isNull();
-              assertThat(resource.getAttributes()).containsEntry("baz", "val");
-              assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
-              assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
-            });
+        .satisfies(resource -> {
+          assertThat(resource.getSchemaUrl()).isNull();
+          assertThat(resource.getAttributes()).containsEntry("baz", "val");
+          assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
+          assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
+        });
 
     assertThat(ResourceConfiguration.filterAttributes(resourceWithSchema, configProperties))
-        .satisfies(
-            resource -> {
-              assertThat(resource.getSchemaUrl()).isEqualTo("http://example.com");
-              assertThat(resource.getAttributes()).containsEntry("baz", "val");
-              assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
-              assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
-            });
+        .satisfies(resource -> {
+          assertThat(resource.getSchemaUrl()).isEqualTo("http://example.com");
+          assertThat(resource.getAttributes()).containsEntry("baz", "val");
+          assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
+          assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
+        });
   }
 
   @ParameterizedTest

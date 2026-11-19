@@ -416,10 +416,8 @@ class NullGuardsTest {
   private static boolean declaresMethod(ClassModel cls, String name, String desc) {
     return cls.methods().stream()
         .filter(m -> !m.flags().has(AccessFlag.STATIC) && !m.flags().has(AccessFlag.PRIVATE))
-        .anyMatch(
-            m ->
-                name.equals(m.methodName().stringValue())
-                    && desc.equals(m.methodType().stringValue()));
+        .anyMatch(m ->
+            name.equals(m.methodName().stringValue()) && desc.equals(m.methodType().stringValue()));
   }
 
   private static boolean isInAuditablePackage(ClassModel cls) {

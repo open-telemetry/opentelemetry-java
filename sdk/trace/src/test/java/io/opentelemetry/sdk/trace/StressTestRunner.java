@@ -31,15 +31,14 @@ abstract class StressTestRunner {
     List<Thread> operationThreads = new ArrayList<>(numThreads);
     for (Operation operation : operations) {
       operationThreads.add(
-          new Thread(
-              () -> {
-                for (int i = 0; i < operation.getNumOperations(); i++) {
-                  operation.getUpdater().update();
-                  Uninterruptibles.sleepUninterruptibly(
-                      Duration.ofMillis(operation.getOperationDelayMs()));
-                }
-                countDownLatch.countDown();
-              }));
+          new Thread(() -> {
+            for (int i = 0; i < operation.getNumOperations(); i++) {
+              operation.getUpdater().update();
+              Uninterruptibles.sleepUninterruptibly(
+                  Duration.ofMillis(operation.getOperationDelayMs()));
+            }
+            countDownLatch.countDown();
+          }));
     }
 
     for (Thread thread : operationThreads) {

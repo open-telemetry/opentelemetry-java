@@ -112,21 +112,20 @@ class JaegerRemoteSamplerGrpcNettyTest {
   private ManagedChannel managedChannel() {
     ManagedChannel channel =
         ManagedChannelBuilder.forTarget(server.httpUri().getAuthority()).usePlaintext().build();
-    cleanup.addCloseable(
-        () -> {
-          // Graceful shutdown ensures the server has processed all in-flight requests before
-          // the next test starts, preventing stale requests from consuming errors added to the
-          // queue by a subsequent test.
-          channel.shutdown();
-          try {
-            if (!channel.awaitTermination(10, TimeUnit.SECONDS)) {
-              channel.shutdownNow();
-            }
-          } catch (InterruptedException e) {
-            channel.shutdownNow();
-            Thread.currentThread().interrupt();
-          }
-        });
+    cleanup.addCloseable(() -> {
+      // Graceful shutdown ensures the server has processed all in-flight requests before
+      // the next test starts, preventing stale requests from consuming errors added to the
+      // queue by a subsequent test.
+      channel.shutdown();
+      try {
+        if (!channel.awaitTermination(10, TimeUnit.SECONDS)) {
+          channel.shutdownNow();
+        }
+      } catch (InterruptedException e) {
+        channel.shutdownNow();
+        Thread.currentThread().interrupt();
+      }
+    });
     return channel;
   }
 
@@ -274,13 +273,12 @@ class JaegerRemoteSamplerGrpcNettyTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       await()
-          .untilAsserted(
-              () -> {
-                assertThat(sampler.getDescription())
-                    .startsWith(
-                        "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
-                assertThat(sampler.getDescription()).contains("bar");
-              });
+          .untilAsserted(() -> {
+            assertThat(sampler.getDescription())
+                .startsWith(
+                    "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
+            assertThat(sampler.getDescription()).contains("bar");
+          });
     }
   }
 
@@ -301,12 +299,11 @@ class JaegerRemoteSamplerGrpcNettyTest {
           .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
-          .untilAsserted(
-              () -> {
-                LoggingEvent log =
-                    logs.assertContains(" Server responded with gRPC status code INTERNAL");
-                assertThat(log.getLevel()).isEqualTo(Level.WARN);
-              });
+          .untilAsserted(() -> {
+            LoggingEvent log =
+                logs.assertContains(" Server responded with gRPC status code INTERNAL");
+            assertThat(log.getLevel()).isEqualTo(Level.WARN);
+          });
     }
   }
 
@@ -327,11 +324,10 @@ class JaegerRemoteSamplerGrpcNettyTest {
           .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
-          .untilAsserted(
-              () -> {
-                LoggingEvent log = logs.assertContains("Server is UNAVAILABLE");
-                assertThat(log.getLevel()).isEqualTo(Level.ERROR);
-              });
+          .untilAsserted(() -> {
+            LoggingEvent log = logs.assertContains("Server is UNAVAILABLE");
+            assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+          });
     }
   }
 
@@ -352,11 +348,10 @@ class JaegerRemoteSamplerGrpcNettyTest {
           .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
-          .untilAsserted(
-              () -> {
-                LoggingEvent log = logs.assertContains("Server responded with UNIMPLEMENTED.");
-                assertThat(log.getLevel()).isEqualTo(Level.ERROR);
-              });
+          .untilAsserted(() -> {
+            LoggingEvent log = logs.assertContains("Server responded with UNIMPLEMENTED.");
+            assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+          });
     }
   }
 

@@ -663,11 +663,10 @@ class ResourceTest {
     Resource original = Resource.builder().addEntity(host).put("raw", "remove").build();
     Resource filtered =
         original.toBuilder()
-            .removeIf(
-                key ->
-                    key.getKey().equals("host.id")
-                        || key.getKey().equals("host.name")
-                        || key.getKey().equals("raw"))
+            .removeIf(key ->
+                key.getKey().equals("host.id")
+                    || key.getKey().equals("host.name")
+                    || key.getKey().equals("raw"))
             .build();
 
     assertThat(filtered.getEntities()).isEmpty();
@@ -725,11 +724,10 @@ class ResourceTest {
 
     assertThat(filtered.getEntities())
         .singleElement()
-        .satisfies(
-            entity -> {
-              assertThat(entity.getId()).isEqualTo(host.getId());
-              assertThat(entity.getDescription()).isEqualTo(Attributes.empty());
-            });
+        .satisfies(entity -> {
+          assertThat(entity.getId()).isEqualTo(host.getId());
+          assertThat(entity.getDescription()).isEqualTo(Attributes.empty());
+        });
     assertThat(filtered.getAttributes()).isEqualTo(host.getId());
     assertThat(filtered.getUnassociatedAttributes()).isEqualTo(Attributes.empty());
     logs.assertContains(
@@ -969,9 +967,8 @@ class ResourceTest {
             Resource.builder()
                 .put("key1", "value1A")
                 .put("key1", true)
-                .removeIf(
-                    key ->
-                        key.getKey().equals("key1") && key.getType().equals(AttributeType.STRING))
+                .removeIf(key ->
+                    key.getKey().equals("key1") && key.getType().equals(AttributeType.STRING))
                 .build())
         .isEqualTo(Resource.builder().put("key1", true).build());
     assertThat(

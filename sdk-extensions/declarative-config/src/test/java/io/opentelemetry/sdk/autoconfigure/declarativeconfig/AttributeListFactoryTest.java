@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeTypeModel;
 import java.util.Arrays;
@@ -28,10 +28,8 @@ class AttributeListFactoryTest {
   @ParameterizedTest
   @MethodSource("invalidAttributes")
   void create_InvalidAttributes(List<AttributeNameValueModel> model, String expectedMessage) {
-    assertThatThrownBy(
-            () ->
-                AttributeListFactory.getInstance()
-                    .create(model, mock(DeclarativeConfigContext.class)))
+    assertThatThrownBy(() ->
+            AttributeListFactory.getInstance().create(model, mock(DeclarativeConfigContext.class)))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining(expectedMessage);
   }

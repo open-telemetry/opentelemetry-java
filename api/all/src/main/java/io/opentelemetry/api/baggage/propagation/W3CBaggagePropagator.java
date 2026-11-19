@@ -74,41 +74,39 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   private static String baggageToString(Baggage baggage) {
     StringBuilder headerContent = new StringBuilder();
     int[] entryCount = {0};
-    baggage.forEach(
-        (key, baggageEntry) -> {
-          if (!isValidBaggageKey(key)) {
-            LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid key");
-            return;
-          }
-          if (!isValidBaggageValue(baggageEntry.getValue())) {
-            LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid value");
-            return;
-          }
-          if (!isValidBaggageMetadata(baggageEntry.getMetadata().getValue())) {
-            LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid metadata");
-            return;
-          }
-          if (entryCount[0] >= MAX_BAGGAGE_ENTRIES) {
-            return;
-          }
-          String encodedValue = encodeValue(baggageEntry.getValue());
-          String metadataValue = baggageEntry.getMetadata().getValue();
-          String metadata =
-              (metadataValue != null && !metadataValue.isEmpty()) ? metadataValue : null;
-          // Exit early if adding this entry causes the total length to exceed the limit
-          // encodedEntryLength includes a trailing comma; the final string trims exactly one,
-          // so the net contribution to the final length is entryLength - 1.
-          if (headerContent.length() + encodedEntryLength(key, encodedValue, metadata) - 1
-              > MAX_BAGGAGE_BYTES) {
-            return;
-          }
-          headerContent.append(key).append("=").append(encodedValue);
-          if (metadata != null) {
-            headerContent.append(";").append(metadata);
-          }
-          headerContent.append(",");
-          entryCount[0]++;
-        });
+    baggage.forEach((key, baggageEntry) -> {
+      if (!isValidBaggageKey(key)) {
+        LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid key");
+        return;
+      }
+      if (!isValidBaggageValue(baggageEntry.getValue())) {
+        LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid value");
+        return;
+      }
+      if (!isValidBaggageMetadata(baggageEntry.getMetadata().getValue())) {
+        LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid metadata");
+        return;
+      }
+      if (entryCount[0] >= MAX_BAGGAGE_ENTRIES) {
+        return;
+      }
+      String encodedValue = encodeValue(baggageEntry.getValue());
+      String metadataValue = baggageEntry.getMetadata().getValue();
+      String metadata = (metadataValue != null && !metadataValue.isEmpty()) ? metadataValue : null;
+      // Exit early if adding this entry causes the total length to exceed the limit
+      // encodedEntryLength includes a trailing comma; the final string trims exactly one,
+      // so the net contribution to the final length is entryLength - 1.
+      if (headerContent.length() + encodedEntryLength(key, encodedValue, metadata) - 1
+          > MAX_BAGGAGE_BYTES) {
+        return;
+      }
+      headerContent.append(key).append("=").append(encodedValue);
+      if (metadata != null) {
+        headerContent.append(";").append(metadata);
+      }
+      headerContent.append(",");
+      entryCount[0]++;
+    });
 
     if (headerContent.length() == 0) {
       return "";

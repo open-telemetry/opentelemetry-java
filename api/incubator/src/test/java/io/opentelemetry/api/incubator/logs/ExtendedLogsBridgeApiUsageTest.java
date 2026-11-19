@@ -68,10 +68,8 @@ class ExtendedLogsBridgeApiUsageTest {
     // omitted from the results even if logs were emitted. The check if enabled simply avoids
     // unnecessary computation.
     assertThat(exporter.getFinishedLogRecordItems())
-        .allSatisfy(
-            logRecordData ->
-                assertThat(logRecordData.getInstrumentationScopeInfo().getName())
-                    .isEqualTo("loggerA"));
+        .allSatisfy(logRecordData ->
+            assertThat(logRecordData.getInstrumentationScopeInfo().getName()).isEqualTo("loggerA"));
   }
 
   private static final Random random = new Random();

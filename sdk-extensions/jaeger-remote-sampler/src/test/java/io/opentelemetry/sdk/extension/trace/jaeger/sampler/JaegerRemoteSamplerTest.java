@@ -38,6 +38,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
@@ -70,6 +71,8 @@ class JaegerRemoteSamplerTest {
 
   private static final ConcurrentLinkedQueue<Sampling.SamplingStrategyResponse> responses =
       new ConcurrentLinkedQueue<>();
+
+  private static final AtomicInteger requestCount = new AtomicInteger();
 
   private static void addGrpcError(GrpcStatusCode code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code.getValue(), message));
@@ -104,6 +107,7 @@ class JaegerRemoteSamplerTest {
                                     io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2
                                         .Sampling.SamplingStrategyResponse>
                                 responseObserver) {
+                          requestCount.incrementAndGet();
                           ArmeriaStatusException grpcError = grpcErrors.poll();
                           if (grpcError != null) {
                             responseObserver.onError(grpcError);
@@ -130,11 +134,10 @@ class JaegerRemoteSamplerTest {
           sb.http(0);
           sb.https(0);
           sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
-          sb.tlsCustomizer(
-              ssl -> {
-                ssl.clientAuth(ClientAuth.OPTIONAL);
-                ssl.trustManager(clientCertificate.certificate());
-              });
+          sb.tlsCustomizer(ssl -> {
+            ssl.clientAuth(ClientAuth.OPTIONAL);
+            ssl.trustManager(clientCertificate.certificate());
+          });
         }
       };
 
@@ -142,6 +145,7 @@ class JaegerRemoteSamplerTest {
   public void before() {
     grpcErrors.clear();
     responses.clear();
+    requestCount.set(0);
   }
 
   @Test
@@ -398,13 +402,12 @@ class JaegerRemoteSamplerTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       await()
-          .untilAsserted(
-              () -> {
-                assertThat(sampler.getDescription())
-                    .startsWith(
-                        "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
-                assertThat(sampler.getDescription()).contains("bar");
-              });
+          .untilAsserted(() -> {
+            assertThat(sampler.getDescription())
+                .startsWith(
+                    "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
+            assertThat(sampler.getDescription()).contains("bar");
+          });
     }
   }
 
@@ -441,11 +444,37 @@ class JaegerRemoteSamplerTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       await()
-          .untilAsserted(
-              () ->
-                  assertThat(sampler.getDescription())
-                      .startsWith(
-                          "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}}}"));
+          .untilAsserted(() ->
+              assertThat(sampler.getDescription())
+                  .startsWith(
+                      "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}}}"));
+    }
+  }
+
+  @Test
+  void unchangedStrategy_keepsSampler() {
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setServiceName(SERVICE_NAME)
+            .setPollingInterval(50, TimeUnit.MILLISECONDS)
+            .build()) {
+      await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+      Sampler initial = sampler.getSampler();
+
+      // Further polls return the same strategy, so the stateful sampler must be retained.
+      int polls = requestCount.get();
+      await().untilAsserted(() -> assertThat(requestCount.get()).isGreaterThan(polls + 2));
+      assertThat(sampler.getSampler()).isSameAs(initial);
+
+      // A changed strategy still replaces the sampler.
+      responses.add(
+          Sampling.SamplingStrategyResponse.newBuilder()
+              .setStrategyType(SamplingStrategyType.RATE_LIMITING)
+              .setRateLimitingSampling(
+                  RateLimitingSamplingStrategy.newBuilder().setMaxTracesPerSecond(5).build())
+              .build());
+      await().untilAsserted(() -> assertThat(sampler.getSampler()).isNotSameAs(initial));
     }
   }
 
@@ -465,12 +494,11 @@ class JaegerRemoteSamplerTest {
           .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
-          .untilAsserted(
-              () -> {
-                LoggingEvent log =
-                    logs.assertContains(" Server responded with gRPC status code INTERNAL");
-                assertThat(log.getLevel()).isEqualTo(Level.WARN);
-              });
+          .untilAsserted(() -> {
+            LoggingEvent log =
+                logs.assertContains(" Server responded with gRPC status code INTERNAL");
+            assertThat(log.getLevel()).isEqualTo(Level.WARN);
+          });
     }
   }
 
@@ -490,11 +518,10 @@ class JaegerRemoteSamplerTest {
           .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
-          .untilAsserted(
-              () -> {
-                LoggingEvent log = logs.assertContains("Server is UNAVAILABLE");
-                assertThat(log.getLevel()).isEqualTo(Level.ERROR);
-              });
+          .untilAsserted(() -> {
+            LoggingEvent log = logs.assertContains("Server is UNAVAILABLE");
+            assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+          });
     }
   }
 
@@ -514,11 +541,10 @@ class JaegerRemoteSamplerTest {
           .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
-          .untilAsserted(
-              () -> {
-                LoggingEvent log = logs.assertContains("Server responded with UNIMPLEMENTED.");
-                assertThat(log.getLevel()).isEqualTo(Level.ERROR);
-              });
+          .untilAsserted(() -> {
+            LoggingEvent log = logs.assertContains("Server responded with UNIMPLEMENTED.");
+            assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+          });
     }
   }
 
@@ -533,19 +559,16 @@ class JaegerRemoteSamplerTest {
     assertThatCode(() -> JaegerRemoteSampler.builder().setEndpoint("http://foo:bar@localhost"))
         .doesNotThrowAnyException();
 
-    assertThatCode(
-            () ->
-                JaegerRemoteSampler.builder()
-                    .setTrustedCertificates(
-                        Files.readAllBytes(certificate.certificateFile().toPath())))
+    assertThatCode(() ->
+            JaegerRemoteSampler.builder()
+                .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath())))
         .doesNotThrowAnyException();
 
-    assertThatCode(
-            () ->
-                JaegerRemoteSampler.builder()
-                    .setClientTls(
-                        Files.readAllBytes(clientCertificate.privateKeyFile().toPath()),
-                        Files.readAllBytes(clientCertificate.certificateFile().toPath())))
+    assertThatCode(() ->
+            JaegerRemoteSampler.builder()
+                .setClientTls(
+                    Files.readAllBytes(clientCertificate.privateKeyFile().toPath()),
+                    Files.readAllBytes(clientCertificate.certificateFile().toPath())))
         .doesNotThrowAnyException();
   }
 

@@ -52,10 +52,9 @@ class NoGuavaTest {
 
   private static Stream<Arguments> artifactsAndJars() throws IOException {
     return Files.readAllLines(Path.of(System.getenv("ARTIFACTS_AND_JARS"))).stream()
-        .map(
-            line -> {
-              String[] parts = line.split(":", 2);
-              return Arguments.argumentSet(parts[0], parts[0], parts[1]);
-            });
+        .map(line -> {
+          String[] parts = line.split(":", 2);
+          return Arguments.argumentSet(parts[0], parts[0], parts[1]);
+        });
   }
 }

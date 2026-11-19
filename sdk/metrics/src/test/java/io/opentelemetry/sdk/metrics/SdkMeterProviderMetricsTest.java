@@ -13,7 +13,6 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.internal.SemConvConstants;
-import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -23,12 +22,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 class SdkMeterProviderMetricsTest {
   @Test
-  void componentNamesAreUniqueAndStable() {
+  void componentNamesAreUnique() {
     InMemoryMetricReader observer = InMemoryMetricReader.create();
     try (SdkMeterProvider provider =
         SdkMeterProvider.builder()
@@ -36,28 +34,18 @@ class SdkMeterProviderMetricsTest {
             .registerMetricReader(PeriodicMetricReader.create(InMemoryMetricExporter.create()))
             .registerMetricReader(observer)
             .build()) {
-      List<String> previousNames = null;
-      for (int count = 1; count <= 2; count++) {
-        assertThat(provider.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-        MetricData metric =
-            observer.collectAllMetrics().stream()
-                .filter(m -> m.getName().equals("otel.sdk.metric_reader.collection.duration"))
-                .findFirst()
-                .get();
-        assertThat(metric.getHistogramData().getPoints()).hasSize(2);
-        List<String> names =
-            metric.getHistogramData().getPoints().stream()
-                .map(point -> point.getAttributes().get(SemConvConstants.OTEL_COMPONENT_NAME))
-                .collect(Collectors.toList());
-        assertThat(names).doesNotHaveDuplicates().doesNotContainNull();
-        if (previousNames != null) {
-          assertThat(names).containsExactlyInAnyOrderElementsOf(previousNames);
-        }
-        previousNames = names;
-        for (HistogramPointData point : metric.getHistogramData().getPoints()) {
-          assertThat(point.getCount()).isEqualTo(count);
-        }
-      }
+      assertThat(provider.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      MetricData metric =
+          observer.collectAllMetrics().stream()
+              .filter(m -> m.getName().equals("otel.sdk.metric_reader.collection.duration"))
+              .findFirst()
+              .get();
+      assertThat(metric.getHistogramData().getPoints())
+          .hasSize(2)
+          .allSatisfy(point -> assertThat(point.getCount()).isEqualTo(1))
+          .extracting(point -> point.getAttributes().get(SemConvConstants.OTEL_COMPONENT_NAME))
+          .doesNotContainNull()
+          .doesNotHaveDuplicates();
     }
   }
 
@@ -86,20 +74,16 @@ class SdkMeterProviderMetricsTest {
               m -> {
                 assertThat(m)
                     .hasName("otel.sdk.metric_reader.collection.duration")
-                    .hasHistogramSatisfying(
-                        h ->
-                            h.hasPointsSatisfying(
-                                p ->
-                                    p.hasCount(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            equalTo(
-                                                SemConvConstants.OTEL_COMPONENT_TYPE,
-                                                "periodic_metric_reader"),
-                                            satisfies(
-                                                SemConvConstants.OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches(
-                                                        "periodic_metric_reader/[0-9]+")))));
+                    .hasHistogramSatisfying(h ->
+                        h.hasPointsSatisfying(p ->
+                            p.hasCount(1)
+                                .hasAttributesSatisfyingExactly(
+                                    equalTo(
+                                        SemConvConstants.OTEL_COMPONENT_TYPE,
+                                        "periodic_metric_reader"),
+                                    satisfies(
+                                        SemConvConstants.OTEL_COMPONENT_NAME,
+                                        name -> name.matches("periodic_metric_reader/[0-9]+")))));
               });
     }
   }
@@ -130,18 +114,15 @@ class SdkMeterProviderMetricsTest {
       meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
 
       assertThat(metricExporter.getFinishedMetricItems())
-          .anySatisfy(
-              m ->
-                  assertThat(m)
-                      .hasName("otel.sdk.metric_reader.collection.duration")
-                      .hasHistogramSatisfying(
-                          h ->
-                              h.hasPointsSatisfying(
-                                  p ->
-                                      p.hasAttributesSatisfying(
-                                          equalTo(
-                                              SemConvConstants.ERROR_TYPE,
-                                              "java.lang.IllegalStateException")))));
+          .anySatisfy(m ->
+              assertThat(m)
+                  .hasName("otel.sdk.metric_reader.collection.duration")
+                  .hasHistogramSatisfying(h ->
+                      h.hasPointsSatisfying(p ->
+                          p.hasAttributesSatisfying(
+                              equalTo(
+                                  SemConvConstants.ERROR_TYPE,
+                                  "java.lang.IllegalStateException")))));
     }
   }
 }

@@ -67,10 +67,9 @@ final class LegacyLogRecordProcessorInstrumentation implements LogRecordProcesso
         .ofLongs()
         .setDescription("The number of items queued")
         .setUnit("1")
-        .buildWithCallback(
-            result ->
-                result.record(
-                    getSize.get(), Attributes.of(PROCESSOR_TYPE_LABEL, PROCESSOR_TYPE_VALUE)));
+        .buildWithCallback(result ->
+            result.record(
+                getSize.get(), Attributes.of(PROCESSOR_TYPE_LABEL, PROCESSOR_TYPE_VALUE)));
     // No capacity metric when legacy.
   }
 

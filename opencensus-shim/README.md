@@ -1,16 +1,19 @@
 # OpenTelemetry OpenCensus Shim
 
+<!-- spotless:off -->
+
 > [!WARNING]
 > OpenCensus compatibility is deprecated in the OpenTelemetry specification, and this shim is
 > deprecated accordingly. It remains available for legacy compatibility, but users should migrate
 > OpenCensus instrumentation to the OpenTelemetry APIs. See the
 > [OpenTelemetry specification guidance on OpenCensus compatibility](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/opencensus.md).
 
-The OpenCensus shim allows applications and libraries that are instrumented
-with OpenTelemetry, but depend on other libraries instrumented with OpenCensus,
-to export trace spans from both OpenTelemetry and OpenCensus with the correct
-parent-child relationship. It also allows OpenCensus metrics to be exported by
-any configured OpenTelemetry metric exporter.
+<!-- spotless:on -->
+
+The OpenCensus shim allows applications and libraries that are instrumented with OpenTelemetry, but
+depend on other libraries instrumented with OpenCensus, to export trace spans from both
+OpenTelemetry and OpenCensus with the correct parent-child relationship. It also allows OpenCensus
+metrics to be exported by any configured OpenTelemetry metric exporter.
 
 ## Usage
 
@@ -36,8 +39,7 @@ SdkMeterProvider.builder()
     .build();
 ```
 
-For example, if a logging exporter were configured, the following would be
-added:
+For example, if a logging exporter were configured, the following would be added:
 
 ```java
 LoggingMetricExporter metricExporter = LoggingMetricExporter.create();

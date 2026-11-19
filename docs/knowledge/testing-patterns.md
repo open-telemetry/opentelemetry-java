@@ -24,8 +24,8 @@ These provide fluent assertions on `SpanData`, `MetricData`, `LogRecordData`, et
 
 ## Clocks and time
 
-Avoid `System.currentTimeMillis()` or `Instant.now()` in tests. Use `TestClock` from
-`sdk:testing` for deterministic time control:
+Avoid `System.currentTimeMillis()` or `Instant.now()` in tests. Use `TestClock` from `sdk:testing`
+for deterministic time control:
 
 ```java
 TestClock clock = TestClock.create();
@@ -61,11 +61,11 @@ void logsWarning() {
 
 ## Parameterized tests
 
-Prefer `@ParameterizedTest` with `@MethodSource` when testing the same logic across multiple
-inputs. This keeps assertions in one place and gives each case a distinct name in the test report.
+Prefer `@ParameterizedTest` with `@MethodSource` when testing the same logic across multiple inputs.
+This keeps assertions in one place and gives each case a distinct name in the test report.
 
-Use `Arguments.argumentSet(String name, Object... args)` to name each case. This requires no
-changes to the test method signature and no `name =` attribute on the annotation:
+Use `Arguments.argumentSet(String name, Object... args)` to name each case. This requires no changes
+to the test method signature and no `name =` attribute on the annotation:
 
 ```java
 @ParameterizedTest
@@ -94,8 +94,8 @@ class MyTest {
 }
 ```
 
-The byte-buddy agent is pre-attached by `otel.java-conventions` to suppress dynamic-agent
-warnings on Java 21+. No extra configuration needed.
+The byte-buddy agent is pre-attached by `otel.java-conventions` to suppress dynamic-agent warnings
+on Java 21+. No extra configuration needed.
 
 ## Shared test utilities
 
@@ -103,8 +103,8 @@ Do **not** use the `java-test-fixtures` plugin. It adds test dependencies to pub
 creates a separate `*-test-fixtures.jar` artifact. Shared test utilities belong in a
 `*:testing-internal` module.
 
-The root `:testing-internal` module (`/testing-internal/`) contains utilities available across
-all modules. It is included automatically by `otel.java-conventions` as a test dependency.
+The root `:testing-internal` module (`/testing-internal/`) contains utilities available across all
+modules. It is included automatically by `otel.java-conventions` as a test dependency.
 
 For module-group-specific utilities, create a sibling `testing-internal` module:
 
@@ -150,7 +150,8 @@ tasks {
 ```
 
 Rules:
-- All registered test suites must be wired into `check` — omitting this causes them to be
-  silently skipped in CI.
+
+- All registered test suites must be wired into `check` — omitting this causes them to be silently
+  skipped in CI.
 - Each suite has its own source set under `src/<suiteName>/java/`.
 - Suite-specific JVM args go in a `targets { all { testTask.configure { ... } } }` block.

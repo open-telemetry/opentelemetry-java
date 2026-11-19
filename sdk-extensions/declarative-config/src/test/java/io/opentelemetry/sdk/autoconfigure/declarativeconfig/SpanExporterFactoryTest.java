@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporter;
@@ -288,11 +288,9 @@ class SpanExporterFactoryTest {
         .getBuilder()
         .addSpanExporterCustomizer(SpanExporter.class, (exporter, properties) -> null);
 
-    assertThatThrownBy(
-            () ->
-                SpanExporterFactory.getInstance()
-                    .create(
-                        new SpanExporterModel().setConsole(new ConsoleExporterModel()), context))
+    assertThatThrownBy(() ->
+            SpanExporterFactory.getInstance()
+                .create(new SpanExporterModel().setConsole(new ConsoleExporterModel()), context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Customizer returned null for SpanExporter: console");
   }

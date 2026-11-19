@@ -1,26 +1,35 @@
 # OpenTelemetry - OpenTracing Shim
 
+<!-- spotless:off -->
+
 > [!WARNING]
 > OpenTracing is deprecated, and this shim is deprecated accordingly. It remains available for
 > legacy compatibility, but users should migrate to the OpenTelemetry API directly. See the
 > [OpenTelemetry specification guidance on OpenTracing compatibility](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/opentracing.md#opentracing-compatibility).
 
-The OpenTracing shim is a bridge layer from OpenTelemetry to the OpenTracing API.
-It takes OpenTelemetry Tracer and exposes it as an implementation of an OpenTracing Tracer.
+<!-- spotless:on -->
+
+The OpenTracing shim is a bridge layer from OpenTelemetry to the OpenTracing API. It takes
+OpenTelemetry Tracer and exposes it as an implementation of an OpenTracing Tracer.
 
 ## Usage
 
 There are 2 ways to expose an OpenTracing tracer:
+
 1. From a provided `OpenTelemetry` instance:
-    ```java
-    Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
-    ```
-2. From a specific `TracerProvider`, text map propagator (`TextMapPropagator`), and http propagator (`TextMapPropagator`):
-    ```java
-    Tracer tracer = OpenTracingShim.createTracerShim(tracerProvider, textMapPropagator, httpPropagator);
-    ```
+
+   ```java
+   Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
+   ```
+2. From a specific `TracerProvider`, text map propagator (`TextMapPropagator`), and http propagator
+   (`TextMapPropagator`):
+
+   ```java
+   Tracer tracer = OpenTracingShim.createTracerShim(tracerProvider, textMapPropagator, httpPropagator);
+   ```
 
 Optionally register the tracer as the OpenTracing GlobalTracer:
+
 ```java
 GlobalTracer.registerIfAbsent(tracer);
 ```

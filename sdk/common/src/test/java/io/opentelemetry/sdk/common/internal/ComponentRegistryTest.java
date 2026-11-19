@@ -72,14 +72,13 @@ class ComponentRegistryTest {
     try {
       for (int i = 0; i < 100; i++) {
         futures.add(
-            executor.submit(
-                () -> {
-                  String name =
-                      IntStream.range(0, 20)
-                          .mapToObj(unused -> String.valueOf((char) random.nextInt(26)))
-                          .collect(joining());
-                  registry.get(name, null, null, Attributes.empty());
-                }));
+            executor.submit(() -> {
+              String name =
+                  IntStream.range(0, 20)
+                      .mapToObj(unused -> String.valueOf((char) random.nextInt(26)))
+                      .collect(joining());
+              registry.get(name, null, null, Attributes.empty());
+            }));
         futures.add(
             executor.submit(() -> registry.getComponents().forEach(TestComponent::hashCode)));
       }

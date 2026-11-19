@@ -136,17 +136,16 @@ class SdkLoggerProviderTest {
                 .build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
         .extracting(LoggerSharedState::getLogRecordProcessor)
-        .satisfies(
-            activeLogRecordProcessor -> {
-              assertThat(activeLogRecordProcessor).isInstanceOf(MultiLogRecordProcessor.class);
-              assertThat(activeLogRecordProcessor)
-                  .extracting(
-                      "logRecordProcessors",
-                      as(InstanceOfAssertFactories.list(LogRecordProcessor.class)))
-                  .hasSize(3)
-                  .first()
-                  .isEqualTo(firstProcessor);
-            });
+        .satisfies(activeLogRecordProcessor -> {
+          assertThat(activeLogRecordProcessor).isInstanceOf(MultiLogRecordProcessor.class);
+          assertThat(activeLogRecordProcessor)
+              .extracting(
+                  "logRecordProcessors",
+                  as(InstanceOfAssertFactories.list(LogRecordProcessor.class)))
+              .hasSize(3)
+              .first()
+              .isEqualTo(firstProcessor);
+        });
   }
 
   @Test
@@ -239,15 +238,14 @@ class SdkLoggerProviderTest {
     sdkLoggerProvider =
         SdkLoggerProvider.builder()
             .setResource(resource)
-            .addLogRecordProcessor(
-                (unused, logRecord) -> {
-                  logRecord.setAttribute(null, null);
-                  // Overwrite k1
-                  logRecord.setAttribute(AttributeKey.stringKey("k1"), "new-v1");
-                  // Add new attribute k3
-                  logRecord.setAttribute(AttributeKey.stringKey("k3"), "v3");
-                  logRecordData.set(logRecord.toLogRecordData());
-                })
+            .addLogRecordProcessor((unused, logRecord) -> {
+              logRecord.setAttribute(null, null);
+              // Overwrite k1
+              logRecord.setAttribute(AttributeKey.stringKey("k1"), "new-v1");
+              // Add new attribute k3
+              logRecord.setAttribute(AttributeKey.stringKey("k3"), "v3");
+              logRecordData.set(logRecord.toLogRecordData());
+            })
             .build();
 
     SpanContext spanContext =
@@ -289,11 +287,10 @@ class SdkLoggerProviderTest {
 
     sdkLoggerProvider =
         SdkLoggerProvider.builder()
-            .addLogRecordProcessor(
-                (context, logRecord) ->
-                    logRecord.setAttribute(
-                        AttributeKey.stringKey("my-context-key"),
-                        Optional.ofNullable(context.get(contextKey)).orElse("")))
+            .addLogRecordProcessor((context, logRecord) ->
+                logRecord.setAttribute(
+                    AttributeKey.stringKey("my-context-key"),
+                    Optional.ofNullable(context.get(contextKey)).orElse("")))
             .addLogRecordProcessor(
                 (unused, logRecord) -> logRecordData.set(logRecord.toLogRecordData()))
             .build();

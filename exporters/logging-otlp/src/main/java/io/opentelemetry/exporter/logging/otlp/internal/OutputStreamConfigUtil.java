@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.BufferedOutputStream;
 import java.io.IOException;

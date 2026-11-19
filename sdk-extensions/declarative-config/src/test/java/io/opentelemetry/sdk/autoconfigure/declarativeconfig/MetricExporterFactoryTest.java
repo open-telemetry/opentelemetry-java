@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
@@ -320,12 +320,11 @@ class MetricExporterFactoryTest {
         .getBuilder()
         .addMetricExporterCustomizer(MetricExporter.class, (exporter, properties) -> null);
 
-    assertThatThrownBy(
-            () ->
-                MetricExporterFactory.getInstance()
-                    .create(
-                        new PushMetricExporterModel().setConsole(new ConsoleMetricExporterModel()),
-                        context))
+    assertThatThrownBy(() ->
+            MetricExporterFactory.getInstance()
+                .create(
+                    new PushMetricExporterModel().setConsole(new ConsoleMetricExporterModel()),
+                    context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Customizer returned null for MetricExporter: console");
   }

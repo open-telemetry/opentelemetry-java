@@ -1,6 +1,7 @@
 # API Incubator
 
-Experimental APIs, including extended Log Bridge APIs, extended Metrics APIs, extended ContextPropagator APIs, and extended Trace APIs.
+Experimental APIs, including extended Log Bridge APIs, extended Metrics APIs, extended
+ContextPropagator APIs, and extended Trace APIs.
 
 ## Extended Log Bridge API
 
@@ -8,7 +9,8 @@ Features:
 
 * Add extended attributes to log records to encode complex data structures
 
-See [ExtendedLogsBridgeApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/logs/ExtendedLogsBridgeApiUsageTest.java).
+See
+[ExtendedLogsBridgeApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/logs/ExtendedLogsBridgeApiUsageTest.java).
 
 ## Extended Metrics APIs
 
@@ -17,7 +19,9 @@ Features:
 * Attributes advice
 * Bound instruments
 
-See [ExtendedMetricsApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/metrics/ExtendedMetricsApiUsageTest.java), [BoundInstrumentUsageTest](./src/test/java/io/opentelemetry/api/incubator/metrics/BoundInstrumentUsageTest.java).
+See
+[ExtendedMetricsApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/metrics/ExtendedMetricsApiUsageTest.java),
+[BoundInstrumentUsageTest](./src/test/java/io/opentelemetry/api/incubator/metrics/BoundInstrumentUsageTest.java).
 
 ## Extended ContextPropagator APIs
 
@@ -25,12 +29,24 @@ Features:
 
 * Simplified injection / extraction of context
 
-See [ExtendedContextPropagatorsUsageTest](./src/test/java/io/opentelemetry/api/incubator/propagation/ExtendedContextPropagatorsUsageTest.java).
+See
+[ExtendedContextPropagatorsUsageTest](./src/test/java/io/opentelemetry/api/incubator/propagation/ExtendedContextPropagatorsUsageTest.java).
 
 ## Extended Trace APIs
 
 Features:
 
-* Utility methods to reduce boilerplate using span API, including extracting context, and wrapping runnables / callables with spans
+* Utility methods to reduce boilerplate using span API, including extracting context, and wrapping
+  runnables / callables with spans
 
-See [ExtendedTraceApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/trace/ExtendedTraceApiUsageTest.java).
+See
+[ExtendedTraceApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/trace/ExtendedTraceApiUsageTest.java).
+
+## Context-Scoped Attributes
+
+Features:
+
+* Associate attributes with a context for automatic stamping across telemetry signals
+
+See
+[ContextAttributesUsageTest](./src/test/java/io/opentelemetry/api/incubator/common/ContextAttributesUsageTest.java).

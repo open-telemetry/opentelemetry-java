@@ -49,14 +49,13 @@ class LogRecordExporterConfigurationTest {
 
   @Test
   void configureExporter_UnsupportedOtlpProtocol() {
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterConfiguration.configureExporter(
-                    "otlp",
-                    LogRecordExporterConfiguration.logRecordExporterSpiManager(
-                        DefaultConfigProperties.createFromMap(
-                            ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                        spiHelper)))
+    assertThatThrownBy(() ->
+            LogRecordExporterConfiguration.configureExporter(
+                "otlp",
+                LogRecordExporterConfiguration.logRecordExporterSpiManager(
+                    DefaultConfigProperties.createFromMap(
+                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
+                    spiHelper)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP logs protocol: foo");
   }

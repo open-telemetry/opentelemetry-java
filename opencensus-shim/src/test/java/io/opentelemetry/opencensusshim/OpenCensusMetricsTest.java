@@ -48,13 +48,12 @@ class OpenCensusMetricsTest {
     // Wait for OpenCensus propagation.
     Awaitility.await()
         .atMost(Duration.ofSeconds(5))
-        .untilAsserted(
-            () ->
-                assertThat(reader.collectAllMetrics())
-                    .satisfiesExactlyInAnyOrder(
-                        metric ->
-                            assertThat(metric).hasName("otel.sum").hasLongSumSatisfying(sum -> {}),
-                        metric ->
-                            assertThat(metric).hasName("oc.sum").hasLongSumSatisfying(sum -> {})));
+        .untilAsserted(() ->
+            assertThat(reader.collectAllMetrics())
+                .satisfiesExactlyInAnyOrder(
+                    metric ->
+                        assertThat(metric).hasName("otel.sum").hasLongSumSatisfying(sum -> {}),
+                    metric ->
+                        assertThat(metric).hasName("oc.sum").hasLongSumSatisfying(sum -> {})));
   }
 }

@@ -1298,13 +1298,12 @@ class Otel2PrometheusConverterTest {
 
   @Test
   void validateNormalizedMetricNameRejectsEmptyName() {
-    assertThatThrownBy(
-            () ->
-                invokePrivate(
-                    "validateNormalizedMetricName",
-                    new Class<?>[] {String.class, String.class},
-                    "orig",
-                    ""))
+    assertThatThrownBy(() ->
+            invokePrivate(
+                "validateNormalizedMetricName",
+                new Class<?>[] {String.class, String.class},
+                "orig",
+                ""))
         .hasCauseInstanceOf(IllegalArgumentException.class)
         .hasRootCauseMessage("normalization for metric \"orig\" resulted in empty name");
   }

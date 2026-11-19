@@ -63,11 +63,10 @@ class LogsRequestMarshalerIncubatingTest {
   @ParameterizedTest
   @EnumSource(MarshalerSource.class)
   void toProtoLogRecord_NotExtendedLogRecordData_DoesNotThrow(MarshalerSource marshalerSource) {
-    assertThatCode(
-            () ->
-                parse(
-                    LogRecord.getDefaultInstance(),
-                    marshalerSource.create(TestLogRecordData.builder().build())))
+    assertThatCode(() ->
+            parse(
+                LogRecord.getDefaultInstance(),
+                marshalerSource.create(TestLogRecordData.builder().build())))
         .doesNotThrowAnyException();
   }
 

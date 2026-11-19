@@ -39,6 +39,12 @@ class RetryUtilTest {
     return Stream.of(
         argumentSet("null", null, Instant.EPOCH, null),
         argumentSet("seconds", "30", Instant.EPOCH, TimeUnit.SECONDS.toNanos(30)),
+        argumentSet("zero seconds", "0", Instant.EPOCH, 0L),
+        argumentSet("leading zeros", "0030", Instant.EPOCH, TimeUnit.SECONDS.toNanos(30)),
+        argumentSet("positive sign", "+30", Instant.EPOCH, null),
+        argumentSet("negative zero", "-0", Instant.EPOCH, null),
+        argumentSet("non-ASCII digits", "٣٠", Instant.EPOCH, null),
+        argumentSet("empty", "", Instant.EPOCH, null),
         argumentSet("negative seconds", "-1", Instant.EPOCH, null),
         argumentSet("malformed", "bad-value", Instant.EPOCH, null),
         argumentSet(

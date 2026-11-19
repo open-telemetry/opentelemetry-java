@@ -169,11 +169,10 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     Span span =
         builder
-            .addTracerProviderCustomizer(
-                (tracerProviderBuilder, config) ->
-                    tracerProviderBuilder
-                        .setIdGenerator(idGenerator)
-                        .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop())))
+            .addTracerProviderCustomizer((tracerProviderBuilder, config) ->
+                tracerProviderBuilder
+                    .setIdGenerator(idGenerator)
+                    .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop())))
             .build()
             .getOpenTelemetrySdk()
             .getTracer("test")
@@ -195,16 +194,14 @@ class AutoConfiguredOpenTelemetrySdkTest {
     OpenTelemetrySdk sdk =
         builder
             .addPropertiesSupplier(() -> singletonMap("otel.propagators", "tracecontext"))
-            .addPropagatorCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());
-                  return propagator1;
-                })
-            .addPropagatorCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(propagator1);
-                  return propagator2;
-                })
+            .addPropagatorCustomizer((previous, config) -> {
+              assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());
+              return propagator1;
+            })
+            .addPropagatorCustomizer((previous, config) -> {
+              assertThat(previous).isSameAs(propagator1);
+              return propagator2;
+            })
             .build()
             .getOpenTelemetrySdk();
 
@@ -219,9 +216,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void builder_addResourceCustomizer() {
     Resource autoConfiguredResource =
         builder
-            .addResourceCustomizer(
-                (resource, config) ->
-                    resource.merge(Resource.builder().put("key2", "value2").build()))
+            .addResourceCustomizer((resource, config) ->
+                resource.merge(Resource.builder().put("key2", "value2").build()))
             .build()
             .getResource();
 
@@ -232,16 +228,14 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void builder_addSamplerCustomizer() {
     SdkTracerProvider sdkTracerProvider =
         builder
-            .addSamplerCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isEqualTo(Sampler.parentBased(Sampler.alwaysOn()));
-                  return sampler1;
-                })
-            .addSamplerCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(sampler1);
-                  return sampler2;
-                })
+            .addSamplerCustomizer((previous, config) -> {
+              assertThat(previous).isEqualTo(Sampler.parentBased(Sampler.alwaysOn()));
+              return sampler1;
+            })
+            .addSamplerCustomizer((previous, config) -> {
+              assertThat(previous).isSameAs(sampler1);
+              return sampler2;
+            })
             .build()
             .getOpenTelemetrySdk()
             .getSdkTracerProvider();
@@ -306,15 +300,14 @@ class AutoConfiguredOpenTelemetrySdkTest {
         builder
             .addPropertiesSupplier(() -> singletonMap("some-key", "defaultValue"))
             .addPropertiesSupplier(() -> singletonMap("otel.service.name", "default-service-name"))
-            .addPropertiesCustomizer(
-                config -> {
-                  Map<String, String> overrides = new HashMap<>();
-                  overrides.put("some-key", "override");
-                  overrides.put(
-                      "otel.service.name",
-                      config.getString("otel.service.name", "").replace("default", "overridden"));
-                  return overrides;
-                })
+            .addPropertiesCustomizer(config -> {
+              Map<String, String> overrides = new HashMap<>();
+              overrides.put("some-key", "override");
+              overrides.put(
+                  "otel.service.name",
+                  config.getString("otel.service.name", "").replace("default", "overridden"));
+              return overrides;
+            })
             .addPropertiesCustomizer(
                 config -> singletonMap("some-key", config.getString("some-key", "") + "-2"))
             .build();
@@ -350,9 +343,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     SdkMeterProvider sdkMeterProvider =
         builder
-            .addMeterProviderCustomizer(
-                (meterProviderBuilder, configProperties) ->
-                    meterProviderBuilder.registerMetricReader(metricReader))
+            .addMeterProviderCustomizer((meterProviderBuilder, configProperties) ->
+                meterProviderBuilder.registerMetricReader(metricReader))
             .build()
             .getOpenTelemetrySdk()
             .getSdkMeterProvider();
@@ -370,9 +362,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     SdkLoggerProvider sdkLoggerProvider =
         builder
-            .addLoggerProviderCustomizer(
-                (loggerProviderBuilder, configProperties) ->
-                    loggerProviderBuilder.addLogRecordProcessor(logRecordProcessor))
+            .addLoggerProviderCustomizer((loggerProviderBuilder, configProperties) ->
+                loggerProviderBuilder.addLogRecordProcessor(logRecordProcessor))
             .build()
             .getOpenTelemetrySdk()
             .getSdkLoggerProvider();
@@ -508,16 +499,14 @@ class AutoConfiguredOpenTelemetrySdkTest {
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
             .addPropertiesSupplier(() -> singletonMap("otel.propagators", "tracecontext"))
-            .addPropagatorCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());
-                  return propagator1;
-                })
-            .addPropagatorCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(propagator1);
-                  return propagator2;
-                })
+            .addPropagatorCustomizer((previous, config) -> {
+              assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());
+              return propagator1;
+            })
+            .addPropagatorCustomizer((previous, config) -> {
+              assertThat(previous).isSameAs(propagator1);
+              return propagator2;
+            })
             .build();
 
     // When the SDK is disabled, propagators are still configured
@@ -536,12 +525,11 @@ class AutoConfiguredOpenTelemetrySdkTest {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
     AutoConfiguredOpenTelemetrySdkBuilder autoConfiguration =
         AutoConfiguredOpenTelemetrySdk.builder()
-            .addTracerProviderCustomizer(
-                (tracerProviderBuilder, config) -> {
-                  tracerProviderBuilder.setResource(Resource.builder().put("cat", "meow").build());
-                  return tracerProviderBuilder.addSpanProcessor(
-                      SimpleSpanProcessor.create(spanExporter));
-                })
+            .addTracerProviderCustomizer((tracerProviderBuilder, config) -> {
+              tracerProviderBuilder.setResource(Resource.builder().put("cat", "meow").build());
+              return tracerProviderBuilder.addSpanProcessor(
+                  SimpleSpanProcessor.create(spanExporter));
+            })
             .addResourceCustomizer(
                 (resource, config) -> resource.merge(Resource.builder().put("cow", "moo").build()))
             .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
@@ -596,19 +584,18 @@ class AutoConfiguredOpenTelemetrySdkTest {
     BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
         getLoggerProviderBuilderSpy();
 
-    assertThatThrownBy(
-            () ->
-                // Override the provider builders with mocks which we can verify are closed
-                AutoConfiguredOpenTelemetrySdk.builder()
-                    .addTracerProviderCustomizer(traceCustomizer)
-                    .addMeterProviderCustomizer(metricCustomizer)
-                    .addLoggerProviderCustomizer(logCustomizer)
-                    .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.propagators", "foo"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
-                    .build())
+    assertThatThrownBy(() ->
+            // Override the provider builders with mocks which we can verify are closed
+            AutoConfiguredOpenTelemetrySdk.builder()
+                .addTracerProviderCustomizer(traceCustomizer)
+                .addMeterProviderCustomizer(metricCustomizer)
+                .addLoggerProviderCustomizer(logCustomizer)
+                .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.propagators", "foo"))
+                .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+                .build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.propagators");
 
@@ -618,19 +605,18 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(metricCustomizer, never()).apply(any(), any());
     verify(logCustomizer, never()).apply(any(), any());
 
-    assertThatThrownBy(
-            () ->
-                // Override the provider builders with mocks which we can verify are closed
-                AutoConfiguredOpenTelemetrySdk.builder()
-                    .addTracerProviderCustomizer(traceCustomizer)
-                    .addMeterProviderCustomizer(metricCustomizer)
-                    .addLoggerProviderCustomizer(logCustomizer)
-                    .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.propagators", "foo"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "false"))
-                    .build())
+    assertThatThrownBy(() ->
+            // Override the provider builders with mocks which we can verify are closed
+            AutoConfiguredOpenTelemetrySdk.builder()
+                .addTracerProviderCustomizer(traceCustomizer)
+                .addMeterProviderCustomizer(metricCustomizer)
+                .addLoggerProviderCustomizer(logCustomizer)
+                .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.propagators", "foo"))
+                .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "false"))
+                .build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.propagators");
 
@@ -653,17 +639,16 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     doThrow(new RuntimeException()).when(traceCustomizer).apply(any(), any());
 
-    assertThatThrownBy(
-            () ->
-                AutoConfiguredOpenTelemetrySdk.builder()
-                    .addTracerProviderCustomizer(traceCustomizer)
-                    .addMeterProviderCustomizer(metricCustomizer)
-                    .addLoggerProviderCustomizer(logCustomizer)
-                    .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "false"))
-                    .build())
+    assertThatThrownBy(() ->
+            AutoConfiguredOpenTelemetrySdk.builder()
+                .addTracerProviderCustomizer(traceCustomizer)
+                .addMeterProviderCustomizer(metricCustomizer)
+                .addLoggerProviderCustomizer(logCustomizer)
+                .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "false"))
+                .build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unexpected configuration error");
   }
@@ -688,18 +673,17 @@ class AutoConfiguredOpenTelemetrySdkTest {
     // Throw an error when closing and verify other resources are still closed
     doThrow(new IOException("Error!")).when(tracerProvider).close();
 
-    assertThatThrownBy(
-            () ->
-                // Override the provider builders with mocks which we can verify are closed
-                AutoConfiguredOpenTelemetrySdk.builder()
-                    .addTracerProviderCustomizer((u1, u2) -> tracerProviderBuilder)
-                    .addMeterProviderCustomizer((u1, u2) -> meterProviderBuilder)
-                    .addLoggerProviderCustomizer((u1, u2) -> loggerProviderBuilder)
-                    .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "foo"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "false"))
-                    .build())
+    assertThatThrownBy(() ->
+            // Override the provider builders with mocks which we can verify are closed
+            AutoConfiguredOpenTelemetrySdk.builder()
+                .addTracerProviderCustomizer((u1, u2) -> tracerProviderBuilder)
+                .addMeterProviderCustomizer((u1, u2) -> meterProviderBuilder)
+                .addLoggerProviderCustomizer((u1, u2) -> loggerProviderBuilder)
+                .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+                .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "foo"))
+                .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "false"))
+                .build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.logs.exporter: foo");
 
@@ -721,16 +705,15 @@ class AutoConfiguredOpenTelemetrySdkTest {
         CompletableFuture.supplyAsync(
             () ->
                 builder
-                    .addLoggerProviderCustomizer(
-                        (sdkLoggerProviderBuilder, configProperties) -> {
-                          autoconfigStarted.countDown();
-                          try {
-                            completeAutoconfig.await();
-                          } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                          }
-                          return sdkLoggerProviderBuilder;
-                        })
+                    .addLoggerProviderCustomizer((sdkLoggerProviderBuilder, configProperties) -> {
+                      autoconfigStarted.countDown();
+                      try {
+                        completeAutoconfig.await();
+                      } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                      }
+                      return sdkLoggerProviderBuilder;
+                    })
                     .setResultAsGlobal()
                     .build()
                     .getOpenTelemetrySdk(),

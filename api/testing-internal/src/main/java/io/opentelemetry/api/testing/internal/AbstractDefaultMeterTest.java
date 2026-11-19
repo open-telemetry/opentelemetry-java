@@ -211,11 +211,10 @@ public abstract class AbstractDefaultMeterTest {
         .ofLongs()
         .setDescription("The current temperature")
         .setUnit("C")
-        .buildWithCallback(
-            m -> {
-              m.record(1);
-              m.record(2, Attributes.of(stringKey("thing"), "engine"));
-            });
+        .buildWithCallback(m -> {
+          m.record(1);
+          m.record(2, Attributes.of(stringKey("thing"), "engine"));
+        });
   }
 
   @Test
@@ -246,11 +245,10 @@ public abstract class AbstractDefaultMeterTest {
         .gaugeBuilder("temperature")
         .setDescription("The current temperature")
         .setUnit("C")
-        .buildWithCallback(
-            m -> {
-              m.record(1.0e1);
-              m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
-            });
+        .buildWithCallback(m -> {
+          m.record(1.0e1);
+          m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
+        });
   }
 
   @Test
@@ -259,11 +257,10 @@ public abstract class AbstractDefaultMeterTest {
         .counterBuilder("temperature")
         .setDescription("The current temperature")
         .setUnit("C")
-        .buildWithCallback(
-            m -> {
-              m.record(1);
-              m.record(2, Attributes.of(stringKey("thing"), "engine"));
-            });
+        .buildWithCallback(m -> {
+          m.record(1);
+          m.record(2, Attributes.of(stringKey("thing"), "engine"));
+        });
   }
 
   @Test
@@ -273,11 +270,10 @@ public abstract class AbstractDefaultMeterTest {
         .ofDoubles()
         .setDescription("The current temperature")
         .setUnit("C")
-        .buildWithCallback(
-            m -> {
-              m.record(1.0e1);
-              m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
-            });
+        .buildWithCallback(m -> {
+          m.record(1.0e1);
+          m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
+        });
   }
 
   @Test
@@ -286,11 +282,10 @@ public abstract class AbstractDefaultMeterTest {
         .upDownCounterBuilder("temperature")
         .setDescription("The current temperature")
         .setUnit("C")
-        .buildWithCallback(
-            m -> {
-              m.record(1);
-              m.record(2, Attributes.of(stringKey("thing"), "engine"));
-            });
+        .buildWithCallback(m -> {
+          m.record(1);
+          m.record(2, Attributes.of(stringKey("thing"), "engine"));
+        });
   }
 
   @Test
@@ -300,11 +295,10 @@ public abstract class AbstractDefaultMeterTest {
         .ofDoubles()
         .setDescription("The current temperature")
         .setUnit("C")
-        .buildWithCallback(
-            m -> {
-              m.record(1.0e1);
-              m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
-            });
+        .buildWithCallback(m -> {
+          m.record(1.0e1);
+          m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
+        });
   }
 
   @Test

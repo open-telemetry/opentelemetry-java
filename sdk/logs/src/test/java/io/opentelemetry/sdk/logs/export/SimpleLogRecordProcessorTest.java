@@ -77,10 +77,9 @@ class SimpleLogRecordProcessorTest {
   @SuppressLogger(SimpleLogRecordProcessor.class)
   void onEmit_ExporterThrowsCheckedException() {
     when(logRecordExporter.export(any()))
-        .thenAnswer(
-            invocation -> {
-              throw new Exception("Exporter error!");
-            });
+        .thenAnswer(invocation -> {
+          throw new Exception("Exporter error!");
+        });
 
     assertThatCode(() -> logRecordProcessor.onEmit(Context.current(), readWriteLogRecord))
         .doesNotThrowAnyException();

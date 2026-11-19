@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AggregationModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
@@ -40,10 +40,9 @@ class DeclarativeConfigurationParseTest {
 
   @Test
   void parse_BadInputStream() {
-    assertThatThrownBy(
-            () ->
-                DeclarativeConfiguration.parseAndCreate(
-                    new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
+    assertThatThrownBy(() ->
+            DeclarativeConfiguration.parseAndCreate(
+                new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("Unable to parse configuration input stream");
   }

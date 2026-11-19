@@ -73,12 +73,10 @@ public class OpenTelemetryRuleTest {
     counter.add(1);
 
     OpenTelemetryAssertions.assertThat(otelTesting.getMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                OpenTelemetryAssertions.assertThat(metricData)
-                    .hasName("counter")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            OpenTelemetryAssertions.assertThat(metricData)
+                .hasName("counter")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
   }
 
   // We have two tests to verify metrics get cleared up between tests.
@@ -88,12 +86,10 @@ public class OpenTelemetryRuleTest {
     counter.add(1);
 
     OpenTelemetryAssertions.assertThat(otelTesting.getMetrics())
-        .satisfiesExactlyInAnyOrder(
-            metricData ->
-                OpenTelemetryAssertions.assertThat(metricData)
-                    .hasName("counter")
-                    .hasLongSumSatisfying(
-                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
+        .satisfiesExactlyInAnyOrder(metricData ->
+            OpenTelemetryAssertions.assertThat(metricData)
+                .hasName("counter")
+                .hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
   }
 
   @Test

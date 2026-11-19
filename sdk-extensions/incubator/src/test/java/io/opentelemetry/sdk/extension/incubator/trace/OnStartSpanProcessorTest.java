@@ -24,11 +24,10 @@ class OnStartSpanProcessorTest {
     ReadWriteSpan inputSpan = mock(ReadWriteSpan.class);
 
     SpanProcessor processor =
-        OnStartSpanProcessor.create(
-            (ctx, span) -> {
-              seenContext.set(ctx);
-              seenSpan.set(span);
-            });
+        OnStartSpanProcessor.create((ctx, span) -> {
+          seenContext.set(ctx);
+          seenSpan.set(span);
+        });
 
     assertThat(processor.isStartRequired()).isTrue();
     assertThat(processor.isEndRequired()).isFalse();

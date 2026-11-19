@@ -65,12 +65,10 @@ class SdkLongGaugeTest {
             .buildWithCallback(measurement -> measurement.record(10));
 
     Assertions.assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("testGauge")
-                    .hasLongGaugeSatisfying(
-                        longGauge -> longGauge.hasPointsSatisfying(point -> {})));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("testGauge")
+                .hasLongGaugeSatisfying(longGauge -> longGauge.hasPointsSatisfying(point -> {})));
 
     gauge.close();
 
@@ -97,23 +95,20 @@ class SdkLongGaugeTest {
     longGauge.set(13);
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testGauge")
-                    .hasDescription("description")
-                    .hasUnit("K")
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(Attributes.empty())
-                                        .hasValue(13))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testGauge")
+                .hasDescription("description")
+                .hasUnit("K")
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point
+                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                            .hasEpochNanos(testClock.now())
+                            .hasAttributes(Attributes.empty())
+                            .hasValue(13))));
   }
 
   @Test
@@ -149,28 +144,22 @@ class SdkLongGaugeTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testGauge")
-                    .hasDescription("description")
-                    .hasUnit("K")
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(12L)
-                                        .hasExemplarsSatisfying(
-                                            exemplar ->
-                                                exemplar
-                                                    .hasValue(12L)
-                                                    .hasFilteredAttributes(
-                                                        Attributes.builder()
-                                                            .put("key", "value")
-                                                            .build())))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testGauge")
+                .hasDescription("description")
+                .hasUnit("K")
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(12L)
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar
+                                    .hasValue(12L)
+                                    .hasFilteredAttributes(
+                                        Attributes.builder().put("key", "value").build())))));
   }
 
   @Test
@@ -191,13 +180,11 @@ class SdkLongGaugeTest {
 
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("testGauge")
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(point -> point.hasValue(12).hasExemplars())));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("testGauge")
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point -> point.hasValue(12).hasExemplars())));
   }
 
   @Test
@@ -219,18 +206,14 @@ class SdkLongGaugeTest {
 
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("testGauge")
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(12)
-                                        .hasExemplarsSatisfying(
-                                            exemplar -> exemplar.hasValue(12)))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("testGauge")
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(12)
+                            .hasExemplarsSatisfying(exemplar -> exemplar.hasValue(12)))));
   }
 
   @Test
@@ -245,90 +228,81 @@ class SdkLongGaugeTest {
     longGauge.set(321, Attributes.builder().put("K", "V").build());
     longGauge.set(111, Attributes.builder().put("K", "V").build());
     assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testGauge")
-                    .hasDescription("")
-                    .hasUnit("")
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(Attributes.empty())
-                                        .hasValue(21),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(111)
-                                        .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testGauge")
+                .hasDescription("")
+                .hasUnit("")
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(21),
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(111)
+                                .hasAttributes(attributeEntry("K", "V")))));
     assertThat(deltaReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testGauge")
-                    .hasDescription("")
-                    .hasUnit("")
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(Attributes.empty())
-                                        .hasValue(21),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(111)
-                                        .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testGauge")
+                .hasDescription("")
+                .hasUnit("")
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(21),
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(111)
+                                .hasAttributes(attributeEntry("K", "V")))));
 
     // Repeat to prove we keep previous values.
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longGauge.set(222, Attributes.builder().put("K", "V").build());
     assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(Attributes.empty())
-                                        .hasValue(21),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(222)
-                                        .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(21),
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(222)
+                                .hasAttributes(attributeEntry("K", "V")))));
     // Delta reader should only have point for {K=V} series, since the {} did not have any
     // measurements
     assertThat(deltaReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasLongGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime + SECOND_NANOS)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(222)
-                                        .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasLongGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point
+                            .hasStartEpochNanos(startTime + SECOND_NANOS)
+                            .hasEpochNanos(testClock.now())
+                            .hasValue(222)
+                            .hasAttributes(attributeEntry("K", "V")))));
   }
 }

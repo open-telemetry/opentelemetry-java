@@ -240,9 +240,8 @@ class RetryInterceptorTest {
     doNothing().when(sleeper).sleep(anyLong());
 
     // Connecting to a non-routable IP address to trigger connection error
-    assertThatThrownBy(
-            () ->
-                client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
+    assertThatThrownBy(() ->
+            client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
         .isInstanceOfAny(SocketTimeoutException.class, SocketException.class);
 
     verify(retryExceptionPredicate, times(5)).test(any());
@@ -258,11 +257,10 @@ class RetryInterceptorTest {
 
     // Connecting to localhost on an unused port address to trigger java.net.ConnectException
     int openPort = freePort();
-    assertThatThrownBy(
-            () ->
-                client
-                    .newCall(new Request.Builder().url("http://localhost:" + openPort).build())
-                    .execute())
+    assertThatThrownBy(() ->
+            client
+                .newCall(new Request.Builder().url("http://localhost:" + openPort).build())
+                .execute())
         .isInstanceOfAny(ConnectException.class, SocketTimeoutException.class);
 
     verify(retryExceptionPredicate, times(5)).test(any());
@@ -285,9 +283,8 @@ class RetryInterceptorTest {
     when(retryExceptionPredicate.test(any())).thenReturn(false);
 
     // Connecting to a non-routable IP address to trigger connection timeout
-    assertThatThrownBy(
-            () ->
-                client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
+    assertThatThrownBy(() ->
+            client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
         .isInstanceOfAny(SocketTimeoutException.class, SocketException.class);
 
     verify(retryExceptionPredicate, times(1)).test(any());

@@ -329,17 +329,15 @@ class LongSumAggregatorTest {
         .hasName("name")
         .hasDescription("description")
         .hasUnit("unit")
-        .hasLongSumSatisfying(
-            sum ->
-                sum.isCumulative()
-                    .isMonotonic()
-                    .hasPointsSatisfying(
-                        point ->
-                            point
-                                .hasStartEpochNanos(0)
-                                .hasEpochNanos(100)
-                                .hasAttributes(Attributes.empty())
-                                .hasValue(10)));
+        .hasLongSumSatisfying(sum ->
+            sum.isCumulative()
+                .isMonotonic()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasStartEpochNanos(0)
+                        .hasEpochNanos(100)
+                        .hasAttributes(Attributes.empty())
+                        .hasValue(10)));
   }
 
   @ParameterizedTest

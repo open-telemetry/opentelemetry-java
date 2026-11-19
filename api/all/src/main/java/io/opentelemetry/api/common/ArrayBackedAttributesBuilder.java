@@ -189,9 +189,8 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     if (key.getKey().isEmpty()) {
       return this;
     }
-    return removeIf(
-        entryKey ->
-            key.getKey().equals(entryKey.getKey()) && key.getType().equals(entryKey.getType()));
+    return removeIf(entryKey ->
+        key.getKey().equals(entryKey.getKey()) && key.getType().equals(entryKey.getType()));
   }
 
   @Override

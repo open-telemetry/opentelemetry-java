@@ -66,14 +66,13 @@ class LogRecordExporterConfigurationTest {
   void configureLogRecordExporters_duplicates() {
     List<Closeable> closeables = new ArrayList<>();
 
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterConfiguration.configureLogRecordExporters(
-                    DefaultConfigProperties.createFromMap(
-                        ImmutableMap.of("otel.logs.exporter", "otlp,otlp")),
-                    spiHelper,
-                    (a, unused) -> a,
-                    closeables))
+    assertThatThrownBy(() ->
+            LogRecordExporterConfiguration.configureLogRecordExporters(
+                DefaultConfigProperties.createFromMap(
+                    ImmutableMap.of("otel.logs.exporter", "otlp,otlp")),
+                spiHelper,
+                (a, unused) -> a,
+                closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains duplicates: [otlp]");
     cleanup.addCloseables(closeables);
@@ -84,14 +83,12 @@ class LogRecordExporterConfigurationTest {
   void configureLogRecordExporters_unrecognized() {
     List<Closeable> closeables = new ArrayList<>();
 
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterConfiguration.configureLogRecordExporters(
-                    DefaultConfigProperties.createFromMap(
-                        ImmutableMap.of("otel.logs.exporter", "foo")),
-                    spiHelper,
-                    (a, unused) -> a,
-                    new ArrayList<>()))
+    assertThatThrownBy(() ->
+            LogRecordExporterConfiguration.configureLogRecordExporters(
+                DefaultConfigProperties.createFromMap(ImmutableMap.of("otel.logs.exporter", "foo")),
+                spiHelper,
+                (a, unused) -> a,
+                new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.logs.exporter: foo");
     cleanup.addCloseables(closeables);
@@ -102,14 +99,13 @@ class LogRecordExporterConfigurationTest {
   void configureLogRecordExporters_multipleWithNone() {
     List<Closeable> closeables = new ArrayList<>();
 
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterConfiguration.configureLogRecordExporters(
-                    DefaultConfigProperties.createFromMap(
-                        ImmutableMap.of("otel.logs.exporter", "otlp,none")),
-                    spiHelper,
-                    (a, unused) -> a,
-                    closeables))
+    assertThatThrownBy(() ->
+            LogRecordExporterConfiguration.configureLogRecordExporters(
+                DefaultConfigProperties.createFromMap(
+                    ImmutableMap.of("otel.logs.exporter", "otlp,none")),
+                spiHelper,
+                (a, unused) -> a,
+                closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.logs.exporter contains none along with other exporters");
     cleanup.addCloseables(closeables);

@@ -11,7 +11,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -96,11 +96,9 @@ class OtlpStdoutMetricExporterTest
 
   @Test
   void validMetricConfig() {
-    assertThatCode(
-            () ->
-                OtlpStdoutMetricExporter.builder()
-                    .setAggregationTemporalitySelector(
-                        AggregationTemporalitySelector.deltaPreferred()))
+    assertThatCode(() ->
+            OtlpStdoutMetricExporter.builder()
+                .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred()))
         .doesNotThrowAnyException();
     assertThat(
             OtlpStdoutMetricExporter.builder()

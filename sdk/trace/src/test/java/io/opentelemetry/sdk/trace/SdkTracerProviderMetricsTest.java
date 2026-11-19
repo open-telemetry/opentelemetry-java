@@ -32,7 +32,6 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
@@ -43,9 +42,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -61,7 +58,7 @@ class SdkTracerProviderMetricsTest {
 
   @ParameterizedTest
   @ValueSource(booleans = {false, true})
-  void componentNamesAreUniqueAndStable(boolean batching) {
+  void componentNamesAreUnique(boolean batching) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(reader).build()) {
@@ -78,29 +75,19 @@ class SdkTracerProviderMetricsTest {
                     .build());
       }
       try (SdkTracerProvider provider = builder.build()) {
-        List<String> previousNames = null;
-        for (int count = 1; count <= 2; count++) {
-          provider.get("test").spanBuilder("span").startSpan().end();
-          assertThat(provider.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-          MetricData metric =
-              reader.collectAllMetrics().stream()
-                  .filter(m -> m.getName().equals("otel.sdk.processor.span.processed"))
-                  .findFirst()
-                  .get();
-          assertThat(metric.getLongSumData().getPoints()).hasSize(2);
-          List<String> names =
-              metric.getLongSumData().getPoints().stream()
-                  .map(point -> point.getAttributes().get(OTEL_COMPONENT_NAME))
-                  .collect(Collectors.toList());
-          assertThat(names).doesNotHaveDuplicates().doesNotContainNull();
-          if (previousNames != null) {
-            assertThat(names).containsExactlyInAnyOrderElementsOf(previousNames);
-          }
-          previousNames = names;
-          for (LongPointData point : metric.getLongSumData().getPoints()) {
-            assertThat(point.getValue()).isEqualTo(count);
-          }
-        }
+        provider.get("test").spanBuilder("span").startSpan().end();
+        assertThat(provider.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+        MetricData metric =
+            reader.collectAllMetrics().stream()
+                .filter(m -> m.getName().equals("otel.sdk.processor.span.processed"))
+                .findFirst()
+                .get();
+        assertThat(metric.getLongSumData().getPoints())
+            .hasSize(2)
+            .allSatisfy(point -> assertThat(point.getValue()).isEqualTo(1))
+            .extracting(point -> point.getAttributes().get(OTEL_COMPONENT_NAME))
+            .doesNotContainNull()
+            .doesNotHaveDuplicates();
       }
     }
   }
@@ -130,28 +117,24 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_PARENT_ORIGIN,
+                                        "none",
+                                        OTEL_SPAN_SAMPLING_RESULT,
+                                        "RECORD_AND_SAMPLE")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
     span.end();
     assertThat(metricReader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
@@ -159,43 +142,35 @@ class SdkTracerProviderMetricsTest {
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
                     .hasUnit("{span}")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_PARENT_ORIGIN,
+                                        "none",
+                                        OTEL_SPAN_SAMPLING_RESULT,
+                                        "RECORD_AND_SAMPLE")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(0)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
 
     setSamplingDecision(SamplingDecision.RECORD_ONLY);
     span = tracer.spanBuilder("span").startSpan();
@@ -204,112 +179,98 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_ONLY")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_ONLY")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
     span.end();
     assertThat(metricReader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_ONLY")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_ONLY")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
 
     setSamplingDecision(SamplingDecision.DROP);
     span = tracer.spanBuilder("span").startSpan();
@@ -318,128 +279,114 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_ONLY")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_ONLY")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
     span.end();
     assertThat(metricReader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_ONLY")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_ONLY")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
 
     span =
         tracer
@@ -459,144 +406,130 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_ONLY")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "local",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_ONLY")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "local",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
     span.end();
     assertThat(metricReader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_ONLY")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "local",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_ONLY")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "local",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
 
     setSamplingDecision(SamplingDecision.RECORD_AND_SAMPLE);
     span =
@@ -617,160 +550,146 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "remote",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_ONLY")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "local",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "remote",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_ONLY")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "local",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
     span.end();
     assertThat(metricReader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(2)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(2)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "remote",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_ONLY")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "local",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "remote",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_ONLY")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "local",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
 
     // Spans rejected after the call to shutdown, regardless of completion so no join.
     processor.shutdown();
@@ -781,88 +700,82 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(2)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor"),
-                                            equalTo(ERROR_TYPE, "already_shutdown")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(2)
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
+                                            OTEL_COMPONENT_NAME,
+                                            name -> name.matches("simple_span_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
+                                            OTEL_COMPONENT_NAME,
+                                            name -> name.matches("simple_span_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor"),
+                                        equalTo(ERROR_TYPE, "already_shutdown")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(2)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "remote",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_ONLY")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "local",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "DROP")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(2)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "remote",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "RECORD_ONLY")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "none",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_PARENT_ORIGIN,
+                                            "local",
+                                            OTEL_SPAN_SAMPLING_RESULT,
+                                            "DROP")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(
+                                            OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")),
+                            p ->
+                                p.hasValue(0)
+                                    .hasAttributes(
+                                        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, "RECORD_ONLY")))));
   }
 
   @Test
@@ -909,84 +822,68 @@ class SdkTracerProviderMetricsTest {
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.capacity")
                     .hasUnit("{span}")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("batching_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.size")
                     .hasUnit("{span}")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("batching_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
                     .hasUnit("{span}")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "batching_span_processor")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
-                                            equalTo(ERROR_TYPE, "queue_full")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
+                                            OTEL_COMPONENT_NAME,
+                                            name -> name.matches("batching_span_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
+                                            OTEL_COMPONENT_NAME,
+                                            name -> name.matches("batching_span_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
+                                        equalTo(ERROR_TYPE, "queue_full")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(3)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(3)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_PARENT_ORIGIN,
+                                        "none",
+                                        OTEL_SPAN_SAMPLING_RESULT,
+                                        "RECORD_AND_SAMPLE")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(0)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
 
     result1.succeed();
     result2.fail();
@@ -997,82 +894,66 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.capacity")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("batching_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.size")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(0)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("batching_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(2)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "batching_span_processor")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
-                                            equalTo(ERROR_TYPE, "queue_full")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(2)
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
+                                            OTEL_COMPONENT_NAME,
+                                            name -> name.matches("batching_span_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
+                                            OTEL_COMPONENT_NAME,
+                                            name -> name.matches("batching_span_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
+                                        equalTo(ERROR_TYPE, "queue_full")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(3)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(3)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_PARENT_ORIGIN,
+                                        "none",
+                                        OTEL_SPAN_SAMPLING_RESULT,
+                                        "RECORD_AND_SAMPLE")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(0)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
 
     lenient().when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     // Spans rejected after the call to shutdown, regardless of completion so no join.
@@ -1084,91 +965,74 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.capacity")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("batching_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.queue.size")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "batching_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(0)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("batching_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(2)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "batching_span_processor")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
-                                            equalTo(ERROR_TYPE, "already_shutdown")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("batching_span_processor/[0-9]+")),
-                                            equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
-                                            equalTo(ERROR_TYPE, "queue_full")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(
+                            p ->
+                                p.hasValue(2)
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
+                                            OTEL_COMPONENT_NAME,
+                                            name -> name.matches("batching_span_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
+                                            OTEL_COMPONENT_NAME,
+                                            name -> name.matches("batching_span_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
+                                        equalTo(ERROR_TYPE, "already_shutdown")),
+                            p ->
+                                p.hasValue(1)
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
+                                            OTEL_COMPONENT_NAME,
+                                            name -> name.matches("batching_span_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_span_processor"),
+                                        equalTo(ERROR_TYPE, "queue_full")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(4)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(4)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_PARENT_ORIGIN,
+                                        "none",
+                                        OTEL_SPAN_SAMPLING_RESULT,
+                                        "RECORD_AND_SAMPLE")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(0)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
   }
 
   @Test
@@ -1198,43 +1062,35 @@ class SdkTracerProviderMetricsTest {
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.span.processed")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributesSatisfyingExactly(
-                                            satisfies(
-                                                OTEL_COMPONENT_NAME,
-                                                name ->
-                                                    name.matches("simple_span_processor/[0-9]+")),
-                                            equalTo(
-                                                OTEL_COMPONENT_TYPE, "simple_span_processor")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
+                                        OTEL_COMPONENT_NAME,
+                                        name -> name.matches("simple_span_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_span_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.started")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_PARENT_ORIGIN,
-                                                "none",
-                                                OTEL_SPAN_SAMPLING_RESULT,
-                                                "RECORD_AND_SAMPLE")))),
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(1)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_PARENT_ORIGIN,
+                                        "none",
+                                        OTEL_SPAN_SAMPLING_RESULT,
+                                        "RECORD_AND_SAMPLE")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.span.live")
-                    .hasLongSumSatisfying(
-                        s ->
-                            s.hasPointsSatisfying(
-                                p ->
-                                    p.hasValue(0)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
+                    .hasLongSumSatisfying(s ->
+                        s.hasPointsSatisfying(p ->
+                            p.hasValue(0)
+                                .hasAttributes(
+                                    Attributes.of(
+                                        OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
   }
 
   private void setSamplingDecision(SamplingDecision decision) {

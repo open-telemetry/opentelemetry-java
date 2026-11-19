@@ -71,15 +71,14 @@ class MeterConfigTest {
 
     // Only metrics from meterA and meterC should be seen
     assertThat(reader.collectAllMetrics())
-        .satisfies(
-            metrics -> {
-              Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
-                  metrics.stream().collect(groupingBy(MetricData::getInstrumentationScopeInfo));
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterA"))).hasSize(14);
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterB"))).isNull();
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterC"))).hasSize(14);
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterD"))).isNull();
-            });
+        .satisfies(metrics -> {
+          Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
+              metrics.stream().collect(groupingBy(MetricData::getInstrumentationScopeInfo));
+          assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterA"))).hasSize(14);
+          assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterB"))).isNull();
+          assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterC"))).hasSize(14);
+          assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterD"))).isNull();
+        });
     // Only async callbacks from meterA and meterC should be invoked
     assertThat(meterAInvocations.get()).isPositive();
     assertThat(meterBInvocations.get()).isZero();
@@ -97,55 +96,49 @@ class MeterConfigTest {
     meter.counterBuilder("doubleCounter").ofDoubles().build().add(1);
     meter
         .counterBuilder("asyncLongCounter")
-        .buildWithCallback(
-            observable -> {
-              asyncInvocationsCount.incrementAndGet();
-              observable.record(1);
-            });
+        .buildWithCallback(observable -> {
+          asyncInvocationsCount.incrementAndGet();
+          observable.record(1);
+        });
     meter
         .counterBuilder("asyncDoubleCounter")
         .ofDoubles()
-        .buildWithCallback(
-            observable -> {
-              asyncInvocationsCount.incrementAndGet();
-              observable.record(1);
-            });
+        .buildWithCallback(observable -> {
+          asyncInvocationsCount.incrementAndGet();
+          observable.record(1);
+        });
     meter.upDownCounterBuilder("longUpDownCounter").build().add(1);
     meter.upDownCounterBuilder("doubleUpDownCounter").ofDoubles().build().add(1);
     meter
         .upDownCounterBuilder("asyncLongUpDownCounter")
-        .buildWithCallback(
-            observable -> {
-              asyncInvocationsCount.incrementAndGet();
-              observable.record(1);
-            });
+        .buildWithCallback(observable -> {
+          asyncInvocationsCount.incrementAndGet();
+          observable.record(1);
+        });
     meter
         .upDownCounterBuilder("asyncDoubleUpDownCounter")
         .ofDoubles()
-        .buildWithCallback(
-            observable -> {
-              asyncInvocationsCount.incrementAndGet();
-              observable.record(1);
-            });
+        .buildWithCallback(observable -> {
+          asyncInvocationsCount.incrementAndGet();
+          observable.record(1);
+        });
     meter.histogramBuilder("doubleHistogram").build().record(1.0);
     meter.histogramBuilder("longHistogram").ofLongs().build().record(1);
     meter.gaugeBuilder("doubleGauge").build().set(1);
     meter.gaugeBuilder("longGauge").ofLongs().build().set(1);
     meter
         .gaugeBuilder("asyncDoubleGauge")
-        .buildWithCallback(
-            observable -> {
-              asyncInvocationsCount.incrementAndGet();
-              observable.record(1.0);
-            });
+        .buildWithCallback(observable -> {
+          asyncInvocationsCount.incrementAndGet();
+          observable.record(1.0);
+        });
     meter
         .gaugeBuilder("asyncLongGauge")
         .ofLongs()
-        .buildWithCallback(
-            observable -> {
-              asyncInvocationsCount.incrementAndGet();
-              observable.record(1);
-            });
+        .buildWithCallback(observable -> {
+          asyncInvocationsCount.incrementAndGet();
+          observable.record(1);
+        });
   }
 
   private static void assertMeterInstrumentsEnabled(Meter meter, boolean expectedEnabled) {

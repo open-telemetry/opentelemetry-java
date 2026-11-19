@@ -1,2 +1,0 @@
-io.opentelemetry.sdk.autoconfigure.declarativeconfig.EntitiesEnvResourceDetector
-io.opentelemetry.sdk.autoconfigure.declarativeconfig.ServiceResourceDetector

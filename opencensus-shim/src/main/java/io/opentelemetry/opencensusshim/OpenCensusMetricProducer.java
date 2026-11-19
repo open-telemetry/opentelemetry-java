@@ -52,11 +52,10 @@ public final class OpenCensusMetricProducer implements MetricProducer {
     List<MetricData> result = new ArrayList<>();
     openCensusMetricStorage
         .getAllMetricProducer()
-        .forEach(
-            producer ->
-                producer
-                    .getMetrics()
-                    .forEach(metric -> result.add(MetricAdapter.convert(resource, metric))));
+        .forEach(producer ->
+            producer
+                .getMetrics()
+                .forEach(metric -> result.add(MetricAdapter.convert(resource, metric))));
     return result;
   }
 }

@@ -392,10 +392,9 @@ class OtlpConfigUtilTest {
 
   @Test
   void configureOtlpAggregationTemporality() {
-    assertThatThrownBy(
-            () ->
-                configureAggregationTemporality(
-                    ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "foo")))
+    assertThatThrownBy(() ->
+            configureAggregationTemporality(
+                ImmutableMap.of("otel.exporter.otlp.metrics.temporality.preference", "foo")))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized aggregation temporality:");
 
@@ -429,11 +428,9 @@ class OtlpConfigUtilTest {
 
   @Test
   void configureOtlpHistogramDefaultAggregation() {
-    assertThatThrownBy(
-            () ->
-                configureHistogramDefaultAggregation(
-                    ImmutableMap.of(
-                        "otel.exporter.otlp.metrics.default.histogram.aggregation", "foo")))
+    assertThatThrownBy(() ->
+            configureHistogramDefaultAggregation(
+                ImmutableMap.of("otel.exporter.otlp.metrics.default.histogram.aggregation", "foo")))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized default histogram aggregation:");
     assertThat(
