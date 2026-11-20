@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import static io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil.setMeterConfigurator;
+import static io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil.setViewMatchingMode;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.common.ComponentLoader;
@@ -23,6 +24,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamMode
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalViewMatchingModeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.MeterProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
@@ -32,6 +34,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
+import io.opentelemetry.sdk.metrics.internal.view.ViewMatchingMode;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,6 +76,11 @@ class MeterProviderFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "defaults", new MeterProviderModel(), SdkMeterProvider.builder().build()),
+        Arguments.argumentSet(
+            "with view matching mode composable",
+            MeterProviderModelAccessor.setViewMatchingMode(
+                new MeterProviderModel(), ExperimentalViewMatchingModeModel.COMPOSABLE),
+            setViewMatchingMode(SdkMeterProvider.builder(), ViewMatchingMode.COMPOSABLE).build()),
         Arguments.argumentSet(
             "with reader view and meter configurator",
             MeterProviderModelAccessor.setMeterConfigurator(
