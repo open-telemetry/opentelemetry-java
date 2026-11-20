@@ -11,10 +11,10 @@ import static java.util.stream.Collectors.toList;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * A registered callback.
@@ -30,13 +30,13 @@ public final class CallbackRegistration {
   private final Runnable callback;
   private final List<InstrumentDescriptor> instrumentDescriptors;
   private final boolean hasStorages;
-  @Nullable private final ClassLoader contextClassLoader;
+  private final WeakReference<ClassLoader> contextClassLoader;
 
   private CallbackRegistration(
       List<SdkObservableMeasurement> observableMeasurements, Runnable callback) {
     this.observableMeasurements = observableMeasurements;
     this.callback = callback;
-    this.contextClassLoader = Thread.currentThread().getContextClassLoader();
+    this.contextClassLoader = new WeakReference<>(Thread.currentThread().getContextClassLoader());
     this.instrumentDescriptors =
         observableMeasurements.stream()
             .map(SdkObservableMeasurement::getInstrumentDescriptor)
@@ -82,10 +82,10 @@ public final class CallbackRegistration {
     // to relevant storages
     observableMeasurements.forEach(
         observableMeasurement -> observableMeasurement.setActiveReader(reader));
-    // Restore the context class loader that was active when the callback was registered.
+    // Use the registration thread's context class loader if it is still reachable.
     Thread currentThread = Thread.currentThread();
     ClassLoader previousContextClassLoader = currentThread.getContextClassLoader();
-    currentThread.setContextClassLoader(contextClassLoader);
+    currentThread.setContextClassLoader(contextClassLoader.get());
     try {
       callback.run();
     } catch (Throwable e) {
