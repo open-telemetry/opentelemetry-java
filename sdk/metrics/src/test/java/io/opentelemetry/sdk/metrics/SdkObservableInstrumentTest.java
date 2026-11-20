@@ -66,13 +66,15 @@ class SdkObservableInstrumentTest {
     // First call to close should trigger remove from meter shared state
     observableInstrument.close();
     verify(sdkMeter).removeCallback(callbackRegistration);
-    logs.assertDoesNotContain("close() called multiple times.");
+    logs.assertDoesNotContain("has called close() multiple times.");
 
     // Close a second time should not trigger remove from meter shared state
     Mockito.reset(sdkMeter);
     observableInstrument.close();
     verify(sdkMeter, never()).removeCallback(callbackRegistration);
-    logs.assertContains("close() called multiple times.");
+    logs.assertContains(
+        "CallbackRegistration{instrumentDescriptors=[InstrumentDescriptor{name=my-instrument");
+    logs.assertContains("has called close() multiple times.");
   }
 
   @Test
@@ -102,18 +104,21 @@ class SdkObservableInstrumentTest {
 
   @Test
   void stringRepresentation() {
-    assertThat(observableInstrument.toString())
-        .isEqualTo(
-            "SdkObservableInstrument{"
-                + "callback=CallbackRegistration{"
-                + "instrumentDescriptors=["
-                + "InstrumentDescriptor{"
-                + "name=my-instrument, "
-                + "description=description, "
-                + "unit=unit, "
-                + "type=COUNTER, "
-                + "valueType=DOUBLE, "
-                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}}"
-                + "]}}");
+    String expected =
+        "SdkObservableInstrument{"
+            + "callback=CallbackRegistration{"
+            + "instrumentDescriptors=["
+            + "InstrumentDescriptor{"
+            + "name=my-instrument, "
+            + "description=description, "
+            + "unit=unit, "
+            + "type=COUNTER, "
+            + "valueType=DOUBLE, "
+            + "advice=Advice{explicitBucketBoundaries=null, attributes=null}}"
+            + "]}}";
+    assertThat(observableInstrument.toString()).isEqualTo(expected);
+
+    observableInstrument.close();
+    assertThat(observableInstrument.toString()).isEqualTo(expected);
   }
 }

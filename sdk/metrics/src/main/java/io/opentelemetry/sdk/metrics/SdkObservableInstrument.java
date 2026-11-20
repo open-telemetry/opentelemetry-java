@@ -31,16 +31,19 @@ class SdkObservableInstrument
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final AtomicReference<Registration> registration;
+  private final String callbackDescription;
 
   SdkObservableInstrument(SdkMeter sdkMeter, CallbackRegistration callbackRegistration) {
     this.registration = new AtomicReference<>(new Registration(sdkMeter, callbackRegistration));
+    this.callbackDescription = callbackRegistration.toString();
   }
 
   @Override
   public void close() {
     Registration removed = registration.getAndSet(null);
     if (removed == null) {
-      throttlingLogger.log(Level.WARNING, "SdkObservableInstrument.close() called multiple times.");
+      throttlingLogger.log(
+          Level.WARNING, callbackDescription + " has called close() multiple times.");
       return;
     }
     removed.sdkMeter.removeCallback(removed.callbackRegistration);
@@ -48,10 +51,7 @@ class SdkObservableInstrument
 
   @Override
   public String toString() {
-    Registration current = registration.get();
-    return current == null
-        ? "SdkObservableInstrument{closed}"
-        : "SdkObservableInstrument{callback=" + current.callbackRegistration + "}";
+    return "SdkObservableInstrument{callback=" + callbackDescription + "}";
   }
 
   private static final class Registration {
