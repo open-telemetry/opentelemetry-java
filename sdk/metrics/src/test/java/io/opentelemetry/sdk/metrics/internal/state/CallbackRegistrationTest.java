@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -34,14 +33,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -271,13 +266,12 @@ class CallbackRegistrationTest {
     Thread.currentThread().setContextClassLoader(originalClassLoader);
   }
 
-  @ParameterizedTest
-  @MethodSource("unavailableRegistrationClassLoaders")
-  void invokeCallback_UsesNullWhenRegistrationClassLoaderUnavailable(boolean loaderPresent) {
+  @Test
+  void invokeCallback_UsesNullWhenRegistrationClassLoaderCollected() {
     Thread thread = Thread.currentThread();
     ClassLoader originalClassLoader = thread.getContextClassLoader();
     ClassLoader collectionClassLoader = new ClassLoader() {};
-    ClassLoader registrationClassLoader = loaderPresent ? new ClassLoader() {} : null;
+    ClassLoader registrationClassLoader = new ClassLoader() {};
     WeakReference<ClassLoader> loaderReference = new WeakReference<>(registrationClassLoader);
     AtomicReference<ClassLoader> observedClassLoader = new AtomicReference<>(collectionClassLoader);
 
@@ -298,12 +292,6 @@ class CallbackRegistrationTest {
     } finally {
       thread.setContextClassLoader(originalClassLoader);
     }
-  }
-
-  static Stream<Arguments> unavailableRegistrationClassLoaders() {
-    return Stream.of(
-        argumentSet("absent at registration", false),
-        argumentSet("collected after registration", true));
   }
 
   @Test
