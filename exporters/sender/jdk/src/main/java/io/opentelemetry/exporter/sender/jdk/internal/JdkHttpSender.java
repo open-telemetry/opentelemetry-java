@@ -210,6 +210,11 @@ public final class JdkHttpSender implements HttpSender {
 
   // Visible for testing
   HttpResponse sendInternal(MessageWriter requestBodyWriter) throws IOException {
+    return sendInternal(requestBodyWriter, TimeUnit.NANOSECONDS::sleep);
+  }
+
+  // Visible for testing
+  HttpResponse sendInternal(MessageWriter requestBodyWriter, Sleeper sleeper) throws IOException {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(endpoint).timeout(timeout);
     Map<String, List<String>> headers = headerSupplier.get();
@@ -263,7 +268,7 @@ public final class JdkHttpSender implements HttpSender {
         nextBackoffNanos = (long) (currentBackoffNanos * retryPolicy.getBackoffMultiplier());
         retryDelayNanos = OptionalLong.empty();
         try {
-          TimeUnit.NANOSECONDS.sleep(backoffNanos);
+          sleeper.sleep(backoffNanos);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           break; // Break out and return response or throw
@@ -504,5 +509,10 @@ public final class JdkHttpSender implements HttpSender {
       }
     }
     return CompletableResultCode.ofSuccess();
+  }
+
+  @FunctionalInterface
+  interface Sleeper {
+    void sleep(long delayNanos) throws InterruptedException;
   }
 }

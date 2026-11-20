@@ -752,67 +752,18 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThat(attempts).hasValue(2);
   }
 
-  @Test
-  void retryableError_retryAfterHonored() {
-    addHttpResponse(502, "0");
+  @ParameterizedTest
+  @ValueSource(strings = {"0", "not-a-retry-after"})
+  void retryableError_retryAfter(String retryAfter) {
+    addHttpResponse(502, retryAfter);
 
-    // Configure a large enough initial backoff so the elapsed time proves Retry-After is honored
-    // instead of waiting for the retry policy delay.
-    try (TelemetryExporter<T> exporter =
-        exporterBuilder()
-            .setEndpoint(server.httpUri() + path)
-            .setRetryPolicy(
-                RetryPolicy.builder()
-                    .setMaxAttempts(2)
-                    .setInitialBackoff(Duration.ofSeconds(1))
-                    .setMaxBackoff(Duration.ofSeconds(1))
-                    .build())
-            .build()) {
-      long startTimeNanos = System.nanoTime();
-      assertThat(
-              exporter
-                  .export(Collections.singletonList(generateFakeTelemetry()))
-                  .join(10, TimeUnit.SECONDS)
-                  .isSuccess())
-          .isTrue();
-      long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTimeNanos);
-
-      assertThat(attempts).hasValue(2);
-      assertThat(elapsedMillis).isLessThan(750L);
-    }
-  }
-
-  @Test
-  void retryableError_malformedRetryAfterFallsBack() {
-    addHttpResponse(503, "not-a-retry-after");
-
-    // Configure a large enough initial backoff so the elapsed time proves we fell back to the
-    // retry policy rather than the (malformed) Retry-After header.
-    try (TelemetryExporter<T> exporter =
-        exporterBuilder()
-            .setEndpoint(server.httpUri() + path)
-            .setRetryPolicy(
-                RetryPolicy.builder()
-                    .setMaxAttempts(2)
-                    .setInitialBackoff(Duration.ofMillis(300))
-                    .setMaxBackoff(Duration.ofMillis(300))
-                    .build())
-            .build()) {
-      long startTimeNanos = System.nanoTime();
-      assertThat(
-              exporter
-                  .export(Collections.singletonList(generateFakeTelemetry()))
-                  .join(10, TimeUnit.SECONDS)
-                  .isSuccess())
-          .isTrue();
-      long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTimeNanos);
-
-      assertThat(attempts).hasValue(2);
-      // The malformed Retry-After header should be ignored, so the retry must wait at least a
-      // noticeable portion of the configured 300ms backoff. Keep a generous upper bound to avoid
-      // flaking in slow CI environments.
-      assertThat(elapsedMillis).isBetween(100L, 2_000L);
-    }
+    assertThat(
+            exporter
+                .export(Collections.singletonList(generateFakeTelemetry()))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isTrue();
+    assertThat(attempts).hasValue(2);
   }
 
   @ParameterizedTest
