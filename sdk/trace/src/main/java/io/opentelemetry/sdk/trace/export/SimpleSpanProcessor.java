@@ -38,8 +38,6 @@ import java.util.logging.Logger;
  */
 public final class SimpleSpanProcessor implements SpanProcessor {
 
-  private static final ComponentId COMPONENT_ID = ComponentId.generateLazy("simple_span_processor");
-
   private static final Logger logger = Logger.getLogger(SimpleSpanProcessor.class.getName());
 
   private final SpanExporter spanExporter;
@@ -84,7 +82,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     this.exportUnsampledSpans = exportUnsampledSpans;
     spanProcessorInstrumentation =
         SpanProcessorInstrumentation.get(
-            InternalTelemetryVersion.LATEST, COMPONENT_ID, meterProvider);
+            InternalTelemetryVersion.LATEST,
+            ComponentId.generateLazy("simple_span_processor"),
+            meterProvider);
   }
 
   @Override
