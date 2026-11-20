@@ -33,8 +33,10 @@ public abstract class View {
       @Nullable String description,
       Aggregation aggregation,
       Predicate<String> attributeFilter,
-      int cardinalityLimit) {
-    return new AutoValue_View(name, description, aggregation, attributeFilter, cardinalityLimit);
+      int cardinalityLimit,
+      @Nullable Boolean enabled) {
+    return new AutoValue_View(
+        name, description, aggregation, attributeFilter, cardinalityLimit, enabled);
   }
 
   View() {}
@@ -71,6 +73,13 @@ public abstract class View {
    */
   public abstract int getCardinalityLimit();
 
+  /**
+   * Returns whether the metric stream from this view is produced, or {@code null} if not explicitly
+   * configured.
+   */
+  @Nullable
+  abstract Boolean getEnabled();
+
   @Override
   public final String toString() {
     StringJoiner joiner = new StringJoiner(", ", "View{", "}");
@@ -83,6 +92,9 @@ public abstract class View {
     joiner.add("aggregation=" + getAggregation());
     joiner.add("attributeFilter=" + getAttributeFilter());
     joiner.add("cardinalityLimit=" + getCardinalityLimit());
+    if (getEnabled() != null) {
+      joiner.add("enabled=" + getEnabled());
+    }
     return joiner.toString();
   }
 }

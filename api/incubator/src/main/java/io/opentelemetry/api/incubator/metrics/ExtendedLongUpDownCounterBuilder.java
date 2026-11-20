@@ -19,4 +19,12 @@ public interface ExtendedLongUpDownCounterBuilder extends LongUpDownCounterBuild
   default ExtendedLongUpDownCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
     return this;
   }
+
+  /**
+   * Specify the opt-in advice, which indicates whether this up down counter should be disabled by
+   * default and require explicit opt-in via a view to produce metric data.
+   */
+  default ExtendedLongUpDownCounterBuilder setOptInAdvice(boolean optIn) {
+    return this;
+  }
 }

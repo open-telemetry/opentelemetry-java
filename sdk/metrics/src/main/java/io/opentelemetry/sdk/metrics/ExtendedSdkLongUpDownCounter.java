@@ -83,5 +83,11 @@ final class ExtendedSdkLongUpDownCounter extends SdkLongUpDownCounter
       builder.setAdviceAttributes(attributes);
       return this;
     }
+
+    @Override
+    public ExtendedLongUpDownCounterBuilder setOptInAdvice(boolean optIn) {
+      builder.setAdviceOptIn(optIn);
+      return this;
+    }
   }
 }

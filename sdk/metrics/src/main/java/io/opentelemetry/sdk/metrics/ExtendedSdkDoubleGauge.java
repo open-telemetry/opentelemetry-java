@@ -77,6 +77,12 @@ final class ExtendedSdkDoubleGauge extends SdkDoubleGauge
     }
 
     @Override
+    public ExtendedDoubleGaugeBuilder setOptInAdvice(boolean optIn) {
+      builder.setAdviceOptIn(optIn);
+      return this;
+    }
+
+    @Override
     public ExtendedLongGaugeBuilder ofLongs() {
       return builder.swapBuilder(ExtendedSdkLongGauge.ExtendedSdkLongGaugeBuilder::new);
     }

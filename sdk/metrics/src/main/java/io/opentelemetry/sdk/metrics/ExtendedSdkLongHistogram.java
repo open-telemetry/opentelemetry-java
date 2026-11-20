@@ -85,5 +85,11 @@ final class ExtendedSdkLongHistogram extends SdkLongHistogram
       builder.setAdviceAttributes(attributes);
       return this;
     }
+
+    @Override
+    public ExtendedLongHistogramBuilder setOptInAdvice(boolean optIn) {
+      builder.setAdviceOptIn(optIn);
+      return this;
+    }
   }
 }

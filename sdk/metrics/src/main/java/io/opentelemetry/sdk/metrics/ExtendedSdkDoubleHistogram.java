@@ -85,5 +85,11 @@ final class ExtendedSdkDoubleHistogram extends SdkDoubleHistogram
       builder.setAdviceAttributes(attributes);
       return this;
     }
+
+    @Override
+    public ExtendedDoubleHistogramBuilder setOptInAdvice(boolean optIn) {
+      builder.setAdviceOptIn(optIn);
+      return this;
+    }
   }
 }
