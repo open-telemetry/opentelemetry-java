@@ -14,7 +14,7 @@ import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,27 +30,37 @@ class SdkObservableInstrument
   private static final Logger logger = Logger.getLogger(SdkObservableInstrument.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final SdkMeter sdkMeter;
-  private final CallbackRegistration callbackRegistration;
-  private final AtomicBoolean removed = new AtomicBoolean(false);
+  private final AtomicReference<Registration> registration;
 
   SdkObservableInstrument(SdkMeter sdkMeter, CallbackRegistration callbackRegistration) {
-    this.sdkMeter = sdkMeter;
-    this.callbackRegistration = callbackRegistration;
+    this.registration = new AtomicReference<>(new Registration(sdkMeter, callbackRegistration));
   }
 
   @Override
   public void close() {
-    if (!removed.compareAndSet(false, true)) {
-      throttlingLogger.log(
-          Level.WARNING, callbackRegistration + " has called close() multiple times.");
+    Registration removed = registration.getAndSet(null);
+    if (removed == null) {
+      throttlingLogger.log(Level.WARNING, "SdkObservableInstrument.close() called multiple times.");
       return;
     }
-    sdkMeter.removeCallback(callbackRegistration);
+    removed.sdkMeter.removeCallback(removed.callbackRegistration);
   }
 
   @Override
   public String toString() {
-    return "SdkObservableInstrument{callback=" + callbackRegistration + "}";
+    Registration current = registration.get();
+    return current == null
+        ? "SdkObservableInstrument{closed}"
+        : "SdkObservableInstrument{callback=" + current.callbackRegistration + "}";
+  }
+
+  private static final class Registration {
+    private final SdkMeter sdkMeter;
+    private final CallbackRegistration callbackRegistration;
+
+    private Registration(SdkMeter sdkMeter, CallbackRegistration callbackRegistration) {
+      this.sdkMeter = sdkMeter;
+      this.callbackRegistration = callbackRegistration;
+    }
   }
 }

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.testing.GcFinalization;
 import com.google.common.util.concurrent.AtomicDouble;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
@@ -27,14 +29,19 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -262,6 +269,41 @@ class CallbackRegistrationTest {
 
     // Clean up
     Thread.currentThread().setContextClassLoader(originalClassLoader);
+  }
+
+  @ParameterizedTest
+  @MethodSource("unavailableRegistrationClassLoaders")
+  void invokeCallback_UsesNullWhenRegistrationClassLoaderUnavailable(boolean loaderPresent) {
+    Thread thread = Thread.currentThread();
+    ClassLoader originalClassLoader = thread.getContextClassLoader();
+    ClassLoader collectionClassLoader = new ClassLoader() {};
+    ClassLoader registrationClassLoader = loaderPresent ? new ClassLoader() {} : null;
+    WeakReference<ClassLoader> loaderReference = new WeakReference<>(registrationClassLoader);
+    AtomicReference<ClassLoader> observedClassLoader = new AtomicReference<>(collectionClassLoader);
+
+    try {
+      thread.setContextClassLoader(registrationClassLoader);
+      CallbackRegistration callbackRegistration =
+          CallbackRegistration.create(
+              Collections.singletonList(measurement2),
+              () -> observedClassLoader.set(Thread.currentThread().getContextClassLoader()));
+      thread.setContextClassLoader(collectionClassLoader);
+      registrationClassLoader = null;
+
+      GcFinalization.awaitClear(loaderReference);
+      callbackRegistration.invokeCallback(registeredReader);
+
+      assertThat(observedClassLoader.get()).isNull();
+      assertThat(thread.getContextClassLoader()).isSameAs(collectionClassLoader);
+    } finally {
+      thread.setContextClassLoader(originalClassLoader);
+    }
+  }
+
+  static Stream<Arguments> unavailableRegistrationClassLoaders() {
+    return Stream.of(
+        argumentSet("absent at registration", false),
+        argumentSet("collected after registration", true));
   }
 
   @Test
