@@ -14,7 +14,7 @@ import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,37 +30,27 @@ class SdkObservableInstrument
   private static final Logger logger = Logger.getLogger(SdkObservableInstrument.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final AtomicReference<Registration> registration;
-  private final String callbackDescription;
+  private final SdkMeter sdkMeter;
+  private final CallbackRegistration callbackRegistration;
+  private final AtomicBoolean removed = new AtomicBoolean(false);
 
   SdkObservableInstrument(SdkMeter sdkMeter, CallbackRegistration callbackRegistration) {
-    this.registration = new AtomicReference<>(new Registration(sdkMeter, callbackRegistration));
-    this.callbackDescription = callbackRegistration.toString();
+    this.sdkMeter = sdkMeter;
+    this.callbackRegistration = callbackRegistration;
   }
 
   @Override
   public void close() {
-    Registration removed = registration.getAndSet(null);
-    if (removed == null) {
+    if (!removed.compareAndSet(false, true)) {
       throttlingLogger.log(
-          Level.WARNING, callbackDescription + " has called close() multiple times.");
+          Level.WARNING, callbackRegistration + " has called close() multiple times.");
       return;
     }
-    removed.sdkMeter.removeCallback(removed.callbackRegistration);
+    sdkMeter.removeCallback(callbackRegistration);
   }
 
   @Override
   public String toString() {
-    return "SdkObservableInstrument{callback=" + callbackDescription + "}";
-  }
-
-  private static final class Registration {
-    private final SdkMeter sdkMeter;
-    private final CallbackRegistration callbackRegistration;
-
-    private Registration(SdkMeter sdkMeter, CallbackRegistration callbackRegistration) {
-      this.sdkMeter = sdkMeter;
-      this.callbackRegistration = callbackRegistration;
-    }
+    return "SdkObservableInstrument{callback=" + callbackRegistration + "}";
   }
 }
