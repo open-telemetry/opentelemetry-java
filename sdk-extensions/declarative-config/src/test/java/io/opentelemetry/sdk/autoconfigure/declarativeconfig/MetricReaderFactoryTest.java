@@ -221,6 +221,26 @@ class MetricReaderFactoryTest {
             null,
             true));
 
+    int prom4Port = randomAvailablePort();
+    PrometheusHttpServer prom4Expected = PrometheusHttpServer.builder().setPort(prom4Port).build();
+    prom4Expected.close();
+    // Close immediately to release the port before MetricReaderFactory creates a server on it
+    testCases.add(
+        Arguments.argumentSet(
+            "pull prometheus empty resource constant labels",
+            new MetricReaderModel()
+                .setPull(
+                    new PullMetricReaderModel()
+                        .setExporter(
+                            PullMetricExporterModelAccessor.setPrometheus(
+                                new PullMetricExporterModel(),
+                                new ExperimentalPrometheusMetricExporterModel()
+                                    .setPort(prom4Port)
+                                    .setResourceConstantLabels(new IncludeExcludeModel())))),
+            prom4Expected,
+            null,
+            true));
+
     return testCases.stream();
   }
 

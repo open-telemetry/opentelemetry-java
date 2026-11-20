@@ -71,8 +71,10 @@ public class PrometheusComponentProvider implements ComponentProvider {
       if (excluded != null && excluded.isEmpty()) {
         throw new DeclarativeConfigException("excluded must not be empty");
       }
-      prometheusBuilder.setAllowedResourceAttributesFilter(
-          IncludeExcludePredicate.createPatternMatching(included, excluded));
+      if (included != null || excluded != null) {
+        prometheusBuilder.setAllowedResourceAttributesFilter(
+            IncludeExcludePredicate.createPatternMatching(included, excluded));
+      }
     }
 
     return prometheusBuilder.build();
