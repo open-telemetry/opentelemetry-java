@@ -304,6 +304,7 @@ val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
   implementation(project(":sdk:all"))
   implementation(project(":sdk-extensions:autoconfigure"))
   implementation(project(":sdk-extensions:declarative-config"))
+  implementation(project(":api:incubator"))
   implementation(project(":exporters:otlp:all"))
   implementation(project(":extensions:trace-propagators"))
   runtimeOnly(project(":exporters:sender:jdk"))

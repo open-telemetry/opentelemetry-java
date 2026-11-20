@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
-import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import java.io.ByteArrayInputStream;
@@ -181,7 +180,7 @@ class DeclarativeConfigurationCreateTest {
             .setProcessors(
                 Collections.singletonList(
                     new SpanProcessorModel().setExtensionProperty("test", null))));
-    ExtendedOpenTelemetrySdk sdk =
+    OpenTelemetrySdk sdk =
         DeclarativeConfiguration.create(
                 model,
                 // customizer is TestDeclarativeConfigurationCustomizerProvider
