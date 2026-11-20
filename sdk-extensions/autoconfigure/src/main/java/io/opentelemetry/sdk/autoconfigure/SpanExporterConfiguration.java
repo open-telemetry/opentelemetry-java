@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +23,12 @@ import java.util.function.BiFunction;
 
 final class SpanExporterConfiguration {
 
-  private static final String EXPORTER_NONE = "none";
+  static final String EXPORTER_NONE = "none";
+  // Spans are created and recorded but never exported. Resolved to SpanProcessor.noop() in
+  // TracerProviderConfiguration rather than to an exporter, to avoid a BatchSpanProcessor.
+  // Tracing is the only signal where having no processors (tracers are disabled,
+  // no trace context is generated) differs observably from discarding the data.
+  static final String EXPORTER_NOOP = "noop";
   private static final Map<String, String> EXPORTER_ARTIFACT_ID_BY_NAME;
 
   static {
@@ -51,6 +57,13 @@ final class SpanExporterConfiguration {
             "otel.traces.exporter contains " + EXPORTER_NONE + " along with other exporters");
       }
       return Collections.emptyMap();
+    }
+    if (exporterNames.contains(EXPORTER_NOOP)) {
+      exporterNames = new LinkedHashSet<>(exporterNames);
+      exporterNames.remove(EXPORTER_NOOP);
+      if (exporterNames.isEmpty()) {
+        return Collections.emptyMap();
+      }
     }
 
     if (exporterNames.isEmpty()) {
