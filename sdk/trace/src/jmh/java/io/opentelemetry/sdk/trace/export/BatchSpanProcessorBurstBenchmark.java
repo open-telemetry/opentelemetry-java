@@ -32,40 +32,27 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.BenchmarkParams;
 
 /**
- * Measures span loss in {@link BatchSpanProcessor} under two defined load shapes that have the same
- * average rate ({@code offeredLoad} spans per second) but different arrival patterns:
+ * Measures how many spans {@link BatchSpanProcessor} drops under two load shapes with the same
+ * average rate ({@code offeredLoad} spans/s).
  *
  * <ul>
  *   <li>{@code STEADY}: one span every {@code 1s / offeredLoad}.
- *   <li>{@code BURSTY}: {@value #BURST_SIZE} spans, {@value #BURST_SPAN_INTERVAL_NANOS} ns apart
- *       (30 ms per burst), then idle until the next burst. Bursts start every {@code BURST_SIZE /
- *       offeredLoad} seconds, which is 400 ms at 15,000 spans/s. The last burst is partial if
- *       {@code offeredLoad * WINDOW_SECONDS} is not a multiple of the burst size, so the bursty
- *       window ends at its last burst rather than at the full {@value #WINDOW_SECONDS} seconds.
+ *   <li>{@code BURSTY}: 6,000 spans 5 µs apart (30 ms), then idle; bursts start every {@code 6000 /
+ *       offeredLoad} seconds.
  * </ul>
  *
- * <p>Each operation produces exactly {@code offeredLoad * WINDOW_SECONDS} spans on a schedule, with
- * no flushing in between, so the queue and exporter backlog evolve naturally. Production happens in
- * a single loop shared by both scenarios, which only differ in burst size and spacing. After the
- * last span is produced, {@code forceFlush()} drains the accepted spans so the accounting can be
- * verified and the next operation starts from an empty queue. Drops are decided at enqueue time, so
- * the flush does not affect them.
+ * <p>Each operation produces {@code offeredLoad * 10} spans on that schedule without flushing in
+ * between, so queue and exporter backlog carry across bursts, then calls {@code forceFlush()} so
+ * the accounting can be checked. The exporter completes asynchronously after {@code
+ * exporterLatencyMs}. The producer busy-waits, so it occupies a core.
  *
- * <p>The producer busy-waits for short gaps because no sleep call is precise enough for microsecond
- * spacing, so it occupies one core while running. The producer's worst lag behind its schedule is
- * reported as {@code maxLagMicros}; it is only reported, not enforced. A large value means the
- * traffic pattern was not reproduced faithfully.
- *
- * <p>{@code ms/op} just reflects the production window and the final drain. The result to look at
- * is the share of produced spans that were dropped.
- *
- * <p>Processor telemetry is compared with an independent exporter counter to verify that every
- * produced span is either exported or dropped.
- *
- * <p>Aux counters use {@link AuxCounters.Type#EVENTS}, so JMH reports totals per iteration. Ratios
- * should be calculated from the totals.
+ * <p>The result to read is {@code droppedFraction}. JMH adds aux counters across measured
+ * iterations, so each iteration contributes its fraction divided by the iteration count and the
+ * summary line is the mean. {@code ms/op} only reflects the schedule, and {@code maxLagMicros}
+ * shows how far the producer fell behind it (reported, not enforced).
  *
  * <p>Motivation: https://github.com/open-telemetry/opentelemetry-java/issues/7508
  */
@@ -75,7 +62,7 @@ import org.openjdk.jmh.annotations.Warmup;
 // An operation takes about WINDOW_SECONDS, which is longer than the iteration time, so JMH runs
 // exactly one operation per iteration.
 @Warmup(iterations = 1, time = 1)
-@Measurement(iterations = 3, time = 1)
+@Measurement(iterations = 5, time = 1)
 @State(Scope.Benchmark)
 public class BatchSpanProcessorBurstBenchmark {
 
@@ -100,28 +87,26 @@ public class BatchSpanProcessorBurstBenchmark {
   private static final int MAX_EXPORT_BATCH_SIZE = 512;
   private static final long NANOS_PER_SECOND = 1_000_000_000L;
 
-  /** Gaps longer than this are partly slept; shorter ones are spun. */
-  private static final long PARK_THRESHOLD_NANOS = 2_000_000;
-
-  /** How long before the target to wake up when sleeping, leaving the rest to spinning. */
-  private static final long SPIN_MARGIN_NANOS = 1_000_000;
+  /**
+   * The producer sleeps only until this long before a target, then spins. It must exceed how late a
+   * sleep can wake up; on Windows that can be a full timer tick (about 15.6 ms), so 20 ms leaves
+   * headroom. The cost is up to this much spinning per gap.
+   */
+  private static final long SPIN_MARGIN_NANOS = 20_000_000;
 
   @Param({"STEADY", "BURSTY"})
   Scenario scenario;
 
   /** Average spans per second, the same for both scenarios. The issue reports about 15,000. */
-    @Param({"7500", "15000"})
-  // @Param({"15000"})
+  @Param({"7500", "15000"})
   int offeredLoad;
 
   /** 2048 is the BSP default; 8192 shows the effect of a larger queue. */
   @Param({"2048", "8192"})
-  // @Param({"2048"})
   int maxQueueSize;
 
   /** Simulated time an export takes to complete (e.g. a network round trip). */
   @Param({"10", "50", "200"})
-  // @Param("50")
   int exporterLatencyMs;
 
   private ScheduledExecutorService scheduler;
@@ -137,12 +122,20 @@ public class BatchSpanProcessorBurstBenchmark {
   private long spanIntervalNanos;
   private long totalSpans;
 
+  // Number of measured iterations, used to scale droppedFraction (see LoadCounters).
+  private int measuredIterations;
+
   // Cumulative values last seen in the processor's metrics, used to compute per-operation deltas.
   private long lastDropped;
   private long lastHandedToExporter;
 
   @Setup(Level.Trial)
-  public void setUp() {
+  public void setUp(BenchmarkParams benchmarkParams) {
+    // Effective values, so command line overrides of iterations or forks are respected. JMH reports
+    // a forks value of 0 when running in-process, which still produces one set of iterations.
+    measuredIterations =
+        benchmarkParams.getMeasurement().getCount() * Math.max(1, benchmarkParams.getForks());
+
     switch (scenario) {
       case STEADY:
         burstSize = 1;
@@ -192,21 +185,39 @@ public class BatchSpanProcessorBurstBenchmark {
     /** Spans the processor reports as dropped because the queue was full. */
     public long droppedSpans;
 
-    /** Worst time the producer was behind its schedule, in microseconds. Not a total. */
+    /**
+     * Share of produced spans that were dropped. JMH adds aux counters across measured iterations,
+     * so each iteration contributes its fraction divided by the number of iterations, which makes
+     * the summary line the mean. Per-iteration values are therefore 1/N of the true fraction; read
+     * the summary line, or divide droppedSpans by producedSpans.
+     */
+    public double droppedFraction;
+
+    /**
+     * Worst time the producer was behind its schedule during an iteration, in microseconds. This is
+     * a max, but JMH's summary score adds the iterations together, so read the per-iteration values
+     * from the raw data.
+     */
     public long maxLagMicros;
+
+    /** Worst lag at the first span of a burst (a late wake-up), in microseconds. Same caveat. */
+    public long maxBurstStartLagMicros;
 
     @Setup(Level.Iteration)
     public void reset() {
       producedSpans = 0;
       exportedSpans = 0;
       droppedSpans = 0;
+      droppedFraction = 0;
       maxLagMicros = 0;
+      maxBurstStartLagMicros = 0;
     }
   }
 
   @Benchmark
   public void load(LoadCounters counters) {
     long maxLagNanos = 0;
+    long maxBurstStartLagNanos = 0;
     long spansProduced = 0;
     long startNanos = System.nanoTime();
 
@@ -222,6 +233,9 @@ public class BatchSpanProcessorBurstBenchmark {
       for (int j = 0; j < spansThisBurst; j++) {
         long lagNanos = waitUntil(burstStart + j * spanIntervalNanos);
         maxLagNanos = Math.max(maxLagNanos, lagNanos);
+        if (j == 0) {
+          maxBurstStartLagNanos = Math.max(maxBurstStartLagNanos, lagNanos);
+        }
 
         tracer.spanBuilder("load-span").startSpan().end();
         spansProduced++;
@@ -261,8 +275,12 @@ public class BatchSpanProcessorBurstBenchmark {
     counters.producedSpans += totalSpans;
     counters.exportedSpans += completed;
     counters.droppedSpans += dropped;
+    counters.droppedFraction += (double) dropped / totalSpans / measuredIterations;
     counters.maxLagMicros =
         Math.max(counters.maxLagMicros, TimeUnit.NANOSECONDS.toMicros(maxLagNanos));
+    counters.maxBurstStartLagMicros =
+        Math.max(
+            counters.maxBurstStartLagMicros, TimeUnit.NANOSECONDS.toMicros(maxBurstStartLagNanos));
   }
 
   /**
@@ -273,9 +291,10 @@ public class BatchSpanProcessorBurstBenchmark {
    */
   private static long waitUntil(long targetNanos) {
     long remaining;
-    while ((remaining = targetNanos - System.nanoTime()) > 0) { // busy waiting
-      if (remaining > PARK_THRESHOLD_NANOS) {
-        // Sleep most of the gap, then spin for the rest to avoid oversleeping.
+    while ((remaining = targetNanos - System.nanoTime()) > 0) {
+      if (remaining > SPIN_MARGIN_NANOS) {
+        // Sleep until SPIN_MARGIN_NANOS before the target, then spin, so that an oversleep of up to
+        // the margin does not make the producer late.
         LockSupport.parkNanos(remaining - SPIN_MARGIN_NANOS);
       }
       // Otherwise spin: re-read the clock until the target is reached.
