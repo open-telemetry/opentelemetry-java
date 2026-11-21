@@ -71,8 +71,14 @@ public class PrometheusComponentProvider implements ComponentProvider {
       if (excluded != null && excluded.isEmpty()) {
         throw new DeclarativeConfigException("excluded must not be empty");
       }
-      prometheusBuilder.setAllowedResourceAttributesFilter(
-          IncludeExcludePredicate.createPatternMatching(included, excluded));
+      // An empty resource_constant_labels mapping leaves both included and excluded null.
+      // IncludeExcludePredicate would then include everything, but the prometheus exporter
+      // specification requires that no resource attributes are added by default, so leave the
+      // filter unset.
+      if (included != null || excluded != null) {
+        prometheusBuilder.setAllowedResourceAttributesFilter(
+            IncludeExcludePredicate.createPatternMatching(included, excluded));
+      }
     }
 
     return prometheusBuilder.build();
