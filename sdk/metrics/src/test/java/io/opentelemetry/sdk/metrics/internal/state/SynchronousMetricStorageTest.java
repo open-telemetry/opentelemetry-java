@@ -60,6 +60,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.event.Level;
@@ -607,8 +608,9 @@ public class SynchronousMetricStorageTest {
   }
 
   @ParameterizedTest
-  @ValueSource(ints = {0, 1, 2})
-  void recordDuringDeltaCollection_DoesNotRetainBothHandles(int setup) throws Exception {
+  @CsvSource({"0, false", "1, false", "2, false", "2, true"})
+  void recordDuringDeltaCollection_DoesNotRetainBothHandles(int setup, boolean bindDuringCollection)
+      throws Exception {
     initialize(MemoryMode.REUSABLE_DATA);
 
     DefaultSynchronousMetricStorage<?> storage =
@@ -673,7 +675,12 @@ public class SynchronousMetricStorageTest {
       Future<MetricData> first =
           executor.submit(() -> storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10));
       Assertions.assertThat(collecting.await(10, TimeUnit.SECONDS)).isTrue();
-      storage.recordDouble(5, attributes, Context.root());
+      if (bindDuringCollection) {
+        storage.bind(attributes).recordDouble(2, Context.root());
+      } else {
+        storage.recordDouble(2, attributes, Context.root());
+      }
+      storage.recordDouble(3, attributes, Context.root());
       recorded.countDown();
 
       assertThat(first.get(10, TimeUnit.SECONDS))
@@ -695,11 +702,71 @@ public class SynchronousMetricStorageTest {
           .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(5)));
       deltaReader.setLastCollectEpochNanos(20);
       storage.recordDouble(7, attributes, Context.root());
-      verify(aggregator, times(setup == 1 ? 4 : 2)).createHandle(anyLong());
+      int expectedHandles = setup == 1 ? 4 : 2;
+      if (bindDuringCollection) {
+        expectedHandles++;
+      }
+      verify(aggregator, times(expectedHandles)).createHandle(anyLong());
       assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
           .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(7)));
     } finally {
       recorded.countDown();
+      executor.shutdownNow();
+    }
+  }
+
+  @Test
+  void recordAfterDeltaHolderCloses_RetriesInNextInterval() throws Exception {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    AtomicBoolean pauseNextRecord = new AtomicBoolean();
+    CountDownLatch filtering = new CountDownLatch(1);
+    CountDownLatch resumeRecord = new CountDownLatch(1);
+    DefaultSynchronousMetricStorage<?> storage =
+        DefaultSynchronousMetricStorage.create(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributes -> {
+              if (pauseNextRecord.compareAndSet(true, false)) {
+                // The recorder has read the holder but has not looked up the series yet.
+                filtering.countDown();
+                try {
+                  assertThat(resumeRecord.await(10, TimeUnit.SECONDS)).isTrue();
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                  throw new AssertionError(e);
+                }
+              }
+              return attributes;
+            },
+            CARDINALITY_LIMIT,
+            testClock,
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
+
+    Attributes attributes = Attributes.of(AttributeKey.stringKey("series"), "a");
+    storage.recordDouble(3, attributes, Context.root());
+    pauseNextRecord.set(true);
+
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    try {
+      Future<?> record = executor.submit(() -> storage.recordDouble(5, attributes, Context.root()));
+      assertThat(filtering.await(10, TimeUnit.SECONDS)).isTrue();
+
+      assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
+          .hasDoubleSumSatisfying(
+              sum -> sum.hasPointsSatisfying(point -> point.hasAttributes(attributes).hasValue(3)));
+      deltaReader.setLastCollectEpochNanos(10);
+      resumeRecord.countDown();
+      record.get(10, TimeUnit.SECONDS);
+
+      verify(aggregator, times(1)).createHandle(anyLong());
+      assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
+          .hasDoubleSumSatisfying(
+              sum -> sum.hasPointsSatisfying(point -> point.hasAttributes(attributes).hasValue(5)));
+    } finally {
+      resumeRecord.countDown();
       executor.shutdownNow();
     }
   }
@@ -864,6 +931,54 @@ public class SynchronousMetricStorageTest {
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
         .hasDoubleSumSatisfying(
             sum -> sum.hasPointsSatisfying(point -> point.hasAttributes(thirdSeries).hasValue(7)));
+  }
+
+  @Test
+  void recordAndCollect_DeltaAtLimit_ReclaimsInactiveRetainedSeries() {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    DefaultSynchronousMetricStorage<?> storage =
+        DefaultSynchronousMetricStorage.create(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            AttributesFilters.ALLOW_ALL,
+            /* maxCardinality= */ 3,
+            testClock,
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
+
+    AttributeKey<String> key = AttributeKey.stringKey("series");
+    Attributes active = Attributes.of(key, "active");
+    Attributes idle = Attributes.of(key, "idle");
+    Attributes newcomer = Attributes.of(key, "new");
+
+    // Fill both maps up to the limit for regular series.
+    for (long end : new long[] {10, 20}) {
+      storage.recordDouble(1, active, Context.root());
+      storage.recordDouble(2, idle, Context.root());
+      assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, end))
+          .hasDoubleSumSatisfying(sum ->
+              sum.hasPointsSatisfying(
+                  point -> point.hasAttributes(active).hasValue(1),
+                  point -> point.hasAttributes(idle).hasValue(2)));
+      deltaReader.setLastCollectEpochNanos(end);
+    }
+
+    storage.recordDouble(3, active, Context.root());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
+        .hasDoubleSumSatisfying(
+            sum -> sum.hasPointsSatisfying(point -> point.hasAttributes(active).hasValue(3)));
+    deltaReader.setLastCollectEpochNanos(30);
+
+    // Let the collector exchange the maps again before admitting a new series.
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 40))
+        .isSameAs(EmptyMetricData.getInstance());
+    deltaReader.setLastCollectEpochNanos(40);
+    storage.recordDouble(5, newcomer, Context.root());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 50))
+        .hasDoubleSumSatisfying(
+            sum -> sum.hasPointsSatisfying(point -> point.hasAttributes(newcomer).hasValue(5)));
   }
 
   @ParameterizedTest
