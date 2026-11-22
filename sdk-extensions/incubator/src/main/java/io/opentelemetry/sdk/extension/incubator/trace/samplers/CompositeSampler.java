@@ -87,12 +87,16 @@ public final class CompositeSampler implements Sampler {
 
       @Override
       public Attributes getAttributes() {
+        // Intent attributes are added only on a positive sampling decision.
+        if (decision == SamplingDecision.DROP) {
+          return Attributes.empty();
+        }
         return intent.getAttributes();
       }
 
       @Override
       public TraceState getUpdatedTraceState(TraceState parentTraceState) {
-        TraceState newTraceState = intent.getTraceStateUpdater().apply(traceState, decision);
+        TraceState newTraceState = intent.getTraceStateUpdater().apply(parentTraceState, decision);
         if (!serializedState.isEmpty()) {
           newTraceState =
               newTraceState.toBuilder().put(OTEL_TRACE_STATE_KEY, serializedState).build();
