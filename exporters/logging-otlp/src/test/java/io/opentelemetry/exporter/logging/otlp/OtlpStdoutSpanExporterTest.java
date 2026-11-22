@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterPro
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.OutputStream;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -43,5 +44,23 @@ class OtlpStdoutSpanExporterTest extends AbstractOtlpStdoutExporterTest<OtlpStdo
       builder.setOutput(Logger.getLogger(exporterClass.getName()));
     }
     return builder.build();
+  }
+
+  @Override
+  protected OtlpStdoutSpanExporter createExporter(
+      OutputStream outputStream, Function<OutputStream, OutputStream> outputStreamMapper) {
+    return OtlpStdoutSpanExporter.builder()
+        .setOutput(outputStream)
+        .setOutputStreamMapper(outputStreamMapper)
+        .build();
+  }
+
+  @Override
+  protected OtlpStdoutSpanExporter createExporterWithMapperBeforeOutput(
+      OutputStream outputStream, Function<OutputStream, OutputStream> outputStreamMapper) {
+    return OtlpStdoutSpanExporter.builder()
+        .setOutputStreamMapper(outputStreamMapper)
+        .setOutput(outputStream)
+        .build();
   }
 }

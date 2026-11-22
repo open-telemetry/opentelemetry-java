@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.OutputStream;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,24 @@ class OtlpStdoutMetricExporterTest
       builder.setOutput(Logger.getLogger(exporterClass.getName()));
     }
     return builder.build();
+  }
+
+  @Override
+  protected OtlpStdoutMetricExporter createExporter(
+      OutputStream outputStream, Function<OutputStream, OutputStream> outputStreamMapper) {
+    return OtlpStdoutMetricExporter.builder()
+        .setOutput(outputStream)
+        .setOutputStreamMapper(outputStreamMapper)
+        .build();
+  }
+
+  @Override
+  protected OtlpStdoutMetricExporter createExporterWithMapperBeforeOutput(
+      OutputStream outputStream, Function<OutputStream, OutputStream> outputStreamMapper) {
+    return OtlpStdoutMetricExporter.builder()
+        .setOutputStreamMapper(outputStreamMapper)
+        .setOutput(outputStream)
+        .build();
   }
 
   /** Test configuration specific to metric exporter. */

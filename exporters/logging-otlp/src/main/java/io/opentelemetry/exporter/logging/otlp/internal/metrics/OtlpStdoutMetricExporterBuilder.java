@@ -17,7 +17,9 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.OutputStream;
+import java.util.function.Function;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Builder for {@link OtlpJsonLoggingMetricExporter}.
@@ -39,13 +41,15 @@ public final class OtlpStdoutMetricExporterBuilder {
       DefaultAggregationSelector.getDefault();
 
   private final Logger logger;
-  private JsonWriter jsonWriter;
+  @Nullable private OutputStream outputStream;
+  @Nullable private Logger outputLogger;
+  private Function<OutputStream, OutputStream> outputStreamMapper = Function.identity();
   private boolean wrapperJsonObject = true;
   private MemoryMode memoryMode = MemoryMode.IMMUTABLE_DATA;
 
   public OtlpStdoutMetricExporterBuilder(Logger logger) {
     this.logger = logger;
-    this.jsonWriter = new LoggerJsonWriter(logger, TYPE);
+    this.outputLogger = logger;
   }
 
   /**
@@ -80,14 +84,35 @@ public final class OtlpStdoutMetricExporterBuilder {
    */
   public OtlpStdoutMetricExporterBuilder setOutput(OutputStream outputStream) {
     requireNonNull(outputStream, "outputStream");
-    this.jsonWriter = new StreamJsonWriter(outputStream, TYPE);
+    this.outputStream = outputStream;
+    this.outputLogger = null;
     return this;
   }
 
   /** Sets the exporter to use the specified logger. */
   public OtlpStdoutMetricExporterBuilder setOutput(Logger logger) {
     requireNonNull(logger, "logger");
-    this.jsonWriter = new LoggerJsonWriter(logger, TYPE);
+    this.outputLogger = logger;
+    this.outputStream = null;
+    return this;
+  }
+
+  /**
+   * Sets the {@link Function} to map the output stream before writing.
+   *
+   * <p>This can be used to customize the stream, for example to apply compression:
+   *
+   * <pre>{@code
+   * builder.setOutputStreamMapper(GZIPOutputStream::new)
+   * }</pre>
+   *
+   * @param outputStreamMapper the function to map the output stream
+   * @return this
+   */
+  public OtlpStdoutMetricExporterBuilder setOutputStreamMapper(
+      Function<OutputStream, OutputStream> outputStreamMapper) {
+    requireNonNull(outputStreamMapper, "outputStreamMapper");
+    this.outputStreamMapper = outputStreamMapper;
     return this;
   }
 
@@ -130,6 +155,16 @@ public final class OtlpStdoutMetricExporterBuilder {
     if (memoryMode == MemoryMode.REUSABLE_DATA && !wrapperJsonObject) {
       throw new IllegalArgumentException(
           "Reusable data mode is not supported without wrapperJsonObject");
+    }
+    JsonWriter jsonWriter;
+    if (outputStream != null) {
+      jsonWriter =
+          new StreamJsonWriter(
+              requireNonNull(
+                  outputStreamMapper.apply(outputStream), "outputStreamMapper returned null"),
+              TYPE);
+    } else {
+      jsonWriter = new LoggerJsonWriter(requireNonNull(outputLogger), TYPE);
     }
     return new OtlpStdoutMetricExporter(
         logger,
