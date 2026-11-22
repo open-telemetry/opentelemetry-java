@@ -55,6 +55,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -375,6 +376,11 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 30
     storage.recordDouble(3, Attributes.empty(), Context.current());
 
+    // The inactive map keeps its entry so alternating intervals can reuse the map nodes.
+    assertThat(storage)
+        .extracting("previousCollectionAggregatorHandles", as(map(Attributes.class, Object.class)))
+        .containsKey(Attributes.empty());
+
     // Reuse the reset handle for this series in the new interval.
     verify(aggregator, times(1)).createHandle(testClock.now());
     assertThat(storage).extracting("aggregatorHandlePool", as(collection(Object.class))).hasSize(0);
@@ -601,8 +607,8 @@ public class SynchronousMetricStorageTest {
   }
 
   @ParameterizedTest
-  @ValueSource(booleans = {false, true})
-  void recordDuringDeltaCollection_DoesNotRetainBothHandles(boolean idleCache) throws Exception {
+  @ValueSource(ints = {0, 1, 2})
+  void recordDuringDeltaCollection_DoesNotRetainBothHandles(int setup) throws Exception {
     initialize(MemoryMode.REUSABLE_DATA);
 
     DefaultSynchronousMetricStorage<?> storage =
@@ -616,13 +622,14 @@ public class SynchronousMetricStorageTest {
             /* enabled= */ true,
             /* contextScopedAttributesFilter= */ null);
 
-    if (idleCache) {
+    if (setup == 1) {
       storage.recordDouble(1, Attributes.builder().put("series", "idle1").build(), Context.root());
       storage.recordDouble(2, Attributes.builder().put("series", "idle2").build(), Context.root());
       storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 5);
       deltaReader.setLastCollectEpochNanos(5);
     }
 
+    AtomicBoolean armed = new AtomicBoolean();
     CountDownLatch collecting = new CountDownLatch(1);
     CountDownLatch recorded = new CountDownLatch(1);
     doAnswer(
@@ -633,8 +640,10 @@ public class SynchronousMetricStorageTest {
               AggregatorHandle<LongPointData> handle = spy(created);
               doAnswer(
                       check -> {
-                        collecting.countDown();
-                        Assertions.assertThat(recorded.await(10, TimeUnit.SECONDS)).isTrue();
+                        if (armed.get()) {
+                          collecting.countDown();
+                          Assertions.assertThat(recorded.await(10, TimeUnit.SECONDS)).isTrue();
+                        }
                         return check.callRealMethod();
                       })
                   .when(handle)
@@ -646,7 +655,18 @@ public class SynchronousMetricStorageTest {
         .createHandle(anyLong());
 
     Attributes attributes = Attributes.of(AttributeKey.stringKey("series"), "a");
+    if (setup == 2) {
+      // Seed both maps with the same handle. The overlapping write must replace that reference.
+      storage.recordDouble(1, attributes, Context.root());
+      storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 5);
+      deltaReader.setLastCollectEpochNanos(5);
+      storage.recordDouble(2, attributes, Context.root());
+      verify(aggregator, times(1)).createHandle(anyLong());
+      storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 7);
+      deltaReader.setLastCollectEpochNanos(7);
+    }
     storage.recordDouble(3, attributes, Context.root());
+    armed.set(true);
 
     ExecutorService executor = Executors.newSingleThreadExecutor();
     try {
@@ -659,15 +679,23 @@ public class SynchronousMetricStorageTest {
       assertThat(first.get(10, TimeUnit.SECONDS))
           .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(3)));
       assertThat(storage)
-          .extracting(
-              "previousCollectionAggregatorHandles", as(map(Attributes.class, Object.class)))
-          .doesNotContainKey(attributes);
+          .extracting("aggregatorHolder.aggregatorHandles", as(map(Attributes.class, Object.class)))
+          .hasEntrySatisfying(
+              attributes,
+              active ->
+                  assertThat(storage)
+                      .extracting(
+                          "previousCollectionAggregatorHandles",
+                          as(map(Attributes.class, Object.class)))
+                      .hasEntrySatisfying(
+                          attributes,
+                          previous -> Assertions.assertThat(previous).isSameAs(active)));
       deltaReader.setLastCollectEpochNanos(10);
       assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
           .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(5)));
       deltaReader.setLastCollectEpochNanos(20);
       storage.recordDouble(7, attributes, Context.root());
-      verify(aggregator, times(idleCache ? 4 : 2)).createHandle(anyLong());
+      verify(aggregator, times(setup == 1 ? 4 : 2)).createHandle(anyLong());
       assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
           .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(7)));
     } finally {
@@ -788,8 +816,9 @@ public class SynchronousMetricStorageTest {
     logs.assertContains("Instrument name has exceeded the maximum allowed cardinality");
   }
 
-  @Test
-  void recordAndCollect_DeltaAtLimit_ReusableDataMemoryMode_ExpireUnused() {
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void recordAndCollect_DeltaAtLimit_ReusableDataMemoryMode_ExpireUnused(boolean bindNewSeries) {
     initialize(MemoryMode.REUSABLE_DATA);
 
     DefaultSynchronousMetricStorage<?> storage =
@@ -803,17 +832,22 @@ public class SynchronousMetricStorageTest {
             /* enabled= */ true,
             /* contextScopedAttributesFilter= */ null);
 
-    for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
+    int firstIntervalSeries = CARDINALITY_LIMIT - (bindNewSeries ? 2 : 1);
+    for (int i = 0; i < firstIntervalSeries; i++) {
       storage.recordDouble(3, Attributes.builder().put("key", "value" + i).build(), Context.root());
     }
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .hasDoubleSumSatisfying(sum ->
-            sum.satisfies(data -> assertThat(data.getPoints()).hasSize(CARDINALITY_LIMIT - 1)));
+            sum.satisfies(data -> assertThat(data.getPoints()).hasSize(firstIntervalSeries)));
 
     // Last interval's unused handles must not consume this interval's cardinality.
     deltaReader.setLastCollectEpochNanos(10);
     Attributes newSeries = Attributes.builder().put("key", "new-series").build();
-    storage.recordDouble(5, newSeries, Context.root());
+    if (bindNewSeries) {
+      storage.bind(newSeries).recordDouble(5, Context.root());
+    } else {
+      storage.recordDouble(5, newSeries, Context.root());
+    }
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
         .hasDoubleSumSatisfying(
             sum -> sum.hasPointsSatisfying(point -> point.hasAttributes(newSeries).hasValue(5)));
@@ -822,6 +856,14 @@ public class SynchronousMetricStorageTest {
     assertThat(storage)
         .extracting("previousCollectionAggregatorHandles", as(map(Attributes.class, Object.class)))
         .containsOnlyKeys(newSeries);
+
+    // Reusing the first map must not let its idle keys claim the new interval's capacity.
+    deltaReader.setLastCollectEpochNanos(20);
+    Attributes thirdSeries = Attributes.builder().put("key", "third-series").build();
+    storage.recordDouble(7, thirdSeries, Context.root());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
+        .hasDoubleSumSatisfying(
+            sum -> sum.hasPointsSatisfying(point -> point.hasAttributes(thirdSeries).hasValue(7)));
   }
 
   @ParameterizedTest
