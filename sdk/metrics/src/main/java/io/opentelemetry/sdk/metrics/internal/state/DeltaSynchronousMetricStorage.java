@@ -231,9 +231,10 @@ class DeltaSynchronousMetricStorage<T extends PointData>
           currentMapChanged = true;
         }
         if (record) {
-          if (!handle.tryAcquireForRecord()) {
-            return null;
-          }
+          // The caller only enters this path for a missing or shared unbound series.
+          // The selected handle is independent of the outgoing collector, and the holder
+          // gate prevents the incoming collector from closing it before admission.
+          handle.acquireForRecord();
         } else {
           handle.bound = true;
         }

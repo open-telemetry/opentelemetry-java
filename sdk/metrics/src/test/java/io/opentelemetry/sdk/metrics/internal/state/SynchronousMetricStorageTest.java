@@ -14,6 +14,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.collection;
 import static org.assertj.core.api.InstanceOfAssertFactories.map;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -50,12 +52,17 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -676,7 +683,8 @@ public class SynchronousMetricStorageTest {
           executor.submit(() -> storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10));
       Assertions.assertThat(collecting.await(10, TimeUnit.SECONDS)).isTrue();
       if (bindDuringCollection) {
-        storage.bind(attributes).recordDouble(2, Context.root());
+        storage.bind(attributes).recordDouble(1, Context.root());
+        storage.bind(attributes).recordDouble(1, Context.root());
       } else {
         storage.recordDouble(2, attributes, Context.root());
       }
@@ -712,6 +720,194 @@ public class SynchronousMetricStorageTest {
     } finally {
       recorded.countDown();
       executor.shutdownNow();
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void recordOrBindUsingStaleHandoff_RetriesOnLiveHandle(boolean bind) throws Exception {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    CountDownLatch lookingUp = new CountDownLatch(1);
+    CountDownLatch resumeLookup = new CountDownLatch(1);
+    AtomicReference<Thread> recorder = new AtomicReference<>();
+    AtomicInteger lookups = new AtomicInteger();
+    Attributes attributes =
+        new LookupControlledAttributes(
+            Attributes.of(AttributeKey.stringKey("series"), "a"),
+            () -> {
+              // Pause a bind on the incoming lookup, or a record on the outgoing lookup.
+              if (Thread.currentThread() == recorder.get()
+                  && lookups.incrementAndGet() == (bind ? 1 : 2)) {
+                lookingUp.countDown();
+                awaitLatch(resumeLookup);
+              }
+            });
+    DefaultSynchronousMetricStorage<?> storage =
+        DefaultSynchronousMetricStorage.create(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            AttributesFilters.ALLOW_ALL,
+            CARDINALITY_LIMIT,
+            testClock,
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
+    CountDownLatch collecting = new CountDownLatch(1);
+    CountDownLatch resumeCollect = new CountDownLatch(1);
+    pauseCollectionAtRecordedValues(3, collecting, resumeCollect);
+
+    // Populate both maps with the same unbound handle.
+    for (long end : new long[] {5, 7}) {
+      storage.recordDouble(1, attributes, Context.root());
+      storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, end);
+      deltaReader.setLastCollectEpochNanos(end);
+    }
+    storage.recordDouble(3, attributes, Context.root());
+
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    try {
+      Future<MetricData> collected =
+          executor.submit(() -> storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10));
+      awaitLatch(collecting);
+      Future<?> lateRecord =
+          executor.submit(() -> {
+            recorder.set(Thread.currentThread());
+            if (bind) {
+              storage.bind(attributes).recordDouble(7, Context.root());
+            } else {
+              storage.recordDouble(7, attributes, Context.root());
+            }
+          });
+      awaitLatch(lookingUp);
+      // Replace the shared handle, then finish the handoff while the lookup is paused.
+      storage.recordDouble(5, attributes, Context.root());
+      if (bind) {
+        // The replacement already belongs to the incoming interval and can be bound as is.
+        storage.bind(attributes);
+      }
+      resumeCollect.countDown();
+      assertThat(collected.get(10, TimeUnit.SECONDS))
+          .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(3)));
+      deltaReader.setLastCollectEpochNanos(10);
+
+      resumeLookup.countDown();
+      lateRecord.get(10, TimeUnit.SECONDS);
+      assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
+          .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(12)));
+    } finally {
+      resumeCollect.countDown();
+      resumeLookup.countDown();
+      executor.shutdownNow();
+    }
+  }
+
+  @Test
+  void recordWhileBoundHandleRotates_RetriesInNextInterval() throws Exception {
+    initialize(IMMUTABLE_DATA);
+
+    AtomicInteger attempts = new AtomicInteger();
+    CountDownLatch retrying = new CountDownLatch(1);
+    DefaultSynchronousMetricStorage<?> storage =
+        DefaultSynchronousMetricStorage.create(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributes -> {
+              if (attempts.incrementAndGet() == 3) {
+                // Binding called the filter once, followed by two attempts to record.
+                retrying.countDown();
+              }
+              return attributes;
+            },
+            CARDINALITY_LIMIT,
+            testClock,
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
+    CountDownLatch collecting = new CountDownLatch(1);
+    CountDownLatch resumeCollect = new CountDownLatch(1);
+    pauseCollectionAtRecordedValues(1, collecting, resumeCollect);
+    Attributes attributes = Attributes.of(AttributeKey.stringKey("series"), "a");
+    storage.bind(attributes).recordDouble(3, Context.root());
+
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    try {
+      Future<MetricData> collected =
+          executor.submit(() -> storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10));
+      awaitLatch(collecting);
+      Future<?> record = executor.submit(() -> storage.recordDouble(5, attributes, Context.root()));
+      awaitLatch(retrying);
+      resumeCollect.countDown();
+
+      assertThat(collected.get(10, TimeUnit.SECONDS))
+          .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(3)));
+      record.get(10, TimeUnit.SECONDS);
+      deltaReader.setLastCollectEpochNanos(10);
+      assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
+          .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(5)));
+    } finally {
+      resumeCollect.countDown();
+      executor.shutdownNow();
+    }
+  }
+
+  @Test
+  void recordAndCollect_DeltaSkipsAbsentPoint() {
+    initialize(MemoryMode.REUSABLE_DATA);
+    Attributes attributes = Attributes.of(AttributeKey.stringKey("series"), "a");
+    AggregatorHandle<LongPointData> handle = spy(aggregator.createHandle(testClock.now()));
+    doReturn(handle).when(aggregator).createHandle(anyLong());
+    doAnswer(
+            invocation -> {
+              invocation.callRealMethod();
+              return null;
+            })
+        .when(handle)
+        .aggregateThenMaybeReset(0, 10, attributes, /* reset= */ true);
+    DefaultSynchronousMetricStorage<?> storage =
+        DefaultSynchronousMetricStorage.create(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            AttributesFilters.ALLOW_ALL,
+            CARDINALITY_LIMIT,
+            testClock,
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
+
+    storage.recordDouble(3, attributes, Context.root());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
+        .isSameAs(EmptyMetricData.getInstance());
+    deltaReader.setLastCollectEpochNanos(10);
+
+    storage.recordDouble(5, attributes, Context.root());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
+        .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(5)));
+  }
+
+  private void pauseCollectionAtRecordedValues(
+      int collection, CountDownLatch collecting, CountDownLatch resumeCollect) {
+    AggregatorHandle<LongPointData> handle = spy(aggregator.createHandle(testClock.now()));
+    doReturn(handle).doCallRealMethod().when(aggregator).createHandle(anyLong());
+    AtomicInteger collections = new AtomicInteger();
+    doAnswer(
+            invocation -> {
+              if (collections.incrementAndGet() == collection) {
+                collecting.countDown();
+                awaitLatch(resumeCollect);
+              }
+              return invocation.callRealMethod();
+            })
+        .when(handle)
+        .hasRecordedValues();
+  }
+
+  private static void awaitLatch(CountDownLatch latch) {
+    try {
+      assertThat(latch.await(10, TimeUnit.SECONDS)).isTrue();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new AssertionError(e);
     }
   }
 
@@ -1069,5 +1265,58 @@ public class SynchronousMetricStorageTest {
     storage.recordDouble(10d, Attributes.empty(), Context.current());
 
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10).isEmpty()).isFalse();
+  }
+
+  private static final class LookupControlledAttributes implements Attributes {
+    private final Attributes delegate;
+    private final Runnable onLookup;
+
+    private LookupControlledAttributes(Attributes delegate, Runnable onLookup) {
+      this.delegate = delegate;
+      this.onLookup = onLookup;
+    }
+
+    @Override
+    @Nullable
+    public <T> T get(AttributeKey<T> key) {
+      return delegate.get(key);
+    }
+
+    @Override
+    public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
+      delegate.forEach(consumer);
+    }
+
+    @Override
+    public int size() {
+      return delegate.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return delegate.isEmpty();
+    }
+
+    @Override
+    public Map<AttributeKey<?>, Object> asMap() {
+      return delegate.asMap();
+    }
+
+    @Override
+    public AttributesBuilder toBuilder() {
+      return delegate.toBuilder();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      return other instanceof LookupControlledAttributes
+          && delegate.equals(((LookupControlledAttributes) other).delegate);
+    }
+
+    @Override
+    public int hashCode() {
+      onLookup.run();
+      return delegate.hashCode();
+    }
   }
 }
