@@ -11,7 +11,9 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.assertj.core.api.BDDAssertions.as;
 import static org.assertj.core.api.InstanceOfAssertFactories.collection;
+import static org.assertj.core.api.InstanceOfAssertFactories.map;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -29,10 +31,12 @@ import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -46,11 +50,17 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.event.Level;
 
 @SuppressLogger(DefaultSynchronousMetricStorage.class)
@@ -365,8 +375,8 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 30
     storage.recordDouble(3, Attributes.empty(), Context.current());
 
-    // We're switched to secondary map so a handle will be created
-    verify(aggregator, times(2)).createHandle(testClock.now());
+    // Reuse the reset handle for this series in the new interval.
+    verify(aggregator, times(1)).createHandle(testClock.now());
     assertThat(storage).extracting("aggregatorHandlePool", as(collection(Object.class))).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
         .hasDoubleSumSatisfying(sum ->
@@ -381,10 +391,8 @@ public class SynchronousMetricStorageTest {
     storage.recordDouble(2, Attributes.empty(), Context.current());
     storage.recordDouble(4, Attributes.of(AttributeKey.stringKey("foo"), "bar"), Context.current());
 
-    // We don't delete aggregator handles unless max cardinality reached, hence
-    // aggregator handle is still there, thus no handle was created for empty(), but it will for
-    // the "foo"
-    verify(aggregator, times(3)).createHandle(testClock.now());
+    // Reuse the reset handle for empty attributes and create one for the new series.
+    verify(aggregator, times(2)).createHandle(testClock.now());
     assertThat(storage).extracting("aggregatorHandlePool", as(collection(Object.class))).hasSize(0);
 
     MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 35);
@@ -425,6 +433,15 @@ public class SynchronousMetricStorageTest {
                       assertThat(point.getAttributes())
                           .isEqualTo(Attributes.of(AttributeKey.stringKey("foo"), "bar"));
                     })));
+
+    deltaReader.setLastCollectEpochNanos(45);
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 50))
+        .isEqualTo(EmptyMetricData.getInstance());
+    deltaReader.setLastCollectEpochNanos(50);
+    storage.recordDouble(8, Attributes.of(AttributeKey.stringKey("foo"), "bar"), Context.root());
+    verify(aggregator, times(2)).createHandle(anyLong());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 55))
+        .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(8)));
   }
 
   @ParameterizedTest
@@ -583,6 +600,118 @@ public class SynchronousMetricStorageTest {
     logs.assertContains("Instrument name has exceeded the maximum allowed cardinality");
   }
 
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void recordDuringDeltaCollection_DoesNotRetainBothHandles(boolean idleCache) throws Exception {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    DefaultSynchronousMetricStorage<?> storage =
+        DefaultSynchronousMetricStorage.create(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            AttributesFilters.ALLOW_ALL,
+            CARDINALITY_LIMIT,
+            testClock,
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
+
+    if (idleCache) {
+      storage.recordDouble(1, Attributes.builder().put("series", "idle1").build(), Context.root());
+      storage.recordDouble(2, Attributes.builder().put("series", "idle2").build(), Context.root());
+      storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 5);
+      deltaReader.setLastCollectEpochNanos(5);
+    }
+
+    CountDownLatch collecting = new CountDownLatch(1);
+    CountDownLatch recorded = new CountDownLatch(1);
+    doAnswer(
+            invocation -> {
+              @SuppressWarnings("unchecked")
+              AggregatorHandle<LongPointData> created =
+                  (AggregatorHandle<LongPointData>) invocation.callRealMethod();
+              AggregatorHandle<LongPointData> handle = spy(created);
+              doAnswer(
+                      check -> {
+                        collecting.countDown();
+                        Assertions.assertThat(recorded.await(10, TimeUnit.SECONDS)).isTrue();
+                        return check.callRealMethod();
+                      })
+                  .when(handle)
+                  .hasRecordedValues();
+              return handle;
+            })
+        .doCallRealMethod()
+        .when(aggregator)
+        .createHandle(anyLong());
+
+    Attributes attributes = Attributes.of(AttributeKey.stringKey("series"), "a");
+    storage.recordDouble(3, attributes, Context.root());
+
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    try {
+      Future<MetricData> first =
+          executor.submit(() -> storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10));
+      Assertions.assertThat(collecting.await(10, TimeUnit.SECONDS)).isTrue();
+      storage.recordDouble(5, attributes, Context.root());
+      recorded.countDown();
+
+      assertThat(first.get(10, TimeUnit.SECONDS))
+          .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(3)));
+      assertThat(storage)
+          .extracting(
+              "previousCollectionAggregatorHandles", as(map(Attributes.class, Object.class)))
+          .doesNotContainKey(attributes);
+      deltaReader.setLastCollectEpochNanos(10);
+      assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
+          .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(5)));
+      deltaReader.setLastCollectEpochNanos(20);
+      storage.recordDouble(7, attributes, Context.root());
+      verify(aggregator, times(idleCache ? 4 : 2)).createHandle(anyLong());
+      assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
+          .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> point.hasValue(7)));
+    } finally {
+      recorded.countDown();
+      executor.shutdownNow();
+    }
+  }
+
+  @Test
+  void bindAfterDeltaCollection_ReusesHandleAndKeepsIdleSeriesBelowLimit() {
+    initialize(MemoryMode.REUSABLE_DATA);
+    DefaultSynchronousMetricStorage<?> storage =
+        DefaultSynchronousMetricStorage.create(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            AttributesFilters.ALLOW_ALL,
+            CARDINALITY_LIMIT,
+            testClock,
+            /* enabled= */ true,
+            /* contextScopedAttributesFilter= */ null);
+
+    Attributes boundSeries = Attributes.builder().put("series", "bound").build();
+    Attributes idleSeries = Attributes.builder().put("series", "idle").build();
+    storage.recordDouble(3, boundSeries, Context.root());
+    storage.recordDouble(4, idleSeries, Context.root());
+    MetricData first = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10);
+    deltaReader.setLastCollectEpochNanos(10);
+
+    storage.bind(boundSeries).recordDouble(5, Context.root());
+    storage.recordDouble(7, boundSeries, Context.root());
+    verify(aggregator, times(2)).createHandle(anyLong());
+    assertThat(first.getDoubleSumData().getPoints())
+        .extracting(DoublePointData::getValue)
+        .containsExactlyInAnyOrder(3.0, 4.0);
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
+        .hasDoubleSumSatisfying(
+            sum -> sum.hasPointsSatisfying(point -> point.hasAttributes(boundSeries).hasValue(12)));
+
+    // Collection rotates the bound accumulator. Recording to the idle series reuses its handle.
+    storage.recordDouble(9, idleSeries, Context.root());
+    verify(aggregator, times(3)).createHandle(anyLong());
+  }
+
   @Test
   void recordAndCollect_DeltaAtLimit_ReusableDataMemoryMode() {
     initialize(MemoryMode.REUSABLE_DATA);
@@ -631,10 +760,8 @@ public class SynchronousMetricStorageTest {
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
 
-    // After first collection, we expect the secondary map which is empty to be used,
-    // hence handle creation will still take place
-    // The +1 is for the overflow handle
-    verify(aggregator, times((CARDINALITY_LIMIT - 1) * 2 + 1)).createHandle(testClock.now());
+    // The existing series reuse their handles. Only the overflow series needs a new one.
+    verify(aggregator, times(CARDINALITY_LIMIT)).createHandle(testClock.now());
 
     // Second collect
     metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20);
@@ -676,123 +803,25 @@ public class SynchronousMetricStorageTest {
             /* enabled= */ true,
             /* contextScopedAttributesFilter= */ null);
 
-    // 1st recording: Recording goes to active map
     for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
-      storage.recordDouble(
-          3, Attributes.builder().put("key", "value" + i).build(), Context.current());
+      storage.recordDouble(3, Attributes.builder().put("key", "value" + i).build(), Context.root());
     }
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
+        .hasDoubleSumSatisfying(sum ->
+            sum.satisfies(data -> assertThat(data.getPoints()).hasSize(CARDINALITY_LIMIT - 1)));
 
-    // This will switch next recordings to the secondary map (which is empty)
-    // by making it the active map
-    storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10);
-
-    // 2nd recording
+    // Last interval's unused handles must not consume this interval's cardinality.
     deltaReader.setLastCollectEpochNanos(10);
-    for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
-      storage.recordDouble(
-          3, Attributes.builder().put("key", "value" + i).build(), Context.current());
-    }
+    Attributes newSeries = Attributes.builder().put("key", "new-series").build();
+    storage.recordDouble(5, newSeries, Context.root());
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
+        .hasDoubleSumSatisfying(
+            sum -> sum.hasPointsSatisfying(point -> point.hasAttributes(newSeries).hasValue(5)));
 
-    // This switches maps again, so next recordings will be to the first map
-    storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20);
-
-    // 3rd recording: We're recording unseen attributes to a map we know is full,
-    // since it was filled during 1st recording
-    deltaReader.setLastCollectEpochNanos(20);
-    for (int i = CARDINALITY_LIMIT - 1; i < (CARDINALITY_LIMIT - 1) + 15; i++) {
-      storage.recordDouble(
-          3, Attributes.builder().put("key", "value" + i).build(), Context.current());
-    }
-
-    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30);
-
-    assertOnlyOverflowWasRecorded(metricData, 20, 30, 15 * 3);
-
-    // 4th recording: We're recording unseen attributes to a map we know is full,
-    // since it was filled during *2nd* recording
-    deltaReader.setLastCollectEpochNanos(30);
-    for (int i = CARDINALITY_LIMIT - 1; i < (CARDINALITY_LIMIT - 1) + 15; i++) {
-      storage.recordDouble(
-          3, Attributes.builder().put("key", "value" + i).build(), Context.current());
-    }
-
-    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 40);
-
-    assertOnlyOverflowWasRecorded(metricData, 30, 40, 15 * 3);
-
-    // 5th recording: Map should be empty, since all handlers were removed due to
-    // no recording being done to them
-    deltaReader.setLastCollectEpochNanos(40);
-    for (int i = 0; i < 10; i++) {
-      storage.recordDouble(
-          3, Attributes.builder().put("key", "value" + i).build(), Context.current());
-    }
-
-    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 50);
-
-    assertNumberOfPoints(metricData, 10);
-    assertAllPointsWithValue(metricData, 40, 50, 3);
-    assertOverflowDoesNotExists(metricData);
-
-    // 6th recording: Map should be empty (we switched to secondary map), since all handlers
-    // were removed due to no recordings being done to them
-    deltaReader.setLastCollectEpochNanos(50);
-    for (int i = 0; i < 12; i++) {
-      storage.recordDouble(
-          4, Attributes.builder().put("key", "value" + i).build(), Context.current());
-    }
-
-    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 60);
-
-    assertNumberOfPoints(metricData, 12);
-    assertAllPointsWithValue(metricData, 50, 60, 4);
-    assertOverflowDoesNotExists(metricData);
-  }
-
-  @SuppressWarnings("SameParameterValue")
-  private static void assertOnlyOverflowWasRecorded(
-      MetricData metricData, long startTime, long endTime, double value) {
-
-    assertThat(metricData)
-        .hasDoubleSumSatisfying(sum ->
-            sum.satisfies(sumData ->
-                assertThat(sumData.getPoints())
-                    .hasSize(1)
-                    .allSatisfy(point -> {
-                      assertThat(point.getStartEpochNanos()).isEqualTo(startTime);
-                      assertThat(point.getEpochNanos()).isEqualTo(endTime);
-                      assertThat(point.getValue()).isEqualTo(value);
-                      assertThat(point.getAttributes())
-                          .isEqualTo(MetricStorage.CARDINALITY_OVERFLOW);
-                    })));
-  }
-
-  private static void assertNumberOfPoints(MetricData metricData, int numberOfPoints) {
-    assertThat(metricData)
-        .hasDoubleSumSatisfying(sum ->
-            sum.satisfies(sumData -> assertThat(sumData.getPoints()).hasSize(numberOfPoints)));
-  }
-
-  private static void assertAllPointsWithValue(
-      MetricData metricData, long startTime, long endTime, double value) {
-    assertThat(metricData)
-        .hasDoubleSumSatisfying(sum ->
-            sum.satisfies(sumData ->
-                assertThat(sumData.getPoints())
-                    .allSatisfy(point -> {
-                      assertThat(point.getStartEpochNanos()).isEqualTo(startTime);
-                      assertThat(point.getEpochNanos()).isEqualTo(endTime);
-                      assertThat(point.getValue()).isEqualTo(value);
-                    })));
-  }
-
-  private static void assertOverflowDoesNotExists(MetricData metricData) {
-    assertThat(metricData)
-        .hasDoubleSumSatisfying(sum ->
-            sum.satisfies(sumData ->
-                assertThat(sumData.getPoints())
-                    .noneMatch(point ->
-                        point.getAttributes().equals(MetricStorage.CARDINALITY_OVERFLOW))));
+    // Once the retained series reach the limit, keep only the ones used this interval.
+    assertThat(storage)
+        .extracting("previousCollectionAggregatorHandles", as(map(Attributes.class, Object.class)))
+        .containsOnlyKeys(newSeries);
   }
 
   @ParameterizedTest
