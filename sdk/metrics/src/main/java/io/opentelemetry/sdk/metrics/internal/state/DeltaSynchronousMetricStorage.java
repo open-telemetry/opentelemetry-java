@@ -24,11 +24,13 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
@@ -58,6 +60,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   // Only populated if memoryMode == REUSABLE_DATA
   private final ArrayList<T> reusableResultList = new ArrayList<>();
+  private final PointCollector pointCollector = new PointCollector();
   private final ConcurrentLinkedQueue<DeltaAggregatorHandle<T>> aggregatorHandlePool =
       new ConcurrentLinkedQueue<>();
 
@@ -364,30 +367,16 @@ class DeltaSynchronousMetricStorage<T extends PointData>
             registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos),
             instrumentCreationEpochNanos);
 
-    aggregatorHandles.forEach((attributes, handle) -> {
-      if (handle.bound) {
-        collectBound(handle, attributes, startEpochNanos, epochNanos, points);
-        return;
-      }
-      // The outgoing holder is already closed. Its unbound handles only need to drain
-      // admitted recorders. The incoming holder replaces any of these handles it needs
-      // before the handoff ends.
-      handle.awaitUnboundRecorders();
-      if (handle.handle.hasRecordedValues()) {
-        T point =
-            handle.handle.aggregateThenMaybeReset(
-                startEpochNanos, epochNanos, attributes, /* reset= */ true);
-        if (point != null) {
-          points.add(point);
-        }
-        if (memoryMode == IMMUTABLE_DATA) {
-          aggregatorHandlePool.offer(handle);
-        }
-      } else if (atCardinalityLimit) {
-        aggregatorHandles.remove(attributes, handle);
-        reusableMapsMayDiffer = true;
-      }
-    });
+    pointCollector.points = points;
+    pointCollector.pruneFrom = atCardinalityLimit ? aggregatorHandles : null;
+    pointCollector.startEpochNanos = startEpochNanos;
+    pointCollector.epochNanos = epochNanos;
+    try {
+      aggregatorHandles.forEach(pointCollector);
+    } finally {
+      pointCollector.points = Collections.emptyList();
+      pointCollector.pruneFrom = null;
+    }
 
     if (memoryMode == REUSABLE_DATA) {
       synchronized (next) {
@@ -412,6 +401,41 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
     return aggregator.toMetricData(
         resource, instrumentationScopeInfo, metricDescriptor, points, DELTA);
+  }
+
+  // Collection is serialized. Reuse the visitor to avoid a capturing lambda per collection,
+  // including when a retained map has no recorded points.
+  private final class PointCollector implements BiConsumer<Attributes, DeltaAggregatorHandle<T>> {
+    private List<T> points = Collections.emptyList();
+    @Nullable private ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> pruneFrom;
+    private long startEpochNanos;
+    private long epochNanos;
+
+    @Override
+    public void accept(Attributes attributes, DeltaAggregatorHandle<T> handle) {
+      if (handle.bound) {
+        collectBound(handle, attributes, startEpochNanos, epochNanos, points);
+        return;
+      }
+      // The outgoing holder is already closed. Its unbound handles only need to drain
+      // admitted recorders. The incoming holder replaces any of these handles it needs
+      // before the handoff ends.
+      handle.awaitUnboundRecorders();
+      if (handle.handle.hasRecordedValues()) {
+        T point =
+            handle.handle.aggregateThenMaybeReset(
+                startEpochNanos, epochNanos, attributes, /* reset= */ true);
+        if (point != null) {
+          points.add(point);
+        }
+        if (memoryMode == IMMUTABLE_DATA) {
+          aggregatorHandlePool.offer(handle);
+        }
+      } else if (pruneFrom != null) {
+        pruneFrom.remove(attributes, handle);
+        reusableMapsMayDiffer = true;
+      }
+    }
   }
 
   /**
