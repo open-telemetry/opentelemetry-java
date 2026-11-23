@@ -14,6 +14,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.testing.GcFinalization;
 import com.google.common.util.concurrent.AtomicDouble;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
@@ -27,6 +28,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
@@ -262,6 +264,34 @@ class CallbackRegistrationTest {
 
     // Clean up
     Thread.currentThread().setContextClassLoader(originalClassLoader);
+  }
+
+  @Test
+  void invokeCallback_UsesNullWhenRegistrationClassLoaderCollected() {
+    Thread thread = Thread.currentThread();
+    ClassLoader originalClassLoader = thread.getContextClassLoader();
+    ClassLoader collectionClassLoader = new ClassLoader() {};
+    ClassLoader registrationClassLoader = new ClassLoader() {};
+    WeakReference<ClassLoader> loaderReference = new WeakReference<>(registrationClassLoader);
+    AtomicReference<ClassLoader> observedClassLoader = new AtomicReference<>(collectionClassLoader);
+
+    try {
+      thread.setContextClassLoader(registrationClassLoader);
+      CallbackRegistration callbackRegistration =
+          CallbackRegistration.create(
+              Collections.singletonList(measurement2),
+              () -> observedClassLoader.set(Thread.currentThread().getContextClassLoader()));
+      thread.setContextClassLoader(collectionClassLoader);
+      registrationClassLoader = null;
+
+      GcFinalization.awaitClear(loaderReference);
+      callbackRegistration.invokeCallback(registeredReader);
+
+      assertThat(observedClassLoader.get()).isNull();
+      assertThat(thread.getContextClassLoader()).isSameAs(collectionClassLoader);
+    } finally {
+      thread.setContextClassLoader(originalClassLoader);
+    }
   }
 
   @Test
