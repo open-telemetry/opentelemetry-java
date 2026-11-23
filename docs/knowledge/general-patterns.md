@@ -152,27 +152,6 @@ Production code targets Java 8. Test code also targets Java 8. Do not use Java 9
 module explicitly sets a higher minimum. See [VERSIONING.md](../../VERSIONING.md) for the full
 language version compatibility policy, including Android and Kotlin minimum versions.
 
-## Logging
-
-Use `java.util.logging` (JUL) in production source sets. Do not use SLF4J or other logging
-frameworks in `src/main/`. Tests bridge JUL to SLF4J via `JulBridgeInitializer` (configured
-automatically by `otel.java-conventions`).
-
-```java
-private static final Logger LOGGER = Logger.getLogger(MyClass.class.getName());
-```
-
-When logging exceptions, pass the exception as the `Throwable` parameter to the logger rather than
-stringifying it via `getMessage()` or concatenation. This ensures logging frameworks can render the
-full stack trace.
-
-```java
-// Do:
-logger.log(Level.WARNING, "Failed to process request", exception);
-// Don't:
-logger.warning("Failed to process request: " + exception.getMessage());
-```
-
 ## toString()
 
 Adding `toString()` overrides is encouraged for debugging assistance. All `toString()`
