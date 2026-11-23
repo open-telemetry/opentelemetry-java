@@ -21,6 +21,8 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
 
   private static final SpanProcessorFactory INSTANCE = new SpanProcessorFactory();
 
+  private static final String NOOP = "noop";
+
   private SpanProcessorFactory() {}
 
   static SpanProcessorFactory getInstance() {
@@ -39,6 +41,12 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
     }
     if (model.getSimple() != null) {
       return createSimpleLogRecordProcessor(model.getSimple(), context);
+    }
+    // Spans are created and recorded but never exported. Only traces support "noop": tracing is
+    // the only signal where having no processors (tracers are disabled, no trace context is
+    // generated) differs observably from discarding the data.
+    if (NOOP.equals(processorKeyValue.getKey())) {
+      return SpanProcessor.noop();
     }
 
     return context.loadComponent(SpanProcessor.class, processorKeyValue);

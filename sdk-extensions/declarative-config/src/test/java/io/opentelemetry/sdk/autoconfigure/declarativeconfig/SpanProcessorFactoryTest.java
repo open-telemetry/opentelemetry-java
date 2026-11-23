@@ -118,6 +118,16 @@ class SpanProcessorFactoryTest {
   }
 
   @Test
+  void create_Noop() {
+    SpanProcessor spanProcessor =
+        SpanProcessorFactory.getInstance()
+            .create(
+                new SpanProcessorModel().setExtensionProperty("noop", Collections.emptyMap()),
+                context);
+    assertThat(spanProcessor).isSameAs(SpanProcessor.noop());
+  }
+
+  @Test
   void create_SpiProcessor_Valid() {
     SpanProcessor spanProcessor =
         SpanProcessorFactory.getInstance()
