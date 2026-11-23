@@ -205,7 +205,10 @@ unambiguously.
 
 ### Runtime / instrumentation-time boundaries (Span methods, metric recordings, log builders)
 
-Do **not** throw. Report the violation via `ApiUsageLogger`, then degrade gracefully (return `this`, an empty/noop result, or substitute a safe default such as `Attributes.empty()` or `Context.current()`). See [API usage diagnostics](logging-patterns.md#api-usage-diagnostics) for logging details.
+Do **not** throw. Report the violation via `ApiUsageLogger`, then degrade gracefully (return `this`,
+an empty/noop result, or substitute a safe default such as `Attributes.empty()` or
+`Context.current()`). See [API usage diagnostics](logging-patterns.md#api-usage-diagnostics) for
+logging details.
 
 For example:
 
@@ -227,7 +230,8 @@ tolerate null.
 Check non-`@Nullable` reference arguments in declaration order, logging each null once unless an
 early return ends the call.
 
-Check each argument once, at the first public entry point. Internal methods called by that entry point do not need to re-validate.
+Check each argument once, at the first public entry point. Internal methods called by that entry
+point do not need to re-validate.
 
 ### SDK extension interfaces and SPIs
 
