@@ -100,6 +100,41 @@ public class SdkLoggerProviderBuilderTest {
         .isSameAs(resourceProvider);
   }
 
+  @Test
+  void setDefaultSdkResourceProvider_usedForResource() {
+    Resource customResource =
+        Resource.create(Attributes.of(AttributeKey.stringKey("key"), "value"));
+    SdkResourceProvider resourceProvider = SdkResourceProvider.create(customResource);
+
+    SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
+    SdkLoggerProviderUtil.setDefaultSdkResourceProvider(builder, resourceProvider);
+    SdkLoggerProvider provider = builder.build();
+
+    assertThat(SdkLoggerProviderUtil.getSdkResourceProvider(provider)).isSameAs(resourceProvider);
+    assertThat(SdkLoggerProviderUtil.getSdkResourceProvider(provider).getResource())
+        .isEqualTo(customResource);
+  }
+
+  @ParameterizedTest
+  @MethodSource("resourceConfigurations")
+  void resource_afterSetDefaultSdkResourceProvider_overrides(
+      boolean addResource, Resource resource) {
+    Resource baseResource = Resource.create(Attributes.of(AttributeKey.stringKey("base"), "val"));
+    SdkResourceProvider baseProvider = SdkResourceProvider.create(baseResource);
+    SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
+    SdkLoggerProviderUtil.setDefaultSdkResourceProvider(builder, baseProvider);
+
+    if (addResource) {
+      builder.addResource(resource);
+    } else {
+      builder.setResource(resource);
+    }
+
+    SdkLoggerProvider provider = builder.build();
+    assertThat(SdkLoggerProviderUtil.getSdkResourceProvider(provider).getResource())
+        .isEqualTo(addResource ? baseResource.merge(resource) : resource);
+  }
+
   private static Stream<Arguments> resourceConfigurations() {
     Resource customResource =
         Resource.create(Attributes.of(AttributeKey.stringKey("key"), "value"));

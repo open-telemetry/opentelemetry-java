@@ -25,15 +25,19 @@ import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
@@ -517,8 +521,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       Resource resource,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
+    SdkResourceProvider resourceProvider = SdkResourceProvider.create(resource);
+
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
-    meterProviderBuilder.setResource(resource);
+    SdkMeterProviderUtil.setDefaultSdkResourceProvider(meterProviderBuilder, resourceProvider);
 
     MeterProviderConfiguration.configureMeterProvider(
         meterProviderBuilder,
@@ -532,7 +538,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     closeables.add(meterProvider);
 
     SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
-    tracerProviderBuilder.setResource(resource);
+    SdkTracerProviderUtil.setDefaultSdkResourceProvider(tracerProviderBuilder, resourceProvider);
     TracerProviderConfiguration.configureTracerProvider(
         tracerProviderBuilder,
         config,
@@ -547,7 +553,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     closeables.add(tracerProvider);
 
     SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
-    loggerProviderBuilder.setResource(resource);
+    SdkLoggerProviderUtil.setDefaultSdkResourceProvider(loggerProviderBuilder, resourceProvider);
     LoggerProviderConfiguration.configureLoggerProvider(
         loggerProviderBuilder,
         config,

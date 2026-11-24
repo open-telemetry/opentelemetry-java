@@ -48,6 +48,7 @@ public final class SdkMeterProviderBuilder {
   private Resource resource = Resource.getDefault();
   private boolean resourceExplicitlySet = false;
   @Nullable private SdkResourceProvider resourceProvider;
+  private boolean resourceProviderExplicitlySet = false;
   private final IdentityHashMap<MetricReader, CardinalityLimitSelector> metricReaders =
       new IdentityHashMap<>();
   private final List<MetricProducer> metricProducers = new ArrayList<>();
@@ -80,12 +81,13 @@ public final class SdkMeterProviderBuilder {
    */
   public SdkMeterProviderBuilder setResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
-    if (resourceProvider != null) {
+    if (resourceProviderExplicitlySet) {
       throw new IllegalStateException(
           "Cannot call setResource after setSdkResourceProvider has been called.");
     }
     this.resource = resource;
     this.resourceExplicitlySet = true;
+    this.resourceProvider = null;
     return this;
   }
 
@@ -99,12 +101,14 @@ public final class SdkMeterProviderBuilder {
    */
   public SdkMeterProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
-    if (resourceProvider != null) {
+    if (resourceProviderExplicitlySet) {
       throw new IllegalStateException(
           "Cannot call addResource after setSdkResourceProvider has been called.");
     }
-    this.resource = this.resource.merge(resource);
+    Resource current = resourceProvider != null ? resourceProvider.getResource() : this.resource;
+    this.resource = current.merge(resource);
     this.resourceExplicitlySet = true;
+    this.resourceProvider = null;
     return this;
   }
 
@@ -125,6 +129,15 @@ public final class SdkMeterProviderBuilder {
           "Cannot call setSdkResourceProvider after setResource or addResource has been called.");
     }
     this.resourceProvider = resourceProvider;
+    this.resourceProviderExplicitlySet = true;
+    return this;
+  }
+
+  SdkMeterProviderBuilder setDefaultSdkResourceProvider(SdkResourceProvider resourceProvider) {
+    Objects.requireNonNull(resourceProvider, "resourceProvider");
+    if (!this.resourceExplicitlySet) {
+      this.resourceProvider = resourceProvider;
+    }
     return this;
   }
 

@@ -93,6 +93,24 @@ public final class SdkTracerProviderUtil {
     }
   }
 
+  /**
+   * Reflectively set the default {@link SdkResourceProvider} on the {@link
+   * SdkTracerProviderBuilder}.
+   */
+  public static void setDefaultSdkResourceProvider(
+      SdkTracerProviderBuilder sdkTracerProviderBuilder, SdkResourceProvider resourceProvider) {
+    try {
+      Method method =
+          SdkTracerProviderBuilder.class.getDeclaredMethod(
+              "setDefaultSdkResourceProvider", SdkResourceProvider.class);
+      method.setAccessible(true);
+      method.invoke(sdkTracerProviderBuilder, resourceProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setDefaultSdkResourceProvider on SdkTracerProviderBuilder", e);
+    }
+  }
+
   /** Reflectively get the {@link SdkResourceProvider} from the {@link SdkTracerProvider}. */
   public static SdkResourceProvider getSdkResourceProvider(SdkTracerProvider sdkTracerProvider) {
     try {
