@@ -9,7 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static java.util.Arrays.asList;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
@@ -33,23 +33,19 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.assertj.AbstractPointAssert;
-import io.opentelemetry.sdk.testing.assertj.DoublePointAssert;
-import io.opentelemetry.sdk.testing.assertj.HistogramPointAssert;
-import io.opentelemetry.sdk.testing.assertj.LongPointAssert;
 import io.opentelemetry.sdk.testing.assertj.MetricAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.junit.jupiter.params.support.ParameterDeclarations;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class OptInAdviceTest {
 
@@ -68,13 +64,13 @@ class OptInAdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
-  void optInInstrumentDisabledByDefault(
-      InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> unused) {
+  @MethodSource("instruments")
+  void optInInstrumentDisabledByDefault(InstrumentFactory instrumentFactory) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     meterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
 
-    TestInstrument instrument = instrumentFactory.create(meterProvider, "test", /* optIn= */ true);
+    TestInstrument instrument =
+        instrumentFactory.create(meterProvider.get("meter"), "test", /* optIn= */ true);
     assertThat(instrument.isEnabled()).isFalse();
     instrument.record(1, ATTRIBUTES);
 
@@ -82,26 +78,23 @@ class OptInAdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
-  void optInFalseInstrumentEnabledByDefault(
-      InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> pointsAssert) {
+  @MethodSource("instruments")
+  void optInFalseInstrumentEnabledByDefault(InstrumentFactory instrumentFactory) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     meterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
 
-    TestInstrument instrument = instrumentFactory.create(meterProvider, "test", /* optIn= */ false);
+    TestInstrument instrument =
+        instrumentFactory.create(meterProvider.get("meter"), "test", /* optIn= */ false);
     assertThat(instrument.isEnabled()).isTrue();
     instrument.record(1, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(metric ->
-            pointsAssert.hasPointSatisfying(
-                assertThat(metric), point -> point.hasAttributes(ATTRIBUTES)));
+        .satisfiesExactly(metric -> instrument.assertHasAttributes(assertThat(metric), ATTRIBUTES));
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
-  void optInInstrumentEnabledByView(
-      InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> pointsAssert) {
+  @MethodSource("instruments")
+  void optInInstrumentEnabledByView(InstrumentFactory instrumentFactory) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     ViewBuilder viewBuilder = View.builder();
     SdkMeterProviderUtil.setEnabled(viewBuilder, /* enabled= */ true);
@@ -111,20 +104,18 @@ class OptInAdviceTest {
             .registerView(InstrumentSelector.builder().setName("test").build(), viewBuilder.build())
             .build();
 
-    TestInstrument instrument = instrumentFactory.create(meterProvider, "test", /* optIn= */ true);
+    TestInstrument instrument =
+        instrumentFactory.create(meterProvider.get("meter"), "test", /* optIn= */ true);
     assertThat(instrument.isEnabled()).isTrue();
     instrument.record(1, ATTRIBUTES);
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(metric ->
-            pointsAssert.hasPointSatisfying(
-                assertThat(metric), point -> point.hasAttributes(ATTRIBUTES)));
+        .satisfiesExactly(metric -> instrument.assertHasAttributes(assertThat(metric), ATTRIBUTES));
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
-  void optInInstrumentNotEnabledByViewWithoutEnabledTrue(
-      InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> unused) {
+  @MethodSource("instruments")
+  void optInInstrumentNotEnabledByViewWithoutEnabledTrue(InstrumentFactory instrumentFactory) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     meterProvider =
         SdkMeterProvider.builder()
@@ -134,7 +125,8 @@ class OptInAdviceTest {
                 View.builder().setDescription("custom description").build())
             .build();
 
-    TestInstrument instrument = instrumentFactory.create(meterProvider, "test", /* optIn= */ true);
+    TestInstrument instrument =
+        instrumentFactory.create(meterProvider.get("meter"), "test", /* optIn= */ true);
     assertThat(instrument.isEnabled()).isFalse();
     instrument.record(1, ATTRIBUTES);
 
@@ -164,9 +156,8 @@ class OptInAdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
-  void nonOptInInstrumentDisabledByViewEnabledFalse(
-      InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> unused) {
+  @MethodSource("instruments")
+  void nonOptInInstrumentDisabledByViewEnabledFalse(InstrumentFactory instrumentFactory) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     ViewBuilder viewBuilder = View.builder();
     SdkMeterProviderUtil.setEnabled(viewBuilder, /* enabled= */ false);
@@ -176,7 +167,8 @@ class OptInAdviceTest {
             .registerView(InstrumentSelector.builder().setName("test").build(), viewBuilder.build())
             .build();
 
-    TestInstrument instrument = instrumentFactory.create(meterProvider, "test", /* optIn= */ false);
+    TestInstrument instrument =
+        instrumentFactory.create(meterProvider.get("meter"), "test", /* optIn= */ false);
     assertThat(instrument.isEnabled()).isFalse();
     instrument.record(1, ATTRIBUTES);
 
@@ -406,242 +398,155 @@ class OptInAdviceTest {
     assertThat(reader.collectAllMetrics()).isEmpty();
   }
 
-  static final class InstrumentsProvider implements ArgumentsProvider {
+  static Stream<Arguments> instruments() {
+    return Stream.of(
+        instrument(
+            "double counter",
+            (meter, name, optIn) -> {
+              ExtendedDoubleCounter counter =
+                  (ExtendedDoubleCounter)
+                      ((ExtendedDoubleCounterBuilder) meter.counterBuilder(name).ofDoubles())
+                          .setOptInAdvice(optIn)
+                          .build();
+              return new TestInstrument(
+                  counter::add,
+                  counter::isEnabled,
+                  (m, a) -> m.hasDoubleSumPointsSatisfying(hasAttributes(a)));
+            }),
+        instrument(
+            "long counter",
+            (meter, name, optIn) -> {
+              ExtendedLongCounter counter =
+                  (ExtendedLongCounter)
+                      ((ExtendedLongCounterBuilder) meter.counterBuilder(name))
+                          .setOptInAdvice(optIn)
+                          .build();
+              return new TestInstrument(
+                  counter::add,
+                  counter::isEnabled,
+                  (m, a) -> m.hasLongSumPointsSatisfying(hasAttributes(a)));
+            }),
+        instrument(
+            "double gauge",
+            (meter, name, optIn) -> {
+              ExtendedDoubleGauge gauge =
+                  (ExtendedDoubleGauge)
+                      ((ExtendedDoubleGaugeBuilder) meter.gaugeBuilder(name))
+                          .setOptInAdvice(optIn)
+                          .build();
+              return new TestInstrument(
+                  gauge::set,
+                  gauge::isEnabled,
+                  (m, a) -> m.hasDoubleGaugePointsSatisfying(hasAttributes(a)));
+            }),
+        instrument(
+            "long gauge",
+            (meter, name, optIn) -> {
+              ExtendedLongGauge gauge =
+                  (ExtendedLongGauge)
+                      ((ExtendedLongGaugeBuilder) meter.gaugeBuilder(name).ofLongs())
+                          .setOptInAdvice(optIn)
+                          .build();
+              return new TestInstrument(
+                  gauge::set,
+                  gauge::isEnabled,
+                  (m, a) -> m.hasLongGaugePointsSatisfying(hasAttributes(a)));
+            }),
+        instrument(
+            "double histogram",
+            (meter, name, optIn) -> {
+              ExtendedDoubleHistogram histogram =
+                  (ExtendedDoubleHistogram)
+                      ((ExtendedDoubleHistogramBuilder) meter.histogramBuilder(name))
+                          .setOptInAdvice(optIn)
+                          .build();
+              return new TestInstrument(
+                  histogram::record,
+                  histogram::isEnabled,
+                  (m, a) -> m.hasHistogramPointsSatisfying(hasAttributes(a)));
+            }),
+        instrument(
+            "long histogram",
+            (meter, name, optIn) -> {
+              ExtendedLongHistogram histogram =
+                  (ExtendedLongHistogram)
+                      ((ExtendedLongHistogramBuilder) meter.histogramBuilder(name).ofLongs())
+                          .setOptInAdvice(optIn)
+                          .build();
+              return new TestInstrument(
+                  histogram::record,
+                  histogram::isEnabled,
+                  (m, a) -> m.hasHistogramPointsSatisfying(hasAttributes(a)));
+            }),
+        instrument(
+            "double up down counter",
+            (meter, name, optIn) -> {
+              ExtendedDoubleUpDownCounter upDownCounter =
+                  (ExtendedDoubleUpDownCounter)
+                      ((ExtendedDoubleUpDownCounterBuilder)
+                              meter.upDownCounterBuilder(name).ofDoubles())
+                          .setOptInAdvice(optIn)
+                          .build();
+              return new TestInstrument(
+                  upDownCounter::add,
+                  upDownCounter::isEnabled,
+                  (m, a) -> m.hasDoubleSumPointsSatisfying(hasAttributes(a)));
+            }),
+        instrument(
+            "long up down counter",
+            (meter, name, optIn) -> {
+              ExtendedLongUpDownCounter upDownCounter =
+                  (ExtendedLongUpDownCounter)
+                      ((ExtendedLongUpDownCounterBuilder) meter.upDownCounterBuilder(name))
+                          .setOptInAdvice(optIn)
+                          .build();
+              return new TestInstrument(
+                  upDownCounter::add,
+                  upDownCounter::isEnabled,
+                  (m, a) -> m.hasLongSumPointsSatisfying(hasAttributes(a)));
+            }));
+  }
 
-    @Override
-    public Stream<? extends Arguments> provideArguments(
-        ParameterDeclarations parameters, ExtensionContext context) {
-      return Stream.of(
-          // double counter
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, optIn) -> {
-                    ExtendedDoubleCounter counter =
-                        (ExtendedDoubleCounter)
-                            ((ExtendedDoubleCounterBuilder)
-                                    meterProvider.get("meter").counterBuilder(name).ofDoubles())
-                                .setOptInAdvice(optIn)
-                                .build();
-                    return new TestInstrument() {
-                      @Override
-                      public void record(long value, Attributes attributes) {
-                        counter.add((double) value, attributes);
-                      }
+  private static Arguments instrument(String name, InstrumentFactory factory) {
+    return argumentSet(name, factory);
+  }
 
-                      @Override
-                      public boolean isEnabled() {
-                        return counter.isEnabled();
-                      }
-                    };
-                  },
-              (PointsAssert<DoublePointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasDoubleSumSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // long counter
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, optIn) -> {
-                    ExtendedLongCounter counter =
-                        (ExtendedLongCounter)
-                            ((ExtendedLongCounterBuilder)
-                                    meterProvider.get("meter").counterBuilder(name))
-                                .setOptInAdvice(optIn)
-                                .build();
-                    return new TestInstrument() {
-                      @Override
-                      public void record(long value, Attributes attributes) {
-                        counter.add(value, attributes);
-                      }
+  private static <P extends AbstractPointAssert<?, ?>> Consumer<P> hasAttributes(
+      Attributes attributes) {
+    return point -> point.hasAttributes(attributes);
+  }
 
-                      @Override
-                      public boolean isEnabled() {
-                        return counter.isEnabled();
-                      }
-                    };
-                  },
-              (PointsAssert<LongPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasLongSumSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // double gauge
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, optIn) -> {
-                    ExtendedDoubleGauge gauge =
-                        (ExtendedDoubleGauge)
-                            ((ExtendedDoubleGaugeBuilder)
-                                    meterProvider.get("meter").gaugeBuilder(name))
-                                .setOptInAdvice(optIn)
-                                .build();
-                    return new TestInstrument() {
-                      @Override
-                      public void record(long value, Attributes attributes) {
-                        gauge.set((double) value, attributes);
-                      }
+  @FunctionalInterface
+  private interface InstrumentFactory {
 
-                      @Override
-                      public boolean isEnabled() {
-                        return gauge.isEnabled();
-                      }
-                    };
-                  },
-              (PointsAssert<DoublePointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasDoubleGaugeSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // long gauge
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, optIn) -> {
-                    ExtendedLongGauge gauge =
-                        (ExtendedLongGauge)
-                            ((ExtendedLongGaugeBuilder)
-                                    meterProvider.get("meter").gaugeBuilder(name).ofLongs())
-                                .setOptInAdvice(optIn)
-                                .build();
-                    return new TestInstrument() {
-                      @Override
-                      public void record(long value, Attributes attributes) {
-                        gauge.set(value, attributes);
-                      }
+    TestInstrument create(Meter meter, String name, boolean optIn);
+  }
 
-                      @Override
-                      public boolean isEnabled() {
-                        return gauge.isEnabled();
-                      }
-                    };
-                  },
-              (PointsAssert<LongPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasLongGaugeSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // double histogram
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, optIn) -> {
-                    ExtendedDoubleHistogram histogram =
-                        (ExtendedDoubleHistogram)
-                            ((ExtendedDoubleHistogramBuilder)
-                                    meterProvider.get("meter").histogramBuilder(name))
-                                .setOptInAdvice(optIn)
-                                .build();
-                    return new TestInstrument() {
-                      @Override
-                      public void record(long value, Attributes attributes) {
-                        histogram.record((double) value, attributes);
-                      }
+  private static final class TestInstrument {
 
-                      @Override
-                      public boolean isEnabled() {
-                        return histogram.isEnabled();
-                      }
-                    };
-                  },
-              (PointsAssert<HistogramPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasHistogramSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // long histogram
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, optIn) -> {
-                    ExtendedLongHistogram histogram =
-                        (ExtendedLongHistogram)
-                            ((ExtendedLongHistogramBuilder)
-                                    meterProvider.get("meter").histogramBuilder(name).ofLongs())
-                                .setOptInAdvice(optIn)
-                                .build();
-                    return new TestInstrument() {
-                      @Override
-                      public void record(long value, Attributes attributes) {
-                        histogram.record(value, attributes);
-                      }
+    private final BiConsumer<Long, Attributes> recorder;
+    private final Supplier<Boolean> enabledSupplier;
+    private final BiConsumer<MetricAssert, Attributes> attributesAssertion;
 
-                      @Override
-                      public boolean isEnabled() {
-                        return histogram.isEnabled();
-                      }
-                    };
-                  },
-              (PointsAssert<HistogramPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasHistogramSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // double up down counter
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, optIn) -> {
-                    ExtendedDoubleUpDownCounter upDownCounter =
-                        (ExtendedDoubleUpDownCounter)
-                            ((ExtendedDoubleUpDownCounterBuilder)
-                                    meterProvider
-                                        .get("meter")
-                                        .upDownCounterBuilder(name)
-                                        .ofDoubles())
-                                .setOptInAdvice(optIn)
-                                .build();
-                    return new TestInstrument() {
-                      @Override
-                      public void record(long value, Attributes attributes) {
-                        upDownCounter.add((double) value, attributes);
-                      }
-
-                      @Override
-                      public boolean isEnabled() {
-                        return upDownCounter.isEnabled();
-                      }
-                    };
-                  },
-              (PointsAssert<DoublePointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasDoubleSumSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // long up down counter
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, optIn) -> {
-                    ExtendedLongUpDownCounter upDownCounter =
-                        (ExtendedLongUpDownCounter)
-                            ((ExtendedLongUpDownCounterBuilder)
-                                    meterProvider.get("meter").upDownCounterBuilder(name))
-                                .setOptInAdvice(optIn)
-                                .build();
-                    return new TestInstrument() {
-                      @Override
-                      public void record(long value, Attributes attributes) {
-                        upDownCounter.add(value, attributes);
-                      }
-
-                      @Override
-                      public boolean isEnabled() {
-                        return upDownCounter.isEnabled();
-                      }
-                    };
-                  },
-              (PointsAssert<LongPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasLongSumSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))));
+    TestInstrument(
+        BiConsumer<Long, Attributes> recorder,
+        Supplier<Boolean> enabledSupplier,
+        BiConsumer<MetricAssert, Attributes> attributesAssertion) {
+      this.recorder = recorder;
+      this.enabledSupplier = enabledSupplier;
+      this.attributesAssertion = attributesAssertion;
     }
-  }
 
-  @FunctionalInterface
-  interface InstrumentFactory {
+    void record(long value, Attributes attributes) {
+      recorder.accept(value, attributes);
+    }
 
-    TestInstrument create(SdkMeterProvider meterProvider, String name, boolean optIn);
-  }
+    boolean isEnabled() {
+      return enabledSupplier.get();
+    }
 
-  interface TestInstrument {
-
-    void record(long value, Attributes attributes);
-
-    boolean isEnabled();
-  }
-
-  @FunctionalInterface
-  interface PointsAssert<P extends AbstractPointAssert<?, ?>> {
-
-    void hasPointSatisfying(MetricAssert metricAssert, Consumer<P> assertion);
+    void assertHasAttributes(MetricAssert metric, Attributes attributes) {
+      attributesAssertion.accept(metric, attributes);
+    }
   }
 }
