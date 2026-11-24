@@ -12,6 +12,12 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
 
 final class ComposableProbabilitySampler implements ComposableSampler {
+  private static void validateRatio(double ratio) {
+    if (Double.isNaN(ratio) || ratio < 0.0 || ratio > 1.0) {
+      throw new IllegalArgumentException("ratio must be in range [0.0, 1.0]");
+    }
+  }
+
   private static long calculateThreshold(double ratio) {
     return ImmutableSamplingIntent.MAX_THRESHOLD
         - Math.round(ratio * (double) ImmutableSamplingIntent.MAX_THRESHOLD);
@@ -21,6 +27,8 @@ final class ComposableProbabilitySampler implements ComposableSampler {
   private final String description;
 
   ComposableProbabilitySampler(double ratio) {
+    validateRatio(ratio);
+
     long threshold = calculateThreshold(ratio);
     String thresholdStr;
     if (threshold == ImmutableSamplingIntent.MAX_THRESHOLD) {
