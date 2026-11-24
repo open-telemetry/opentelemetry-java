@@ -372,6 +372,19 @@ public final class OkHttpGrpcSender implements GrpcSender {
         // Compressed: validate the encoding and decompress with a post-decompression size limit
         String encoding = response.header("grpc-encoding");
         if (!"gzip".equalsIgnoreCase(encoding)) {
+          if (isRequestEncoding(encoding)) {
+            // Servers may compress the response with the request's encoding (grpc-go does by
+            // default). Compressor has no way to decompress, so the body, which only carries
+            // partial success details, is dropped and the status is read from the response.
+            logger.log(
+                Level.FINE,
+                "Ignoring gRPC response body compressed with the request encoding: " + encoding);
+            onResponse.accept(
+                ImmutableGrpcResponse.create(
+                    grpcStatus(response), grpcMessage(response), new byte[0]),
+                true);
+            return;
+          }
           onResponse.accept(responseUnsupportedGrpcEncoding(encoding), false);
           return;
         }
@@ -404,6 +417,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
         GrpcStatusCode.RESOURCE_EXHAUSTED,
         "gRPC response body exceeded limit of " + maxResponseBodySize + " bytes",
         new byte[0]);
+  }
+
+  private boolean isRequestEncoding(@Nullable String encoding) {
+    return compressor != null && compressor.getEncoding().equalsIgnoreCase(encoding);
   }
 
   private static GrpcResponse responseUnsupportedGrpcEncoding(@Nullable String encoding) {
