@@ -142,6 +142,8 @@ public final class ViewBuilder {
 
   /** Returns a {@link View} with the configuration of this builder. */
   public View build() {
+    // TODO(jack-berg): Before stabilizing enabled, decide whether to reject views that explicitly
+    // configure both enabled=false and an aggregation.
     return View.create(name, description, aggregation, attributeFilter, cardinalityLimit, enabled);
   }
 }
