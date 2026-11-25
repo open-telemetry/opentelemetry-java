@@ -9,11 +9,12 @@ import static io.opentelemetry.sdk.common.internal.SemConvConstants.ERROR_TYPE;
 import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_COMPONENT_NAME;
 import static io.opentelemetry.sdk.common.internal.SemConvConstants.OTEL_COMPONENT_TYPE;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -25,12 +26,15 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -38,6 +42,42 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SdkLoggerProviderMetricsTest {
 
   @Mock private LogRecordExporter mockExporter;
+
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void componentNamesAreUnique(boolean batching) {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    try (SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(reader).build()) {
+      SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
+      for (int i = 0; i < 2; i++) {
+        builder.addLogRecordProcessor(
+            batching
+                ? BatchLogRecordProcessor.builder(InMemoryLogRecordExporter.create())
+                    .setMeterProvider(() -> meterProvider)
+                    .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
+                    .build()
+                : SimpleLogRecordProcessor.builder(InMemoryLogRecordExporter.create())
+                    .setMeterProvider(() -> meterProvider)
+                    .build());
+      }
+      try (SdkLoggerProvider provider = builder.build()) {
+        provider.get("test").logRecordBuilder().emit();
+        assertThat(provider.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+        MetricData metric =
+            reader.collectAllMetrics().stream()
+                .filter(m -> m.getName().equals("otel.sdk.processor.log.processed"))
+                .findFirst()
+                .get();
+        assertThat(metric.getLongSumData().getPoints())
+            .hasSize(2)
+            .allSatisfy(point -> assertThat(point.getValue()).isEqualTo(1))
+            .extracting(point -> point.getAttributes().get(OTEL_COMPONENT_NAME))
+            .doesNotContainNull()
+            .doesNotHaveDuplicates();
+      }
+    }
+  }
 
   @Test
   void simple() {
@@ -70,12 +110,11 @@ class SdkLoggerProviderMetricsTest {
                     .hasLongSumSatisfying(s ->
                         s.hasPointsSatisfying(p ->
                             p.hasValue(1)
-                                .hasAttributes(
-                                    Attributes.of(
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
                                         OTEL_COMPONENT_NAME,
-                                        "simple_log_processor/0",
-                                        OTEL_COMPONENT_TYPE,
-                                        "simple_log_processor")))));
+                                        name -> name.matches("simple_log_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_log_processor")))));
 
     logger.logRecordBuilder().emit();
     assertThat(metricReader.collectAllMetrics())
@@ -91,12 +130,11 @@ class SdkLoggerProviderMetricsTest {
                     .hasLongSumSatisfying(s ->
                         s.hasPointsSatisfying(p ->
                             p.hasValue(2)
-                                .hasAttributes(
-                                    Attributes.of(
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
                                         OTEL_COMPONENT_NAME,
-                                        "simple_log_processor/0",
-                                        OTEL_COMPONENT_TYPE,
-                                        "simple_log_processor")))));
+                                        name -> name.matches("simple_log_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_log_processor")))));
 
     // Logs rejected after the call to shutdown, regardless of completion so no join.
     processor.shutdown();
@@ -116,22 +154,19 @@ class SdkLoggerProviderMetricsTest {
                         s.hasPointsSatisfying(
                             p ->
                                 p.hasValue(2)
-                                    .hasAttributes(
-                                        Attributes.of(
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
                                             OTEL_COMPONENT_NAME,
-                                            "simple_log_processor/0",
-                                            OTEL_COMPONENT_TYPE,
-                                            "simple_log_processor")),
+                                            name -> name.matches("simple_log_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "simple_log_processor")),
                             p ->
                                 p.hasValue(1)
-                                    .hasAttributes(
-                                        Attributes.of(
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
                                             OTEL_COMPONENT_NAME,
-                                            "simple_log_processor/0",
-                                            OTEL_COMPONENT_TYPE,
-                                            "simple_log_processor",
-                                            ERROR_TYPE,
-                                            "already_shutdown")))));
+                                            name -> name.matches("simple_log_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "simple_log_processor"),
+                                        equalTo(ERROR_TYPE, "already_shutdown")))));
   }
 
   @Test
@@ -178,24 +213,22 @@ class SdkLoggerProviderMetricsTest {
                     .hasLongSumSatisfying(s ->
                         s.hasPointsSatisfying(p ->
                             p.hasValue(1)
-                                .hasAttributes(
-                                    Attributes.of(
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
                                         OTEL_COMPONENT_NAME,
-                                        "batching_log_processor/0",
-                                        OTEL_COMPONENT_TYPE,
-                                        "batching_log_processor")))),
+                                        name -> name.matches("batching_log_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.log.queue.size")
                     .hasLongSumSatisfying(s ->
                         s.hasPointsSatisfying(p ->
                             p.hasValue(1)
-                                .hasAttributes(
-                                    Attributes.of(
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
                                         OTEL_COMPONENT_NAME,
-                                        "batching_log_processor/0",
-                                        OTEL_COMPONENT_TYPE,
-                                        "batching_log_processor")))),
+                                        name -> name.matches("batching_log_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.log.processed")
@@ -203,22 +236,19 @@ class SdkLoggerProviderMetricsTest {
                         s.hasPointsSatisfying(
                             p ->
                                 p.hasValue(1)
-                                    .hasAttributes(
-                                        Attributes.of(
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
                                             OTEL_COMPONENT_NAME,
-                                            "batching_log_processor/0",
-                                            OTEL_COMPONENT_TYPE,
-                                            "batching_log_processor")),
+                                            name -> name.matches("batching_log_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor")),
                             p ->
                                 p.hasValue(1)
-                                    .hasAttributes(
-                                        Attributes.of(
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
                                             OTEL_COMPONENT_NAME,
-                                            "batching_log_processor/0",
-                                            OTEL_COMPONENT_TYPE,
-                                            "batching_log_processor",
-                                            ERROR_TYPE,
-                                            "queue_full")))),
+                                            name -> name.matches("batching_log_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor"),
+                                        equalTo(ERROR_TYPE, "queue_full")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.log.created")
@@ -237,24 +267,22 @@ class SdkLoggerProviderMetricsTest {
                     .hasLongSumSatisfying(s ->
                         s.hasPointsSatisfying(p ->
                             p.hasValue(1)
-                                .hasAttributes(
-                                    Attributes.of(
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
                                         OTEL_COMPONENT_NAME,
-                                        "batching_log_processor/0",
-                                        OTEL_COMPONENT_TYPE,
-                                        "batching_log_processor")))),
+                                        name -> name.matches("batching_log_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.log.queue.size")
                     .hasLongSumSatisfying(s ->
                         s.hasPointsSatisfying(p ->
                             p.hasValue(0)
-                                .hasAttributes(
-                                    Attributes.of(
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
                                         OTEL_COMPONENT_NAME,
-                                        "batching_log_processor/0",
-                                        OTEL_COMPONENT_TYPE,
-                                        "batching_log_processor")))),
+                                        name -> name.matches("batching_log_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.log.processed")
@@ -262,22 +290,19 @@ class SdkLoggerProviderMetricsTest {
                         s.hasPointsSatisfying(
                             p ->
                                 p.hasValue(2)
-                                    .hasAttributes(
-                                        Attributes.of(
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
                                             OTEL_COMPONENT_NAME,
-                                            "batching_log_processor/0",
-                                            OTEL_COMPONENT_TYPE,
-                                            "batching_log_processor")),
+                                            name -> name.matches("batching_log_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor")),
                             p ->
                                 p.hasValue(1)
-                                    .hasAttributes(
-                                        Attributes.of(
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
                                             OTEL_COMPONENT_NAME,
-                                            "batching_log_processor/0",
-                                            OTEL_COMPONENT_TYPE,
-                                            "batching_log_processor",
-                                            ERROR_TYPE,
-                                            "queue_full")))),
+                                            name -> name.matches("batching_log_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor"),
+                                        equalTo(ERROR_TYPE, "queue_full")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.log.created")
@@ -297,24 +322,22 @@ class SdkLoggerProviderMetricsTest {
                     .hasLongSumSatisfying(s ->
                         s.hasPointsSatisfying(p ->
                             p.hasValue(1)
-                                .hasAttributes(
-                                    Attributes.of(
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
                                         OTEL_COMPONENT_NAME,
-                                        "batching_log_processor/0",
-                                        OTEL_COMPONENT_TYPE,
-                                        "batching_log_processor")))),
+                                        name -> name.matches("batching_log_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.log.queue.size")
                     .hasLongSumSatisfying(s ->
                         s.hasPointsSatisfying(p ->
                             p.hasValue(0)
-                                .hasAttributes(
-                                    Attributes.of(
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
                                         OTEL_COMPONENT_NAME,
-                                        "batching_log_processor/0",
-                                        OTEL_COMPONENT_TYPE,
-                                        "batching_log_processor")))),
+                                        name -> name.matches("batching_log_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.processor.log.processed")
@@ -322,32 +345,27 @@ class SdkLoggerProviderMetricsTest {
                         s.hasPointsSatisfying(
                             p ->
                                 p.hasValue(2)
-                                    .hasAttributes(
-                                        Attributes.of(
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
                                             OTEL_COMPONENT_NAME,
-                                            "batching_log_processor/0",
-                                            OTEL_COMPONENT_TYPE,
-                                            "batching_log_processor")),
+                                            name -> name.matches("batching_log_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor")),
                             p ->
                                 p.hasValue(1)
-                                    .hasAttributes(
-                                        Attributes.of(
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
                                             OTEL_COMPONENT_NAME,
-                                            "batching_log_processor/0",
-                                            OTEL_COMPONENT_TYPE,
-                                            "batching_log_processor",
-                                            ERROR_TYPE,
-                                            "already_shutdown")),
+                                            name -> name.matches("batching_log_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor"),
+                                        equalTo(ERROR_TYPE, "already_shutdown")),
                             p ->
                                 p.hasValue(1)
-                                    .hasAttributes(
-                                        Attributes.of(
+                                    .hasAttributesSatisfyingExactly(
+                                        satisfies(
                                             OTEL_COMPONENT_NAME,
-                                            "batching_log_processor/0",
-                                            OTEL_COMPONENT_TYPE,
-                                            "batching_log_processor",
-                                            ERROR_TYPE,
-                                            "queue_full")))),
+                                            name -> name.matches("batching_log_processor/[0-9]+")),
+                                        equalTo(OTEL_COMPONENT_TYPE, "batching_log_processor"),
+                                        equalTo(ERROR_TYPE, "queue_full")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.log.created")
@@ -384,12 +402,11 @@ class SdkLoggerProviderMetricsTest {
                     .hasLongSumSatisfying(s ->
                         s.hasPointsSatisfying(p ->
                             p.hasValue(1)
-                                .hasAttributes(
-                                    Attributes.of(
+                                .hasAttributesSatisfyingExactly(
+                                    satisfies(
                                         OTEL_COMPONENT_NAME,
-                                        "simple_log_processor/0",
-                                        OTEL_COMPONENT_TYPE,
-                                        "simple_log_processor")))),
+                                        name -> name.matches("simple_log_processor/[0-9]+")),
+                                    equalTo(OTEL_COMPONENT_TYPE, "simple_log_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.log.created")
