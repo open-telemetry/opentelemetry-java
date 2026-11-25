@@ -390,7 +390,7 @@ class ResourceTest {
 
     assertThat(pinned.getSchemaUrl()).isEqualTo("S1");
     assertThat(Resource.empty().merge(pinned)).isEqualTo(pinned);
-    assertThat(Resource.getDefault().merge(explicit).getSchemaUrl()).isEqualTo("explicit");
+    assertThat(Resource.empty().merge(explicit)).isEqualTo(explicit);
     assertThat(withoutEntitySchema.getSchemaUrl()).isNull();
     assertThat(
             Resource.create(Attributes.of(stringKey("a"), "1"), "S1")
@@ -855,6 +855,78 @@ class ResourceTest {
     assertThat(resource.getAttribute(stringKey("telemetry.sdk.language"))).isEqualTo("java");
     assertThat(resource.getAttribute(stringKey("telemetry.sdk.version")))
         .isEqualTo(System.getProperty("otel.test.project-version"));
+    assertThat(resource.getEntities())
+        .containsExactly(
+            Entity.builder(
+                    "telemetry.sdk",
+                    Attributes.of(
+                        stringKey("telemetry.sdk.name"),
+                        "opentelemetry",
+                        stringKey("telemetry.sdk.language"),
+                        "java"))
+                .setDescription(
+                    Attributes.of(
+                        stringKey("telemetry.sdk.version"),
+                        System.getProperty("otel.test.project-version")))
+                .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+                .build());
+    assertThat(resource.getUnassociatedAttributes())
+        .isEqualTo(Attributes.of(stringKey("service.name"), "unknown_service:java"));
+    assertThat(resource.getSchemaUrl()).isEqualTo("https://opentelemetry.io/schemas/1.40.0");
+    assertThat(resource.toBuilder().build()).isEqualTo(resource);
+    assertThat(Resource.empty().merge(resource)).isEqualTo(resource);
+  }
+
+  @ParameterizedTest
+  @MethodSource("defaultTelemetrySdkOverrides")
+  void testDefaultResources_telemetrySdkOverride(String key, String value) {
+    Resource resource =
+        Resource.getDefault().merge(Resource.create(Attributes.of(stringKey(key), value)));
+
+    assertThat(resource.getEntities()).isEmpty();
+    assertThat(resource.getAttributes())
+        .isEqualTo(Resource.getDefault().getAttributes().toBuilder().put(key, value).build());
+    assertThat(resource.getUnassociatedAttributes()).isEqualTo(resource.getAttributes());
+  }
+
+  static Stream<Arguments> defaultTelemetrySdkOverrides() {
+    return Stream.of(
+        Arguments.argumentSet("name", "telemetry.sdk.name", "custom-sdk"),
+        Arguments.argumentSet("language", "telemetry.sdk.language", "kotlin"),
+        Arguments.argumentSet("version", "telemetry.sdk.version", "custom-version"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("defaultServiceOverrides")
+  void testDefaultResources_serviceOverride(Resource override, Resource expected) {
+    assertThat(Resource.getDefault().merge(override)).isEqualTo(expected);
+    assertThat(Resource.getDefault().toBuilder().putAll(override).build())
+        .isEqualTo(expected.toBuilder().build());
+    assertThat(logs.getEvents()).filteredOn(event -> event.getLevel().equals(WARN)).isEmpty();
+  }
+
+  static Stream<Arguments> defaultServiceOverrides() {
+    Resource defaults = Resource.getDefault();
+    Entity service =
+        Entity.builder("service", Attributes.of(stringKey("service.name"), "configured"))
+            .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+            .build();
+    Resource configuredService = Resource.builder().addEntity(service).build();
+    Resource withoutService =
+        defaults.toBuilder().removeIf(key -> key.getKey().equals("service.name")).build();
+    return Stream.of(
+        Arguments.argumentSet(
+            "unchanged name preserves fallback",
+            Resource.create(Attributes.of(stringKey("service.name"), "unknown_service:java")),
+            defaults),
+        Arguments.argumentSet(
+            "ordinary name overrides fallback",
+            Resource.create(Attributes.of(stringKey("service.name"), "configured")),
+            withoutService.toBuilder().put("service.name", "configured").build()),
+        Arguments.argumentSet(
+            "entity replaces fallback",
+            configuredService,
+            withoutService.toBuilder().addEntity(service).build()));
   }
 
   @Test

@@ -38,6 +38,7 @@ import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -47,6 +48,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -1261,11 +1263,9 @@ class SdkSpanBuilderTest {
                 + "spanId=0000000000000000, "
                 + "traceFlags=00, "
                 + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false, valid=false}, "
-                + "resource=Resource\\{schemaUrl=null, "
-                + "entities=\\[\\], "
-                + "attributes=\\{service.name=\"unknown_service:java\", "
-                + "telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", "
-                + "telemetry.sdk.version=\"\\d+.\\d+.\\d+(-rc.\\d+)?(-SNAPSHOT)?\"\\}\\}, "
+                + "resource="
+                + Pattern.quote(Resource.getDefault().toString())
+                + ", "
                 + "instrumentationScopeInfo=InstrumentationScopeInfo\\{"
                 + "name=SpanBuilderSdkTest, version=null, schemaUrl=null, attributes=\\{}}, "
                 + "name=span_name, "
