@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesFilters;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
+import io.opentelemetry.sdk.metrics.internal.view.ViewMatchingMode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public final class SdkMeterProviderBuilder {
       new IdentityHashMap<>();
   private final List<MetricProducer> metricProducers = new ArrayList<>();
   private final List<RegisteredView> registeredViews = new ArrayList<>();
+  private ViewMatchingMode viewMatchingMode = ViewMatchingMode.INDEPENDENT;
   private ExemplarFilterInternal exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
   private ScopeConfiguratorBuilder<MeterConfig> meterConfiguratorBuilder =
       MeterConfig.configuratorBuilder();
@@ -171,7 +173,10 @@ public final class SdkMeterProviderBuilder {
             view,
             AttributesFilters.byKeyName(view.getAttributeFilter()),
             view.getCardinalityLimit(),
-            SourceInfo.fromCurrentStack()));
+            SourceInfo.fromCurrentStack(),
+            view.getExplicitAggregation(),
+            view.getExplicitAttributeFilter(),
+            view.getExplicitCardinalityLimit()));
     return this;
   }
 
@@ -263,6 +268,17 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
+  /**
+   * Set the view matching mode.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#setViewMatchingMode(SdkMeterProviderBuilder, ViewMatchingMode)}.
+   */
+  SdkMeterProviderBuilder setViewMatchingMode(ViewMatchingMode viewMatchingMode) {
+    this.viewMatchingMode = Objects.requireNonNull(viewMatchingMode, "viewMatchingMode");
+    return this;
+  }
+
   /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
     SdkResourceProvider effectiveSdkResourceProvider =
@@ -275,6 +291,7 @@ public final class SdkMeterProviderBuilder {
         effectiveSdkResourceProvider,
         exemplarFilter,
         meterConfiguratorBuilder.build(),
-        contextScopedAttributesFilter);
+        contextScopedAttributesFilter,
+        viewMatchingMode);
   }
 }

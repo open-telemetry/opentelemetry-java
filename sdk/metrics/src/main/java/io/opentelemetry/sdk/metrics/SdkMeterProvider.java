@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
+import io.opentelemetry.sdk.metrics.internal.view.ViewMatchingMode;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
@@ -55,6 +56,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   static final String DEFAULT_METER_NAME = "unknown";
 
   private final List<RegisteredView> registeredViews;
+  private final ViewMatchingMode viewMatchingMode;
   private final List<RegisteredReader> registeredReaders;
   private final List<MetricProducer> metricProducers;
   private final MeterProviderSharedState sharedState;
@@ -78,15 +80,18 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       ExemplarFilterInternal exemplarFilter,
       ScopeConfigurator<MeterConfig> meterConfigurator,
       @Nullable
-          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter,
+      ViewMatchingMode viewMatchingMode) {
     this.resourceProvider = resourceProvider;
     this.registeredViews = registeredViews;
+    this.viewMatchingMode = viewMatchingMode;
     this.registeredReaders =
         metricReaders.entrySet().stream()
             .map(entry ->
                 RegisteredReader.create(
                     entry.getKey(),
-                    ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
+                    ViewRegistry.create(
+                        entry.getKey(), entry.getValue(), registeredViews, viewMatchingMode)))
             .collect(toList());
     this.metricProducers = metricProducers;
     this.sharedState =
@@ -210,6 +215,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
         + metricProducers
         + ", views="
         + registeredViews
+        + ", viewMatchingMode="
+        + viewMatchingMode
         + ", meterConfigurator="
         + meterConfigurator
         + "}";
