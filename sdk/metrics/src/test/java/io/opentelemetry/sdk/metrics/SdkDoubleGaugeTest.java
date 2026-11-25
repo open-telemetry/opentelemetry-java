@@ -72,12 +72,11 @@ class SdkDoubleGaugeTest {
         sdkMeter.gaugeBuilder("testGauge").buildWithCallback(measurement -> measurement.record(10));
 
     assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("testGauge")
-                    .hasDoubleGaugeSatisfying(
-                        doubleGauge -> doubleGauge.hasPointsSatisfying(point -> {})));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("testGauge")
+                .hasDoubleGaugeSatisfying(
+                    doubleGauge -> doubleGauge.hasPointsSatisfying(point -> {})));
 
     gauge.close();
 
@@ -108,23 +107,20 @@ class SdkDoubleGaugeTest {
     doubleGauge.set(13d);
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testGauge")
-                    .hasDescription("description")
-                    .hasUnit("K")
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(Attributes.empty())
-                                        .hasValue(13d))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testGauge")
+                .hasDescription("description")
+                .hasUnit("K")
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point
+                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                            .hasEpochNanos(testClock.now())
+                            .hasAttributes(Attributes.empty())
+                            .hasValue(13d))));
   }
 
   @Test
@@ -155,28 +151,22 @@ class SdkDoubleGaugeTest {
     }
 
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testGauge")
-                    .hasDescription("description")
-                    .hasUnit("K")
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(12d)
-                                        .hasExemplarsSatisfying(
-                                            exemplar ->
-                                                exemplar
-                                                    .hasValue(12d)
-                                                    .hasFilteredAttributes(
-                                                        Attributes.builder()
-                                                            .put("key", "value")
-                                                            .build())))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testGauge")
+                .hasDescription("description")
+                .hasUnit("K")
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(12d)
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar
+                                    .hasValue(12d)
+                                    .hasFilteredAttributes(
+                                        Attributes.builder().put("key", "value").build())))));
   }
 
   @Test
@@ -196,14 +186,11 @@ class SdkDoubleGaugeTest {
 
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("testGauge")
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point -> point.hasValue(12d).hasExemplars())));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("testGauge")
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point -> point.hasValue(12d).hasExemplars())));
   }
 
   @Test
@@ -224,18 +211,14 @@ class SdkDoubleGaugeTest {
 
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("testGauge")
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(12d)
-                                        .hasExemplarsSatisfying(
-                                            exemplar -> exemplar.hasValue(12d)))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("testGauge")
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(12d)
+                            .hasExemplarsSatisfying(exemplar -> exemplar.hasValue(12d)))));
   }
 
   @Test
@@ -250,90 +233,81 @@ class SdkDoubleGaugeTest {
     doubleGauge.set(321.5d, Attributes.builder().put("K", "V").build());
     doubleGauge.set(111.1d, Attributes.builder().put("K", "V").build());
     assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testGauge")
-                    .hasDescription("")
-                    .hasUnit("")
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(Attributes.empty())
-                                        .hasValue(21.4d),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(111.1d)
-                                        .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testGauge")
+                .hasDescription("")
+                .hasUnit("")
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(21.4d),
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(111.1d)
+                                .hasAttributes(attributeEntry("K", "V")))));
     assertThat(deltaReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testGauge")
-                    .hasDescription("")
-                    .hasUnit("")
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(Attributes.empty())
-                                        .hasValue(21.4d),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(111.1d)
-                                        .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testGauge")
+                .hasDescription("")
+                .hasUnit("")
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(21.4d),
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(111.1d)
+                                .hasAttributes(attributeEntry("K", "V")))));
 
     // Repeat to prove we keep previous values.
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleGauge.set(222d, Attributes.builder().put("K", "V").build());
     assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(Attributes.empty())
-                                        .hasValue(21.4d),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(222d)
-                                        .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(21.4d),
+                        point ->
+                            point
+                                .hasStartEpochNanos(startTime)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(222d)
+                                .hasAttributes(attributeEntry("K", "V")))));
     // Delta reader should only have point for {K=V} series, since the {} did not have any
     // measurements
     assertThat(deltaReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(startTime + SECOND_NANOS)
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(222d)
-                                        .hasAttributes(attributeEntry("K", "V")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasDoubleGaugeSatisfying(gauge ->
+                    gauge.hasPointsSatisfying(point ->
+                        point
+                            .hasStartEpochNanos(startTime + SECOND_NANOS)
+                            .hasEpochNanos(testClock.now())
+                            .hasValue(222d)
+                            .hasAttributes(attributeEntry("K", "V")))));
   }
 }

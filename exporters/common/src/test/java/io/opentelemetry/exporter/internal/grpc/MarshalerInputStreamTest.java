@@ -14,7 +14,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Random;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class MarshalerInputStreamTest {
 
@@ -50,15 +54,32 @@ class MarshalerInputStreamTest {
     assertThat(baos.toByteArray()).isEqualTo(CONTENT);
   }
 
-  @Test
-  void drainTo_fromPartial() throws IOException {
-    MarshalerInputStream stream = streamWithPartial(CONTENT);
+  @ParameterizedTest
+  @ValueSource(ints = {0, 1, 8192, 8193, 20000})
+  void drainTo_fromPartial(int size) throws IOException {
+    byte[] content = new byte[size];
+    new Random(0).nextBytes(content);
+    MarshalerInputStream stream = streamWithPartial(content);
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     int written = stream.drainTo(baos);
 
-    assertThat(written).isEqualTo(CONTENT.length);
-    assertThat(baos.toByteArray()).isEqualTo(CONTENT);
+    assertThat(written).isEqualTo(content.length);
+    assertThat(baos.toByteArray()).isEqualTo(content);
+    assertThat(stream.available()).isZero();
+    assertThat(stream.read()).isEqualTo(-1);
+  }
+
+  @Test
+  void drainTo_afterPartialRead() throws IOException {
+    MarshalerInputStream stream = streamWithPartial(CONTENT);
+    assertThat(stream.read()).isEqualTo(CONTENT[0] & 0xFF);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    int written = stream.drainTo(baos);
+
+    assertThat(written).isEqualTo(CONTENT.length - 1);
+    assertThat(baos.toByteArray()).isEqualTo(Arrays.copyOfRange(CONTENT, 1, CONTENT.length));
   }
 
   @Test

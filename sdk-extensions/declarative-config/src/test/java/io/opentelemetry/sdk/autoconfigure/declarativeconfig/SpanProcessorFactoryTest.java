@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
@@ -115,6 +115,16 @@ class SpanProcessorFactoryTest {
             new SpanProcessorModel()
                 .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.trace.SpanProcessor with name \"unknown_key\"."));
+  }
+
+  @Test
+  void create_Noop() {
+    SpanProcessor spanProcessor =
+        SpanProcessorFactory.getInstance()
+            .create(
+                new SpanProcessorModel().setExtensionProperty("noop", Collections.emptyMap()),
+                context);
+    assertThat(spanProcessor).isSameAs(SpanProcessor.noop());
   }
 
   @Test

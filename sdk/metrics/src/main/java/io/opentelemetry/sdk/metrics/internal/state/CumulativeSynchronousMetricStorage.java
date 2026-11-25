@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
 import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.CUMULATIVE;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
@@ -24,8 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
+import javax.annotation.Nullable;
 
 class CumulativeSynchronousMetricStorage<T extends PointData>
     extends DefaultSynchronousMetricStorage<T> {
@@ -42,8 +45,16 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
       Clock clock,
       int maxCardinality,
       boolean enabled,
+      @Nullable Predicate<AttributeKey<?>> contextScopedAttributesFilter,
       MemoryMode memoryMode) {
-    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
+    super(
+        metricDescriptor,
+        aggregator,
+        attributesFilter,
+        clock,
+        maxCardinality,
+        enabled,
+        contextScopedAttributesFilter);
     this.memoryMode = memoryMode;
   }
 
@@ -132,21 +143,20 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
     }
 
     // Grab aggregated points.
-    aggregatorHandles.forEach(
-        (attributes, handle) -> {
-          if (!handle.hasRecordedValues()) {
-            return;
-          }
-          // Start time for cumulative synchronous instruments is the time the first series
-          // measurement was recorded. I.e. the time the AggregatorHandle was created.
-          T point =
-              handle.aggregateThenMaybeReset(
-                  handle.getCreationEpochNanos(), epochNanos, attributes, /* reset= */ false);
+    aggregatorHandles.forEach((attributes, handle) -> {
+      if (!handle.hasRecordedValues()) {
+        return;
+      }
+      // Start time for cumulative synchronous instruments is the time the first series
+      // measurement was recorded. I.e. the time the AggregatorHandle was created.
+      T point =
+          handle.aggregateThenMaybeReset(
+              handle.getCreationEpochNanos(), epochNanos, attributes, /* reset= */ false);
 
-          if (point != null) {
-            points.add(point);
-          }
-        });
+      if (point != null) {
+        points.add(point);
+      }
+    });
 
     if (points.isEmpty() || !enabled) {
       return EmptyMetricData.getInstance();

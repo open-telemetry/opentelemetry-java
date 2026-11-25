@@ -37,6 +37,10 @@ public class MetricReusableDataMarshaler {
   }
 
   public CompletableResultCode export(Collection<MetricData> metrics) {
+    int pointCount = 0;
+    for (MetricData metric : metrics) {
+      pointCount += metric.getData().getPoints().size();
+    }
     if (memoryMode == MemoryMode.REUSABLE_DATA) {
       LowAllocationMetricsRequestMarshaler marshaler = marshalerPool.poll();
       if (marshaler == null) {
@@ -45,15 +49,14 @@ public class MetricReusableDataMarshaler {
       LowAllocationMetricsRequestMarshaler exportMarshaler = marshaler;
       exportMarshaler.initialize(metrics);
       return doExport
-          .apply(exportMarshaler, metrics.size())
-          .whenComplete(
-              () -> {
-                exportMarshaler.reset();
-                marshalerPool.add(exportMarshaler);
-              });
+          .apply(exportMarshaler, pointCount)
+          .whenComplete(() -> {
+            exportMarshaler.reset();
+            marshalerPool.add(exportMarshaler);
+          });
     }
     // MemoryMode == MemoryMode.IMMUTABLE_DATA
     MetricsRequestMarshaler request = MetricsRequestMarshaler.create(metrics);
-    return doExport.apply(request, metrics.size());
+    return doExport.apply(request, pointCount);
   }
 }

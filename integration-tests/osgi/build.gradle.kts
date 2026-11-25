@@ -118,7 +118,7 @@ fun registerOsgiSuite(
         |-tester: biz.aQute.tester.junit-platform
         |-runfw: org.apache.felix.framework
         |-runee: $runee
-        |-runvm: -Djava.util.logging.config.file="${loggingConfig.absolutePath}"
+        |-runvm: --sun-misc-unsafe-memory-access=allow, -Djava.util.logging.config.file="${loggingConfig.absolutePath}"
         |
         |-runrequires: \
         |  bnd.identity;id='$bsn',\
@@ -285,7 +285,7 @@ val autoconfigureSuiteTask = registerOsgiSuite(
 }
 
 // Suite: autoconfigure + declarative-config. Same as above but with declarative-config on the
-// classpath, additionally exercising declarative-config bundle OSGi metadata.
+// classpath, additionally exercising its SnakeYAML parser and Jackson mapper OSGi metadata.
 val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
   "autoconfigureDeclarativeConfig",
   extraRunrequires = listOf(
@@ -293,6 +293,8 @@ val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
     "opentelemetry-exporter-otlp",
     "opentelemetry-extension-trace-propagators",
     "opentelemetry-sdk-extension-declarative-config",
+    "opentelemetry-sdk-extension-declarative-config-jackson2",
+    "opentelemetry-sdk-extension-declarative-config-snakeyaml-engine2",
   ),
   serviceLoaderProvides = listOf(
     "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",

@@ -17,7 +17,7 @@ jobs:
       contents: read # for actions/checkout
       id-token: write # for Scorecard to publish results
       security-events: write # for the SARIF upload to code scanning
-    uses: open-telemetry/shared-workflows/.github/workflows/scorecard.yml@0cc57aeabf2a31cf41114e7b24561f21a04e360b # v0.18.0
+    uses: open-telemetry/shared-workflows/.github/workflows/scorecard.yml@f73c28e3be66444181acb54f07ada23f144c0c39 # v0.25.0
 
   workflow-notification:
     permissions:
@@ -25,6 +25,6 @@ jobs:
     needs:
       - analysis
     if: always()
-    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@0cc57aeabf2a31cf41114e7b24561f21a04e360b # v0.18.0
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@f73c28e3be66444181acb54f07ada23f144c0c39 # v0.25.0
     with:
       success: ${{ needs.analysis.result == 'success' }}

@@ -105,10 +105,9 @@ public abstract class AbstractOpenTelemetryTest {
     // Call GlobalOpenTelemetry.get() using a utility method so we can later assert it was
     // responsible for setting GlobalOpenTelemetry.
     assertThat(getGlobalOpenTelemetry())
-        .satisfies(
-            instance ->
-                assertThat(instance.getClass().getName())
-                    .isEqualTo("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry"))
+        .satisfies(instance ->
+            assertThat(instance.getClass().getName())
+                .isEqualTo("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry"))
         .extracting("delegate")
         .isSameAs(OpenTelemetry.noop());
 

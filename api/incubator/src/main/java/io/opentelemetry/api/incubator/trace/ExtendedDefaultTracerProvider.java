@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
+/** A no-op tracer provider supporting the incubating tracing API. */
 @ThreadSafe
 public class ExtendedDefaultTracerProvider implements TracerProvider {
 

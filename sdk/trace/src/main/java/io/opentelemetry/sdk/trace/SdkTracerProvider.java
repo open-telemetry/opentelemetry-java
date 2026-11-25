@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
@@ -16,12 +17,14 @@ import io.opentelemetry.sdk.common.internal.ComponentRegistry;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +35,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "";
   private final TracerSharedState sharedState;
+  private final SdkResourceProvider resourceProvider;
   private final ComponentRegistry<SdkTracer> tracerSdkComponentRegistry;
   // deliberately not volatile because of performance concerns
   // - which means its eventually consistent
@@ -50,30 +54,31 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   SdkTracerProvider(
       Clock clock,
       IdGenerator idsGenerator,
-      Resource resource,
+      SdkResourceProvider resourceProvider,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
       ScopeConfigurator<TracerConfig> tracerConfigurator,
       ExceptionAttributeResolver exceptionAttributeResolver,
-      Supplier<MeterProvider> meterProvider) {
+      Supplier<MeterProvider> meterProvider,
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
+    this.resourceProvider = resourceProvider;
     this.sharedState =
         new TracerSharedState(
             clock,
             idsGenerator,
-            resource,
+            resourceProvider,
             spanLimitsSupplier,
             sampler,
             spanProcessors,
             exceptionAttributeResolver,
-            new SdkTracerInstrumentation(meterProvider));
+            new SdkTracerInstrumentation(meterProvider),
+            contextScopedAttributesFilter);
     this.tracerSdkComponentRegistry =
-        new ComponentRegistry<>(
-            instrumentationScopeInfo ->
-                SdkTracer.create(
-                    sharedState,
-                    instrumentationScopeInfo,
-                    getTracerConfig(instrumentationScopeInfo)));
+        new ComponentRegistry<>(instrumentationScopeInfo ->
+            SdkTracer.create(
+                sharedState, instrumentationScopeInfo, getTracerConfig(instrumentationScopeInfo)));
     this.tracerConfigurator = tracerConfigurator;
   }
 
@@ -107,6 +112,16 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     return new SdkTracerBuilder(tracerSdkComponentRegistry, instrumentationScopeName);
   }
 
+  /**
+   * Returns the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to spans.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#getSdkResourceProvider(SdkTracerProvider)}.
+   */
+  SdkResourceProvider getSdkResourceProvider() {
+    return resourceProvider;
+  }
+
   /** Returns the {@link SpanLimits} that are currently applied to created spans. */
   public SpanLimits getSpanLimits() {
     return sharedState.getSpanLimits();
@@ -130,10 +145,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     this.tracerConfigurator = tracerConfigurator;
     this.tracerSdkComponentRegistry
         .getComponents()
-        .forEach(
-            sdkTracer ->
-                sdkTracer.updateTracerConfig(
-                    getTracerConfig(sdkTracer.getInstrumentationScopeInfo())));
+        .forEach(sdkTracer ->
+            sdkTracer.updateTracerConfig(getTracerConfig(sdkTracer.getInstrumentationScopeInfo())));
   }
 
   /**

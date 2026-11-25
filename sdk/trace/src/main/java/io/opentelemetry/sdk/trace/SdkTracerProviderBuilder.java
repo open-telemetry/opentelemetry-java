@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
@@ -15,14 +16,17 @@ import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 /** Builder of {@link SdkTracerProvider}. */
 public final class SdkTracerProviderBuilder {
@@ -33,6 +37,8 @@ public final class SdkTracerProviderBuilder {
   private Clock clock = Clock.getDefault();
   private IdGenerator idsGenerator = IdGenerator.random();
   private Resource resource = Resource.getDefault();
+  private boolean resourceExplicitlySet = false;
+  @Nullable private SdkResourceProvider resourceProvider;
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
   private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
@@ -40,6 +46,9 @@ public final class SdkTracerProviderBuilder {
   private ExceptionAttributeResolver exceptionAttributeResolver =
       ExceptionAttributeResolver.getDefault();
   private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
+
+  @Nullable
+  private BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter;
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link Span} is started, ended
@@ -78,10 +87,17 @@ public final class SdkTracerProviderBuilder {
    *
    * @param resource A Resource implementation.
    * @return this
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
    */
   public SdkTracerProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call setResource after setSdkResourceProvider has been called.");
+    }
     this.resource = resource;
+    this.resourceExplicitlySet = true;
     return this;
   }
 
@@ -89,11 +105,38 @@ public final class SdkTracerProviderBuilder {
    * Merge a {@link Resource} with the current.
    *
    * @param resource {@link Resource} to merge with current.
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
    * @since 1.29.0
    */
   public SdkTracerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call addResource after setSdkResourceProvider has been called.");
+    }
     this.resource = this.resource.merge(resource);
+    this.resourceExplicitlySet = true;
+    return this;
+  }
+
+  /**
+   * Sets the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to all
+   * spans.
+   *
+   * <p>Mutually exclusive with {@link #setResource(Resource)} and {@link #addResource(Resource)}.
+   * The conflicting setter throws {@link IllegalStateException} if both are configured.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setSdkResourceProvider(SdkTracerProviderBuilder, SdkResourceProvider)}.
+   */
+  SdkTracerProviderBuilder setSdkResourceProvider(SdkResourceProvider resourceProvider) {
+    requireNonNull(resourceProvider, "resourceProvider");
+    if (resourceExplicitlySet) {
+      throw new IllegalStateException(
+          "Cannot call setSdkResourceProvider after setResource or addResource has been called.");
+    }
+    this.resourceProvider = resourceProvider;
     return this;
   }
 
@@ -248,21 +291,37 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Sets the filter predicate to determine which context-scoped attributes are inherited by spans.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setContextScopedAttributesFilter(SdkTracerProviderBuilder, BiPredicate)}.
+   */
+  SdkTracerProviderBuilder setContextScopedAttributesFilter(
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
+    return this;
+  }
+
+  /**
    * Create a new {@link SdkTracerProvider} instance with the configuration.
    *
    * @return The instance.
    */
   public SdkTracerProvider build() {
+    SdkResourceProvider effectiveSdkResourceProvider =
+        resourceProvider != null ? resourceProvider : SdkResourceProvider.create(resource);
     return new SdkTracerProvider(
         clock,
         idsGenerator,
-        resource,
+        effectiveSdkResourceProvider,
         spanLimitsSupplier,
         sampler,
         spanProcessors,
         tracerConfiguratorBuilder.build(),
         exceptionAttributeResolver,
-        meterProvider);
+        meterProvider,
+        contextScopedAttributesFilter);
   }
 
   SdkTracerProviderBuilder() {}

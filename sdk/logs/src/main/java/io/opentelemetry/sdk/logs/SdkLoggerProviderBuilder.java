@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -20,11 +21,14 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 /**
  * Builder class for {@link SdkLoggerProvider} instances.
@@ -35,6 +39,8 @@ public final class SdkLoggerProviderBuilder {
 
   private final List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
   private Resource resource = Resource.getDefault();
+  private boolean resourceExplicitlySet = false;
+  @Nullable private SdkResourceProvider resourceProvider;
   private Supplier<LogLimits> logLimitsSupplier = LogLimits::getDefault;
   private Clock clock = Clock.getDefault();
   private ScopeConfiguratorBuilder<LoggerConfig> loggerConfiguratorBuilder =
@@ -42,6 +48,9 @@ public final class SdkLoggerProviderBuilder {
   private ExceptionAttributeResolver exceptionAttributeResolver =
       ExceptionAttributeResolver.getDefault();
   private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
+
+  @Nullable
+  private BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter;
 
   SdkLoggerProviderBuilder() {}
 
@@ -51,10 +60,17 @@ public final class SdkLoggerProviderBuilder {
    *
    * @param resource the resource
    * @return this
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
    */
   public SdkLoggerProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call setResource after setSdkResourceProvider has been called.");
+    }
     this.resource = resource;
+    this.resourceExplicitlySet = true;
     return this;
   }
 
@@ -62,11 +78,38 @@ public final class SdkLoggerProviderBuilder {
    * Merge a {@link Resource} with the current.
    *
    * @param resource {@link Resource} to merge with current.
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
    * @since 1.29.0
    */
   public SdkLoggerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call addResource after setSdkResourceProvider has been called.");
+    }
     this.resource = this.resource.merge(resource);
+    this.resourceExplicitlySet = true;
+    return this;
+  }
+
+  /**
+   * Sets the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to all log
+   * records.
+   *
+   * <p>Mutually exclusive with {@link #setResource(Resource)} and {@link #addResource(Resource)}.
+   * The conflicting setter throws {@link IllegalStateException} if both are configured.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setSdkResourceProvider(SdkLoggerProviderBuilder, SdkResourceProvider)}.
+   */
+  SdkLoggerProviderBuilder setSdkResourceProvider(SdkResourceProvider resourceProvider) {
+    requireNonNull(resourceProvider, "resourceProvider");
+    if (resourceExplicitlySet) {
+      throw new IllegalStateException(
+          "Cannot call setSdkResourceProvider after setResource or addResource has been called.");
+    }
+    this.resourceProvider = resourceProvider;
     return this;
   }
 
@@ -202,18 +245,35 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
+   * Sets the filter predicate to determine which context-scoped attributes are inherited by log
+   * records.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setContextScopedAttributesFilter(SdkLoggerProviderBuilder, BiPredicate)}.
+   */
+  SdkLoggerProviderBuilder setContextScopedAttributesFilter(
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
+    return this;
+  }
+
+  /**
    * Create a {@link SdkLoggerProvider} instance.
    *
    * @return an instance configured with the provided options
    */
   public SdkLoggerProvider build() {
+    SdkResourceProvider effectiveSdkResourceProvider =
+        resourceProvider != null ? resourceProvider : SdkResourceProvider.create(resource);
     return new SdkLoggerProvider(
-        resource,
+        effectiveSdkResourceProvider,
         logLimitsSupplier,
         logRecordProcessors,
         clock,
         loggerConfiguratorBuilder.build(),
         exceptionAttributeResolver,
-        meterProvider);
+        meterProvider,
+        contextScopedAttributesFilter);
   }
 }

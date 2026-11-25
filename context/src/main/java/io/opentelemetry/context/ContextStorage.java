@@ -22,6 +22,7 @@
 
 package io.opentelemetry.context;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
@@ -33,31 +34,31 @@ import javax.annotation.Nullable;
  * before {@link Context} is attached:
  *
  * <pre>{@code
- * > public class MyStorage implements ContextStorageProvider {
- * >
- * >   @Override
- * >   public ContextStorage get() {
- * >     ContextStorage threadLocalStorage = ContextStorage.defaultStorage();
- * >     return new RequestContextStorage() {
- * >       @Override
- * >       public Scope T attach(Context toAttach) {
- * >         Context current = current();
- * >         setMdc(toAttach);
- * >         Scope scope = threadLocalStorage.attach(toAttach);
- * >         return () -> {
- * >           clearMdc();
- * >           setMdc(current);
- * >           scope.close();
- * >         }
- * >       }
- * >
- * >       @Override
- * >       public Context current() {
- * >         return threadLocalStorage.current();
- * >       }
- * >     }
- * >   }
- * > }
+ * public class MyStorage implements ContextStorageProvider {
+ *
+ *   @Override
+ *   public ContextStorage get() {
+ *     ContextStorage threadLocalStorage = ContextStorage.defaultStorage();
+ *     return new ContextStorage() {
+ *       @Override
+ *       public Scope attach(Context toAttach) {
+ *         Context current = current();
+ *         setMdc(toAttach);
+ *         Scope scope = threadLocalStorage.attach(toAttach);
+ *         return () -> {
+ *           clearMdc();
+ *           setMdc(current);
+ *           scope.close();
+ *         };
+ *       }
+ *
+ *       @Override
+ *       public Context current() {
+ *         return threadLocalStorage.current();
+ *       }
+ *     };
+ *   }
+ * }
  * }</pre>
  */
 public interface ContextStorage {
@@ -86,6 +87,10 @@ public interface ContextStorage {
    * main class.
    */
   static void addWrapper(Function<? super ContextStorage, ? extends ContextStorage> wrapper) {
+    if (wrapper == null) {
+      ApiUsageLogger.logNullParam(ContextStorage.class, "addWrapper", "wrapper");
+      return;
+    }
     ContextStorageWrappers.addWrapper(wrapper);
   }
 

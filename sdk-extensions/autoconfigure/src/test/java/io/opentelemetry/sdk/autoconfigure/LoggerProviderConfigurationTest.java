@@ -55,17 +55,15 @@ class LoggerProviderConfigurationTest {
     try (SdkLoggerProvider loggerProvider = builder.build()) {
       assertThat(loggerProvider)
           .extracting("sharedState")
-          .satisfies(
-              sharedState -> {
-                assertThat(sharedState)
-                    .extracting("logRecordProcessor")
-                    .isEqualTo(LogRecordProcessor.composite());
-                assertThat(sharedState)
-                    .extracting(
-                        "logLimitsSupplier", as(InstanceOfAssertFactories.type(Supplier.class)))
-                    .extracting(supplier -> (LogLimits) supplier.get())
-                    .isEqualTo(LogLimits.builder().setMaxNumberOfAttributes(5).build());
-              });
+          .satisfies(sharedState -> {
+            assertThat(sharedState)
+                .extracting("logRecordProcessor")
+                .isEqualTo(LogRecordProcessor.composite());
+            assertThat(sharedState)
+                .extracting("logLimitsSupplier", as(InstanceOfAssertFactories.type(Supplier.class)))
+                .extracting(supplier -> (LogLimits) supplier.get())
+                .isEqualTo(LogLimits.builder().setMaxNumberOfAttributes(5).build());
+          });
       assertThat(closeables).isEmpty();
     }
   }

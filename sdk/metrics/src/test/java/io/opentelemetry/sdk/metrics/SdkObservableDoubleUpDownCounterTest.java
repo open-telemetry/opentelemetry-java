@@ -47,11 +47,10 @@ class SdkObservableDoubleUpDownCounterTest {
             .buildWithCallback(measurement -> measurement.record(10));
 
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("testCounter")
-                    .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> {})));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("testCounter")
+                .hasDoubleSumSatisfying(sum -> sum.hasPointsSatisfying(point -> {})));
 
     counter.close();
 
@@ -100,42 +99,36 @@ class SdkObservableDoubleUpDownCounterTest {
             result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testObserver")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isCumulative()
-                                .isNotMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(12.1)
-                                            .hasAttributes(attributeEntry("k", "v")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testObserver")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.isCumulative()
+                        .isNotMonotonic()
+                        .hasPointsSatisfying(point ->
+                            point
+                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(12.1)
+                                .hasAttributes(attributeEntry("k", "v")))));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testObserver")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isCumulative()
-                                .isNotMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(12.1)
-                                            .hasAttributes(attributeEntry("k", "v")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testObserver")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.isCumulative()
+                        .isNotMonotonic()
+                        .hasPointsSatisfying(point ->
+                            point
+                                .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(12.1)
+                                .hasAttributes(attributeEntry("k", "v")))));
   }
 
   @Test
@@ -158,42 +151,36 @@ class SdkObservableDoubleUpDownCounterTest {
             result -> result.record(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testObserver")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isDelta()
-                                .isNotMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(12.1)
-                                            .hasAttributes(attributeEntry("k", "v")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testObserver")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.isDelta()
+                        .isNotMonotonic()
+                        .hasPointsSatisfying(point ->
+                            point
+                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(12.1)
+                                .hasAttributes(attributeEntry("k", "v")))));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testObserver")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.isDelta()
-                                .isNotMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(0)
-                                            .hasAttributes(attributeEntry("k", "v")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasResource(RESOURCE)
+                .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                .hasName("testObserver")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.isDelta()
+                        .isNotMonotonic()
+                        .hasPointsSatisfying(point ->
+                            point
+                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(0)
+                                .hasAttributes(attributeEntry("k", "v")))));
   }
 
   @Test
@@ -216,14 +203,11 @@ class SdkObservableDoubleUpDownCounterTest {
 
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("testObserver")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point -> point.hasValue(12.1d).hasExemplars())));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("testObserver")
+                .hasDoubleSumSatisfying(
+                    sum -> sum.hasPointsSatisfying(point -> point.hasValue(12.1d).hasExemplars())));
   }
 
   @Test
@@ -242,17 +226,13 @@ class SdkObservableDoubleUpDownCounterTest {
 
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("testObserver")
-                    .hasDoubleSumSatisfying(
-                        sum ->
-                            sum.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(12.1d)
-                                        .hasExemplarsSatisfying(
-                                            exemplar -> exemplar.hasValue(12.1d)))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("testObserver")
+                .hasDoubleSumSatisfying(sum ->
+                    sum.hasPointsSatisfying(point ->
+                        point
+                            .hasValue(12.1d)
+                            .hasExemplarsSatisfying(exemplar -> exemplar.hasValue(12.1d)))));
   }
 }

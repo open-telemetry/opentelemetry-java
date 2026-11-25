@@ -10,7 +10,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
-import java.util.function.Function;
 
 enum ComposableAlwaysOnSampler implements ComposableSampler {
   INSTANCE;
@@ -20,7 +19,7 @@ enum ComposableAlwaysOnSampler implements ComposableSampler {
           ImmutableSamplingIntent.MIN_THRESHOLD,
           /* adjustedCountReliable= */ true,
           Attributes.empty(),
-          Function.identity());
+          ImmutableSamplingIntent.NO_TRACE_STATE_UPDATE);
 
   @Override
   public SamplingIntent getSamplingIntent(

@@ -275,6 +275,15 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void extract_EmptyTraceId() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(
+        PROPAGATION_HEADER, generateTraceIdHeaderValue("", SPAN_ID, DEPRECATED_PARENT_SPAN, "0"));
+
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  @Test
   void extract_InvalidTraceId_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
@@ -290,6 +299,15 @@ class JaegerPropagatorTest {
     invalidHeaders.put(
         PROPAGATION_HEADER,
         generateTraceIdHeaderValue(TRACE_ID, "abcdefghijklmnop", DEPRECATED_PARENT_SPAN, "0"));
+
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  @Test
+  void extract_EmptySpanId() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(
+        PROPAGATION_HEADER, generateTraceIdHeaderValue(TRACE_ID, "", DEPRECATED_PARENT_SPAN, "0"));
 
     verifyInvalidBehavior(invalidHeaders);
   }
@@ -346,6 +364,29 @@ class JaegerPropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  void extract_HexadecimalFlags(byte flags, String encodedFlags, TraceFlags expectedTraceFlags) {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    JaegerSpanContext context =
+        new JaegerSpanContext(
+            TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, flags);
+    carrier.put(PROPAGATION_HEADER, TextMapCodec.contextAsString(context));
+
+    assertThat(carrier.get(PROPAGATION_HEADER)).endsWith(":" + encodedFlags);
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.root(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, expectedTraceFlags, TraceState.getDefault()));
+  }
+
+  static Stream<Arguments> extract_HexadecimalFlags() {
+    return Stream.of(
+        Arguments.argumentSet("sampled debug firehose", (byte) 0x0b, "b", TraceFlags.getSampled()),
+        Arguments.argumentSet("unsampled hex", (byte) 0x0a, "a", TraceFlags.getDefault()),
+        Arguments.argumentSet("two-digit hex", (byte) 0xff, "ff", TraceFlags.getSampled()));
   }
 
   @Test

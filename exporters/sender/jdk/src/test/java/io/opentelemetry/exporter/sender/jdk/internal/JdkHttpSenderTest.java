@@ -45,12 +45,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -63,6 +68,7 @@ class JdkHttpSenderTest {
   private final HttpClient realHttpClient =
       HttpClient.newBuilder().connectTimeout(Duration.ofMillis(10)).build();
   @Mock private HttpClient mockHttpClient;
+  @Mock private JdkHttpSender.Sleeper sleeper;
   private JdkHttpSender sender;
 
   @BeforeEach
@@ -70,9 +76,8 @@ class JdkHttpSenderTest {
     // Can't directly spy on HttpClient for some reason, so create a real instance and a mock that
     // delegates to the real thing
     when(mockHttpClient.send(any(), any()))
-        .thenAnswer(
-            invocation ->
-                realHttpClient.send(invocation.getArgument(0), invocation.getArgument(1)));
+        .thenAnswer(invocation ->
+            realHttpClient.send(invocation.getArgument(0), invocation.getArgument(1)));
     sender =
         new JdkHttpSender(
             mockHttpClient,
@@ -154,10 +159,9 @@ class JdkHttpSenderTest {
   @Test
   void sendInternal_RetryableConnectTimeoutException() throws IOException, InterruptedException {
     assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
-        .satisfies(
-            e ->
-                assertThat((e instanceof HttpConnectTimeoutException) || (e instanceof IOException))
-                    .isTrue());
+        .satisfies(e ->
+            assertThat((e instanceof HttpConnectTimeoutException) || (e instanceof IOException))
+                .isTrue());
 
     verify(mockHttpClient, times(2)).send(any(), any());
   }
@@ -180,12 +184,10 @@ class JdkHttpSenderTest {
             Long.MAX_VALUE);
 
     assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
-        .satisfies(
-            e ->
-                assertThat(
-                        (e instanceof ConnectException)
-                            || (e instanceof HttpConnectTimeoutException))
-                    .isTrue());
+        .satisfies(e ->
+            assertThat(
+                    (e instanceof ConnectException) || (e instanceof HttpConnectTimeoutException))
+                .isTrue());
 
     verify(mockHttpClient, times(2)).send(any(), any());
   }
@@ -207,6 +209,63 @@ class JdkHttpSenderTest {
         .hasMessage("error!");
 
     verify(mockHttpClient, times(2)).send(any(), any());
+  }
+
+  @ParameterizedTest
+  @MethodSource("retryAfterArgs")
+  @SuppressWarnings("unchecked")
+  void sendInternal_retryAfter(String retryAfter, long minDelayNanos, long maxDelayNanos)
+      throws IOException, InterruptedException {
+    java.net.http.HttpResponse<InputStream> retryableResponse =
+        mock(java.net.http.HttpResponse.class);
+    when(retryableResponse.statusCode()).thenReturn(502);
+    when(retryableResponse.body()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    when(retryableResponse.headers())
+        .thenReturn(
+            HttpHeaders.of(
+                Collections.singletonMap("Retry-After", Collections.singletonList(retryAfter)),
+                (a, b) -> true));
+    java.net.http.HttpResponse<InputStream> successResponse =
+        mock(java.net.http.HttpResponse.class);
+    when(successResponse.statusCode()).thenReturn(200);
+    when(successResponse.body()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    when(successResponse.headers())
+        .thenReturn(HttpHeaders.of(Collections.emptyMap(), (a, b) -> true));
+    doReturn(retryableResponse, successResponse).when(mockHttpClient).send(any(), any());
+
+    JdkHttpSender testSender =
+        new JdkHttpSender(
+            mockHttpClient,
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofMinutes(1),
+            Collections::emptyMap,
+            RetryPolicy.builder()
+                .setMaxAttempts(2)
+                .setInitialBackoff(Duration.ofSeconds(1))
+                .setMaxBackoff(Duration.ofSeconds(1))
+                .build(),
+            null,
+            Long.MAX_VALUE);
+    try {
+      assertThat(testSender.sendInternal(new NoOpRequestBodyWriter(), sleeper).getStatusCode())
+          .isEqualTo(200);
+      verify(mockHttpClient, times(2)).send(any(), any());
+      ArgumentCaptor<Long> delayNanos = ArgumentCaptor.forClass(Long.class);
+      verify(sleeper).sleep(delayNanos.capture());
+      assertThat(delayNanos.getValue()).isBetween(minDelayNanos, maxDelayNanos);
+    } finally {
+      testSender.shutdown();
+    }
+  }
+
+  private static Stream<Arguments> retryAfterArgs() {
+    return Stream.of(
+        Arguments.argumentSet("zero delay", "0", 0L, 0L),
+        Arguments.argumentSet("nonzero delay", "2", 2_000_000_000L, 2_000_000_000L),
+        Arguments.argumentSet(
+            "malformed header", "not-a-retry-after", 800_000_000L, 1_200_000_000L));
   }
 
   @Test
@@ -242,12 +301,11 @@ class JdkHttpSenderTest {
       assertThat(defaultSender)
           .extracting(
               "executorService", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
-          .satisfies(
-              executor -> {
-                assertThat(executor.getMaximumPoolSize()).isEqualTo(expectedMax);
-                assertThat(executor.getRejectedExecutionHandler())
-                    .isInstanceOf(ThreadPoolExecutor.AbortPolicy.class);
-              });
+          .satisfies(executor -> {
+            assertThat(executor.getMaximumPoolSize()).isEqualTo(expectedMax);
+            assertThat(executor.getRejectedExecutionHandler())
+                .isInstanceOf(ThreadPoolExecutor.AbortPolicy.class);
+          });
     } finally {
       defaultSender.shutdown();
     }
@@ -272,9 +330,8 @@ class JdkHttpSenderTest {
 
     assertThat(sender)
         .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
-        .satisfies(
-            httpClient ->
-                assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
+        .satisfies(httpClient ->
+            assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
   }
 
   @SuppressWarnings("unchecked")
@@ -325,9 +382,55 @@ class JdkHttpSenderTest {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  void sendInternal_unsupportedContentEncoding_closesBody() throws Exception {
+    AtomicBoolean closed = new AtomicBoolean();
+    java.net.http.HttpResponse<InputStream> mockJdkResponse =
+        mock(java.net.http.HttpResponse.class);
+    when(mockJdkResponse.statusCode()).thenReturn(200);
+    when(mockJdkResponse.body())
+        .thenReturn(
+            new ByteArrayInputStream(new byte[0]) {
+              @Override
+              public void close() throws IOException {
+                closed.set(true);
+                super.close();
+              }
+            });
+    when(mockJdkResponse.headers())
+        .thenReturn(
+            HttpHeaders.of(
+                Collections.singletonMap("Content-Encoding", Collections.singletonList("br")),
+                (a, b) -> true));
+    doReturn(mockJdkResponse).when(mockHttpClient).send(any(), any());
+
+    JdkHttpSender testSender =
+        new JdkHttpSender(
+            mockHttpClient,
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            Long.MAX_VALUE);
+
+    try {
+      assertThatThrownBy(() -> testSender.sendInternal(new NoOpRequestBodyWriter()))
+          .isInstanceOf(IOException.class)
+          .hasMessage("Unsupported Content-Encoding: br");
+      assertThat(closed.get()).isTrue();
+    } finally {
+      testSender.shutdown();
+    }
+  }
+
   @Test
   void send_ioException_callsOnError() throws Exception {
-    doThrow(new IOException("send failed")).when(mockHttpClient).send(any(), any());
+    IOException exception = new IOException("send failed");
+    doThrow(exception).when(mockHttpClient).send(any(), any());
 
     JdkHttpSender testSender =
         new JdkHttpSender(
@@ -358,9 +461,7 @@ class JdkHttpSenderTest {
           });
 
       assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
-      assertThat(errorRef.get()).isNotNull();
-      assertThat(errorRef.get()).hasRootCauseInstanceOf(IOException.class);
-      assertThat(errorRef.get()).hasRootCauseMessage("send failed");
+      assertThat(errorRef.get()).isSameAs(exception);
       assertThat(responseRef.get()).isNull();
     } finally {
       testSender.shutdown();

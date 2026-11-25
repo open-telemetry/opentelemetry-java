@@ -59,26 +59,23 @@ class PromisePropagationTest {
       try (Scope parentScope = tracer.activateSpan(parentSpan)) {
         Promise<String> successPromise = new Promise<>(context, tracer);
 
-        successPromise.onSuccess(
-            s -> {
-              tracer.activeSpan().log("Promised 1 " + s);
-              successResult1.set(s);
-              phaser.arriveAndAwaitAdvance(); // result set
-            });
-        successPromise.onSuccess(
-            s -> {
-              tracer.activeSpan().log("Promised 2 " + s);
-              successResult2.set(s);
-              phaser.arriveAndAwaitAdvance(); // result set
-            });
+        successPromise.onSuccess(s -> {
+          tracer.activeSpan().log("Promised 1 " + s);
+          successResult1.set(s);
+          phaser.arriveAndAwaitAdvance(); // result set
+        });
+        successPromise.onSuccess(s -> {
+          tracer.activeSpan().log("Promised 2 " + s);
+          successResult2.set(s);
+          phaser.arriveAndAwaitAdvance(); // result set
+        });
 
         Promise<String> errorPromise = new Promise<>(context, tracer);
 
-        errorPromise.onError(
-            t -> {
-              errorResult.set(t);
-              phaser.arriveAndAwaitAdvance(); // result set
-            });
+        errorPromise.onError(t -> {
+          errorResult.set(t);
+          phaser.arriveAndAwaitAdvance(); // result set
+        });
 
         assertThat(otelTesting.getSpans().size()).isEqualTo(0);
         successPromise.success("success!");

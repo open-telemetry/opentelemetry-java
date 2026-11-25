@@ -515,11 +515,14 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   public Span addLink(SpanContext spanContext, Attributes attributes) {
-    if (spanContext == null || !spanContext.isValid()) {
+    if (spanContext == null) {
       return this;
     }
     if (attributes == null) {
       attributes = Attributes.empty();
+    }
+    if (!spanContext.isValid() && attributes.isEmpty() && spanContext.getTraceState().isEmpty()) {
+      return this;
     }
     LinkData link =
         LinkData.create(
@@ -527,7 +530,8 @@ final class SdkSpan implements ReadWriteSpan {
             AttributeUtil.applyAttributesLimit(
                 attributes,
                 spanLimits.getMaxNumberOfAttributesPerLink(),
-                spanLimits.getMaxAttributeValueLength()));
+                spanLimits.getMaxAttributeValueLength()),
+            attributes.size());
     synchronized (lock) {
       if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling addLink() on an ended Span.");

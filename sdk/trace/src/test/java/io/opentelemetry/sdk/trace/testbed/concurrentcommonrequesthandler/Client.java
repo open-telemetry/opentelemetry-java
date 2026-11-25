@@ -21,26 +21,23 @@ final class Client {
 
   public Future<String> send(Object message) {
     RequestHandlerContext requestHandlerContext = new RequestHandlerContext();
-    return executor.submit(
-        () -> {
-          TestUtils.sleep();
-          executor
-              .submit(
-                  () -> {
-                    TestUtils.sleep();
-                    requestHandler.beforeRequest(message, requestHandlerContext);
-                  })
-              .get();
+    return executor.submit(() -> {
+      TestUtils.sleep();
+      executor
+          .submit(() -> {
+            TestUtils.sleep();
+            requestHandler.beforeRequest(message, requestHandlerContext);
+          })
+          .get();
 
-          executor
-              .submit(
-                  () -> {
-                    TestUtils.sleep();
-                    requestHandler.afterResponse(message, requestHandlerContext);
-                  })
-              .get();
+      executor
+          .submit(() -> {
+            TestUtils.sleep();
+            requestHandler.afterResponse(message, requestHandlerContext);
+          })
+          .get();
 
-          return message + ":response";
-        });
+      return message + ":response";
+    });
   }
 }

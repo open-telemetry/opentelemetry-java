@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -54,6 +55,10 @@ public interface TraceFlags {
    * @return the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
    */
   static TraceFlags fromHex(CharSequence src, int srcOffset) {
+    if (src == null) {
+      ApiUsageLogger.logNullParam(TraceFlags.class, "fromHex", "src");
+      return getDefault();
+    }
     return ImmutableTraceFlags.fromHex(src, srcOffset);
   }
 

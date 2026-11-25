@@ -5,10 +5,14 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -18,31 +22,39 @@ import javax.annotation.Nullable;
  */
 final class LoggerSharedState {
   private final Object lock = new Object();
-  private final Resource resource;
+  private final SdkResourceProvider resourceProvider;
   private final Supplier<LogLimits> logLimitsSupplier;
   private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
   private final SdkLoggerInstrumentation loggerInstrumentation;
+
+  @Nullable
+  private final BiPredicate<InstrumentationScopeInfo, AttributeKey<?>>
+      contextScopedAttributesFilter;
+
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
-      Resource resource,
+      SdkResourceProvider resourceProvider,
       Supplier<LogLimits> logLimitsSupplier,
       LogRecordProcessor logRecordProcessor,
       Clock clock,
       ExceptionAttributeResolver exceptionAttributeResolver,
-      SdkLoggerInstrumentation loggerInstrumentation) {
-    this.resource = resource;
+      SdkLoggerInstrumentation loggerInstrumentation,
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
+    this.resourceProvider = resourceProvider;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.loggerInstrumentation = loggerInstrumentation;
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
   }
 
   Resource getResource() {
-    return resource;
+    return resourceProvider.getResource();
   }
 
   LogLimits getLogLimits() {
@@ -63,6 +75,11 @@ final class LoggerSharedState {
 
   SdkLoggerInstrumentation getLoggerInstrumentation() {
     return loggerInstrumentation;
+  }
+
+  @Nullable
+  BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> getContextScopedAttributesFilter() {
+    return contextScopedAttributesFilter;
   }
 
   boolean hasBeenShutdown() {

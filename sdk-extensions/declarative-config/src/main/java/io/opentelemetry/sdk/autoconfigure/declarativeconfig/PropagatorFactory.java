@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PropagatorModel;
@@ -33,13 +33,12 @@ final class PropagatorFactory implements Factory<PropagatorModel, ContextPropaga
     Set<String> propagatorNames = new HashSet<>();
     List<TextMapPropagator> textMapPropagators = new ArrayList<>();
     if (textMapPropagatorModels != null) {
-      textMapPropagatorModels.forEach(
-          textMapPropagatorModel -> {
-            TextMapPropagatorAndName propagatorAndName =
-                TextMapPropagatorFactory.getInstance().create(textMapPropagatorModel, context);
-            textMapPropagators.add(propagatorAndName.getTextMapPropagator());
-            propagatorNames.add(propagatorAndName.getName());
-          });
+      textMapPropagatorModels.forEach(textMapPropagatorModel -> {
+        TextMapPropagatorAndName propagatorAndName =
+            TextMapPropagatorFactory.getInstance().create(textMapPropagatorModel, context);
+        textMapPropagators.add(propagatorAndName.getTextMapPropagator());
+        propagatorNames.add(propagatorAndName.getName());
+      });
     }
 
     String compositeList = model.getCompositeList();

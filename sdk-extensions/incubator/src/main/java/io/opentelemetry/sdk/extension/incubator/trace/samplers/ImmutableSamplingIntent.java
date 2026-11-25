@@ -8,7 +8,8 @@ package io.opentelemetry.sdk.extension.incubator.trace.samplers;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TraceState;
-import java.util.function.Function;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import java.util.function.BiFunction;
 
 @AutoValue
 abstract class ImmutableSamplingIntent implements SamplingIntent {
@@ -20,12 +21,15 @@ abstract class ImmutableSamplingIntent implements SamplingIntent {
   static final long MAX_THRESHOLD = 1L << RANDOM_VALUE_BITS;
   static final long MAX_RANDOM_VALUE = MAX_THRESHOLD - 1;
 
+  static final BiFunction<TraceState, SamplingDecision, TraceState> NO_TRACE_STATE_UPDATE =
+      (traceState, decision) -> traceState;
+
   static final SamplingIntent NON_SAMPLING_INTENT =
       create(
           ImmutableSamplingIntent.INVALID_THRESHOLD,
           /* adjustedCountReliable= */ false,
           Attributes.empty(),
-          Function.identity());
+          NO_TRACE_STATE_UPDATE);
 
   static boolean isValidThreshold(long threshold) {
     return threshold >= MIN_THRESHOLD && threshold <= MAX_THRESHOLD;
@@ -39,7 +43,7 @@ abstract class ImmutableSamplingIntent implements SamplingIntent {
       long threshold,
       boolean adjustedCountReliable,
       Attributes attributes,
-      Function<TraceState, TraceState> traceStateUpdater) {
+      BiFunction<TraceState, SamplingDecision, TraceState> traceStateUpdater) {
     return new AutoValue_ImmutableSamplingIntent(
         threshold, adjustedCountReliable, attributes, traceStateUpdater);
   }

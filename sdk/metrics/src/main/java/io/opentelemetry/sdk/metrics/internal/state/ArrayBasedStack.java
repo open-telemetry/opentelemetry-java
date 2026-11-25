@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static java.util.Objects.requireNonNull;
+
 import javax.annotation.Nullable;
 
 /**
@@ -38,9 +40,7 @@ public final class ArrayBasedStack<T> {
    * @throws NullPointerException if {@code element} is null
    */
   public void push(T element) {
-    if (element == null) {
-      throw new NullPointerException("Null is not permitted as element in the stack");
-    }
+    requireNonNull(element, "Null is not permitted as element in the stack");
     if (size == array.length) {
       resizeArray(array.length * 2);
     }

@@ -136,26 +136,24 @@ public abstract class Resource {
       putEntityAttributes(entity.getId(), entityKeys, fullAttributes);
       putEntityAttributes(entity.getDescription(), entityKeys, fullAttributes);
     }
-    attributes.forEach(
-        (key, value) -> {
-          if (entityKeys.contains(key.getKey())) {
-            throw new IllegalArgumentException(
-                "Unassociated attributes must not overlap entity attributes.");
-          }
-        });
+    attributes.forEach((key, value) -> {
+      if (entityKeys.contains(key.getKey())) {
+        throw new IllegalArgumentException(
+            "Unassociated attributes must not overlap entity attributes.");
+      }
+    });
     fullAttributes.putAll(attributes);
     return new AutoValue_Resource(schemaUrl, immutableEntities, fullAttributes.build());
   }
 
   private static void putEntityAttributes(
       Attributes attributes, Set<String> entityKeys, AttributesBuilder fullAttributes) {
-    attributes.forEach(
-        (key, value) -> {
-          if (!entityKeys.add(key.getKey())) {
-            throw new IllegalArgumentException(
-                "Entity attribute keys must have a single owner and classification.");
-          }
-        });
+    attributes.forEach((key, value) -> {
+      if (!entityKeys.add(key.getKey())) {
+        throw new IllegalArgumentException(
+            "Entity attribute keys must have a single owner and classification.");
+      }
+    });
     fullAttributes.putAll(attributes);
   }
 

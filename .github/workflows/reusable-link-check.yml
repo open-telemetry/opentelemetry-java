@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0 # needed for merge-base used in modified-files mode
           persist-credentials: false
 
-      - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
 
       - name: Link check for pull requests
         if: github.event_name == 'pull_request'

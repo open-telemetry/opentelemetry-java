@@ -86,13 +86,12 @@ class PooledHashMapTest {
     collidingMap.put(second, 2);
 
     Map<SameBucketKey, Integer> visited = new HashMap<>();
-    collidingMap.forEach(
-        (key, value) -> {
-          visited.put(key, value);
-          if (visited.size() == 1) {
-            collidingMap.remove(key); // drop the first one we see
-          }
-        });
+    collidingMap.forEach((key, value) -> {
+      visited.put(key, value);
+      if (visited.size() == 1) {
+        collidingMap.remove(key); // drop the first one we see
+      }
+    });
 
     assertThat(visited).containsOnlyKeys(first, second).containsValues(1, 2);
     assertThat(collidingMap.size()).isEqualTo(1);

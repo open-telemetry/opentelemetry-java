@@ -37,6 +37,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -207,10 +208,9 @@ class SdkSpanTest {
               ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
 
               Thread concurrent =
-                  new Thread(
-                      () -> {
-                        sp.setAttribute(concurrentAttrib, "concurrent_bar");
-                      });
+                  new Thread(() -> {
+                    sp.setAttribute(concurrentAttrib, "concurrent_bar");
+                  });
               concurrent.start();
               concurrent.join();
 
@@ -817,50 +817,43 @@ class SdkSpanTest {
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(6);
     assertThat(events.get(0))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event1");
-              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
-              assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event1");
+          assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+          assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+        });
     assertThat(events.get(1))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event2");
-              assertThat(event.getAttributes())
-                  .isEqualTo(Attributes.of(stringKey("e1key"), "e1Value"));
-              assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event2");
+          assertThat(event.getAttributes()).isEqualTo(Attributes.of(stringKey("e1key"), "e1Value"));
+          assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+        });
     assertThat(events.get(2))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event3");
-              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
-              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(10));
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event3");
+          assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+          assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(10));
+        });
     assertThat(events.get(3))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event4");
-              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
-              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(20));
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event4");
+          assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+          assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(20));
+        });
     assertThat(events.get(4))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event5");
-              assertThat(event.getAttributes())
-                  .isEqualTo(Attributes.builder().put("foo", "bar").build());
-              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(30));
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event5");
+          assertThat(event.getAttributes())
+              .isEqualTo(Attributes.builder().put("foo", "bar").build());
+          assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(30));
+        });
     assertThat(events.get(5))
-        .satisfies(
-            event -> {
-              assertThat(event.getName()).isEqualTo("event6");
-              assertThat(event.getAttributes())
-                  .isEqualTo(Attributes.builder().put("foo", "bar").build());
-              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(1000));
-            });
+        .satisfies(event -> {
+          assertThat(event.getName()).isEqualTo("event6");
+          assertThat(event.getAttributes())
+              .isEqualTo(Attributes.builder().put("foo", "bar").build());
+          assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(1000));
+        });
   }
 
   @Test
@@ -1030,6 +1023,7 @@ class SdkSpanTest {
                 // The 5th attribute key should be omitted due to attribute limits. Can't predict
                 // which of the 5 is dropped.
                 assertThat(link.getAttributes().size()).isEqualTo(4);
+                assertThat(link.getTotalAttributeCount()).isEqualTo(5);
               });
     } finally {
       span.end();
@@ -1044,6 +1038,117 @@ class SdkSpanTest {
     assertThatCode(() -> span.addLink(null, null)).doesNotThrowAnyException();
     assertThatCode(() -> span.addLink(SpanContext.getInvalid(), Attributes.empty()))
         .doesNotThrowAnyException();
+    span.addLink(null, Attributes.of(stringKey("message.id"), "123"));
+    span.addLink(SpanContext.getInvalid(), null);
+    assertThat(span.toSpanData().getLinks()).containsExactly(link);
+    assertThat(span.toSpanData().getTotalRecordedLinks()).isEqualTo(1);
+    span.addLink(spanContext, null);
+    span.end();
+    assertThat(span.toSpanData().getLinks()).containsExactly(link, LinkData.create(spanContext));
+    assertThat(span.toSpanData().getTotalRecordedLinks()).isEqualTo(2);
+  }
+
+  @ParameterizedTest
+  @MethodSource("invalidLinkArguments")
+  void addLink_invalidWithMetadata(
+      boolean hasTraceState, @Nullable Attributes attributes, boolean recorded) {
+    SpanContext context =
+        SpanContext.create(
+            TraceId.getInvalid(),
+            SpanId.getInvalid(),
+            TraceFlags.builder().setSampled(true).setRandomTraceId(true).build(),
+            hasTraceState
+                ? TraceState.builder().put("vendor", "value").build()
+                : TraceState.getDefault());
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    span.addLink(context);
+    assertThat(span.toSpanData().getLinks())
+        .containsExactlyElementsOf(
+            hasTraceState ? Arrays.asList(link, LinkData.create(context)) : singletonList(link));
+    assertThat(span.toSpanData().getTotalRecordedLinks()).isEqualTo(hasTraceState ? 2 : 1);
+    span.end();
+    span.addLink(context);
+    assertThat(span.toSpanData().getTotalRecordedLinks()).isEqualTo(hasTraceState ? 2 : 1);
+
+    span = createTestSpan(SpanKind.INTERNAL);
+    span.addLink(context, attributes);
+    span.end();
+    span.addLink(context, attributes);
+    assertThat(span.toSpanData().getLinks())
+        .containsExactlyElementsOf(
+            recorded
+                ? Arrays.asList(
+                    link,
+                    LinkData.create(context, attributes == null ? Attributes.empty() : attributes))
+                : singletonList(link));
+    assertThat(span.toSpanData().getTotalRecordedLinks()).isEqualTo(recorded ? 2 : 1);
+  }
+
+  private static Stream<Arguments> invalidLinkArguments() {
+    Attributes attributes = Attributes.of(stringKey("message.id"), "123");
+    return Stream.of(
+        Arguments.argumentSet("attributes", false, attributes, true),
+        Arguments.argumentSet("trace state", true, Attributes.empty(), true),
+        Arguments.argumentSet("attributes and trace state", true, attributes, true),
+        Arguments.argumentSet("flags only", false, Attributes.empty(), false),
+        Arguments.argumentSet("null attributes", false, null, false),
+        Arguments.argumentSet("trace state and null attributes", true, null, true));
+  }
+
+  @ParameterizedTest
+  @MethodSource("linkLimits")
+  void addLink_invalidWithMetadataLimits(int maxLinks, int maxAttributes) {
+    SdkSpan span =
+        createTestSpan(
+            SpanKind.INTERNAL,
+            SpanLimits.builder()
+                .setMaxNumberOfLinks(maxLinks)
+                .setMaxNumberOfAttributesPerLink(maxAttributes)
+                .setMaxAttributeValueLength(3)
+                .build(),
+            parentSpanId,
+            null,
+            Collections.emptyList(),
+            ExceptionAttributeResolver.getDefault());
+    SpanContext invalid = SpanContext.getInvalid();
+    SpanContext withTraceState =
+        SpanContext.create(
+            TraceId.getInvalid(),
+            SpanId.getInvalid(),
+            TraceFlags.getDefault(),
+            TraceState.builder().put("vendor", "value").build());
+    Attributes attributes = Attributes.of(stringKey("key0"), "value", stringKey("key1"), "other");
+    span.addLink(null, attributes);
+    span.addLink(invalid);
+    span.addLink(invalid, attributes);
+    span.addLink(spanContext);
+    span.addLink(withTraceState);
+    span.addLink(withTraceState, attributes);
+    span.end();
+
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getLinks())
+        .containsExactlyElementsOf(
+            maxLinks == 0
+                ? Collections.emptyList()
+                : Arrays.asList(
+                    LinkData.create(
+                        invalid,
+                        maxAttributes == 0
+                            ? Attributes.empty()
+                            : Attributes.of(stringKey("key0"), "val"),
+                        2),
+                    link,
+                    LinkData.create(withTraceState)));
+    assertThat(spanData.getTotalRecordedLinks()).isEqualTo(4);
+  }
+
+  private static Stream<Arguments> linkLimits() {
+    return Stream.of(
+        Arguments.argumentSet("zero links and attributes", 0, 0),
+        Arguments.argumentSet("zero links", 0, 1),
+        Arguments.argumentSet("zero attributes", 3, 0),
+        Arguments.argumentSet("limited links and attributes", 3, 1));
   }
 
   @Test
@@ -1072,10 +1177,9 @@ class SdkSpanTest {
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getTotalRecordedLinks()).isEqualTo(1);
     assertThat(spanData.getLinks())
-        .satisfiesExactly(
-            link -> {
-              assertThat(link.getSpanContext()).isEqualTo(linkedSpan.getSpanContext());
-            });
+        .satisfiesExactly(link -> {
+          assertThat(link.getSpanContext()).isEqualTo(linkedSpan.getSpanContext());
+        });
   }
 
   @Test
@@ -1478,19 +1582,17 @@ class SdkSpanTest {
             StatusData.ok()),
         Arguments.argumentSet(
             "setStatus OK after end ignored",
-            spanConsumer(
-                span -> {
-                  span.end();
-                  span.setStatus(StatusCode.OK);
-                }),
+            spanConsumer(span -> {
+              span.end();
+              span.setStatus(StatusCode.OK);
+            }),
             StatusData.unset()),
         Arguments.argumentSet(
             "setStatus ERROR after end ignored",
-            spanConsumer(
-                span -> {
-                  span.end();
-                  span.setStatus(StatusCode.ERROR);
-                }),
+            spanConsumer(span -> {
+              span.end();
+              span.setStatus(StatusCode.ERROR);
+            }),
             StatusData.unset()));
   }
 
@@ -1702,12 +1804,11 @@ class SdkSpanTest {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     ExecutorService es = Executors.newSingleThreadExecutor();
     Future<?> modifierFuture =
-        es.submit(
-            () -> {
-              for (int i = 0; i < 5096 * 5; ++i) {
-                span.setAttribute("hey" + i, "");
-              }
-            });
+        es.submit(() -> {
+          for (int i = 0; i < 5096 * 5; ++i) {
+            span.setAttribute("hey" + i, "");
+          }
+        });
     try {
       for (int i = 0; i < 5096 * 5; ++i) {
         span.toSpanData();

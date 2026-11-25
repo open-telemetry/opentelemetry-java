@@ -25,6 +25,7 @@ import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
@@ -40,6 +41,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
@@ -64,7 +66,8 @@ class OtlpGrpcMetricExporterBuilderTest {
               "test",
               "test",
               "test",
-              ImmutableGaugeData.empty()));
+              ImmutableGaugeData.create(
+                  singleton(ImmutableDoublePointData.create(0, 1, Attributes.empty(), 1.0)))));
 
   @RegisterExtension
   private static final ServerExtension server =

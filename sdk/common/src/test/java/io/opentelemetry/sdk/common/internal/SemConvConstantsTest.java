@@ -9,12 +9,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.semconv.ErrorAttributes;
 import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.RpcAttributes;
 import io.opentelemetry.semconv.SchemaUrls;
 import io.opentelemetry.semconv.ServerAttributes;
 import io.opentelemetry.semconv.ServiceAttributes;
 import io.opentelemetry.semconv.incubating.OtelIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.OtelIncubatingMetrics;
-import io.opentelemetry.semconv.incubating.RpcIncubatingAttributes;
 import org.junit.jupiter.api.Test;
 
 class SemConvConstantsTest {
@@ -41,8 +41,7 @@ class SemConvConstantsTest {
 
     assertThat(SemConvConstants.SERVER_ADDRESS).isEqualTo(ServerAttributes.SERVER_ADDRESS);
     assertThat(SemConvConstants.SERVER_PORT).isEqualTo(ServerAttributes.SERVER_PORT);
-    assertThat(SemConvConstants.RPC_RESPONSE_STATUS_CODE)
-        .isEqualTo(RpcIncubatingAttributes.RPC_RESPONSE_STATUS_CODE);
+    assertThat(SemConvConstants.RPC_STATUS_CODE).isEqualTo(RpcAttributes.RPC_STATUS_CODE);
     assertThat(SemConvConstants.HTTP_RESPONSE_STATUS_CODE)
         .isEqualTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE);
 

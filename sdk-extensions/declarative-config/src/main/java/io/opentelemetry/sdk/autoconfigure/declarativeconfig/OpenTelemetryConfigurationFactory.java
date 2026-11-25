@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LoggerProviderModel;

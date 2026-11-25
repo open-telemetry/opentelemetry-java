@@ -50,18 +50,84 @@ public class ComposableParentThresholdSamplerTest {
             SpanId.fromLong(3),
             TraceFlags.getSampled(),
             TraceState.builder()
+                .put("ot", new OtelTraceState(10, 10, Collections.emptyList()).serialize())
+                .build());
+    SamplingIntent intent =
+        ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
+            .getSamplingIntent(
+                Context.root().with(Span.wrap(parentSpanContext)),
+                "span",
+                SpanKind.SERVER,
+                Attributes.empty(),
+                Collections.emptyList());
+    assertThat(intent.getThreshold()).isEqualTo(10);
+    assertThat(intent.isAdjustedCountReliable()).isTrue();
+  }
+
+  @Test
+  void parentWithInconsistentThresholdSampled() {
+    // Sampled even though rv < th, so the threshold is erased and the sampled flag is used.
+    SpanContext parentSpanContext =
+        SpanContext.create(
+            TraceId.fromLongs(1, 2),
+            SpanId.fromLong(3),
+            TraceFlags.getSampled(),
+            TraceState.builder()
                 .put("ot", new OtelTraceState(1, 10, Collections.emptyList()).serialize())
                 .build());
-    assertThat(
-            ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
-                .getSamplingIntent(
-                    Context.root().with(Span.wrap(parentSpanContext)),
-                    "span",
-                    SpanKind.SERVER,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getThreshold())
-        .isEqualTo(10);
+    SamplingIntent intent =
+        ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
+            .getSamplingIntent(
+                Context.root().with(Span.wrap(parentSpanContext)),
+                "span",
+                SpanKind.SERVER,
+                Attributes.empty(),
+                Collections.emptyList());
+    assertThat(intent.getThreshold()).isZero();
+    assertThat(intent.isAdjustedCountReliable()).isFalse();
+  }
+
+  @Test
+  void parentWithInconsistentThresholdSampledTraceIdRandomness() {
+    // No rv, so randomness comes from the trace ID, which is 2 here.
+    SpanContext parentSpanContext =
+        SpanContext.create(
+            TraceId.fromLongs(1, 2),
+            SpanId.fromLong(3),
+            TraceFlags.getSampled(),
+            TraceState.builder().put("ot", "th:8").build());
+    SamplingIntent intent =
+        ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
+            .getSamplingIntent(
+                Context.root().with(Span.wrap(parentSpanContext)),
+                "span",
+                SpanKind.SERVER,
+                Attributes.empty(),
+                Collections.emptyList());
+    assertThat(intent.getThreshold()).isZero();
+    assertThat(intent.isAdjustedCountReliable()).isFalse();
+  }
+
+  @Test
+  void parentWithThresholdNotSampled() {
+    SpanContext parentSpanContext =
+        SpanContext.create(
+            TraceId.fromLongs(1, 2),
+            SpanId.fromLong(3),
+            TraceFlags.getDefault(),
+            TraceState.builder()
+                .put("ot", new OtelTraceState(1, 10, Collections.emptyList()).serialize())
+                .build());
+    SamplingIntent intent =
+        ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
+            .getSamplingIntent(
+                Context.root().with(Span.wrap(parentSpanContext)),
+                "span",
+                SpanKind.SERVER,
+                Attributes.empty(),
+                Collections.emptyList());
+    assertThat(intent.getThreshold()).isEqualTo(10);
+    assertThat(intent.isAdjustedCountReliable()).isTrue();
   }
 
   @Test

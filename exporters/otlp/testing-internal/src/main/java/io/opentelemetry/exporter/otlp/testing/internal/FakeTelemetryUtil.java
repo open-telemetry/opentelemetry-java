@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+/** Creates sample telemetry for OTLP exporter tests. */
 public class FakeTelemetryUtil {
 
   private static final String TRACE_ID = "00000000000000000000000000abc123";

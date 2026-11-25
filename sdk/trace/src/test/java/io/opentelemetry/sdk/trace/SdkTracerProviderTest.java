@@ -65,9 +65,8 @@ class SdkTracerProviderTest {
             .build();
 
     assertThat(tracerProvider).isNotNull();
-    assertThat(tracerProvider)
-        .extracting("sharedState")
-        .hasFieldOrPropertyWithValue("resource", resourceWithDefaults);
+    assertThat(SdkTracerProviderUtil.getSdkResourceProvider(tracerProvider).getResource())
+        .isEqualTo(resourceWithDefaults);
   }
 
   @Test
@@ -102,9 +101,8 @@ class SdkTracerProviderTest {
             .build();
 
     assertThat(tracerProvider).isNotNull();
-    assertThat(tracerProvider)
-        .extracting("sharedState")
-        .hasFieldOrPropertyWithValue("resource", resource);
+    assertThat(SdkTracerProviderUtil.getSdkResourceProvider(tracerProvider).getResource())
+        .isEqualTo(resource);
   }
 
   @Test
@@ -334,13 +332,25 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void explicitNoopSpanProcessor_tracerResolvesToNoop() {
+  void explicitNoopSpanProcessor_tracerIsReal() {
     Tracer tracer =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(NoopSpanProcessor.getInstance())
-            .build()
-            .get("test");
-    assertThat(tracer).isNotInstanceOf(SdkTracer.class);
+        SdkTracerProvider.builder().addSpanProcessor(SpanProcessor.noop()).build().get("test");
+    assertThat(tracer).isInstanceOf(SdkTracer.class);
+    assertThat(tracer.isEnabled()).isTrue();
+
+    Span span = tracer.spanBuilder("span").startSpan();
+    assertThat(span.getSpanContext().isValid()).isTrue();
+    assertThat(span.isRecording()).isTrue();
+    span.end();
+  }
+
+  @Test
+  void explicitEmptyCompositeSpanProcessor_tracerIsReal() {
+    // SpanProcessor.composite() returns the same instance as SpanProcessor.noop(), but registering
+    // it still counts as registering a processor.
+    Tracer tracer =
+        SdkTracerProvider.builder().addSpanProcessor(SpanProcessor.composite()).build().get("test");
+    assertThat(tracer).isInstanceOf(SdkTracer.class);
   }
 
   @Test

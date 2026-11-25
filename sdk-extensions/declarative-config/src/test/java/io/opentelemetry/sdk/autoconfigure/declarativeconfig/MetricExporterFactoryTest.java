@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
@@ -141,6 +141,14 @@ class MetricExporterFactoryTest {
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
+            "otlp_http max_request_size 0",
+            new PushMetricExporterModel()
+                .setOtlpHttp(new OtlpHttpMetricExporterModel().setMaxRequestSize(0)),
+            OtlpHttpMetricExporter.getDefault().toBuilder()
+                .setMaxRequestBodySize(Long.MAX_VALUE)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
             "otlp_grpc default",
             new PushMetricExporterModel().setOtlpGrpc(new OtlpGrpcMetricExporterModel()),
             OtlpGrpcMetricExporter.getDefault().toBuilder().setComponentLoader(context).build()),
@@ -182,6 +190,14 @@ class MetricExporterFactoryTest {
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
+            "otlp_grpc max_request_size 0",
+            new PushMetricExporterModel()
+                .setOtlpGrpc(new OtlpGrpcMetricExporterModel().setMaxRequestSize(0)),
+            OtlpGrpcMetricExporter.getDefault().toBuilder()
+                .setMaxRequestMessageSize(Long.MAX_VALUE)
+                .setComponentLoader(context)
+                .build()),
+        Arguments.argumentSet(
             "console",
             new PushMetricExporterModel().setConsole(new ConsoleMetricExporterModel()),
             LoggingMetricExporter.create()),
@@ -206,7 +222,17 @@ class MetricExporterFactoryTest {
             "unknown component provider",
             new PushMetricExporterModel()
                 .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
-            "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\"."));
+            "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\"."),
+        Arguments.argumentSet(
+            "otlp_http negative max_request_size",
+            new PushMetricExporterModel()
+                .setOtlpHttp(new OtlpHttpMetricExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.metrics.export.MetricExporter with name \"otlp_http\""),
+        Arguments.argumentSet(
+            "otlp_grpc negative max_request_size",
+            new PushMetricExporterModel()
+                .setOtlpGrpc(new OtlpGrpcMetricExporterModel().setMaxRequestSize(-1)),
+            "Error configuring io.opentelemetry.sdk.metrics.export.MetricExporter with name \"otlp_grpc\""));
   }
 
   @Test
@@ -294,12 +320,11 @@ class MetricExporterFactoryTest {
         .getBuilder()
         .addMetricExporterCustomizer(MetricExporter.class, (exporter, properties) -> null);
 
-    assertThatThrownBy(
-            () ->
-                MetricExporterFactory.getInstance()
-                    .create(
-                        new PushMetricExporterModel().setConsole(new ConsoleMetricExporterModel()),
-                        context))
+    assertThatThrownBy(() ->
+            MetricExporterFactory.getInstance()
+                .create(
+                    new PushMetricExporterModel().setConsole(new ConsoleMetricExporterModel()),
+                    context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Customizer returned null for MetricExporter: console");
   }

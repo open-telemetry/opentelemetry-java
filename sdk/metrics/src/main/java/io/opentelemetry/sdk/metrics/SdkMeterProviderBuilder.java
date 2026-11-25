@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
@@ -19,11 +20,14 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesFilters;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /**
  * Builder class for the {@link SdkMeterProvider}.
@@ -42,6 +46,8 @@ public final class SdkMeterProviderBuilder {
 
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
+  private boolean resourceExplicitlySet = false;
+  @Nullable private SdkResourceProvider resourceProvider;
   private final IdentityHashMap<MetricReader, CardinalityLimitSelector> metricReaders =
       new IdentityHashMap<>();
   private final List<MetricProducer> metricProducers = new ArrayList<>();
@@ -49,6 +55,9 @@ public final class SdkMeterProviderBuilder {
   private ExemplarFilterInternal exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
   private ScopeConfiguratorBuilder<MeterConfig> meterConfiguratorBuilder =
       MeterConfig.configuratorBuilder();
+
+  @Nullable
+  private BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter;
 
   SdkMeterProviderBuilder() {}
 
@@ -63,10 +72,20 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
-  /** Assign a {@link Resource} to be attached to all metrics. */
+  /**
+   * Assign a {@link Resource} to be attached to all metrics.
+   *
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
+   */
   public SdkMeterProviderBuilder setResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call setResource after setSdkResourceProvider has been called.");
+    }
     this.resource = resource;
+    this.resourceExplicitlySet = true;
     return this;
   }
 
@@ -74,11 +93,38 @@ public final class SdkMeterProviderBuilder {
    * Merge a {@link Resource} with the current.
    *
    * @param resource {@link Resource} to merge with current.
+   * @throws IllegalStateException if {@link #setSdkResourceProvider(SdkResourceProvider)} was
+   *     already called
    * @since 1.29.0
    */
   public SdkMeterProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
+    if (resourceProvider != null) {
+      throw new IllegalStateException(
+          "Cannot call addResource after setSdkResourceProvider has been called.");
+    }
     this.resource = this.resource.merge(resource);
+    this.resourceExplicitlySet = true;
+    return this;
+  }
+
+  /**
+   * Sets the {@link SdkResourceProvider} used to resolve the {@link Resource} attached to all
+   * metrics.
+   *
+   * <p>Mutually exclusive with {@link #setResource(Resource)} and {@link #addResource(Resource)}.
+   * The conflicting setter throws {@link IllegalStateException} if both are configured.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#setSdkResourceProvider(SdkMeterProviderBuilder, SdkResourceProvider)}.
+   */
+  SdkMeterProviderBuilder setSdkResourceProvider(SdkResourceProvider resourceProvider) {
+    Objects.requireNonNull(resourceProvider, "resourceProvider");
+    if (resourceExplicitlySet) {
+      throw new IllegalStateException(
+          "Cannot call setSdkResourceProvider after setResource or addResource has been called.");
+    }
+    this.resourceProvider = resourceProvider;
     return this;
   }
 
@@ -199,15 +245,36 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
+  /**
+   * Sets the filter predicate to determine which context-scoped attributes are inherited by
+   * synchronous metric measurements.
+   *
+   * <p>Note: Bound instruments (e.g. {@code BoundLongCounter}) do not inherit context-scoped
+   * attributes because their attributes are pre-resolved at {@code bind()} time and bound recording
+   * operations do not receive or evaluate Context.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#setContextScopedAttributesFilter(SdkMeterProviderBuilder, BiPredicate)}.
+   */
+  SdkMeterProviderBuilder setContextScopedAttributesFilter(
+      @Nullable
+          BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> contextScopedAttributesFilter) {
+    this.contextScopedAttributesFilter = contextScopedAttributesFilter;
+    return this;
+  }
+
   /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
+    SdkResourceProvider effectiveSdkResourceProvider =
+        resourceProvider != null ? resourceProvider : SdkResourceProvider.create(resource);
     return new SdkMeterProvider(
         registeredViews,
         metricReaders,
         metricProducers,
         clock,
-        resource,
+        effectiveSdkResourceProvider,
         exemplarFilter,
-        meterConfiguratorBuilder.build());
+        meterConfiguratorBuilder.build(),
+        contextScopedAttributesFilter);
   }
 }

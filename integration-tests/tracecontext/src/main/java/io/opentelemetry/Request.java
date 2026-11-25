@@ -8,6 +8,7 @@ package io.opentelemetry;
 import java.util.List;
 import javax.annotation.Nullable;
 
+/** An outbound request in a trace context conformance test, including any nested requests. */
 public final class Request {
   @Nullable private String url;
   @Nullable private List<Request> arguments;

@@ -21,11 +21,10 @@ class OtlpUserAgentTest {
   void addUserAgentHeader() {
     AtomicReference<String> keyRef = new AtomicReference<>();
     AtomicReference<String> valueRef = new AtomicReference<>();
-    OtlpUserAgent.addUserAgentHeader(
-        (key, value) -> {
-          keyRef.set(key);
-          valueRef.set(value);
-        });
+    OtlpUserAgent.addUserAgentHeader((key, value) -> {
+      keyRef.set(key);
+      valueRef.set(value);
+    });
     assertThat(keyRef.get()).isEqualTo("User-Agent");
     assertThat(valueRef.get()).matches("OTel-OTLP-Exporter-Java/1\\..*");
   }

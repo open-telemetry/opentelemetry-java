@@ -171,7 +171,7 @@ public final class HttpExporterBuilder {
   }
 
   public HttpExporterBuilder setMaxRequestBodySize(long maxRequestBodySize) {
-    this.maxRequestBodySize = maxRequestBodySize;
+    this.maxRequestBodySize = maxRequestBodySize == 0 ? Long.MAX_VALUE : maxRequestBodySize;
     return this;
   }
 
@@ -231,16 +231,15 @@ public final class HttpExporterBuilder {
             supplierResult.forEach(
                 (key, value) -> result.put(key, Collections.singletonList(value)));
           }
-          constantHeaders.forEach(
-              (key, value) ->
-                  result.merge(
-                      key,
-                      Collections.singletonList(value),
-                      (v1, v2) -> {
-                        List<String> merged = new ArrayList<>(v1);
-                        merged.addAll(v2);
-                        return merged;
-                      }));
+          constantHeaders.forEach((key, value) ->
+              result.merge(
+                  key,
+                  Collections.singletonList(value),
+                  (v1, v2) -> {
+                    List<String> merged = new ArrayList<>(v1);
+                    merged.addAll(v2);
+                    return merged;
+                  }));
           return result;
         };
 

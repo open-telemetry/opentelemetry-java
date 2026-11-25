@@ -26,27 +26,24 @@ final class Client {
 
   public Future<String> send(Object message) {
     Context context = new Context();
-    return executor.submit(
-        () -> {
-          logger.info("send {}", message);
-          TestUtils.sleep();
-          executor
-              .submit(
-                  () -> {
-                    TestUtils.sleep();
-                    requestHandler.beforeRequest(message, context);
-                  })
-              .get();
+    return executor.submit(() -> {
+      logger.info("send {}", message);
+      TestUtils.sleep();
+      executor
+          .submit(() -> {
+            TestUtils.sleep();
+            requestHandler.beforeRequest(message, context);
+          })
+          .get();
 
-          executor
-              .submit(
-                  () -> {
-                    TestUtils.sleep();
-                    requestHandler.afterResponse(message, context);
-                  })
-              .get();
+      executor
+          .submit(() -> {
+            TestUtils.sleep();
+            requestHandler.afterResponse(message, context);
+          })
+          .get();
 
-          return message + ":response";
-        });
+      return message + ":response";
+    });
   }
 }

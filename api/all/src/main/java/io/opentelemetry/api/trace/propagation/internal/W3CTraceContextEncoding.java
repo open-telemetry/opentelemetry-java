@@ -78,13 +78,12 @@ public final class W3CTraceContextEncoding {
       return "";
     }
     StringBuilder builder = new StringBuilder(TRACESTATE_MAX_SIZE);
-    traceState.forEach(
-        (key, value) -> {
-          if (builder.length() != 0) {
-            builder.append(TRACESTATE_ENTRY_DELIMITER);
-          }
-          builder.append(key).append(TRACESTATE_KEY_VALUE_DELIMITER).append(value);
-        });
+    traceState.forEach((key, value) -> {
+      if (builder.length() != 0) {
+        builder.append(TRACESTATE_ENTRY_DELIMITER);
+      }
+      builder.append(key).append(TRACESTATE_KEY_VALUE_DELIMITER).append(value);
+    });
     return builder.toString();
   }
 }

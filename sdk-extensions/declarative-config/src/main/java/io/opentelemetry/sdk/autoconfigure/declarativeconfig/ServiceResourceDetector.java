@@ -6,9 +6,9 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.declarativeconfig.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.resources.Resource;
@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.Collections;
 import java.util.UUID;
 
+/** Detects the service name and generates a service instance ID for declarative configuration. */
 public class ServiceResourceDetector implements ComponentProvider {
 
   // multiple calls to this resource provider should return the same value

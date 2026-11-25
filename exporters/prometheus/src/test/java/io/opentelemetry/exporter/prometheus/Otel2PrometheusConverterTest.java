@@ -1298,13 +1298,12 @@ class Otel2PrometheusConverterTest {
 
   @Test
   void validateNormalizedMetricNameRejectsEmptyName() {
-    assertThatThrownBy(
-            () ->
-                invokePrivate(
-                    "validateNormalizedMetricName",
-                    new Class<?>[] {String.class, String.class},
-                    "orig",
-                    ""))
+    assertThatThrownBy(() ->
+            invokePrivate(
+                "validateNormalizedMetricName",
+                new Class<?>[] {String.class, String.class},
+                "orig",
+                ""))
         .hasCauseInstanceOf(IllegalArgumentException.class)
         .hasRootCauseMessage("normalization for metric \"orig\" resulted in empty name");
   }
@@ -1406,6 +1405,48 @@ class Otel2PrometheusConverterTest {
             Attributes.of(stringKey("short_attr"), "val"),
             new String[] {"short_attr"},
             new String[] {}));
+  }
+
+  @ParameterizedTest
+  @MethodSource("exemplarSpanContextLabelsTakePrecedenceArgs")
+  void exemplarSpanContextLabelsTakePrecedence(Attributes filteredAttributes) {
+    SpanContext spanContext =
+        SpanContext.create(
+            "00000000000000000000000000000001",
+            "0000000000000001",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+    ImmutableDoubleExemplarData exemplar =
+        (ImmutableDoubleExemplarData)
+            ImmutableDoubleExemplarData.create(filteredAttributes, 1000L, spanContext, 1.0);
+
+    MetricData metricData =
+        ImmutableMetricData.createDoubleGauge(
+            Resource.getDefault(),
+            InstrumentationScopeInfo.create("test"),
+            "my.gauge",
+            "desc",
+            "unit",
+            ImmutableGaugeData.create(
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
+    Labels exemplarLabels = point.getExemplar().getLabels();
+    assertThat(exemplarLabels.get("trace_id")).isEqualTo("00000000000000000000000000000001");
+    assertThat(exemplarLabels.get("span_id")).isEqualTo("0000000000000001");
+  }
+
+  private static Stream<Arguments> exemplarSpanContextLabelsTakePrecedenceArgs() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "sameLabelName",
+            Attributes.of(stringKey("trace_id"), "bogus", stringKey("span_id"), "bogus")),
+        Arguments.argumentSet(
+            "sameLabelNameAfterEscaping",
+            Attributes.of(stringKey("trace.id"), "bogus", stringKey("span.id"), "bogus")));
   }
 
   private static InfoSnapshot makeInfoSnapshot(String id) {

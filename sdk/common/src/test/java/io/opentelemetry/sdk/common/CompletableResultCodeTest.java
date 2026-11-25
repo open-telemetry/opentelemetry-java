@@ -25,31 +25,28 @@ class CompletableResultCodeTest {
   @Test
   void ofSuccess() {
     assertThat(CompletableResultCode.ofSuccess())
-        .satisfies(
-            code -> {
-              assertThat(code.isSuccess()).isTrue();
-              assertThat(code.getFailureThrowable()).isNull();
-            });
+        .satisfies(code -> {
+          assertThat(code.isSuccess()).isTrue();
+          assertThat(code.getFailureThrowable()).isNull();
+        });
   }
 
   @Test
   void ofFailure() {
     assertThat(CompletableResultCode.ofFailure())
-        .satisfies(
-            code -> {
-              assertThat(code.isSuccess()).isFalse();
-              assertThat(code.getFailureThrowable()).isNull();
-            });
+        .satisfies(code -> {
+          assertThat(code.isSuccess()).isFalse();
+          assertThat(code.getFailureThrowable()).isNull();
+        });
   }
 
   @Test
   void ofExceptionalFailure() {
     assertThat(CompletableResultCode.ofExceptionalFailure(new Exception("error")))
-        .satisfies(
-            code -> {
-              assertThat(code.isSuccess()).isFalse();
-              assertThat(code.getFailureThrowable()).hasMessage("error");
-            });
+        .satisfies(code -> {
+          assertThat(code.isSuccess()).isFalse();
+          assertThat(code.getFailureThrowable()).hasMessage("error");
+        });
   }
 
   @Test
@@ -114,12 +111,11 @@ class CompletableResultCodeTest {
 
     new Thread(resultCode::succeed).start();
 
-    resultCode.whenComplete(
-        () -> {
-          completions.countDown();
+    resultCode.whenComplete(() -> {
+      completions.countDown();
 
-          resultCode.whenComplete(completions::countDown);
-        });
+      resultCode.whenComplete(completions::countDown);
+    });
 
     completions.await(3, TimeUnit.SECONDS);
 
@@ -191,12 +187,11 @@ class CompletableResultCodeTest {
                     CompletableResultCode.ofExceptionalFailure(new Exception("error1")),
                     CompletableResultCode.ofExceptionalFailure(new Exception("error2")),
                     CompletableResultCode.ofSuccess())))
-        .satisfies(
-            code -> {
-              assertThat(code.isSuccess()).isFalse();
-              // failure throwable is set to first throwable seen in the collection
-              assertThat(code.getFailureThrowable()).hasMessage("error1");
-            });
+        .satisfies(code -> {
+          assertThat(code.isSuccess()).isFalse();
+          // failure throwable is set to first throwable seen in the collection
+          assertThat(code.getFailureThrowable()).hasMessage("error1");
+        });
   }
 
   @Test
@@ -225,11 +220,10 @@ class CompletableResultCodeTest {
     CompletableResultCode result = new CompletableResultCode();
     AtomicReference<Boolean> interrupted = new AtomicReference<>();
     Thread thread =
-        new Thread(
-            () -> {
-              result.join(10, TimeUnit.SECONDS);
-              interrupted.set(Thread.currentThread().isInterrupted());
-            });
+        new Thread(() -> {
+          result.join(10, TimeUnit.SECONDS);
+          interrupted.set(Thread.currentThread().isInterrupted());
+        });
     thread.start();
     thread.interrupt();
     // Different thread so wait a bit for result to be propagated.
@@ -245,19 +239,17 @@ class CompletableResultCodeTest {
     CountDownLatch callbackEntered = new CountDownLatch(2);
     CountDownLatch release = new CountDownLatch(1);
 
-    first.whenComplete(
-        () -> {
-          callbackEntered.countDown();
-          Uninterruptibles.awaitUninterruptibly(release);
-          second.succeed();
-        });
+    first.whenComplete(() -> {
+      callbackEntered.countDown();
+      Uninterruptibles.awaitUninterruptibly(release);
+      second.succeed();
+    });
 
-    second.whenComplete(
-        () -> {
-          callbackEntered.countDown();
-          Uninterruptibles.awaitUninterruptibly(release);
-          first.succeed();
-        });
+    second.whenComplete(() -> {
+      callbackEntered.countDown();
+      Uninterruptibles.awaitUninterruptibly(release);
+      first.succeed();
+    });
 
     Thread firstThread = new Thread(first::succeed, "complete-first");
     Thread secondThread = new Thread(second::succeed, "complete-second");
@@ -284,10 +276,9 @@ class CompletableResultCodeTest {
     CompletableResultCode result = new CompletableResultCode();
     AtomicBoolean actionInvoked = new AtomicBoolean();
 
-    result.whenComplete(
-        () -> {
-          throw new RuntimeException("callback failure");
-        });
+    result.whenComplete(() -> {
+      throw new RuntimeException("callback failure");
+    });
     result.whenComplete(() -> actionInvoked.set(true));
     assertThatThrownBy(result::succeed)
         .isInstanceOf(RuntimeException.class)
@@ -304,10 +295,9 @@ class CompletableResultCodeTest {
     CompletableResultCode other = new CompletableResultCode();
 
     // Registered before ofAll so that it runs before ofAll's bookkeeping action.
-    source.whenComplete(
-        () -> {
-          throw new RuntimeException("callback failure");
-        });
+    source.whenComplete(() -> {
+      throw new RuntimeException("callback failure");
+    });
     CompletableResultCode all = CompletableResultCode.ofAll(Arrays.asList(source, other));
     other.succeed();
 
@@ -324,12 +314,10 @@ class CompletableResultCodeTest {
   void completionActionExceptionPropagatesWhenAlreadyComplete() {
     CompletableResultCode result = new CompletableResultCode().succeed();
 
-    assertThatThrownBy(
-            () ->
-                result.whenComplete(
-                    () -> {
-                      throw new RuntimeException("callback failure");
-                    }))
+    assertThatThrownBy(() ->
+            result.whenComplete(() -> {
+              throw new RuntimeException("callback failure");
+            }))
         .isInstanceOf(RuntimeException.class)
         .hasMessage("callback failure");
   }

@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/** Autoconfiguration provider for the {@code jaeger_remote} sampler. */
 public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider {
 
   private static final Logger LOGGER =

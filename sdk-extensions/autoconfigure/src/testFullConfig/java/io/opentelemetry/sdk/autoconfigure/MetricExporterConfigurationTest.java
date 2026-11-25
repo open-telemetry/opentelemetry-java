@@ -104,6 +104,53 @@ class MetricExporterConfigurationTest {
         .isEqualTo(Duration.ofSeconds(123).toNanos());
   }
 
+  @Test
+  void configureReader_periodicMetricReader_defaults() {
+    List<Closeable> closeables = new ArrayList<>();
+
+    MetricReader reader =
+        MetricExporterConfiguration.configureReader(
+            "otlp", CONFIG_PROPERTIES, spiHelper, (a, b) -> a, (a, b) -> a, closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(reader).isInstanceOf(PeriodicMetricReader.class);
+    assertThat(reader).extracting("intervalNanos").isEqualTo(Duration.ofMinutes(1).toNanos());
+    assertThat(reader).extracting("maxExportBatchSize").isEqualTo(0);
+  }
+
+  @Test
+  void configureReader_periodicMetricReader_configured() {
+    List<Closeable> closeables = new ArrayList<>();
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            ImmutableMap.of(
+                "otel.metric.export.interval", "10s", "otel.metric.export.max.batch.size", "200"));
+
+    MetricReader reader =
+        MetricExporterConfiguration.configureReader(
+            "otlp", config, spiHelper, (a, b) -> a, (a, b) -> a, closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(reader).isInstanceOf(PeriodicMetricReader.class);
+    assertThat(reader).extracting("intervalNanos").isEqualTo(Duration.ofSeconds(10).toNanos());
+    assertThat(reader).extracting("maxExportBatchSize").isEqualTo(200);
+  }
+
+  @Test
+  void configureReader_periodicMetricReader_invalidMaxExportBatchSize() {
+    List<Closeable> closeables = new ArrayList<>();
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            ImmutableMap.of("otel.metric.export.max.batch.size", "0"));
+
+    assertThatThrownBy(() ->
+            MetricExporterConfiguration.configureReader(
+                "otlp", config, spiHelper, (a, b) -> a, (a, b) -> a, closeables))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxExportBatchSize must be positive");
+    cleanup.addCloseables(closeables);
+  }
+
   @ParameterizedTest
   @MethodSource("knownExporters")
   void configureExporter_KnownSpiExportersOnClasspath(
@@ -145,14 +192,13 @@ class MetricExporterConfigurationTest {
 
   @Test
   void configureOtlpMetricsUnsupportedProtocol() {
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureExporter(
-                    "otlp",
-                    MetricExporterConfiguration.metricExporterSpiManager(
-                        DefaultConfigProperties.createFromMap(
-                            ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                        spiHelper)))
+    assertThatThrownBy(() ->
+            MetricExporterConfiguration.configureExporter(
+                "otlp",
+                MetricExporterConfiguration.metricExporterSpiManager(
+                    DefaultConfigProperties.createFromMap(
+                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
+                    spiHelper)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
   }

@@ -10,9 +10,9 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.configureOt
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.readFileBytes;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.validateEndpoint;
 
+import io.opentelemetry.api.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -67,9 +67,9 @@ public final class OtlpDeclarativeConfigUtil {
       boolean isHttpProtobuf,
       Consumer<InternalTelemetryVersion> internalTelemetryVersionConsumer,
       Runnable setNoopMeterProvider) {
-    if (!(baseConfig instanceof ExtendedDeclarativeConfigProperties)) {
-      throw new IllegalArgumentException("Expected ExtendedDeclarativeConfigProperties");
-    }
+    checkArgument(
+        baseConfig instanceof ExtendedDeclarativeConfigProperties,
+        "Expected ExtendedDeclarativeConfigProperties");
     ExtendedDeclarativeConfigProperties config = (ExtendedDeclarativeConfigProperties) baseConfig;
 
     setComponentLoader.accept(config.getComponentLoader());
@@ -89,14 +89,13 @@ public final class OtlpDeclarativeConfigUtil {
 
     List<DeclarativeConfigProperties> headers = config.getStructuredList("headers");
     if (headers != null) {
-      headers.forEach(
-          header -> {
-            String name = header.getString("name");
-            String value = header.getString("value");
-            if (name != null && value != null) {
-              addHeader.accept(name, value);
-            }
-          });
+      headers.forEach(header -> {
+        String name = header.getString("name");
+        String value = header.getString("value");
+        if (name != null && value != null) {
+          addHeader.accept(name, value);
+        }
+      });
     }
 
     String compression = config.getString("compression");
@@ -166,6 +165,12 @@ public final class OtlpDeclarativeConfigUtil {
       default:
         throw new DeclarativeConfigException(
             "Invalid sdk telemetry version: " + internalTelemetryVersion);
+    }
+  }
+
+  private static void checkArgument(boolean isValid, String message) {
+    if (!isValid) {
+      throw new IllegalArgumentException(message);
     }
   }
 

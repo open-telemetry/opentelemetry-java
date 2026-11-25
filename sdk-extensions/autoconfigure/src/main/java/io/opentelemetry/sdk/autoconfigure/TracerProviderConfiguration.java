@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -106,6 +107,12 @@ final class TracerProviderConfiguration {
               config, compositeSpanExporter, telemetryVersion, meterProvider);
       closeables.add(spanProcessor);
       spanProcessors.add(spanProcessor);
+    }
+
+    if (spanProcessors.isEmpty()
+        && DefaultConfigProperties.getSet(config, "otel.traces.exporter")
+            .contains(SpanExporterConfiguration.EXPORTER_NOOP)) {
+      spanProcessors.add(SpanProcessor.noop());
     }
 
     return spanProcessors;

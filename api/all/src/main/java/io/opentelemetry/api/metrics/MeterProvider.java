@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -26,6 +27,9 @@ public interface MeterProvider {
    * @return a Meter instance.
    */
   default Meter get(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(MeterProvider.class, "get", "instrumentationScopeName");
+    }
     return meterBuilder(instrumentationScopeName).build();
   }
 

@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.logging.internal;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.declarativeconfig.ComponentProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**

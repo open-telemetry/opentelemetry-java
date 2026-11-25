@@ -106,38 +106,36 @@ public class MutableHistogramPointDataTest {
   @Test
   void testBoundaries() {
     MutableHistogramPointData pointData = new MutableHistogramPointData(10);
-    assertThatThrownBy(
-            () ->
-                pointData.set(
-                    /* startEpochNanos= */ 10,
-                    /* epochNanos= */ 20,
-                    Attributes.of(AttributeKey.stringKey("foo"), "bar"),
-                    /* sum= */ 2,
-                    /* hasMin= */ true,
-                    /* min= */ 100,
-                    /* hasMax= */ true,
-                    /* max= */ 1000,
-                    /* boundaries= */ Arrays.asList(1.0, 2.0, 3.0, 4.0),
-                    /* counts= */ new long[] {10, 20, 30, 40, 50, 60, 70, 80, 90, 100},
-                    Collections.emptyList()))
+    assertThatThrownBy(() ->
+            pointData.set(
+                /* startEpochNanos= */ 10,
+                /* epochNanos= */ 20,
+                Attributes.of(AttributeKey.stringKey("foo"), "bar"),
+                /* sum= */ 2,
+                /* hasMin= */ true,
+                /* min= */ 100,
+                /* hasMax= */ true,
+                /* max= */ 1000,
+                /* boundaries= */ Arrays.asList(1.0, 2.0, 3.0, 4.0),
+                /* counts= */ new long[] {10, 20, 30, 40, 50, 60, 70, 80, 90, 100},
+                Collections.emptyList()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid boundaries: size should be 9 but was 4");
 
-    assertThatThrownBy(
-            () ->
-                pointData.set(
-                    /* startEpochNanos= */ 10,
-                    /* epochNanos= */ 20,
-                    Attributes.of(AttributeKey.stringKey("foo"), "bar"),
-                    /* sum= */ 2,
-                    /* hasMin= */ true,
-                    /* min= */ 100,
-                    /* hasMax= */ true,
-                    /* max= */ 1000,
-                    /* boundaries= */ Arrays.asList(
-                        1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, Double.POSITIVE_INFINITY),
-                    /* counts= */ new long[] {10, 20, 30, 40, 50, 60, 70, 80, 90, 100},
-                    Collections.emptyList()))
+    assertThatThrownBy(() ->
+            pointData.set(
+                /* startEpochNanos= */ 10,
+                /* epochNanos= */ 20,
+                Attributes.of(AttributeKey.stringKey("foo"), "bar"),
+                /* sum= */ 2,
+                /* hasMin= */ true,
+                /* min= */ 100,
+                /* hasMax= */ true,
+                /* max= */ 1000,
+                /* boundaries= */ Arrays.asList(
+                    1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, Double.POSITIVE_INFINITY),
+                /* counts= */ new long[] {10, 20, 30, 40, 50, 60, 70, 80, 90, 100},
+                Collections.emptyList()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid boundaries: contains explicit +/-Inf");
   }
@@ -145,20 +143,19 @@ public class MutableHistogramPointDataTest {
   @Test
   void testCounts() {
     MutableHistogramPointData pointData = new MutableHistogramPointData(10);
-    assertThatThrownBy(
-            () ->
-                pointData.set(
-                    /* startEpochNanos= */ 10,
-                    /* epochNanos= */ 20,
-                    Attributes.of(AttributeKey.stringKey("foo"), "bar"),
-                    /* sum= */ 2,
-                    /* hasMin= */ true,
-                    /* min= */ 100,
-                    /* hasMax= */ true,
-                    /* max= */ 1000,
-                    /* boundaries= */ Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0),
-                    /* counts= */ new long[] {10, 20, 30, 40, 50, 60},
-                    Collections.emptyList()))
+    assertThatThrownBy(() ->
+            pointData.set(
+                /* startEpochNanos= */ 10,
+                /* epochNanos= */ 20,
+                Attributes.of(AttributeKey.stringKey("foo"), "bar"),
+                /* sum= */ 2,
+                /* hasMin= */ true,
+                /* min= */ 100,
+                /* hasMax= */ true,
+                /* max= */ 1000,
+                /* boundaries= */ Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0),
+                /* counts= */ new long[] {10, 20, 30, 40, 50, 60},
+                Collections.emptyList()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid counts: size should be 10 but was 6");
   }

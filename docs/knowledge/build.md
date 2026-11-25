@@ -1,6 +1,6 @@
 # Build
 
-Java 21 or higher is required to build. The built artifacts target Java 8 or higher.
+Java 25 or higher is required to build. The built artifacts target Java 8 or higher.
 
 ## Common tasks
 
@@ -29,8 +29,8 @@ and writes diffs to `docs/apidiffs/current_vs_latest/`. Include any changes to t
 PR. See [api-design.md](api-design.md#japicmp) for details.
 
 If your branch is not up to date with `main`, `jApiCmp` may produce a diff that reflects changes
-already merged to `main` rather than your own changes. Rebase or merge `main` before treating
-the diff as meaningful.
+already merged to `main` rather than your own changes. Rebase or merge `main` before treating the
+diff as meaningful.
 
 For dev environment setup, composite builds, OTLP protobuf updates, and other tasks, see
 [other-tasks.md](other-tasks.md).

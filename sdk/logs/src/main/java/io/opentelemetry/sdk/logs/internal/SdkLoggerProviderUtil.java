@@ -5,14 +5,18 @@
 
 package io.opentelemetry.sdk.logs.internal;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /**
  * A collection of methods that allow use of experimental features prior to availability in public
@@ -24,6 +28,33 @@ import java.util.function.Predicate;
 public final class SdkLoggerProviderUtil {
 
   private SdkLoggerProviderUtil() {}
+
+  /** Reflectively set the {@link SdkResourceProvider} on the {@link SdkLoggerProviderBuilder}. */
+  public static void setSdkResourceProvider(
+      SdkLoggerProviderBuilder sdkLoggerProviderBuilder, SdkResourceProvider resourceProvider) {
+    try {
+      Method method =
+          SdkLoggerProviderBuilder.class.getDeclaredMethod(
+              "setSdkResourceProvider", SdkResourceProvider.class);
+      method.setAccessible(true);
+      method.invoke(sdkLoggerProviderBuilder, resourceProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setSdkResourceProvider on SdkLoggerProviderBuilder", e);
+    }
+  }
+
+  /** Reflectively get the {@link SdkResourceProvider} from the {@link SdkLoggerProvider}. */
+  public static SdkResourceProvider getSdkResourceProvider(SdkLoggerProvider sdkLoggerProvider) {
+    try {
+      Method method = SdkLoggerProvider.class.getDeclaredMethod("getSdkResourceProvider");
+      method.setAccessible(true);
+      return (SdkResourceProvider) method.invoke(sdkLoggerProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling getSdkResourceProvider on SdkLoggerProvider", e);
+    }
+  }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkLoggerProvider}. */
   public static void setLoggerConfigurator(
@@ -89,5 +120,24 @@ public final class SdkLoggerProviderUtil {
       throw new IllegalStateException(
           "Error calling setExceptionAttributeResolver on SdkLoggerProviderBuilder", e);
     }
+  }
+
+  /**
+   * Reflectively set the context-scoped attributes filter on the {@link SdkLoggerProviderBuilder}.
+   */
+  public static SdkLoggerProviderBuilder setContextScopedAttributesFilter(
+      SdkLoggerProviderBuilder sdkLoggerProviderBuilder,
+      @Nullable BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter) {
+    try {
+      Method method =
+          SdkLoggerProviderBuilder.class.getDeclaredMethod(
+              "setContextScopedAttributesFilter", BiPredicate.class);
+      method.setAccessible(true);
+      method.invoke(sdkLoggerProviderBuilder, filter);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setContextScopedAttributesFilter on SdkLoggerProviderBuilder", e);
+    }
+    return sdkLoggerProviderBuilder;
   }
 }

@@ -5,13 +5,17 @@
 
 package io.opentelemetry.sdk.metrics.internal;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /**
  * A collection of methods that allow use of experimental features prior to availability in public
@@ -24,6 +28,33 @@ import java.util.function.Predicate;
 public final class SdkMeterProviderUtil {
 
   private SdkMeterProviderUtil() {}
+
+  /** Reflectively set the {@link SdkResourceProvider} on the {@link SdkMeterProviderBuilder}. */
+  public static void setSdkResourceProvider(
+      SdkMeterProviderBuilder sdkMeterProviderBuilder, SdkResourceProvider resourceProvider) {
+    try {
+      Method method =
+          SdkMeterProviderBuilder.class.getDeclaredMethod(
+              "setSdkResourceProvider", SdkResourceProvider.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProviderBuilder, resourceProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setSdkResourceProvider on SdkMeterProviderBuilder", e);
+    }
+  }
+
+  /** Reflectively get the {@link SdkResourceProvider} from the {@link SdkMeterProvider}. */
+  public static SdkResourceProvider getSdkResourceProvider(SdkMeterProvider sdkMeterProvider) {
+    try {
+      Method method = SdkMeterProvider.class.getDeclaredMethod("getSdkResourceProvider");
+      method.setAccessible(true);
+      return (SdkResourceProvider) method.invoke(sdkMeterProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling getSdkResourceProvider on SdkMeterProvider", e);
+    }
+  }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProvider}. */
   public static void setMeterConfigurator(
@@ -82,5 +113,24 @@ public final class SdkMeterProviderUtil {
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new IllegalStateException("Error calling resetForTest on SdkMeterProvider", e);
     }
+  }
+
+  /**
+   * Reflectively set the context-scoped attributes filter on the {@link SdkMeterProviderBuilder}.
+   */
+  public static SdkMeterProviderBuilder setContextScopedAttributesFilter(
+      SdkMeterProviderBuilder sdkMeterProviderBuilder,
+      @Nullable BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter) {
+    try {
+      Method method =
+          SdkMeterProviderBuilder.class.getDeclaredMethod(
+              "setContextScopedAttributesFilter", BiPredicate.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProviderBuilder, filter);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setContextScopedAttributesFilter on SdkMeterProviderBuilder", e);
+    }
+    return sdkMeterProviderBuilder;
   }
 }

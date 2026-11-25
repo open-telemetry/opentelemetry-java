@@ -17,7 +17,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.impl.Base16EncodingUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -1229,11 +1229,9 @@ class MetricsRequestMarshalerTest {
   private static List<ExponentialHistogramDataPoint> toExponentialHistogramDataPoints(
       MarshalerSource marshalerSource, Collection<ExponentialHistogramPointData> points) {
     return points.stream()
-        .map(
-            point ->
-                parse(
-                    ExponentialHistogramDataPoint.getDefaultInstance(),
-                    marshalerSource.create(point)))
+        .map(point ->
+            parse(
+                ExponentialHistogramDataPoint.getDefaultInstance(), marshalerSource.create(point)))
         .collect(Collectors.toList());
   }
 
@@ -1309,7 +1307,7 @@ class MetricsRequestMarshalerTest {
   private static ByteString toHex(ByteString hexReadAsBase64) {
     String hex =
         Base64.getEncoder().encodeToString(hexReadAsBase64.toByteArray()).toLowerCase(Locale.ROOT);
-    return ByteString.copyFrom(OtelEncodingUtils.bytesFromBase16(hex, hex.length()));
+    return ByteString.copyFrom(Base16EncodingUtils.bytesFromBase16(hex, hex.length()));
   }
 
   private static byte[] toByteArray(Marshaler marshaler) {

@@ -54,19 +54,15 @@ class ExplicitBucketBoundariesAdviceTest {
 
     // Should use default bucket bounds
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasBucketCounts(
-                                            0, 1, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasBucketBoundaries(
-                                            0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d,
-                                            1_000d, 2_500d, 5_000d, 7_500d, 10_000d))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(point ->
+                        point
+                            .hasBucketCounts(0, 1, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                            .hasBucketBoundaries(
+                                0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d,
+                                5_000d, 7_500d, 10_000d))));
 
     assertThat(logCapturer.getEvents()).isEmpty();
   }
@@ -85,17 +81,12 @@ class ExplicitBucketBoundariesAdviceTest {
 
     // Bucket bounds from advice should be used
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("histogram")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasBucketCounts(1, 1, 1, 1)
-                                        .hasBucketBoundaries(10.0, 20.0, 30.0))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("histogram")
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(point ->
+                        point.hasBucketCounts(1, 1, 1, 1).hasBucketBoundaries(10.0, 20.0, 30.0))));
 
     assertThat(logCapturer.getEvents()).isEmpty();
   }
@@ -126,14 +117,12 @@ class ExplicitBucketBoundariesAdviceTest {
 
     // View should take priority over bucket bounds from advice
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("histogram")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point -> point.hasBucketCounts(4, 0).hasBucketBoundaries(50.0))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("histogram")
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(
+                        point -> point.hasBucketCounts(4, 0).hasBucketBoundaries(50.0))));
 
     assertThat(logCapturer.getEvents()).isEmpty();
   }
@@ -162,14 +151,12 @@ class ExplicitBucketBoundariesAdviceTest {
 
     // Reader aggregation preference should take priority over bucket bounds from advice
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("histogram")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point -> point.hasBucketCounts(4, 0).hasBucketBoundaries(50.0))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("histogram")
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(
+                        point -> point.hasBucketCounts(4, 0).hasBucketBoundaries(50.0))));
 
     assertThat(logCapturer.getEvents()).isEmpty();
   }
@@ -191,19 +178,15 @@ class ExplicitBucketBoundariesAdviceTest {
 
     // Should use default bucket bounds
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasBucketCounts(
-                                            0, 1, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasBucketBoundaries(
-                                            0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d,
-                                            1_000d, 2_500d, 5_000d, 7_500d, 10_000d))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(point ->
+                        point
+                            .hasBucketCounts(0, 1, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                            .hasBucketBoundaries(
+                                0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d,
+                                5_000d, 7_500d, 10_000d))));
 
     logCapturer.assertContains(expectedErrorMessage);
   }

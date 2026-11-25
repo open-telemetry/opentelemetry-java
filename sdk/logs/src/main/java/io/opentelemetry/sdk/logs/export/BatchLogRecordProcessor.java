@@ -258,19 +258,17 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       CompletableResultCode result = new CompletableResultCode();
 
       CompletableResultCode flushResult = forceFlush();
-      flushResult.whenComplete(
-          () -> {
-            continueWork = false;
-            CompletableResultCode shutdownResult = logRecordExporter.shutdown();
-            shutdownResult.whenComplete(
-                () -> {
-                  if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
-                    result.fail();
-                  } else {
-                    result.succeed();
-                  }
-                });
-          });
+      flushResult.whenComplete(() -> {
+        continueWork = false;
+        CompletableResultCode shutdownResult = logRecordExporter.shutdown();
+        shutdownResult.whenComplete(() -> {
+          if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
+            result.fail();
+          } else {
+            result.succeed();
+          }
+        });
+      });
 
       return result;
     }

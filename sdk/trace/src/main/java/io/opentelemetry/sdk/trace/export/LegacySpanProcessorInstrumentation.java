@@ -75,11 +75,10 @@ final class LegacySpanProcessorInstrumentation implements SpanProcessorInstrumen
         .ofLongs()
         .setDescription("The number of items queued")
         .setUnit("1")
-        .buildWithCallback(
-            result ->
-                result.record(
-                    getSize.get(),
-                    Attributes.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE)));
+        .buildWithCallback(result ->
+            result.record(
+                getSize.get(),
+                Attributes.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE)));
     // No capacity metric when legacy.
   }
 

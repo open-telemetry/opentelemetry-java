@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static java.util.stream.Collectors.toMap;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.BatchCallback;
@@ -42,10 +43,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /** {@link SdkMeter} is SDK implementation of {@link Meter}. */
 final class SdkMeter implements Meter {
@@ -89,16 +93,7 @@ final class SdkMeter implements Meter {
 
   private final MeterProviderSharedState meterProviderSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-
-  /**
-   * Returns true if the meter provider's exemplar filter samples nothing. Callers can use this to
-   * skip {@link io.opentelemetry.context.Context#current()} lookups on record paths that only need
-   * the current context to derive an exemplar span context.
-   */
-  boolean isExemplarsAlwaysOff() {
-    return meterProviderSharedState.getExemplarFilter() instanceof AlwaysOffExemplarFilter;
-  }
-
+  @Nullable private final Predicate<AttributeKey<?>> contextScopedAttributesFilter;
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
 
   private volatile boolean meterEnabled;
@@ -110,10 +105,28 @@ final class SdkMeter implements Meter {
       MeterConfig meterConfig) {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.meterProviderSharedState = meterProviderSharedState;
+    BiPredicate<InstrumentationScopeInfo, AttributeKey<?>> filter =
+        meterProviderSharedState.getContextScopedAttributesFilter();
+    this.contextScopedAttributesFilter =
+        filter == null ? null : key -> filter.test(instrumentationScopeInfo, key);
     this.readerStorageRegistries =
         registeredReaders.stream()
             .collect(toMap(Function.identity(), unused -> new MetricStorageRegistry()));
     this.meterEnabled = meterConfig.isEnabled();
+  }
+
+  /**
+   * Returns true if the meter provider's exemplar filter samples nothing. Callers can use this to
+   * skip {@link io.opentelemetry.context.Context#current()} lookups on record paths that only need
+   * the current context to derive an exemplar span context.
+   */
+  boolean isExemplarsAlwaysOff() {
+    return meterProviderSharedState.getExemplarFilter() instanceof AlwaysOffExemplarFilter;
+  }
+
+  @Nullable
+  Predicate<AttributeKey<?>> getContextScopedAttributesFilter() {
+    return contextScopedAttributesFilter;
   }
 
   void updateMeterConfig(MeterConfig meterConfig) {
@@ -300,7 +313,8 @@ final class SdkMeter implements Meter {
                     meterProviderSharedState.getClock(),
                     instrument,
                     meterProviderSharedState.getExemplarFilter(),
-                    meterEnabled)));
+                    meterEnabled,
+                    getContextScopedAttributesFilter())));
       }
     }
 
