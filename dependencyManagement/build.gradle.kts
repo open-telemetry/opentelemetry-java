@@ -9,14 +9,14 @@ rootProject.extra["versions"] = dependencyVersions
 
 
 val autoValueVersion = "1.11.1"
-val errorProneVersion = "2.52.0"
+val errorProneVersion = "2.53.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.20"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.8.0"
-val armeriaVersion = "1.43.0"
+val armeriaVersion = "1.43.1"
 val junitVersion = "5.14.4"
 val junitPlatformVersion = "1.14.4"
 val okhttpVersion = "5.5.1"
@@ -32,10 +32,10 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.protobuf:protobuf-bom:4.36.2",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.18.2", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.85.1",
+  "io.grpc:grpc-bom:1.86.0",
   "io.netty:netty-bom:4.2.21.Final",
   "org.assertj:assertj-bom:3.27.7",
-  "org.osgi:org.osgi.test.bom:1.3.0",
+  "org.osgi:org.osgi.test.bom:1.4.0",
   "org.testcontainers:testcontainers-bom:2.0.5",
   "org.snakeyaml:snakeyaml-engine:2.10"
 )
@@ -72,7 +72,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.81.0",
+  "com.google.api.grpc:proto-google-common-protos:2.82.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp:$okhttpVersion",
@@ -95,7 +95,7 @@ val DEPENDENCIES = listOf(
   "org.apache.aries.spifly:org.apache.aries.spifly.dynamic.bundle:1.3.8",
   "org.apache.felix:org.apache.felix.framework:8.0.0",
   "org.awaitility:awaitility:4.3.0",
-  "org.codehaus.mojo:animal-sniffer-annotations:1.29.1",
+  "org.codehaus.mojo:animal-sniffer-annotations:1.29.2",
   "org.jctools:jctools-core:4.0.7",
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.mock-server:mockserver-netty:5.15.0:shaded",
