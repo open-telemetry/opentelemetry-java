@@ -11,6 +11,7 @@ import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableS
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.isValidThreshold;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -210,16 +211,18 @@ class CompositeSamplerTest {
     Input input = new Input();
     input.setParentRandomValue(parentRandomValue);
     input.setParentThreshold(parentRandomValue);
-    input.setParentSampled(false); // should be ignored
+    // th == rv would be sampled, but the parent is not, so the threshold is inconsistent.
+    input.setParentSampled(false);
 
     Sampler sampler =
         CompositeSampler.wrap(ComposableSampler.parentThreshold(ComposableSampler.alwaysOn()));
 
     Output output = sample(input, sampler);
 
-    assertThat(output.samplingResult.getDecision()).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
-    assertThat(output.getThreshold()).hasValue(parentRandomValue);
+    assertThat(output.samplingResult.getDecision()).isEqualTo(SamplingDecision.DROP);
+    assertThat(output.getThreshold()).isNotPresent();
     assertThat(output.getRandomValue()).hasValue(parentRandomValue);
+    assertThat(output.samplingResult.getAttributes()).isEqualTo(Attributes.empty());
   }
 
   @Test
@@ -350,6 +353,63 @@ class CompositeSamplerTest {
             TraceState.builder().put("ot", "th:8;rv:7fffffffffffff").build(),
             SamplingDecision.RECORD_AND_SAMPLE,
             TraceState.builder().put("ot", "rv:7fffffffffffff").build()));
+  }
+
+  @Test
+  void dropOmitsIntentAttributes() {
+    Attributes attributes = Attributes.of(AttributeKey.stringKey("sampler.annotation"), "yes");
+    Sampler sampler =
+        CompositeSampler.wrap(
+            ComposableSampler.annotating(ComposableSampler.alwaysOff(), attributes));
+
+    Output output = sample(new Input(), sampler);
+
+    assertThat(output.samplingResult.getDecision()).isEqualTo(SamplingDecision.DROP);
+    assertThat(output.samplingResult.getAttributes()).isEqualTo(Attributes.empty());
+  }
+
+  @Test
+  void positiveDecisionKeepsIntentAttributes() {
+    Attributes attributes = Attributes.of(AttributeKey.stringKey("sampler.annotation"), "yes");
+    Sampler sampler =
+        CompositeSampler.wrap(
+            ComposableSampler.annotating(ComposableSampler.alwaysOn(), attributes));
+
+    Output output = sample(new Input(), sampler);
+
+    assertThat(output.samplingResult.getDecision()).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
+    assertThat(output.samplingResult.getAttributes()).isEqualTo(attributes);
+  }
+
+  @Test
+  void updatedTraceStateUsesArgument() {
+    TraceState parentTraceState =
+        TraceState.builder().put("ot", "th:0;rv:00000000000001").put("vendor", "parent").build();
+    Context parentContext =
+        Span.wrap(
+                SpanContext.create(
+                    Input.getTraceId(),
+                    "0123456789abcdef",
+                    TraceFlags.getSampled(),
+                    parentTraceState))
+            .storeInContext(Context.root());
+    Sampler sampler = CompositeSampler.wrap(ComposableSampler.alwaysOn());
+    SamplingResult result =
+        sampler.shouldSample(
+            parentContext,
+            Input.getTraceId(),
+            Input.getName(),
+            Input.getSpanKind(),
+            Input.getAttributes(),
+            Input.getParentLinks());
+
+    TraceState argument = TraceState.builder().put("ot", "th:f").put("vendor", "argument").build();
+    TraceState updated = result.getUpdatedTraceState(argument);
+
+    assertThat(updated.get("vendor")).isEqualTo("argument");
+    OtelTraceState otelTraceState = OtelTraceState.parse(updated);
+    assertThat(otelTraceState.getThreshold()).isZero();
+    assertThat(otelTraceState.getRandomValue()).isEqualTo(1);
   }
 
   @ParameterizedTest

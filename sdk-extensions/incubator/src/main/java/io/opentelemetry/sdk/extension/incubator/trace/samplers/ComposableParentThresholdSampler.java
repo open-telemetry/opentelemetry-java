@@ -43,10 +43,9 @@ final class ComposableParentThresholdSampler implements ComposableSampler {
     boolean parentSampled = parentSpanContext.getTraceFlags().isSampled();
     OtelTraceState otTraceState = OtelTraceState.parse(parentSpanContext.getTraceState());
     long parentThreshold = otTraceState.getThreshold();
-    if (isValidThreshold(parentThreshold)
-        && (!parentSampled
-            || parentThreshold
-                <= otTraceState.getRandomValueOrFromTraceId(parentSpanContext.getTraceId()))) {
+    long randomness = otTraceState.getRandomValueOrFromTraceId(parentSpanContext.getTraceId());
+    // The sampled flag must match R >= T. An inconsistent threshold is not propagated.
+    if (isValidThreshold(parentThreshold) && parentSampled == (parentThreshold <= randomness)) {
       return ImmutableSamplingIntent.create(
           parentThreshold,
           /* adjustedCountReliable= */ true,

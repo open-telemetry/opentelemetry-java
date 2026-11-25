@@ -109,6 +109,29 @@ public class ComposableParentThresholdSamplerTest {
   }
 
   @Test
+  void parentWithInconsistentThresholdNotSampled() {
+    // Not sampled even though th <= rv, so the threshold is inconsistent and is not propagated.
+    SpanContext parentSpanContext =
+        SpanContext.create(
+            TraceId.fromLongs(1, 2),
+            SpanId.fromLong(3),
+            TraceFlags.getDefault(),
+            TraceState.builder()
+                .put("ot", new OtelTraceState(10, 10, Collections.emptyList()).serialize())
+                .build());
+    SamplingIntent intent =
+        ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
+            .getSamplingIntent(
+                Context.root().with(Span.wrap(parentSpanContext)),
+                "span",
+                SpanKind.SERVER,
+                Attributes.empty(),
+                Collections.emptyList());
+    assertThat(intent.getThreshold()).isEqualTo(-1);
+    assertThat(intent.isAdjustedCountReliable()).isFalse();
+  }
+
+  @Test
   void parentWithThresholdNotSampled() {
     SpanContext parentSpanContext =
         SpanContext.create(
