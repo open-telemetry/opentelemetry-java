@@ -45,6 +45,24 @@ public final class SdkMeterProviderUtil {
     }
   }
 
+  /**
+   * Reflectively set the default {@link SdkResourceProvider} on the {@link
+   * SdkMeterProviderBuilder}.
+   */
+  public static void setDefaultSdkResourceProvider(
+      SdkMeterProviderBuilder sdkMeterProviderBuilder, SdkResourceProvider resourceProvider) {
+    try {
+      Method method =
+          SdkMeterProviderBuilder.class.getDeclaredMethod(
+              "setDefaultSdkResourceProvider", SdkResourceProvider.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProviderBuilder, resourceProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setDefaultSdkResourceProvider on SdkMeterProviderBuilder", e);
+    }
+  }
+
   /** Reflectively get the {@link SdkResourceProvider} from the {@link SdkMeterProvider}. */
   public static SdkResourceProvider getSdkResourceProvider(SdkMeterProvider sdkMeterProvider) {
     try {

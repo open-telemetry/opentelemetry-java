@@ -185,6 +185,7 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(sdk).hasToString(expectedSdk.toString());
+    assertThat(sdk.getSdkResourceProvider().getResource()).isEqualTo(Resource.getDefault());
   }
 
   @Test
@@ -218,6 +219,7 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(sdk).hasToString(expectedSdk.toString());
+    assertThat(sdk.getSdkResourceProvider().getResource()).isEqualTo(Resource.getDefault());
   }
 
   @Test
@@ -378,6 +380,7 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(sdk).hasToString(expectedSdk.toString());
+    assertThat(sdk.getSdkResourceProvider().getResource()).isEqualTo(expectedResource);
 
     // test that the meter provider is wired through to the tracer and logger providers
     Field field = SdkMeterProvider.class.getDeclaredField("sharedState");

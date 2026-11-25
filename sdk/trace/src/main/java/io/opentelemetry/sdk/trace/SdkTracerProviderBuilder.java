@@ -39,6 +39,7 @@ public final class SdkTracerProviderBuilder {
   private Resource resource = Resource.getDefault();
   private boolean resourceExplicitlySet = false;
   @Nullable private SdkResourceProvider resourceProvider;
+  private boolean resourceProviderExplicitlySet = false;
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
   private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
@@ -92,12 +93,13 @@ public final class SdkTracerProviderBuilder {
    */
   public SdkTracerProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
-    if (resourceProvider != null) {
+    if (resourceProviderExplicitlySet) {
       throw new IllegalStateException(
           "Cannot call setResource after setSdkResourceProvider has been called.");
     }
     this.resource = resource;
     this.resourceExplicitlySet = true;
+    this.resourceProvider = null;
     return this;
   }
 
@@ -111,12 +113,14 @@ public final class SdkTracerProviderBuilder {
    */
   public SdkTracerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
-    if (resourceProvider != null) {
+    if (resourceProviderExplicitlySet) {
       throw new IllegalStateException(
           "Cannot call addResource after setSdkResourceProvider has been called.");
     }
-    this.resource = this.resource.merge(resource);
+    Resource current = resourceProvider != null ? resourceProvider.getResource() : this.resource;
+    this.resource = current.merge(resource);
     this.resourceExplicitlySet = true;
+    this.resourceProvider = null;
     return this;
   }
 
@@ -137,6 +141,15 @@ public final class SdkTracerProviderBuilder {
           "Cannot call setSdkResourceProvider after setResource or addResource has been called.");
     }
     this.resourceProvider = resourceProvider;
+    this.resourceProviderExplicitlySet = true;
+    return this;
+  }
+
+  SdkTracerProviderBuilder setDefaultSdkResourceProvider(SdkResourceProvider resourceProvider) {
+    requireNonNull(resourceProvider, "resourceProvider");
+    if (!this.resourceExplicitlySet) {
+      this.resourceProvider = resourceProvider;
+    }
     return this;
   }
 

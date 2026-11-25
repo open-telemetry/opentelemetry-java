@@ -16,8 +16,15 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProvider
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
+import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -78,16 +85,16 @@ final class OpenTelemetryConfigurationFactory
     if (model.getResource() != null) {
       resource = ResourceFactory.getInstance().create(model.getResource(), context);
     }
+    SdkResourceProvider resourceProvider = SdkResourceProvider.create(resource);
 
     MeterProviderModel meterProviderModel = model.getMeterProvider();
     if (meterProviderModel == null) {
       meterProviderModel = new MeterProviderModel();
     }
-    SdkMeterProvider meterProvider =
-        MeterProviderFactory.getInstance()
-            .create(meterProviderModel, context)
-            .setResource(resource)
-            .build();
+    SdkMeterProviderBuilder meterProviderBuilder =
+        MeterProviderFactory.getInstance().create(meterProviderModel, context);
+    SdkMeterProviderUtil.setSdkResourceProvider(meterProviderBuilder, resourceProvider);
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
     context.setMeterProvider(meterProvider);
     builder.setMeterProvider(context.addCloseable(meterProvider));
 
@@ -95,29 +102,27 @@ final class OpenTelemetryConfigurationFactory
     if (loggerProviderModel == null) {
       loggerProviderModel = new LoggerProviderModel();
     }
-    builder.setLoggerProvider(
-        context.addCloseable(
-            LoggerProviderFactory.getInstance()
-                .create(
-                    LoggerProviderAndAttributeLimits.create(
-                        model.getAttributeLimits(), loggerProviderModel),
-                    context)
-                .setResource(resource)
-                .build()));
+    SdkLoggerProviderBuilder loggerProviderBuilder =
+        LoggerProviderFactory.getInstance()
+            .create(
+                LoggerProviderAndAttributeLimits.create(
+                    model.getAttributeLimits(), loggerProviderModel),
+                context);
+    SdkLoggerProviderUtil.setSdkResourceProvider(loggerProviderBuilder, resourceProvider);
+    builder.setLoggerProvider(context.addCloseable(loggerProviderBuilder.build()));
 
     TracerProviderModel tracerProviderModel = model.getTracerProvider();
     if (tracerProviderModel == null) {
       tracerProviderModel = new TracerProviderModel();
     }
-    builder.setTracerProvider(
-        context.addCloseable(
-            TracerProviderFactory.getInstance()
-                .create(
-                    TracerProviderAndAttributeLimits.create(
-                        model.getAttributeLimits(), tracerProviderModel),
-                    context)
-                .setResource(resource)
-                .build()));
+    SdkTracerProviderBuilder tracerProviderBuilder =
+        TracerProviderFactory.getInstance()
+            .create(
+                TracerProviderAndAttributeLimits.create(
+                    model.getAttributeLimits(), tracerProviderModel),
+                context);
+    SdkTracerProviderUtil.setSdkResourceProvider(tracerProviderBuilder, resourceProvider);
+    builder.setTracerProvider(context.addCloseable(tracerProviderBuilder.build()));
 
     return new DeclarativeConfigResult(
         (ExtendedOpenTelemetrySdk) context.addCloseable(builder.build()), resource);

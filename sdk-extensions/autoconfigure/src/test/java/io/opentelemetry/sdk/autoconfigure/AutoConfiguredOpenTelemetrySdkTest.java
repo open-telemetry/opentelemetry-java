@@ -47,10 +47,13 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
+import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.SdkResourceProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -58,6 +61,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -547,6 +551,30 @@ class AutoConfiguredOpenTelemetrySdkTest {
     assertThat(spanData.getResource().getAttribute(stringKey("cat"))).isEqualTo("meow");
 
     // Ensures the export happened.
+    sdk.shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Test
+  void sdkResourceProvider_sharedAcrossAllSignalsByDefault() {
+    AutoConfiguredOpenTelemetrySdk autoConfigured =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+            .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+            .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
+            .build();
+
+    OpenTelemetrySdk sdk = autoConfigured.getOpenTelemetrySdk();
+    SdkResourceProvider tracerRp =
+        SdkTracerProviderUtil.getSdkResourceProvider(sdk.getSdkTracerProvider());
+    SdkResourceProvider meterRp =
+        SdkMeterProviderUtil.getSdkResourceProvider(sdk.getSdkMeterProvider());
+    SdkResourceProvider loggerRp =
+        SdkLoggerProviderUtil.getSdkResourceProvider(sdk.getSdkLoggerProvider());
+
+    assertThat(tracerRp).isSameAs(meterRp);
+    assertThat(tracerRp).isSameAs(loggerRp);
+    assertThat(tracerRp.getResource()).isEqualTo(autoConfigured.getResource());
+
     sdk.shutdown().join(10, TimeUnit.SECONDS);
   }
 

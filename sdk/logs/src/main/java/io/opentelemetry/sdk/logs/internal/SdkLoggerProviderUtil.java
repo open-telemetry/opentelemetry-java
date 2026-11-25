@@ -44,6 +44,24 @@ public final class SdkLoggerProviderUtil {
     }
   }
 
+  /**
+   * Reflectively set the default {@link SdkResourceProvider} on the {@link
+   * SdkLoggerProviderBuilder}.
+   */
+  public static void setDefaultSdkResourceProvider(
+      SdkLoggerProviderBuilder sdkLoggerProviderBuilder, SdkResourceProvider resourceProvider) {
+    try {
+      Method method =
+          SdkLoggerProviderBuilder.class.getDeclaredMethod(
+              "setDefaultSdkResourceProvider", SdkResourceProvider.class);
+      method.setAccessible(true);
+      method.invoke(sdkLoggerProviderBuilder, resourceProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setDefaultSdkResourceProvider on SdkLoggerProviderBuilder", e);
+    }
+  }
+
   /** Reflectively get the {@link SdkResourceProvider} from the {@link SdkLoggerProvider}. */
   public static SdkResourceProvider getSdkResourceProvider(SdkLoggerProvider sdkLoggerProvider) {
     try {
