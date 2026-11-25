@@ -58,10 +58,7 @@ public abstract class Resource {
                   .build())
           .build();
 
-  // TODO(jack-berg): Explicitly null out schema url to avoid avoid assigning schemaUrl to default
-  // resource which previously had none. Revisit when entities stabilize.
-  private static final Resource DEFAULT =
-      builder().putAll(MANDATORY).putAll(TELEMETRY_SDK).buildWithSchemaUrl(null);
+  private static final Resource DEFAULT = MANDATORY.merge(TELEMETRY_SDK);
 
   /**
    * Returns the default {@link Resource}. This resource contains the default attributes provided by

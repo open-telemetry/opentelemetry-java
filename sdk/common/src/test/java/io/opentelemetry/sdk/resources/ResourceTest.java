@@ -390,7 +390,7 @@ class ResourceTest {
 
     assertThat(pinned.getSchemaUrl()).isEqualTo("S1");
     assertThat(Resource.empty().merge(pinned)).isEqualTo(pinned);
-    assertThat(Resource.getDefault().merge(explicit).getSchemaUrl()).isEqualTo("explicit");
+    assertThat(Resource.empty().merge(explicit)).isEqualTo(explicit);
     assertThat(withoutEntitySchema.getSchemaUrl()).isNull();
     assertThat(
             Resource.create(Attributes.of(stringKey("a"), "1"), "S1")
@@ -874,11 +874,8 @@ class ResourceTest {
                 .build());
     assertThat(resource.getUnassociatedAttributes())
         .isEqualTo(Attributes.of(stringKey("service.name"), "unknown_service:java"));
-    assertThat(resource.getSchemaUrl()).isNull();
-    Resource rebuilt = resource.toBuilder().build();
-    assertThat(rebuilt.getSchemaUrl()).isEqualTo("https://opentelemetry.io/schemas/1.40.0");
-    assertThat(rebuilt.getAttributes()).isEqualTo(resource.getAttributes());
-    assertThat(rebuilt.getEntities()).containsExactlyElementsOf(resource.getEntities());
+    assertThat(resource.getSchemaUrl()).isEqualTo("https://opentelemetry.io/schemas/1.40.0");
+    assertThat(resource.toBuilder().build()).isEqualTo(resource);
     assertThat(Resource.empty().merge(resource)).isEqualTo(resource);
   }
 
@@ -918,9 +915,7 @@ class ResourceTest {
             .build();
     Resource configuredService = Resource.builder().addEntity(service).build();
     Resource withoutService =
-        defaults.toBuilder()
-            .removeIf(key -> key.getKey().equals("service.name"))
-            .buildWithSchemaUrl(null);
+        defaults.toBuilder().removeIf(key -> key.getKey().equals("service.name")).build();
     return Stream.of(
         Arguments.argumentSet(
             "unchanged name preserves fallback",
@@ -929,7 +924,7 @@ class ResourceTest {
         Arguments.argumentSet(
             "ordinary name overrides fallback",
             Resource.create(Attributes.of(stringKey("service.name"), "configured")),
-            withoutService.toBuilder().put("service.name", "configured").buildWithSchemaUrl(null)),
+            withoutService.toBuilder().put("service.name", "configured").build()),
         Arguments.argumentSet(
             "entity replaces fallback",
             configuredService,
