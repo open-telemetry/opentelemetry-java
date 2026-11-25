@@ -139,6 +139,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   private static volatile String grpcEncodingServerEncoding = "brotli";
 
+  private static volatile String grpcEncodingServerStatus = "0";
+
   @RegisterExtension
   @Order(1)
   static final SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
@@ -256,7 +258,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   // A minimal server that returns a configurable grpc-encoding to test encoding handling.
-  // The encoding is controlled via grpcEncodingServerEncoding (defaults to "brotli").
+  // The encoding is controlled via grpcEncodingServerEncoding (defaults to "brotli") and the status
+  // via grpcEncodingServerStatus (defaults to "0").
   // Both OkHttpGrpcSender (our code) and UpstreamGrpcSender (grpc-java framework) reject unknown
   // encodings and fail the export with INTERNAL status.
   @RegisterExtension
@@ -275,7 +278,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     ResponseHeaders.builder(HttpStatus.OK)
                         .contentType(MediaType.parse("application/grpc+proto"))
                         .add("grpc-encoding", grpcEncodingServerEncoding)
-                        .add("grpc-status", "0")
+                        .add("grpc-status", grpcEncodingServerStatus)
                         .build(),
                     HttpData.wrap(frame));
               });
@@ -344,6 +347,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     httpRequests.clear();
     grpcEncodingServerAttempts.set(0);
     grpcEncodingServerEncoding = "brotli";
+    grpcEncodingServerStatus = "0";
   }
 
   @Test
@@ -468,6 +472,65 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                       .satisfies(grpcResponse ->
                           assertThat(grpcResponse.getStatusCode())
                               .isEqualTo(GrpcStatusCode.INTERNAL)));
+    }
+  }
+
+  // Verifies that a response compressed with the request's own encoding, which the sender can't
+  // decompress, resolves from grpc-status instead of failing with INTERNAL. grpc-go servers (such
+  // as the OpenTelemetry Collector) respond with the request's encoding by default.
+  @Test
+  void responseInRequestGrpcMessageEncoding() {
+    // grpc-java rejects a response encoding missing from its DecompressorRegistry
+    assumeThat(exporter.unwrap())
+        .extracting("delegate.grpcSender")
+        .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
+
+    grpcEncodingServerEncoding = "base64";
+    try (TelemetryExporter<T> testExporter =
+        exporterBuilder()
+            .setEndpoint(grpcEncodingServer.httpUri().toString())
+            .setCompression("base64")
+            .setRetryPolicy(null)
+            .build()) {
+      CompletableResultCode result =
+          testExporter
+              .export(Collections.singletonList(generateFakeTelemetry()))
+              .join(10, TimeUnit.SECONDS);
+      assertThat(result.isSuccess()).isTrue();
+      assertThat(grpcEncodingServerAttempts).hasValue(1);
+    }
+  }
+
+  // Verifies that the grpc-status of a response compressed with the request's own encoding is
+  // still honored when it is an error.
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void responseInRequestGrpcMessageEncodingWithErrorStatus() {
+    assumeThat(exporter.unwrap())
+        .extracting("delegate.grpcSender")
+        .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
+
+    grpcEncodingServerEncoding = "base64";
+    grpcEncodingServerStatus = "7";
+    try (TelemetryExporter<T> testExporter =
+        exporterBuilder()
+            .setEndpoint(grpcEncodingServer.httpUri().toString())
+            .setCompression("base64")
+            .setRetryPolicy(null)
+            .build()) {
+      CompletableResultCode result =
+          testExporter
+              .export(Collections.singletonList(generateFakeTelemetry()))
+              .join(10, TimeUnit.SECONDS);
+      assertThat(result.isSuccess()).isFalse();
+      assertThat(result.getFailureThrowable())
+          .isInstanceOfSatisfying(
+              FailedExportException.GrpcExportException.class,
+              ex ->
+                  assertThat(requireNonNull(ex.getResponse()))
+                      .satisfies(grpcResponse ->
+                          assertThat(grpcResponse.getStatusCode())
+                              .isEqualTo(GrpcStatusCode.PERMISSION_DENIED)));
     }
   }
 
@@ -794,7 +857,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).build();
     assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(logs.getEvents()).isEmpty();
+    // Not isEmpty(): the captured events can include those of the test that ran before this one
+    logs.assertDoesNotContain("Calling shutdown() multiple times.");
     assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
   }
