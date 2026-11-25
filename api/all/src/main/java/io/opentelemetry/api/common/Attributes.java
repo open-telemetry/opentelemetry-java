@@ -19,6 +19,9 @@ import javax.annotation.concurrent.Immutable;
  * <p>The keys are {@link AttributeKey}s and the values are Object instances that match the type of
  * the provided key.
  *
+ * <p>The factory methods automatically convert {@link AttributeType#VALUE} attributes to simple
+ * attributes when possible. See {@link AttributesBuilder#put(AttributeKey, Object)} for details.
+ *
  * <p>Null keys will be silently dropped.
  *
  * <p>Note: The behavior of null-valued attributes is undefined, and hence strongly discouraged.

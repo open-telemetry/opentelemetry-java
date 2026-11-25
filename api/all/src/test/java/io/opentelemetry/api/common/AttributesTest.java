@@ -19,6 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,8 +30,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /** Unit tests for {@link Attributes}s. */
 @SuppressWarnings("rawtypes")
@@ -356,6 +363,225 @@ class AttributesTest {
                 longArrayKey("long"), Arrays.asList(100L, 200L),
                 doubleArrayKey("double"), Arrays.asList(33.44, -44.33),
                 booleanArrayKey("boolean"), Arrays.asList(false, true)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("ofValueCases")
+  <T> void ofValue(Value<?> value, AttributeKey<T> storedKey, T storedValue) {
+    Attributes attributes = Attributes.of(valueKey("key"), value);
+    AttributesBuilder builder = Attributes.builder().put(valueKey("key"), value);
+    Attributes expected = builder.build();
+
+    assertThat(attributes).isEqualTo(expected);
+    assertThat(attributes.hashCode()).isEqualTo(expected.hashCode());
+    assertThat(attributes.get(storedKey)).isEqualTo(storedValue);
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(value);
+    assertThat(attributes.asMap()).isEqualTo(expected.asMap());
+    Map<AttributeKey<?>, Object> entriesSeen = new LinkedHashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactlyEntriesOf(expected.asMap());
+  }
+
+  @Test
+  void builderRemoveConvertedValue() {
+    assertThat(
+            Attributes.builder()
+                .put(valueKey("key"), Value.of("test"))
+                .remove(stringKey("key"))
+                .build())
+        .isEqualTo(Attributes.empty());
+    assertThat(
+            Attributes.builder()
+                .put(valueKey("key"), Value.of(Value.of("a"), Value.of("b")))
+                .remove(stringArrayKey("key"))
+                .build())
+        .isEqualTo(Attributes.empty());
+  }
+
+  @Test
+  void builderBuildDoesNotNormalizeValuesAgain() {
+    Value<?> value = spy(Value.of(Value.of(new byte[] {1}), Value.of(new byte[] {2})));
+    AttributesBuilder builder = Attributes.builder().put(valueKey("key"), value);
+    clearInvocations((Object) value);
+
+    builder.build();
+    builder.put("other", 1L);
+    builder.build();
+    builder.build();
+
+    verifyNoInteractions(value);
+  }
+
+  @Test
+  void ofValueDeduplication() {
+    assertThat(Attributes.of(stringKey("key"), "old", valueKey("key"), Value.of(123L)))
+        .isEqualTo(Attributes.of(longKey("key"), 123L));
+    assertThat(Attributes.of(valueKey("key"), Value.of("old"), longKey("key"), 123L))
+        .isEqualTo(Attributes.of(longKey("key"), 123L));
+    assertThat(
+            Attributes.of(
+                stringKey("key"), "old",
+                valueKey("key"), Value.of("new"),
+                valueKey("key"), Value.of(123L)))
+        .isEqualTo(Attributes.of(longKey("key"), 123L));
+    assertThat(
+            Attributes.of(
+                valueKey("key"), Value.of("old"),
+                valueKey("key"), Value.of(123L),
+                stringKey("key"), "new"))
+        .isEqualTo(Attributes.of(stringKey("key"), "new"));
+  }
+
+  @Test
+  void ofValueInvalidEntries() {
+    Attributes expected = Attributes.of(stringKey("key"), "test");
+    assertThat(Attributes.of(valueKey("key"), Value.of("test"), null, Value.of("ignored")))
+        .isEqualTo(expected);
+    assertThat(Attributes.of(valueKey("key"), Value.of("test"), valueKey("ignored"), null))
+        .isEqualTo(expected);
+    assertThat(
+            Attributes.of(
+                valueKey(""),
+                Value.of("ignored"),
+                null,
+                Value.of("ignored"),
+                valueKey("key"),
+                Value.of("test"),
+                valueKey("ignored"),
+                null))
+        .isEqualTo(expected);
+  }
+
+  @Test
+  void ofMultipleValues() {
+    assertThat(Attributes.of(valueKey("key"), Value.of("test"), longKey("other"), 123L))
+        .isEqualTo(Attributes.builder().put("key", "test").put("other", 123L).build());
+    assertThat(
+            Attributes.of(
+                valueKey("string"), Value.of("test"),
+                valueKey("long"), Value.of(123L),
+                valueKey("boolean"), Value.of(true),
+                valueKey("double"), Value.of(1.23),
+                valueKey("array"), Value.of(Value.of("a"), Value.of("b")),
+                valueKey("bytes"), Value.of(new byte[] {1, 2, 3})))
+        .isEqualTo(
+            Attributes.builder()
+                .put("string", "test")
+                .put("long", 123L)
+                .put("boolean", true)
+                .put("double", 1.23)
+                .put("array", "a", "b")
+                .put(valueKey("bytes"), Value.of(new byte[] {1, 2, 3}))
+                .build());
+  }
+
+  private static Stream<Arguments> ofValueCases() {
+    return Stream.of(
+        Arguments.of(Value.of("test"), stringKey("key"), "test"),
+        Arguments.of(Value.of(123L), longKey("key"), 123L),
+        Arguments.of(Value.of(1.23), doubleKey("key"), 1.23),
+        Arguments.of(Value.of(true), booleanKey("key"), true),
+        Arguments.of(
+            Value.of(Value.of("a"), Value.of("b")), stringArrayKey("key"), Arrays.asList("a", "b")),
+        Arguments.of(
+            Value.of(Value.of(1L), Value.of(2L)), longArrayKey("key"), Arrays.asList(1L, 2L)),
+        Arguments.of(
+            Value.of(Value.of(1.1), Value.of(2.2)), doubleArrayKey("key"), Arrays.asList(1.1, 2.2)),
+        Arguments.of(
+            Value.of(Value.of(true), Value.of(false)),
+            booleanArrayKey("key"),
+            Arrays.asList(true, false)),
+        valuePreserved(Value.empty()),
+        valuePreserved(Value.of(Collections.emptyList())),
+        valuePreserved(Value.of(Collections.singletonMap("nested", Value.of("test")))),
+        valuePreserved(Value.of(new byte[] {1, 2, 3})),
+        valuePreserved(Value.of(Value.of("test"), Value.of(1L))),
+        valuePreserved(Value.of(Value.of(Value.of("nested")))),
+        valuePreserved(Value.of(Value.of(new byte[] {1}))),
+        valuePreserved(Value.of(Value.empty())));
+  }
+
+  private static Arguments valuePreserved(Value<?> value) {
+    return Arguments.of(value, valueKey("key"), value);
+  }
+
+  @ParameterizedTest
+  @MethodSource("ofValueOverloadCases")
+  void ofValueOverloads(Attributes attributes, Attributes expected) {
+    assertThat(attributes).isEqualTo(expected);
+  }
+
+  private static Stream<Arguments> ofValueOverloadCases() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "two attributes",
+            Attributes.of(longKey("key1"), 1L, valueKey("key"), Value.of("test")),
+            Attributes.builder().put("key", "test").put("key1", 1L).build()),
+        Arguments.argumentSet(
+            "three attributes",
+            Attributes.of(
+                longKey("key2"), 2L, valueKey("key"), Value.of("test"), longKey("key1"), 1L),
+            Attributes.builder().put("key", "test").put("key1", 1L).put("key2", 2L).build()),
+        Arguments.argumentSet(
+            "four attributes",
+            Attributes.of(
+                longKey("key3"),
+                3L,
+                longKey("key2"),
+                2L,
+                valueKey("key"),
+                Value.of("test"),
+                longKey("key1"),
+                1L),
+            Attributes.builder()
+                .put("key", "test")
+                .put("key1", 1L)
+                .put("key2", 2L)
+                .put("key3", 3L)
+                .build()),
+        Arguments.argumentSet(
+            "five attributes",
+            Attributes.of(
+                longKey("key4"),
+                4L,
+                longKey("key3"),
+                3L,
+                longKey("key2"),
+                2L,
+                valueKey("key"),
+                Value.of("test"),
+                longKey("key1"),
+                1L),
+            Attributes.builder()
+                .put("key", "test")
+                .put("key1", 1L)
+                .put("key2", 2L)
+                .put("key3", 3L)
+                .put("key4", 4L)
+                .build()),
+        Arguments.argumentSet(
+            "six attributes",
+            Attributes.of(
+                longKey("key5"),
+                5L,
+                longKey("key4"),
+                4L,
+                longKey("key3"),
+                3L,
+                longKey("key2"),
+                2L,
+                valueKey("key"),
+                Value.of("test"),
+                longKey("key1"),
+                1L),
+            Attributes.builder()
+                .put("key", "test")
+                .put("key1", 1L)
+                .put("key2", 2L)
+                .put("key3", 3L)
+                .put("key4", 4L)
+                .put("key5", 5L)
+                .build()));
   }
 
   @Test
