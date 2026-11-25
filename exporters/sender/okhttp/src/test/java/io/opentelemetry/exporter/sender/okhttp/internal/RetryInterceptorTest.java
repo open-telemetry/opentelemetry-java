@@ -21,6 +21,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.common.ResponseHeaders;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
@@ -204,33 +205,42 @@ class RetryInterceptorTest {
     }
   }
 
-  @Test
-  void retryDelayOverride() throws Exception {
-    succeedOnAttempt(2);
-    doNothing().when(sleeper).sleep(anyLong());
+  @ParameterizedTest
+  @MethodSource("retryAfterArgs")
+  void retryAfter(String retryAfter, long expectedDelayNanos) throws Exception {
+    server.enqueue(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.BAD_GATEWAY)
+                .add("Retry-After", retryAfter)
+                .build()));
+    server.enqueue(HttpResponse.of(HttpStatus.OK));
 
     RetryInterceptor retryInterceptor =
         new RetryInterceptor(
             RetryPolicy.builder()
-                .setBackoffMultiplier(1.6)
                 .setInitialBackoff(Duration.ofSeconds(1))
-                .setMaxBackoff(Duration.ofSeconds(2))
-                .setMaxAttempts(5)
-                .setRetryExceptionPredicate(retryExceptionPredicate)
+                .setMaxBackoff(Duration.ofSeconds(1))
+                .setMaxAttempts(2)
                 .build(),
-            r -> !r.isSuccessful(),
-            response -> OptionalLong.of(123L),
+            OkHttpHttpSender::isRetryable,
+            OkHttpHttpSender::retryDelayNanos,
             retryExceptionPredicate,
             sleeper,
-            random);
+            () -> 1.0d);
     client = new OkHttpClient.Builder().addInterceptor(retryInterceptor).build();
 
     try (Response response = sendRequest()) {
       assertThat(response.isSuccessful()).isTrue();
     }
 
-    verify(sleeper).sleep(123L);
-    verifyNoInteractions(random);
+    verify(sleeper).sleep(expectedDelayNanos);
+  }
+
+  private static Stream<Arguments> retryAfterArgs() {
+    return Stream.of(
+        Arguments.argumentSet("zero delay", "0", 0L),
+        Arguments.argumentSet("nonzero delay", "2", 2_000_000_000L),
+        Arguments.argumentSet("malformed header", "not-a-retry-after", 1_000_000_000L));
   }
 
   @Test

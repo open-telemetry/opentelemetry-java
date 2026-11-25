@@ -49,6 +49,19 @@ public interface SpanProcessor extends Closeable {
   }
 
   /**
+   * Returns a {@link SpanProcessor} which discards all spans.
+   *
+   * <p>Registering this processor keeps tracers fully functional: spans are created with valid
+   * trace and span ids and propagate to downstream services. Normal sampling and recording behavior
+   * is retained. This processor does not export spans. This is <em>not</em> a way to disable
+   * tracing. To disable tracing, register no span processors at all, or disable the tracer via
+   * scope configuration.
+   */
+  static SpanProcessor noop() {
+    return NoopSpanProcessor.getInstance();
+  }
+
+  /**
    * Called when a {@link io.opentelemetry.api.trace.Span} is started, if the {@link
    * Span#isRecording()} returns true.
    *

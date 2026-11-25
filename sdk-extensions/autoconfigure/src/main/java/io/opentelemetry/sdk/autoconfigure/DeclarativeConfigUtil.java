@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigResult;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfiguration;

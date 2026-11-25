@@ -4,7 +4,7 @@ pluginManagement {
     id("com.gradle.develocity") version "4.6.1"
     id("de.undercouch.download") version "5.7.0"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("org.graalvm.buildtools.native") version "1.1.18"
+    id("org.graalvm.buildtools.native") version "1.1.19"
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
   }
 }
@@ -69,6 +69,8 @@ include(":sdk:trace-shaded-deps")
 include(":sdk-extensions:autoconfigure")
 include(":sdk-extensions:autoconfigure-spi")
 include(":sdk-extensions:declarative-config")
+include(":sdk-extensions:declarative-config-jackson2")
+include(":sdk-extensions:declarative-config-snakeyaml-engine2")
 include(":sdk-extensions:incubator")
 include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")

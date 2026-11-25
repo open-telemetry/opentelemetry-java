@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.internal;
 
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 
 /**
  * SDK implementation of {@link ConfigProvider}.

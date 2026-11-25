@@ -71,8 +71,12 @@ public final class RetryUtil {
 
     try {
       long delaySeconds = Long.parseLong(retryAfter);
-      if (delaySeconds < 0) {
-        return OptionalLong.empty();
+      // RFC 9110 delay-seconds is 1*DIGIT. Long.parseLong also accepts signs and non-ASCII digits.
+      for (int i = 0; i < retryAfter.length(); i++) {
+        char digit = retryAfter.charAt(i);
+        if (digit < '0' || digit > '9') {
+          return OptionalLong.empty();
+        }
       }
       return OptionalLong.of(TimeUnit.SECONDS.toNanos(delaySeconds));
     } catch (NumberFormatException ignored) {

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -93,6 +94,39 @@ class TracerProviderConfigurationTest {
                   .extracting("activeSpanProcessor")
                   .isEqualTo(SpanProcessor.composite()));
       assertThat(closeables).isEmpty();
+      // "none" must register no processors at all (not SpanProcessor.noop(), which is the same
+      // instance as SpanProcessor.composite()), so tracers resolve to no-op.
+      assertThat(tracerProvider.get("test")).isSameAs(TracerProvider.noop().get("test"));
+    }
+  }
+
+  @Test
+  void configureTracerProvider_noopExporter() {
+    List<Closeable> closeables = new ArrayList<>();
+    List<SpanProcessor> customizerInputs = new ArrayList<>();
+
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
+    TracerProviderConfiguration.configureTracerProvider(
+        tracerProviderBuilder,
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("otel.traces.exporter", "noop")),
+        spiHelper,
+        MeterProvider.noop(),
+        (a, unused) -> a,
+        (a, unused) -> {
+          customizerInputs.add(a);
+          return a;
+        },
+        (a, unused) -> a,
+        closeables);
+
+    // The no-op processor flows through the span processor customizer, and no BatchSpanProcessor
+    // (with its worker thread) is created.
+    assertThat(customizerInputs).containsExactly(SpanProcessor.noop());
+    assertThat(closeables).isEmpty();
+
+    try (SdkTracerProvider tracerProvider = tracerProviderBuilder.build()) {
+      assertThat(tracerProvider.get("test").isEnabled()).isTrue();
     }
   }
 

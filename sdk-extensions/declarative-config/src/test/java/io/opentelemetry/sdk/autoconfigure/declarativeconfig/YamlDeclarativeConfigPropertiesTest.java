@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import static io.opentelemetry.api.incubator.config.DeclarativeConfigProperties.empty;
+import static io.opentelemetry.api.config.DeclarativeConfigProperties.empty;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;

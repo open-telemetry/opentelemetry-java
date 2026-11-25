@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
+import io.opentelemetry.api.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 
 /**
  * Extended version of {@link DeclarativeConfigProperties} with access to {@link ConfigProvider}.

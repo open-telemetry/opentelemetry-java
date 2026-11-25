@@ -260,6 +260,78 @@ class AsynchronousMetricStorageTest {
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
+  void collect_DeltaInstrumentCreatedAfterPreviousCollection(MemoryMode memoryMode) {
+    setup(memoryMode, AggregationTemporality.DELTA);
+    testClock.advance(Duration.ofSeconds(10));
+    registeredReader.setLastCollectEpochNanos(testClock.now());
+
+    testClock.advance(Duration.ofSeconds(5));
+    long creationEpochNanos = testClock.now();
+    AsynchronousMetricStorage<?> newStorage =
+        AsynchronousMetricStorage.create(
+            registeredReader,
+            registeredView,
+            testClock,
+            InstrumentDescriptor.create(
+                "new-counter",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG,
+                Advice.empty()),
+            asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
+            /* enabled= */ true);
+
+    testClock.advance(Duration.ofSeconds(5));
+    newStorage.record(Attributes.empty(), 3);
+    assertThat(newStorage.collect(resource, scope, testClock.now()))
+        .hasLongSumSatisfying(sum ->
+            sum.isDelta()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasStartEpochNanos(creationEpochNanos)
+                        .hasEpochNanos(testClock.now())
+                        .hasValue(3)));
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void collect_CumulativeInstrumentCreatedAfterPreviousCollection(MemoryMode memoryMode) {
+    setup(memoryMode, AggregationTemporality.CUMULATIVE);
+    testClock.advance(Duration.ofSeconds(10));
+    registeredReader.setLastCollectEpochNanos(testClock.now());
+
+    testClock.advance(Duration.ofSeconds(5));
+    long creationEpochNanos = testClock.now();
+    AsynchronousMetricStorage<?> newStorage =
+        AsynchronousMetricStorage.create(
+            registeredReader,
+            registeredView,
+            testClock,
+            InstrumentDescriptor.create(
+                "new-counter",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG,
+                Advice.empty()),
+            asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
+            /* enabled= */ true);
+
+    testClock.advance(Duration.ofSeconds(5));
+    newStorage.record(Attributes.empty(), 3);
+    assertThat(newStorage.collect(resource, scope, testClock.now()))
+        .hasLongSumSatisfying(sum ->
+            sum.isCumulative()
+                .hasPointsSatisfying(point ->
+                    point
+                        .hasStartEpochNanos(creationEpochNanos)
+                        .hasEpochNanos(testClock.now())
+                        .hasValue(3)));
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
   void collect_CumulativeReportsCumulativeObservations(MemoryMode memoryMode) {
     setup(memoryMode);
 
@@ -436,57 +508,61 @@ class AsynchronousMetricStorageTest {
             asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
             /* enabled= */ true);
 
-    // Record measurement and collect at time 10
+    // Collection timestamps must be after the instrument creation time.
+    long firstCollectEpochNanos = testClock.now() + 10;
+    // Record measurement and collect 10ns after creation
     longCounterStorage.record(Attributes.empty(), 3);
-    assertThat(longCounterStorage.collect(resource, scope, 10))
+    assertThat(longCounterStorage.collect(resource, scope, firstCollectEpochNanos))
         .hasLongSumSatisfying(sum ->
             sum.isDelta()
                 .hasPointsSatisfying(point ->
                     point
                         .hasStartEpochNanos(testClock.now())
-                        .hasEpochNanos(10)
+                        .hasEpochNanos(firstCollectEpochNanos)
                         .hasValue(3)
                         .hasAttributes(Attributes.empty())));
-    registeredReader.setLastCollectEpochNanos(10);
+    registeredReader.setLastCollectEpochNanos(firstCollectEpochNanos);
 
-    // Record measurement and collect at time 30
+    long secondCollectEpochNanos = testClock.now() + 30;
+    // Record measurement and collect 30ns after creation
     longCounterStorage.record(Attributes.empty(), 3);
     longCounterStorage.record(Attributes.builder().put("key", "value1").build(), 6);
-    assertThat(longCounterStorage.collect(resource, scope, 30))
+    assertThat(longCounterStorage.collect(resource, scope, secondCollectEpochNanos))
         .hasLongSumSatisfying(sum ->
             sum.isDelta()
                 .hasPointsSatisfying(
                     point ->
                         point
-                            .hasStartEpochNanos(10)
-                            .hasEpochNanos(30)
+                            .hasStartEpochNanos(firstCollectEpochNanos)
+                            .hasEpochNanos(secondCollectEpochNanos)
                             .hasValue(0)
                             .hasAttributes(Attributes.empty()),
                     point ->
                         point
-                            .hasStartEpochNanos(10)
-                            .hasEpochNanos(30)
+                            .hasStartEpochNanos(firstCollectEpochNanos)
+                            .hasEpochNanos(secondCollectEpochNanos)
                             .hasValue(6)
                             .hasAttributes(Attributes.builder().put("key", "value1").build())));
-    registeredReader.setLastCollectEpochNanos(30);
+    registeredReader.setLastCollectEpochNanos(secondCollectEpochNanos);
 
-    // Record measurement and collect at time 35
+    long thirdCollectEpochNanos = testClock.now() + 35;
+    // Record measurement and collect 35ns after creation
     longCounterStorage.record(Attributes.empty(), 4);
     longCounterStorage.record(Attributes.builder().put("key", "value2").build(), 5);
-    assertThat(longCounterStorage.collect(resource, scope, 35))
+    assertThat(longCounterStorage.collect(resource, scope, thirdCollectEpochNanos))
         .hasLongSumSatisfying(sum ->
             sum.isDelta()
                 .hasPointsSatisfying(
                     point ->
                         point
-                            .hasStartEpochNanos(30)
-                            .hasEpochNanos(35)
+                            .hasStartEpochNanos(secondCollectEpochNanos)
+                            .hasEpochNanos(thirdCollectEpochNanos)
                             .hasValue(1)
                             .hasAttributes(Attributes.empty()),
                     point ->
                         point
-                            .hasStartEpochNanos(30)
-                            .hasEpochNanos(35)
+                            .hasStartEpochNanos(secondCollectEpochNanos)
+                            .hasEpochNanos(thirdCollectEpochNanos)
                             .hasValue(5)
                             .hasAttributes(Attributes.builder().put("key", "value2").build())));
   }

@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.FileConfigUti
 import static java.util.stream.Collectors.toSet;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;

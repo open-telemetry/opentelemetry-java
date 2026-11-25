@@ -125,6 +125,29 @@ class ConfigurableSpanExporterTest {
   }
 
   @Test
+  void configureSpanExporters_multipleWithNoop() {
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(ImmutableMap.of("otel.traces.exporter", "otlp,noop"));
+    List<Closeable> closeables = new ArrayList<>();
+
+    Map<String, SpanExporter> exportersByName =
+        SpanExporterConfiguration.configureSpanExporters(
+            config, spiHelper, (a, unused) -> a, closeables);
+    List<SpanProcessor> spanProcessors =
+        TracerProviderConfiguration.configureSpanProcessors(
+            config,
+            exportersByName,
+            InternalTelemetryVersion.LEGACY,
+            MeterProvider.noop(),
+            closeables);
+    cleanup.addCloseables(closeables);
+
+    // noop is ignored when combined with other exporters: no SpanProcessor.noop() is added.
+    assertThat(exportersByName).containsOnlyKeys("otlp");
+    assertThat(spanProcessors).hasExactlyElementsOfTypes(BatchSpanProcessor.class);
+  }
+
+  @Test
   void configureExporter_NotFound() {
     assertThatThrownBy(() ->
             SpanExporterConfiguration.configureExporter(

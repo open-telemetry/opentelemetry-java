@@ -66,4 +66,19 @@ class CaseInsensitiveMapTest {
     assertThat(caseInsensitiveMap.get("kEy2")).isEqualTo("test2");
     assertThat(caseInsensitiveMap.get("KEY2")).isEqualTo("test2");
   }
+
+  @Test
+  void getWithNullKey() {
+    CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+    caseInsensitiveMap.put("key1", "test");
+    assertThat(caseInsensitiveMap.get(null)).isNull();
+  }
+
+  @Test
+  void getWithNonStringKey() {
+    CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+    caseInsensitiveMap.put("key1", "test");
+    Object nonStringKey = 123;
+    assertThat(caseInsensitiveMap.get(nonStringKey)).isNull();
+  }
 }
