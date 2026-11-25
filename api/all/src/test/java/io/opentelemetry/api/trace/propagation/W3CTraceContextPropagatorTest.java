@@ -21,7 +21,9 @@ import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -247,6 +249,44 @@ class W3CTraceContextPropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TRACE_STATE));
+  }
+
+  @ParameterizedTest
+  @MethodSource("repeatedTraceStateHeaders")
+  void extract_multipleTraceStateHeaders(List<String> traceStateHeaders) {
+    Map<String, List<String>> carrier = new HashMap<>();
+    carrier.put(
+        W3CTraceContextPropagator.TRACE_PARENT,
+        Collections.singletonList(TRACEPARENT_HEADER_SAMPLED));
+    carrier.put(W3CTraceContextPropagator.TRACE_STATE, traceStateHeaders);
+    TextMapGetter<Map<String, List<String>>> multiGetter =
+        new TextMapGetter<Map<String, List<String>>>() {
+          @Override
+          @Nullable
+          public String get(Map<String, List<String>> headers, String key) {
+            return headers.getOrDefault(key, Collections.emptyList()).stream()
+                .findFirst()
+                .orElse(null);
+          }
+
+          @Override
+          public Iterator<String> getAll(Map<String, List<String>> headers, String key) {
+            return headers.getOrDefault(key, Collections.emptyList()).iterator();
+          }
+        };
+
+    Context context = w3cTraceContextPropagator.extract(Context.root(), carrier, multiGetter);
+
+    assertThat(getSpanContext(context))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TRACE_STATE));
+  }
+
+  private static Stream<Arguments> repeatedTraceStateHeaders() {
+    return Stream.of(
+        Arguments.argumentSet("two fields", Arrays.asList("bar=baz", "foo=bar")),
+        Arguments.argumentSet("empty first field", Arrays.asList("", "bar=baz", "foo=bar")));
   }
 
   @Test

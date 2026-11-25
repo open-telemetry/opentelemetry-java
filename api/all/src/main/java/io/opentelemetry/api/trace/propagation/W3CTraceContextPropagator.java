@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -165,8 +166,21 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
       return contextFromParentHeader;
     }
 
-    String traceStateHeader = getter.get(carrier, TRACE_STATE);
-    if (traceStateHeader == null || traceStateHeader.isEmpty()) {
+    Iterator<String> traceStateHeaders = getter.getAll(carrier, TRACE_STATE);
+    if (traceStateHeaders == null || !traceStateHeaders.hasNext()) {
+      return contextFromParentHeader;
+    }
+
+    String traceStateHeader = traceStateHeaders.next();
+    if (traceStateHeaders.hasNext()) {
+      // W3C Trace Context requires combining repeated fields in the order received.
+      StringBuilder combined = new StringBuilder(traceStateHeader);
+      while (traceStateHeaders.hasNext()) {
+        combined.append(',').append(traceStateHeaders.next());
+      }
+      traceStateHeader = combined.toString();
+    }
+    if (traceStateHeader.isEmpty()) {
       return contextFromParentHeader;
     }
 
