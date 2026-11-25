@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import java.util.function.UnaryOperator;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -29,8 +30,18 @@ public abstract class RegisteredView {
       UnaryOperator<Attributes> attributesFilter,
       int cardinalityLimit,
       SourceInfo viewSourceInfo) {
+    return create(selector, view, attributesFilter, cardinalityLimit, viewSourceInfo, null);
+  }
+
+  public static RegisteredView create(
+      InstrumentSelector selector,
+      View view,
+      UnaryOperator<Attributes> attributesFilter,
+      int cardinalityLimit,
+      SourceInfo viewSourceInfo,
+      @Nullable Boolean enabled) {
     return new AutoValue_RegisteredView(
-        selector, view, attributesFilter, cardinalityLimit, viewSourceInfo);
+        selector, view, attributesFilter, cardinalityLimit, viewSourceInfo, enabled);
   }
 
   RegisteredView() {}
@@ -53,6 +64,13 @@ public abstract class RegisteredView {
 
   /** The {@link SourceInfo} from where the view was registered. */
   public abstract SourceInfo getViewSourceInfo();
+
+  /**
+   * Whether the metric stream from this view is enabled, or {@code null} if not explicitly
+   * configured.
+   */
+  @Nullable
+  public abstract Boolean getEnabled();
 
   @Override
   public final String toString() {
