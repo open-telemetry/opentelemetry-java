@@ -9,6 +9,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -21,18 +22,25 @@ import io.opentelemetry.sdk.autoconfigure.spi.declarativeconfig.ComponentProvide
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -81,6 +89,12 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   protected abstract T createExporter(
       @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject);
+
+  protected abstract T createExporter(
+      OutputStream outputStream, Function<OutputStream, OutputStream> outputStreamMapper);
+
+  protected abstract T createExporterWithMapperBeforeOutput(
+      OutputStream outputStream, Function<OutputStream, OutputStream> outputStreamMapper);
 
   protected abstract T createDefaultExporter();
 
@@ -422,5 +436,113 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
         })
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No provider found"));
+  }
+
+  @Test
+  void exportWithOutputStreamMapper() throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    AtomicInteger writeCount = new AtomicInteger();
+    T exporter =
+        createExporter(
+            baos,
+            out ->
+                new FilterOutputStream(out) {
+                  @Override
+                  public void write(int b) throws IOException {
+                    writeCount.incrementAndGet();
+                    super.write(b);
+                  }
+
+                  @Override
+                  public void write(byte[] b, int off, int len) throws IOException {
+                    writeCount.addAndGet(len);
+                    super.write(b, off, len);
+                  }
+                });
+
+    testDataExporter.export(exporter);
+    testDataExporter.flush(exporter);
+
+    String output = new String(baos.toByteArray(), StandardCharsets.UTF_8).trim();
+    String expectedJson = testDataExporter.getExpectedJson(/* withWrapper= */ true);
+    JSONAssert.assertEquals("Got \n" + output, expectedJson, output, false);
+    assertThat(writeCount.get()).isGreaterThan(0);
+  }
+
+  @Test
+  void exportWithOutputStreamMapperBeforeSetOutput() throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    AtomicInteger writeCount = new AtomicInteger();
+    T exporter =
+        createExporterWithMapperBeforeOutput(
+            baos,
+            out ->
+                new FilterOutputStream(out) {
+                  @Override
+                  public void write(int b) throws IOException {
+                    writeCount.incrementAndGet();
+                    super.write(b);
+                  }
+
+                  @Override
+                  public void write(byte[] b, int off, int len) throws IOException {
+                    writeCount.addAndGet(len);
+                    super.write(b, off, len);
+                  }
+                });
+
+    testDataExporter.export(exporter);
+    testDataExporter.flush(exporter);
+
+    String output = new String(baos.toByteArray(), StandardCharsets.UTF_8).trim();
+    String expectedJson = testDataExporter.getExpectedJson(/* withWrapper= */ true);
+    JSONAssert.assertEquals("Got \n" + output, expectedJson, output, false);
+    assertThat(writeCount.get()).isGreaterThan(0);
+  }
+
+  @Test
+  void exportWithOutputStreamMapperGzip() throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    T exporter =
+        createExporter(
+            baos,
+            out -> {
+              try {
+                return new GZIPOutputStream(out);
+              } catch (IOException e) {
+                throw new UncheckedIOException(e);
+              }
+            });
+
+    testDataExporter.export(exporter);
+    testDataExporter.shutdown(exporter);
+
+    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+    GZIPInputStream gzipIn = new GZIPInputStream(bais);
+    ByteArrayOutputStream decompressed = new ByteArrayOutputStream();
+    byte[] buffer = new byte[1024];
+    int len;
+    while ((len = gzipIn.read(buffer)) != -1) {
+      decompressed.write(buffer, 0, len);
+    }
+    String output = new String(decompressed.toByteArray(), StandardCharsets.UTF_8).trim();
+    String expectedJson = testDataExporter.getExpectedJson(/* withWrapper= */ true);
+    JSONAssert.assertEquals("Got \n" + output, expectedJson, output, false);
+  }
+
+  @Test
+  void outputStreamMapperNull() {
+    assertThatThrownBy(() ->
+            createExporter(
+                new ByteArrayOutputStream(), (Function<OutputStream, OutputStream>) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("outputStreamMapper");
+  }
+
+  @Test
+  void outputStreamMapperReturnsNull() {
+    assertThatThrownBy(() -> createExporter(new ByteArrayOutputStream(), out -> null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("outputStreamMapper returned null");
   }
 }

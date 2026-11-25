@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporter
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.OutputStream;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -44,5 +45,23 @@ class OtlpStdoutLogRecordExporterTest
       builder.setOutput(Logger.getLogger(exporterClass.getName()));
     }
     return builder.build();
+  }
+
+  @Override
+  protected OtlpStdoutLogRecordExporter createExporter(
+      OutputStream outputStream, Function<OutputStream, OutputStream> outputStreamMapper) {
+    return OtlpStdoutLogRecordExporter.builder()
+        .setOutput(outputStream)
+        .setOutputStreamMapper(outputStreamMapper)
+        .build();
+  }
+
+  @Override
+  protected OtlpStdoutLogRecordExporter createExporterWithMapperBeforeOutput(
+      OutputStream outputStream, Function<OutputStream, OutputStream> outputStreamMapper) {
+    return OtlpStdoutLogRecordExporter.builder()
+        .setOutputStreamMapper(outputStreamMapper)
+        .setOutput(outputStream)
+        .build();
   }
 }
