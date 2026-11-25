@@ -1,6 +1,6 @@
-# Threat model
+# OSS Scanner threat model
 
-See the [Security Policy](https://github.com/open-telemetry/.github/blob/main/SECURITY.md) for OpenTelemetry projects.
+The [Dockerfile](Dockerfile) downloads the OpenTelemetry Security Policy to `/src/.oss-scanner/security-policy.md` for offline scanning.
 
 Additional context specific to this project can be found below.
 
@@ -31,7 +31,7 @@ The following components have lower priority:
 ## How to exercise it
 
 - Unit tests and fuzz tests are colocated with their modules. Cross-component tests live under `integration-tests`.
-- See [build guidance](docs/knowledge/build.md) for requirements and commands.
+- See [build guidance](../docs/knowledge/build.md) for requirements and commands.
 
 ## How you rate severity
 
