@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.trace.samplers;
 
 import static io.opentelemetry.sdk.extension.incubator.trace.samplers.TestUtil.traceIdGenerator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -17,9 +18,12 @@ import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Collections;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class ComposableProbabilitySamplerTest {
   @Test
@@ -76,5 +80,21 @@ class ComposableProbabilitySamplerTest {
     // NB: It would be better to calculate a standard deviation based on the numbers.
     // But our random seed in TestUtil conveniently allows the test to pass so don't bother.
     assertThat(Math.abs(numSampled - expectedNumSampled)).isLessThan(50);
+  }
+
+  @ParameterizedTest
+  @MethodSource("invalidRatios")
+  void invalidRatioThrows(double ratio) {
+    assertThatThrownBy(() -> ComposableSampler.probability(ratio))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("ratio must be in range [0.0, 1.0]");
+  }
+
+  @SuppressWarnings("unused")
+  static Stream<Arguments> invalidRatios() {
+    return Stream.of(
+        Arguments.argumentSet("less than 0.0", -0.5),
+        Arguments.argumentSet("greater than 1.0", 2.0),
+        Arguments.argumentSet("NaN", Double.NaN));
   }
 }
