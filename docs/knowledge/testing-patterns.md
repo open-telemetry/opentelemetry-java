@@ -44,7 +44,8 @@ Available in all test suites via `otel.java-conventions`.
 
 ## Log capture
 
-Use [LogUnit](https://github.com/netmikey/logunit) to assert on log output:
+Tests bridge JUL to SLF4J via `JulBridgeInitializer`, configured automatically by
+`otel.java-conventions`. Use [LogUnit](https://github.com/netmikey/logunit) to assert on log output:
 
 ```java
 @RegisterExtension
