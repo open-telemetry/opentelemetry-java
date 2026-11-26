@@ -256,14 +256,11 @@ class B3PropagatorTest {
 
     b3Propagator.extract(Context.current(), carrier, getter);
     assertThat(logs.getEvents())
-        .satisfiesExactly(
-            event -> {
-              assertThat(event.getMessage())
-                  .isEqualTo(
-                      "Invalid TraceId in B3 header: ''{0}''. Returning INVALID span context.");
-              assertThat(event.getArgumentArray())
-                  .containsExactly("g" + TRACE_ID.substring(1));
-            });
+        .satisfiesExactly(event -> {
+          assertThat(event.getMessage())
+              .isEqualTo("Invalid TraceId in B3 header: ''{0}''. Returning INVALID span context.");
+          assertThat(event.getArgumentArray()).containsExactly("g" + TRACE_ID.substring(1));
+        });
   }
 
   @Test
