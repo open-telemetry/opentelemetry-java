@@ -8,6 +8,7 @@ package io.opentelemetry.extension.trace.propagation;
 import static io.opentelemetry.extension.trace.propagation.B3Propagator.DEBUG_CONTEXT_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -23,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
 
 /** Unit tests for {@link B3Propagator}. */
 class B3PropagatorTest {
@@ -51,6 +54,10 @@ class B3PropagatorTest {
       };
   private final B3Propagator b3Propagator = B3Propagator.injectingMultiHeaders();
   private final B3Propagator b3PropagatorSingleHeader = B3Propagator.injectingSingleHeader();
+
+  @RegisterExtension
+  LogCapturer logs =
+      LogCapturer.create().captureForType(B3PropagatorExtractorMultipleHeaders.class, Level.DEBUG);
 
   private static SpanContext getSpanContext(Context context) {
     return Span.fromContext(context).getSpanContext();
@@ -146,6 +153,7 @@ class B3PropagatorTest {
     assertThat(
             b3Propagator.extract(Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
+    assertThat(logs.getEvents()).isEmpty();
   }
 
   @Test

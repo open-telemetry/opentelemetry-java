@@ -9,6 +9,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -33,15 +34,21 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
   private static <C> Optional<Context> extractSpanContextFromMultipleHeaders(
       Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     String traceId = getter.get(carrier, B3Propagator.TRACE_ID_HEADER);
+    if (traceId == null) {
+      return Optional.empty();
+    }
     if (!Common.isTraceIdValid(traceId)) {
-      logger.fine(
-          "Invalid TraceId in B3 header: " + traceId + "'. Returning INVALID span context.");
+      logger.log(
+          Level.FINE,
+          "Invalid TraceId in B3 header: {0}. Returning INVALID span context.",
+          traceId);
       return Optional.empty();
     }
 
     String spanId = getter.get(carrier, B3Propagator.SPAN_ID_HEADER);
     if (!Common.isSpanIdValid(spanId)) {
-      logger.fine("Invalid SpanId in B3 header: " + spanId + "'. Returning INVALID span context.");
+      logger.log(
+          Level.FINE, "Invalid SpanId in B3 header: {0}. Returning INVALID span context.", spanId);
       return Optional.empty();
     }
 
