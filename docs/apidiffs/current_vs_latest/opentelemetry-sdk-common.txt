@@ -1,2 +1,18 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.69.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.68.0.jar
-No changes.
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.common.export.GrpcSenderConfig  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.util.Set<io.opentelemetry.sdk.common.export.GrpcStatusCode> getRetryableGrpcStatusCodes()
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.common.export.HttpSenderConfig  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.util.Set<java.lang.Integer> getRetryableHttpResponseCodes()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.export.impl.HttpExportUtil  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.OptionalLong retryAfterNanos(java.lang.String)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.impl.DaemonThreadFactory  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.util.concurrent.ThreadFactory
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.impl.DaemonThreadFactory create(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.impl.DaemonThreadFactory createWithDelegate(java.lang.String, java.util.concurrent.ThreadFactory)
+	+++  NEW METHOD: PUBLIC(+) java.lang.Thread newThread(java.lang.Runnable)

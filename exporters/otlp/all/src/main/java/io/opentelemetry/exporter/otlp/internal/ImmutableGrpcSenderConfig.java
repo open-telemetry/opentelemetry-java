@@ -6,13 +6,16 @@
 package io.opentelemetry.exporter.otlp.internal;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.grpc.ExtendedGrpcSenderConfig;
 import io.opentelemetry.sdk.common.export.Compressor;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -63,4 +66,9 @@ public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderCon
   @Override
   @Nullable
   public abstract List<String> getEnabledProtocols();
+
+  @Override
+  public Set<GrpcStatusCode> getRetryableGrpcStatusCodes() {
+    return RetryUtil.retryableGrpcStatusCodeEnums();
+  }
 }

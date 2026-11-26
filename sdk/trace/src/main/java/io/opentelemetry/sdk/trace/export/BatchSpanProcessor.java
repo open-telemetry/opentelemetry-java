@@ -11,8 +11,8 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.impl.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -100,7 +100,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
             exporterTimeoutNanos,
             JcTools.newFixedSizeQueue(maxQueueSize),
             maxQueueSize);
-    Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
+    Thread workerThread = DaemonThreadFactory.create(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
   }
 

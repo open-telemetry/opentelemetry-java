@@ -59,6 +59,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   private final TelemetryExporterBuilder<T> delegate;
 
   @Nullable private ManagedChannelBuilder<?> channelBuilder;
+  private boolean isHttps = false;
 
   private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
 
@@ -66,8 +67,9 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   public TelemetryExporterBuilder<T> setEndpoint(String endpoint) {
     delegate.setEndpoint(endpoint);
     URI uri = URI.create(endpoint);
+    isHttps = uri.getScheme().equals("https");
     channelBuilder = ManagedChannelBuilder.forAddress(uri.getHost(), uri.getPort());
-    if (!uri.getScheme().equals("https")) {
+    if (!isHttps) {
       channelBuilder.usePlaintext();
     }
     // User-Agent can only be set at the channel level with upstream gRPC client. If a user wants
@@ -241,10 +243,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   public TelemetryExporter<T> build() {
     Runnable shutdownCallback;
     if (channelBuilder != null) {
-      try {
-        setSslContext(channelBuilder, tlsConfigHelper);
-      } catch (SSLException e) {
-        throw new IllegalStateException(e);
+      if (isHttps) {
+        try {
+          setSslContext(channelBuilder, tlsConfigHelper);
+        } catch (SSLException e) {
+          throw new IllegalStateException(e);
+        }
       }
 
       ManagedChannel channel = channelBuilder.build();

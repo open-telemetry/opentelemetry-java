@@ -6,13 +6,11 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
@@ -22,9 +20,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.ServerSocket;
-import java.security.Security;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -35,7 +33,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
@@ -51,37 +48,47 @@ import org.slf4j.event.LoggingEvent;
 
 class OkHttpGrpcSenderTest {
 
+  private static final Set<GrpcStatusCode> RETRYABLE_GRPC_STATUS_CODES =
+      Collections.unmodifiableSet(
+          EnumSet.of(
+              GrpcStatusCode.CANCELLED,
+              GrpcStatusCode.DEADLINE_EXCEEDED,
+              GrpcStatusCode.RESOURCE_EXHAUSTED,
+              GrpcStatusCode.ABORTED,
+              GrpcStatusCode.OUT_OF_RANGE,
+              GrpcStatusCode.UNAVAILABLE,
+              GrpcStatusCode.DATA_LOSS));
+
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcSender.class, Level.TRACE);
 
   private static final MediaType GRPC_MEDIA_TYPE = MediaType.get("application/grpc");
 
-  static Set<String> provideRetryableGrpcStatusCodes() {
-    return RetryUtil.retryableGrpcStatusCodes();
+  static Set<GrpcStatusCode> provideRetryableGrpcStatusCodes() {
+    return EnumSet.of(
+        GrpcStatusCode.CANCELLED,
+        GrpcStatusCode.DEADLINE_EXCEEDED,
+        GrpcStatusCode.RESOURCE_EXHAUSTED,
+        GrpcStatusCode.ABORTED,
+        GrpcStatusCode.OUT_OF_RANGE,
+        GrpcStatusCode.UNAVAILABLE,
+        GrpcStatusCode.DATA_LOSS);
   }
 
   @ParameterizedTest(name = "isRetryable should return true for GRPC status code: {0}")
   @MethodSource("provideRetryableGrpcStatusCodes")
-  void isRetryable_RetryableGrpcStatus(String retryableGrpcStatus) {
+  void isRetryable_RetryableGrpcStatus(GrpcStatusCode retryableGrpcStatus) {
     GrpcResponse response =
-        ImmutableGrpcResponse.create(
-            GrpcStatusCode.fromValue(Integer.parseInt(retryableGrpcStatus)),
-            "Retryable",
-            new byte[0]);
-    boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
+        ImmutableGrpcResponse.create(retryableGrpcStatus, "Retryable", new byte[0]);
+    boolean isRetryable = createSender(Long.MAX_VALUE).isRetryable(response);
     assertTrue(isRetryable);
   }
 
   @Test
   void isRetryable_NonRetryableGrpcStatus() {
-    String nonRetryableGrpcStatus =
-        Integer.valueOf(GrpcStatusCode.UNKNOWN.getValue()).toString(); // INVALID_ARGUMENT
     GrpcResponse response =
-        ImmutableGrpcResponse.create(
-            GrpcStatusCode.fromValue(Integer.parseInt(nonRetryableGrpcStatus)),
-            "Non-retryable",
-            new byte[0]);
-    boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
+        ImmutableGrpcResponse.create(GrpcStatusCode.UNKNOWN, "Non-retryable", new byte[0]);
+    boolean isRetryable = createSender(Long.MAX_VALUE).isRetryable(response);
     assertFalse(isRetryable);
   }
 
@@ -120,7 +127,8 @@ class OkHttpGrpcSenderTest {
         null,
         null,
         maxResponseBodySize,
-        null);
+        null,
+        RETRYABLE_GRPC_STATUS_CODES);
   }
 
   @Test
@@ -141,7 +149,8 @@ class OkHttpGrpcSenderTest {
             null,
             executor,
             Long.MAX_VALUE,
-            null);
+            null,
+            Collections.emptySet());
 
     AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
     AtomicReference<Throwable> errorRef = new AtomicReference<>();
@@ -176,7 +185,8 @@ class OkHttpGrpcSenderTest {
             null,
             executor,
             Long.MAX_VALUE,
-            null);
+            null,
+            Collections.emptySet());
 
     CompletableFuture<Throwable> error = new CompletableFuture<>();
     try {
@@ -217,7 +227,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             Long.MAX_VALUE,
-            null);
+            null,
+            Collections.emptySet());
 
     CompletableResultCode sendResult = new CompletableResultCode();
     sender.send(
@@ -262,7 +273,8 @@ class OkHttpGrpcSenderTest {
               null,
               customExecutor, // Pass custom executor -> managedExecutor = false
               Long.MAX_VALUE,
-              null);
+              null,
+              Collections.emptySet());
 
       CompletableResultCode shutdownResult = sender.shutdown();
 
@@ -301,7 +313,8 @@ class OkHttpGrpcSenderTest {
             null,
             null, // null executor = managed
             Long.MAX_VALUE,
-            null);
+            null,
+            Collections.emptySet());
 
     // Start multiple requests to ensure threads are busy
     CountDownLatch blockCallbacks = new CountDownLatch(1);
@@ -365,7 +378,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             Long.MAX_VALUE,
-            null);
+            null,
+            Collections.emptySet());
 
     // Trigger some activity
     sender.send(new TestMessageWriter(), response -> {}, error -> {});
@@ -398,11 +412,11 @@ class OkHttpGrpcSenderTest {
   }
 
   @Test
-  void constructor_usesDefaultTrustManagerWhenTrustManagerIsNull() throws Exception {
+  void constructor_throwsWhenSslContextNonNullAndTrustManagerNull() throws Exception {
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(null, null, null);
 
-    assertThatCode(() ->
+    assertThatThrownBy(() ->
             new OkHttpGrpcSender(
                 "https://localhost",
                 null,
@@ -414,40 +428,10 @@ class OkHttpGrpcSenderTest {
                 null,
                 null,
                 Long.MAX_VALUE,
-                null))
-        .doesNotThrowAnyException();
-  }
-
-  @Test
-  void constructor_wrapsDefaultTrustManagerFailure() throws Exception {
-    String originalAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
-
-    try {
-      Security.setProperty("ssl.TrustManagerFactory.algorithm", "invalid");
-
-      SSLContext sslContext = SSLContext.getInstance("TLS");
-      sslContext.init(null, null, null);
-
-      assertThatThrownBy(() ->
-              new OkHttpGrpcSender(
-                  "https://localhost",
-                  null,
-                  Duration.ofSeconds(10),
-                  Duration.ofSeconds(10),
-                  Collections::emptyMap,
-                  null,
-                  sslContext,
-                  null,
-                  null,
-                  Long.MAX_VALUE,
-                  null))
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessage("Unable to initialize default trust manager")
-          .hasCauseInstanceOf(SSLException.class);
-
-    } finally {
-      Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
-    }
+                null,
+                Collections.emptySet()))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("trustManager must be non-null when sslContext is non-null");
   }
 
   @Test
@@ -470,7 +454,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             Long.MAX_VALUE,
-            null);
+            null,
+            Collections.emptySet());
 
     CompletableResultCode sendResult = new CompletableResultCode();
     try {

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.IOException;
@@ -17,7 +16,7 @@ import okio.BufferedSink;
 import okio.Okio;
 
 /**
- * A {@link RequestBody} for reading from a {@link Marshaler} and writing in gRPC wire format.
+ * A {@link RequestBody} for reading from a {@link MessageWriter} and writing in gRPC wire format.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

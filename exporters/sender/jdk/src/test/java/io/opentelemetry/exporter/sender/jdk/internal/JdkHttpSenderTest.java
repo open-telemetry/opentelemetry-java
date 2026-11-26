@@ -89,7 +89,8 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            Collections.emptySet());
   }
 
   @Test
@@ -144,7 +145,8 @@ class JdkHttpSenderTest {
               Collections::emptyMap,
               null,
               customExecutor,
-              Long.MAX_VALUE);
+              Long.MAX_VALUE,
+              Collections.emptySet());
 
       CompletableResultCode result = testSender.shutdown();
 
@@ -181,7 +183,8 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            Collections.emptySet());
 
     assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
         .satisfies(e ->
@@ -247,7 +250,8 @@ class JdkHttpSenderTest {
                 .setMaxBackoff(Duration.ofSeconds(1))
                 .build(),
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            Collections.singleton(502));
     try {
       assertThat(testSender.sendInternal(new NoOpRequestBodyWriter(), sleeper).getStatusCode())
           .isEqualTo(200);
@@ -294,7 +298,8 @@ class JdkHttpSenderTest {
             null,
             null,
             Long.MAX_VALUE,
-            null);
+            null,
+            Collections.emptySet());
 
     try {
       int expectedMax = Math.max(Runtime.getRuntime().availableProcessors(), 5);
@@ -326,7 +331,8 @@ class JdkHttpSenderTest {
             null,
             null,
             Long.MAX_VALUE,
-            null);
+            null,
+            Collections.emptySet());
 
     assertThat(sender)
         .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
@@ -355,7 +361,8 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            Collections.emptySet());
 
     try {
       CountDownLatch latch = new CountDownLatch(1);
@@ -415,7 +422,8 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            Collections.emptySet());
 
     try {
       assertThatThrownBy(() -> testSender.sendInternal(new NoOpRequestBodyWriter()))
@@ -442,7 +450,8 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            Collections.emptySet());
 
     try {
       CountDownLatch latch = new CountDownLatch(1);
@@ -484,7 +493,8 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             null,
             executor,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            Collections.emptySet());
 
     AtomicReference<HttpResponse> responseRef = new AtomicReference<>();
     AtomicReference<Throwable> errorRef = new AtomicReference<>();
@@ -528,7 +538,8 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             null,
             executor,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            Collections.emptySet());
 
     try {
       CountDownLatch latch = new CountDownLatch(1);

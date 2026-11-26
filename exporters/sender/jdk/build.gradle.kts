@@ -14,6 +14,5 @@ otelJava.osgiServiceLoaderProvides.set(listOf("io.opentelemetry.sdk.common.expor
 dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
 }

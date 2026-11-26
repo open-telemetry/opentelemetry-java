@@ -10,8 +10,8 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.common.impl.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -99,7 +99,7 @@ public final class PeriodicMetricReader implements MetricReader {
     this.maxExportBatchSize = maxExportBatchSize;
     this.internalTelemetryVersion = internalTelemetryVersion;
     this.worker =
-        new DaemonThreadFactory("PeriodicMetricReader-worker").newThread(this::workerLoop);
+        DaemonThreadFactory.create("PeriodicMetricReader-worker").newThread(this::workerLoop);
   }
 
   @Override

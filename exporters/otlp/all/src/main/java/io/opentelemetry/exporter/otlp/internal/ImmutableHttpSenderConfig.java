@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.internal;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.HttpSenderConfig;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -14,6 +15,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -60,4 +62,9 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
   @Override
   @Nullable
   public abstract List<String> getEnabledProtocols();
+
+  @Override
+  public Set<Integer> getRetryableHttpResponseCodes() {
+    return RetryUtil.retryableHttpResponseCodes();
+  }
 }

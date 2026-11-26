@@ -6,58 +6,34 @@
 package io.opentelemetry.exporter.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.OptionalLong;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import org.junit.jupiter.api.Test;
 
 class RetryUtilTest {
 
-  private static final Instant NOW = Instant.parse("2026-07-17T00:00:00Z");
-
-  @ParameterizedTest
-  @MethodSource("retryAfterArgs")
-  void retryAfterNanos(String retryAfter, Instant now, Long expectedNanos) {
-    OptionalLong delayNanos = RetryUtil.retryAfterNanos(retryAfter, now);
-
-    if (expectedNanos == null) {
-      assertThat(delayNanos).isEmpty();
-    } else {
-      assertThat(delayNanos).hasValue(expectedNanos);
-    }
+  @Test
+  void retryableGrpcStatusCodes() {
+    assertThat(RetryUtil.retryableGrpcStatusCodes())
+        .containsExactlyInAnyOrder("1", "4", "8", "10", "11", "14", "15");
   }
 
-  private static Stream<Arguments> retryAfterArgs() {
-    return Stream.of(
-        argumentSet("null", null, Instant.EPOCH, null),
-        argumentSet("seconds", "30", Instant.EPOCH, TimeUnit.SECONDS.toNanos(30)),
-        argumentSet("zero seconds", "0", Instant.EPOCH, 0L),
-        argumentSet("leading zeros", "0030", Instant.EPOCH, TimeUnit.SECONDS.toNanos(30)),
-        argumentSet("positive sign", "+30", Instant.EPOCH, null),
-        argumentSet("negative zero", "-0", Instant.EPOCH, null),
-        argumentSet("non-ASCII digits", "٣٠", Instant.EPOCH, null),
-        argumentSet("empty", "", Instant.EPOCH, null),
-        argumentSet("negative seconds", "-1", Instant.EPOCH, null),
-        argumentSet("malformed", "bad-value", Instant.EPOCH, null),
-        argumentSet(
-            "future date",
-            ZonedDateTime.ofInstant(NOW.plusSeconds(45), ZoneOffset.UTC)
-                .format(DateTimeFormatter.RFC_1123_DATE_TIME),
-            NOW,
-            TimeUnit.SECONDS.toNanos(45)),
-        argumentSet(
-            "past date clamps to zero",
-            ZonedDateTime.ofInstant(NOW.minusSeconds(1), ZoneOffset.UTC)
-                .format(DateTimeFormatter.RFC_1123_DATE_TIME),
-            NOW,
-            0L));
+  @Test
+  void retryableGrpcStatusCodeEnums() {
+    assertThat(RetryUtil.retryableGrpcStatusCodeEnums())
+        .containsExactlyInAnyOrder(
+            GrpcStatusCode.CANCELLED,
+            GrpcStatusCode.DEADLINE_EXCEEDED,
+            GrpcStatusCode.RESOURCE_EXHAUSTED,
+            GrpcStatusCode.ABORTED,
+            GrpcStatusCode.OUT_OF_RANGE,
+            GrpcStatusCode.UNAVAILABLE,
+            GrpcStatusCode.DATA_LOSS);
+  }
+
+  @Test
+  void retryableHttpResponseCodes() {
+    assertThat(RetryUtil.retryableHttpResponseCodes())
+        .containsExactlyInAnyOrder(429, 502, 503, 504);
   }
 }

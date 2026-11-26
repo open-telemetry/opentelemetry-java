@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.sender.jdk.internal;
 
 import io.opentelemetry.api.impl.InstrumentationUtil;
-import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.HttpResponse;
@@ -14,7 +13,8 @@ import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.export.impl.HttpExportUtil;
+import io.opentelemetry.sdk.common.impl.DaemonThreadFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,8 +59,6 @@ import javax.net.ssl.SSLParameters;
  */
 public final class JdkHttpSender implements HttpSender {
 
-  private static final Set<Integer> retryableStatusCodes = RetryUtil.retryableHttpResponseCodes();
-
   private static final ThreadLocal<NoCopyByteArrayOutputStream> threadLocalBaos =
       ThreadLocal.withInitial(NoCopyByteArrayOutputStream::new);
   private static final ThreadLocal<ByteBufferPool> threadLocalByteBufPool =
@@ -79,6 +77,7 @@ public final class JdkHttpSender implements HttpSender {
   @Nullable private final RetryPolicy retryPolicy;
   private final Predicate<IOException> retryExceptionPredicate;
   private final long maxResponseBodySize;
+  private final Set<Integer> retryableStatusCodes;
 
   // Visible for testing
   JdkHttpSender(
@@ -90,7 +89,8 @@ public final class JdkHttpSender implements HttpSender {
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable ExecutorService executorService,
-      long maxResponseBodySize) {
+      long maxResponseBodySize,
+      Set<Integer> retryableStatusCodes) {
     this.client = client;
     this.endpoint = endpoint;
     this.contentType = contentType;
@@ -110,6 +110,7 @@ public final class JdkHttpSender implements HttpSender {
       this.managedExecutor = false;
     }
     this.maxResponseBodySize = maxResponseBodySize;
+    this.retryableStatusCodes = retryableStatusCodes;
   }
 
   JdkHttpSender(
@@ -124,7 +125,8 @@ public final class JdkHttpSender implements HttpSender {
       @Nullable SSLContext sslContext,
       @Nullable ExecutorService executorService,
       long maxResponseBodySize,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      Set<Integer> retryableStatusCodes) {
     this(
         configureClient(sslContext, connectTimeout, proxyOptions, enabledProtocols),
         endpoint,
@@ -134,7 +136,8 @@ public final class JdkHttpSender implements HttpSender {
         headerSupplier,
         retryPolicy,
         executorService,
-        maxResponseBodySize);
+        maxResponseBodySize,
+        retryableStatusCodes);
   }
 
   private static ExecutorService newExecutor() {
@@ -144,7 +147,7 @@ public final class JdkHttpSender implements HttpSender {
         60,
         TimeUnit.SECONDS,
         new SynchronousQueue<>(),
-        new DaemonThreadFactory("jdkhttp-executor"));
+        DaemonThreadFactory.create("jdkhttp-executor"));
   }
 
   private static HttpClient configureClient(
@@ -373,7 +376,7 @@ public final class JdkHttpSender implements HttpSender {
 
   private static class NoCopyByteArrayOutputStream extends ByteArrayOutputStream {
     NoCopyByteArrayOutputStream() {
-      super(retryableStatusCodes.size());
+      super();
     }
 
     private byte[] buf() {
@@ -456,7 +459,8 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   private static OptionalLong retryDelayNanos(java.net.http.HttpResponse<?> response) {
-    return RetryUtil.retryAfterNanos(response.headers().firstValue("Retry-After").orElse(null));
+    return HttpExportUtil.retryAfterNanos(
+        response.headers().firstValue("Retry-After").orElse(null));
   }
 
   @Override

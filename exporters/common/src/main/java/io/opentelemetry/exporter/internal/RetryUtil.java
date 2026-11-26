@@ -6,19 +6,12 @@
 package io.opentelemetry.exporter.internal;
 
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.OptionalLong;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -27,6 +20,16 @@ import javax.annotation.Nullable;
 public final class RetryUtil {
 
   private static final Set<String> RETRYABLE_GRPC_STATUS_CODES;
+  private static final Set<GrpcStatusCode> RETRYABLE_GRPC_STATUS_CODE_ENUMS =
+      Collections.unmodifiableSet(
+          EnumSet.of(
+              GrpcStatusCode.CANCELLED,
+              GrpcStatusCode.DEADLINE_EXCEEDED,
+              GrpcStatusCode.RESOURCE_EXHAUSTED,
+              GrpcStatusCode.ABORTED,
+              GrpcStatusCode.OUT_OF_RANGE,
+              GrpcStatusCode.UNAVAILABLE,
+              GrpcStatusCode.DATA_LOSS));
   private static final Set<Integer> RETRYABLE_HTTP_STATUS_CODES =
       Collections.unmodifiableSet(new HashSet<>(Arrays.asList(429, 502, 503, 504)));
 
@@ -51,45 +54,13 @@ public final class RetryUtil {
     return RETRYABLE_GRPC_STATUS_CODES;
   }
 
+  /** Returns the retryable {@link GrpcStatusCode}s. */
+  public static Set<GrpcStatusCode> retryableGrpcStatusCodeEnums() {
+    return RETRYABLE_GRPC_STATUS_CODE_ENUMS;
+  }
+
   /** Returns the retryable HTTP status codes. */
   public static Set<Integer> retryableHttpResponseCodes() {
     return RETRYABLE_HTTP_STATUS_CODES;
-  }
-
-  /**
-   * Returns the delay specified by a {@code Retry-After} header, or empty if the value is absent or
-   * malformed.
-   */
-  public static OptionalLong retryAfterNanos(@Nullable String retryAfter) {
-    return retryAfterNanos(retryAfter, Instant.now());
-  }
-
-  static OptionalLong retryAfterNanos(@Nullable String retryAfter, Instant now) {
-    if (retryAfter == null) {
-      return OptionalLong.empty();
-    }
-
-    try {
-      long delaySeconds = Long.parseLong(retryAfter);
-      // RFC 9110 delay-seconds is 1*DIGIT. Long.parseLong also accepts signs and non-ASCII digits.
-      for (int i = 0; i < retryAfter.length(); i++) {
-        char digit = retryAfter.charAt(i);
-        if (digit < '0' || digit > '9') {
-          return OptionalLong.empty();
-        }
-      }
-      return OptionalLong.of(TimeUnit.SECONDS.toNanos(delaySeconds));
-    } catch (NumberFormatException ignored) {
-      // Fall through and try the HTTP-date form.
-    }
-
-    try {
-      Instant retryAfterInstant =
-          ZonedDateTime.parse(retryAfter, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
-      long delayNanos = Duration.between(now, retryAfterInstant).toNanos();
-      return OptionalLong.of(Math.max(0, delayNanos));
-    } catch (DateTimeParseException | ArithmeticException ignored) {
-      return OptionalLong.empty();
-    }
   }
 }
