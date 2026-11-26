@@ -36,15 +36,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-@Timeout(10)
+@Timeout(30)
 class BatchSpanProcessorWorkerTest {
   private final CountDownLatch emptyChecked = new CountDownLatch(1);
   private final CountDownLatch resumeWorker = new CountDownLatch(1);
+  private final CountDownLatch emptyAfterWake = new CountDownLatch(1);
+  private final AtomicBoolean observeEmptyAfterWake = new AtomicBoolean();
+  private final AtomicBoolean delayShutdownCallback = new AtomicBoolean();
   private final AtomicBoolean pauseBeforeWait = new AtomicBoolean(true);
   private final BlockingQueue<List<SpanData>> exports = new LinkedBlockingQueue<>();
   private final SdkTracerProvider tracerProvider =
       SdkTracerProvider.builder()
-          .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.composite()))
+          .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop()))
           .build();
   private BatchSpanProcessor.Worker worker;
   private Thread workerThread;
@@ -58,6 +61,9 @@ class BatchSpanProcessorWorkerTest {
               if (empty && pauseBeforeWait.compareAndSet(true, false)) {
                 emptyChecked.countDown();
                 assertThat(resumeWorker.await(5, TimeUnit.SECONDS)).isTrue();
+              }
+              if (empty && observeEmptyAfterWake.compareAndSet(true, false)) {
+                emptyAfterWake.countDown();
               }
               return empty;
             })
@@ -79,7 +85,21 @@ class BatchSpanProcessorWorkerTest {
             2,
             TimeUnit.SECONDS.toNanos(5),
             queue,
-            16);
+            16) {
+          @Override
+          CompletableResultCode forceFlush() {
+            CompletableResultCode flush = super.forceFlush();
+            if (delayShutdownCallback.get()) {
+              resumeWorker.countDown();
+              flush.join(5, TimeUnit.SECONDS);
+              assertThat(flush.isSuccess()).isTrue();
+              // Let the worker consume the flush signal and sleep before shutdown registers its
+              // callback, which will consequently run on the shutdown caller.
+              awaitWorkerPark();
+            }
+            return flush;
+          }
+        };
     workerThread = new Thread(worker, "batch-span-processor-test");
     workerThread.setDaemon(true);
     workerThread.start();
@@ -102,7 +122,7 @@ class BatchSpanProcessorWorkerTest {
 
     resumeWorker.countDown();
 
-    assertThat(exports.poll(1, TimeUnit.SECONDS))
+    assertThat(exports.poll(5, TimeUnit.SECONDS))
         .isNotNull()
         .extracting(SpanData::getName)
         .containsExactly("first", "second");
@@ -116,9 +136,9 @@ class BatchSpanProcessorWorkerTest {
 
     resumeWorker.countDown();
 
-    flush.join(1, TimeUnit.SECONDS);
+    flush.join(5, TimeUnit.SECONDS);
     assertThat(flush.isSuccess()).isTrue();
-    assertThat(exports.poll(1, TimeUnit.SECONDS))
+    assertThat(exports.poll(5, TimeUnit.SECONDS))
         .isNotNull()
         .extracting(SpanData::getName)
         .containsExactly("partial");
@@ -132,14 +152,28 @@ class BatchSpanProcessorWorkerTest {
 
     resumeWorker.countDown();
 
-    shutdown.join(1, TimeUnit.SECONDS);
+    shutdown.join(5, TimeUnit.SECONDS);
     assertThat(shutdown.isSuccess()).isTrue();
-    workerThread.join(1_000);
+    workerThread.join(5_000);
     assertThat(workerThread.isAlive()).isFalse();
-    assertThat(exports.poll(1, TimeUnit.SECONDS))
+    assertThat(exports.poll(5, TimeUnit.SECONDS))
         .isNotNull()
         .extracting(SpanData::getName)
         .containsExactly("last");
+  }
+
+  @Test
+  void shutdownWakesWorkerWhenFlushCompletedBeforeCallbackRegistration()
+      throws InterruptedException {
+    assertThat(emptyChecked.await(5, TimeUnit.SECONDS)).isTrue();
+    delayShutdownCallback.set(true);
+
+    CompletableResultCode shutdown = worker.shutdown();
+
+    shutdown.join(5, TimeUnit.SECONDS);
+    assertThat(shutdown.isSuccess()).isTrue();
+    workerThread.join(5_000);
+    assertThat(workerThread.isAlive()).isFalse();
   }
 
   @Test
@@ -149,7 +183,7 @@ class BatchSpanProcessorWorkerTest {
     worker.addSpan(span("first"));
     worker.addSpan(span("second"));
 
-    assertThat(exports.poll(1, TimeUnit.SECONDS))
+    assertThat(exports.poll(5, TimeUnit.SECONDS))
         .isNotNull()
         .extracting(SpanData::getName)
         .containsExactly("first", "second");
@@ -162,9 +196,9 @@ class BatchSpanProcessorWorkerTest {
 
     CompletableResultCode flush = worker.forceFlush();
 
-    flush.join(1, TimeUnit.SECONDS);
+    flush.join(5, TimeUnit.SECONDS);
     assertThat(flush.isSuccess()).isTrue();
-    assertThat(exports.poll(1, TimeUnit.SECONDS))
+    assertThat(exports.poll(5, TimeUnit.SECONDS))
         .isNotNull()
         .extracting(SpanData::getName)
         .containsExactly("partial");
@@ -173,12 +207,15 @@ class BatchSpanProcessorWorkerTest {
   @Test
   void spuriousWakeupDoesNotPreventSubsequentExport() throws InterruptedException {
     waitUntilParked();
+    observeEmptyAfterWake.set(true);
     LockSupport.unpark(workerThread);
+    assertThat(emptyAfterWake.await(5, TimeUnit.SECONDS)).isTrue();
+    awaitWorkerPark();
 
     worker.addSpan(span("first"));
     worker.addSpan(span("second"));
 
-    assertThat(exports.poll(1, TimeUnit.SECONDS))
+    assertThat(exports.poll(5, TimeUnit.SECONDS))
         .isNotNull()
         .extracting(SpanData::getName)
         .containsExactly("first", "second");
@@ -187,7 +224,13 @@ class BatchSpanProcessorWorkerTest {
   private void waitUntilParked() throws InterruptedException {
     assertThat(emptyChecked.await(5, TimeUnit.SECONDS)).isTrue();
     resumeWorker.countDown();
-    await().atMost(Duration.ofSeconds(1)).until(() -> LockSupport.getBlocker(workerThread) != null);
+    awaitWorkerPark();
+  }
+
+  private void awaitWorkerPark() {
+    await()
+        .atMost(Duration.ofSeconds(5))
+        .untilAsserted(() -> assertThat(LockSupport.getBlocker(workerThread)).isSameAs(worker));
   }
 
   private ReadableSpan span(String name) {

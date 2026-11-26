@@ -23,15 +23,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Implementation of the {@link SpanProcessor} that batches spans exported by the SDK then pushes
@@ -171,7 +171,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
   // the data.
-  static final class Worker implements Runnable {
+  // Package-private and extensible for deterministic worker lifecycle tests.
+  static class Worker implements Runnable {
 
     private final SpanProcessorInstrumentation spanProcessorInstrumentation;
 
@@ -184,14 +185,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private final Queue<ReadableSpan> queue;
     private final AtomicInteger queueSize = new AtomicInteger();
-    // When waiting on the spans queue, exporter thread sets this atomic to the number of more
-    // spans it needs before doing an export. Writer threads would then wait for the queue to reach
-    // spansNeeded size before notifying the exporter thread about new entries.
-    // Integer.MAX_VALUE is used to imply that exporter thread is not expecting any signal. Since
-    // exporter thread doesn't expect any signal initially, this value is initialized to
-    // Integer.MAX_VALUE.
+    // While waiting, the worker publishes how many queued spans it needs to complete its batch.
+    // Producers wake it once that threshold is reached. Integer.MAX_VALUE means it is not waiting.
     private final AtomicInteger spansNeeded = new AtomicInteger(Integer.MAX_VALUE);
-    private final BlockingQueue<Boolean> signal;
+    @Nullable private volatile Thread workerThread;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private final AtomicBoolean isShutdown = new AtomicBoolean(false);
     private volatile boolean continueWork = true;
@@ -213,7 +210,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
-      this.signal = new ArrayBlockingQueue<>(1);
 
       spanProcessorInstrumentation =
           SpanProcessorInstrumentation.get(
@@ -232,15 +228,14 @@ public final class BatchSpanProcessor implements SpanProcessor {
       if (!queue.offer(span)) {
         spanProcessorInstrumentation.dropSpansQueueFull(1);
         droppedSpanCount.incrementAndGet();
-      } else {
-        if (queueSize.incrementAndGet() >= spansNeeded.get()) {
-          signal.offer(true);
-        }
+      } else if (queueSize.incrementAndGet() >= spansNeeded.get()) {
+        LockSupport.unpark(workerThread);
       }
     }
 
     @Override
     public void run() {
+      workerThread = Thread.currentThread();
       updateNextExportTime();
 
       while (continueWork) {
@@ -253,20 +248,30 @@ public final class BatchSpanProcessor implements SpanProcessor {
           exportCurrentBatch();
           updateNextExportTime();
         }
-        if (queue.isEmpty()) {
-          try {
-            long pollWaitTime = nextExportTime - System.nanoTime();
-            if (pollWaitTime > 0) {
-              spansNeeded.set(maxExportBatchSize - batch.size());
-              signal.poll(pollWaitTime, TimeUnit.NANOSECONDS);
-              spansNeeded.set(Integer.MAX_VALUE);
-            }
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return;
-          }
+        if (queue.isEmpty() && !awaitWork()) {
+          return;
         }
       }
+    }
+
+    private boolean awaitWork() {
+      int needed = maxExportBatchSize - batch.size();
+      spansNeeded.set(needed);
+      try {
+        // Producers may have queued a complete batch before seeing the new threshold. A flush or
+        // shutdown may also have been requested while the worker was finishing its previous loop.
+        if (continueWork && flushRequested.get() == null && queueSize.get() < needed) {
+          long remaining = nextExportTime - System.nanoTime();
+          if (remaining > 0) {
+            // Only the worker calls parkNanos. An earlier unpark leaves a permit, and spurious
+            // wakeups are handled by rechecking work and the export deadline in the outer loop.
+            LockSupport.parkNanos(this, remaining);
+          }
+        }
+      } finally {
+        spansNeeded.set(Integer.MAX_VALUE);
+      }
+      return !Thread.currentThread().isInterrupted();
     }
 
     private int drain(int limit) {
@@ -305,6 +310,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       CompletableResultCode flushResult = forceFlush();
       flushResult.whenComplete(() -> {
         continueWork = false;
+        LockSupport.unpark(workerThread);
         CompletableResultCode shutdownResult = spanExporter.shutdown();
         shutdownResult.whenComplete(() -> {
           if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
@@ -322,7 +328,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       CompletableResultCode flushResult = new CompletableResultCode();
       // we set the atomic here to trigger the worker loop to do a flush of the entire queue.
       if (flushRequested.compareAndSet(null, flushResult)) {
-        signal.offer(true);
+        LockSupport.unpark(workerThread);
       }
       CompletableResultCode possibleResult = flushRequested.get();
       // there's a race here where the flush happening in the worker loop could complete before we
