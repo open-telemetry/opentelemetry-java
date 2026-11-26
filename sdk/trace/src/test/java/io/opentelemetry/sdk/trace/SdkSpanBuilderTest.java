@@ -1174,6 +1174,56 @@ class SdkSpanBuilderTest {
   }
 
   @Test
+  void samplerReceivesTraceStateOfInvalidParentWithRandomTraceId() {
+    Sampler mockSampler = Mockito.mock(Sampler.class);
+    Mockito.when(
+            mockSampler.shouldSample(
+                ArgumentMatchers.any(),
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.anyList()))
+        .thenReturn(SamplingResult.recordAndSample());
+
+    SdkTracerProvider provider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(mockedSpanProcessor)
+            .setSampler(mockSampler)
+            .build();
+    // An invalid parent that only carries initial TraceState, e.g. explicit randomness.
+    TraceState initialTraceState = TraceState.builder().put("ot", "rv:0123456789abcd").build();
+    Context parentContext =
+        Context.root()
+            .with(
+                Span.wrap(
+                    SpanContext.create(
+                        TraceId.getInvalid(),
+                        SpanId.getInvalid(),
+                        TraceFlags.getDefault(),
+                        initialTraceState)));
+
+    Span span = provider.get("test").spanBuilder(SPAN_NAME).setParent(parentContext).startSpan();
+    span.end();
+
+    ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+    Mockito.verify(mockSampler)
+        .shouldSample(
+            contextCaptor.capture(),
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.anyList());
+
+    SpanContext samplerParent = Span.fromContext(contextCaptor.getValue()).getSpanContext();
+    assertThat(samplerParent.isValid()).isFalse();
+    assertThat(samplerParent.getTraceFlags().isTraceIdRandom()).isTrue();
+    assertThat(samplerParent.getTraceState()).isEqualTo(initialTraceState);
+    assertThat(span.getSpanContext().getTraceState()).isEqualTo(initialTraceState);
+  }
+
+  @Test
   void startTimestamp_numeric() {
     SdkSpan span =
         (SdkSpan)
