@@ -8,6 +8,7 @@ package io.opentelemetry.extension.trace.propagation;
 import static io.opentelemetry.extension.trace.propagation.B3Propagator.DEBUG_CONTEXT_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -23,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
 
 /** Unit tests for {@link B3Propagator}. */
 class B3PropagatorTest {
@@ -49,6 +52,12 @@ class B3PropagatorTest {
           return carrier.get(key);
         }
       };
+
+  @RegisterExtension
+  LogCapturer logs =
+      LogCapturer.create()
+          .captureForLogger(B3PropagatorExtractorMultipleHeaders.class.getName(), Level.TRACE);
+
   private final B3Propagator b3Propagator = B3Propagator.injectingMultiHeaders();
   private final B3Propagator b3PropagatorSingleHeader = B3Propagator.injectingSingleHeader();
 
@@ -224,6 +233,37 @@ class B3PropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 SHORT_TRACE_ID_FULL, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()));
+  }
+
+  @Test
+  void extract_MissingTraceId_DoesNotLog() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
+
+    Context spanIdOnly = b3Propagator.extract(Context.current(), carrier, getter);
+    Context noHeaders = b3Propagator.extract(Context.current(), Collections.emptyMap(), getter);
+
+    assertThat(getSpanContext(spanIdOnly)).isSameAs(SpanContext.getInvalid());
+    assertThat(getSpanContext(noHeaders)).isSameAs(SpanContext.getInvalid());
+    assertThat(logs.getEvents()).isEmpty();
+  }
+
+  @Test
+  void extract_InvalidTraceId_LogsTheValue() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(B3Propagator.TRACE_ID_HEADER, "g" + TRACE_ID.substring(1));
+    carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
+
+    b3Propagator.extract(Context.current(), carrier, getter);
+    assertThat(logs.getEvents())
+        .satisfiesExactly(
+            event -> {
+              assertThat(event.getMessage())
+                  .isEqualTo(
+                      "Invalid TraceId in B3 header: ''{0}''. Returning INVALID span context.");
+              assertThat(event.getArgumentArray())
+                  .containsExactly("g" + TRACE_ID.substring(1));
+            });
   }
 
   @Test
