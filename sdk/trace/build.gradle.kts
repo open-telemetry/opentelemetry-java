@@ -32,6 +32,8 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava")
   testImplementation("com.google.guava:guava-testlib")
+  testImplementation(sourceSets.named("jmh").map { it.output })
+  testImplementation("org.openjdk.jmh:jmh-core")
 
   jmh(project(":sdk:metrics"))
   jmh(project(":sdk:testing")) {
