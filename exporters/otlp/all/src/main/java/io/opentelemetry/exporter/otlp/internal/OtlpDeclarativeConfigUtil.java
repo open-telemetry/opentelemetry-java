@@ -21,7 +21,12 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import java.net.InetSocketAddress;
+import java.net.ProxySelector;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Collections;
@@ -64,6 +69,7 @@ public final class OtlpDeclarativeConfigUtil {
       Consumer<RetryPolicy> setRetryPolicy,
       Consumer<MemoryMode> setMemoryMode,
       Consumer<Long> setMaxRequestSize,
+      Consumer<ProxyOptions> setProxy,
       boolean isHttpProtobuf,
       Consumer<InternalTelemetryVersion> internalTelemetryVersionConsumer,
       Runnable setNoopMeterProvider) {
@@ -113,6 +119,8 @@ public final class OtlpDeclarativeConfigUtil {
       setMaxRequestSize.accept(maxRequestSize.longValue());
     }
 
+    setProxy.accept(toProxyOptions(config.getStructured("proxy/development")));
+
     DeclarativeConfigProperties tls =
         config.getStructured("tls", DeclarativeConfigProperties.empty());
     String certificatePath = tls.getString("ca_file");
@@ -147,6 +155,71 @@ public final class OtlpDeclarativeConfigUtil {
     } else {
       internalTelemetryVersionConsumer.accept(telemetryVersion);
     }
+  }
+
+  /**
+   * Converts the {@code proxy/development} config to {@link ProxyOptions}. When absent, returns
+   * options which never use a proxy, so that ambient JVM proxy settings (e.g. {@code
+   * https.proxyHost} system properties or {@link ProxySelector#getDefault()}) don't apply, per the
+   * declarative configuration "what you see is what you get" principle.
+   */
+  // Visible for testing
+  static ProxyOptions toProxyOptions(@Nullable DeclarativeConfigProperties proxy) {
+    if (proxy == null) {
+      return ProxyOptions.noProxy();
+    }
+
+    String url = proxy.getString("url");
+    if (url == null) {
+      throw new DeclarativeConfigException("proxy/development.url is required");
+    }
+
+    URI uri = getUri(url);
+    String host = uri.getHost();
+    if (host == null) {
+      throw new DeclarativeConfigException("proxy/development.url must include a host");
+    }
+
+    int port = uri.getPort() == -1 ? 80 : uri.getPort();
+    InetSocketAddress address = InetSocketAddress.createUnresolved(host, port);
+
+    String username = proxy.getString("username");
+    String password = proxy.getString("password");
+    if (username == null && password == null) {
+      return ProxyOptions.create(address);
+    }
+
+    if (username == null || password == null) {
+      throw new DeclarativeConfigException(
+          "proxy/development.username and proxy/development.password must be set together");
+    }
+
+    return ProxyOptions.create(address, username, password);
+  }
+
+  private static URI getUri(String url) {
+    URI uri;
+    try {
+      uri = new URI(url);
+    } catch (URISyntaxException e) {
+      throw new DeclarativeConfigException("Invalid proxy/development.url", e);
+    }
+
+    String scheme = uri.getScheme();
+    if ("https".equals(scheme)) {
+      throw new DeclarativeConfigException(
+          "proxy/development.url with https scheme is not supported.");
+    }
+
+    if (!"http".equals(scheme)) {
+      throw new DeclarativeConfigException("proxy/development.url scheme must be http or https");
+    }
+
+    if (uri.getRawUserInfo() != null) {
+      throw new DeclarativeConfigException(
+          "proxy/development.url must not include userinfo; set username and password instead");
+    }
+    return uri;
   }
 
   @Nullable

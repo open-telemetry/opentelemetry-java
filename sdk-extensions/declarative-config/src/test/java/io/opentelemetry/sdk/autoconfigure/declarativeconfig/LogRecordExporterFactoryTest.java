@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExport
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LogRecordExporterModelAccessor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -96,7 +97,10 @@ class LogRecordExporterFactoryTest {
         Arguments.argumentSet(
             "otlp_http default",
             new LogRecordExporterModel().setOtlpHttp(new OtlpHttpExporterModel()),
-            OtlpHttpLogRecordExporter.getDefault().toBuilder().setComponentLoader(context).build()),
+            OtlpHttpLogRecordExporter.getDefault().toBuilder()
+                .setProxyOptions(ProxyOptions.noProxy())
+                .setComponentLoader(context)
+                .build()),
         Arguments.argumentSet(
             "otlp_http with options",
             new LogRecordExporterModel()
@@ -116,6 +120,7 @@ class LogRecordExporterFactoryTest {
                                 .setKeyFile(clientKeyPath)
                                 .setCertFile(clientCertificatePath))),
             OtlpHttpLogRecordExporter.builder()
+                .setProxyOptions(ProxyOptions.noProxy())
                 .setEndpoint("http://example:4318/v1/logs")
                 .addHeader("key1", "value1")
                 .addHeader("key2", "value2")
@@ -129,13 +134,17 @@ class LogRecordExporterFactoryTest {
             new LogRecordExporterModel()
                 .setOtlpHttp(new OtlpHttpExporterModel().setMaxRequestSize(0)),
             OtlpHttpLogRecordExporter.getDefault().toBuilder()
+                .setProxyOptions(ProxyOptions.noProxy())
                 .setMaxRequestBodySize(Long.MAX_VALUE)
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
             "otlp_grpc default",
             new LogRecordExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()),
-            OtlpGrpcLogRecordExporter.getDefault().toBuilder().setComponentLoader(context).build()),
+            OtlpGrpcLogRecordExporter.getDefault().toBuilder()
+                .setProxy(ProxyOptions.noProxy())
+                .setComponentLoader(context)
+                .build()),
         Arguments.argumentSet(
             "otlp_grpc with options",
             new LogRecordExporterModel()
@@ -155,6 +164,7 @@ class LogRecordExporterFactoryTest {
                                 .setKeyFile(clientKeyPath)
                                 .setCertFile(clientCertificatePath))),
             OtlpGrpcLogRecordExporter.builder()
+                .setProxy(ProxyOptions.noProxy())
                 .setEndpoint("http://example:4317")
                 .addHeader("key1", "value1")
                 .addHeader("key2", "value2")
@@ -168,6 +178,7 @@ class LogRecordExporterFactoryTest {
             new LogRecordExporterModel()
                 .setOtlpGrpc(new OtlpGrpcExporterModel().setMaxRequestSize(0)),
             OtlpGrpcLogRecordExporter.getDefault().toBuilder()
+                .setProxy(ProxyOptions.noProxy())
                 .setMaxRequestMessageSize(Long.MAX_VALUE)
                 .setComponentLoader(context)
                 .build()),

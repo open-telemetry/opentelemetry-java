@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.Exper
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterMatcherAndConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.MeterProviderModelAccessor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
@@ -115,7 +116,10 @@ class MeterProviderFactoryTest {
                 .setExemplarFilter(ExemplarFilter.alwaysOn())
                 .registerMetricReader(
                     PeriodicMetricReader.builder(
-                            OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
+                            OtlpHttpMetricExporter.builder()
+                                .setProxyOptions(ProxyOptions.noProxy())
+                                .setComponentLoader(context)
+                                .build())
                         .build())
                 .registerView(
                     InstrumentSelector.builder().setName("instrument-name").build(),

@@ -114,7 +114,8 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
 
   @Override
   public TelemetryExporterBuilder<SpanData> setProxyOptions(ProxyOptions proxyOptions) {
-    throw new UnsupportedOperationException("ProxyOptions are not supported for gRPC");
+    builder.setProxy(proxyOptions);
+    return this;
   }
 
   @Override

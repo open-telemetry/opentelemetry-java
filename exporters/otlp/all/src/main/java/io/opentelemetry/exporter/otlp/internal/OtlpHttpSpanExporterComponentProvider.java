@@ -49,6 +49,7 @@ public class OtlpHttpSpanExporterComponentProvider implements ComponentProvider 
         builder::setRetryPolicy,
         builder::setMemoryMode,
         builder::setMaxRequestBodySize,
+        builder::setProxy,
         /* isHttpProtobuf= */ true,
         builder::setInternalTelemetryVersion,
         () -> builder.setMeterProvider(MeterProvider::noop));

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -158,6 +160,14 @@ public final class JdkHttpSender implements HttpSender {
     }
     if (proxyOptions != null) {
       builder.proxy(proxyOptions.getProxySelector());
+      String username = proxyOptions.getUsername();
+      String password = proxyOptions.getPassword();
+      if (username != null && password != null) {
+        // Note: the JDK HttpClient disables Basic authentication for CONNECT tunnels (i.e. https
+        // endpoints) unless the jdk.http.auth.tunneling.disabledSchemes system property is
+        // overridden.
+        builder.authenticator(new ProxyAuthenticator(username, password));
+      }
     }
     if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
       SSLParameters params = new SSLParameters();
@@ -514,5 +524,25 @@ public final class JdkHttpSender implements HttpSender {
   @FunctionalInterface
   interface Sleeper {
     void sleep(long delayNanos) throws InterruptedException;
+  }
+
+  /** Supplies Basic credentials for proxy authentication challenges only, never for servers. */
+  private static final class ProxyAuthenticator extends Authenticator {
+    private final String username;
+    private final char[] password;
+
+    private ProxyAuthenticator(String username, String password) {
+      this.username = username;
+      this.password = password.toCharArray();
+    }
+
+    @Override
+    @Nullable
+    protected PasswordAuthentication getPasswordAuthentication() {
+      if (getRequestorType() != RequestorType.PROXY) {
+        return null;
+      }
+      return new PasswordAuthentication(username, password.clone());
+    }
   }
 }

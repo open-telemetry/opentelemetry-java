@@ -103,9 +103,7 @@ public final class OkHttpHttpSender implements HttpSender {
             .connectTimeout(Duration.ofMillis(connectTimeoutMillis))
             .callTimeout(Duration.ofMillis(callTimeoutMillis));
 
-    if (proxyOptions != null) {
-      builder.proxySelector(proxyOptions.getProxySelector());
-    }
+    OkHttpUtil.configureProxy(builder, proxyOptions);
 
     if (retryPolicy != null) {
       builder.addInterceptor(

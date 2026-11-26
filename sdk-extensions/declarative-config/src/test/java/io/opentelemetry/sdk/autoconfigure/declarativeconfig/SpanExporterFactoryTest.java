@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExport
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.SpanExporterModelAccessor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
@@ -99,7 +100,10 @@ class SpanExporterFactoryTest {
         Arguments.argumentSet(
             "otlp_http default",
             new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel()),
-            OtlpHttpSpanExporter.getDefault().toBuilder().setComponentLoader(context).build()),
+            OtlpHttpSpanExporter.getDefault().toBuilder()
+                .setProxy(ProxyOptions.noProxy())
+                .setComponentLoader(context)
+                .build()),
         Arguments.argumentSet(
             "otlp_http with options",
             new SpanExporterModel()
@@ -119,6 +123,7 @@ class SpanExporterFactoryTest {
                                 .setKeyFile(clientKeyPath)
                                 .setCertFile(clientCertificatePath))),
             OtlpHttpSpanExporter.builder()
+                .setProxy(ProxyOptions.noProxy())
                 .setEndpoint("http://example:4318/v1/traces")
                 .addHeader("key1", "value1")
                 .addHeader("key2", "value2")
@@ -131,13 +136,17 @@ class SpanExporterFactoryTest {
             "otlp_http max_request_size 0",
             new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel().setMaxRequestSize(0)),
             OtlpHttpSpanExporter.getDefault().toBuilder()
+                .setProxy(ProxyOptions.noProxy())
                 .setMaxRequestBodySize(Long.MAX_VALUE)
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
             "otlp_grpc default",
             new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()),
-            OtlpGrpcSpanExporter.getDefault().toBuilder().setComponentLoader(context).build()),
+            OtlpGrpcSpanExporter.getDefault().toBuilder()
+                .setProxy(ProxyOptions.noProxy())
+                .setComponentLoader(context)
+                .build()),
         Arguments.argumentSet(
             "otlp_grpc with options",
             new SpanExporterModel()
@@ -157,6 +166,7 @@ class SpanExporterFactoryTest {
                                 .setKeyFile(clientKeyPath)
                                 .setCertFile(clientCertificatePath))),
             OtlpGrpcSpanExporter.builder()
+                .setProxy(ProxyOptions.noProxy())
                 .setEndpoint("http://example:4317")
                 .addHeader("key1", "value1")
                 .addHeader("key2", "value2")
@@ -169,6 +179,7 @@ class SpanExporterFactoryTest {
             "otlp_grpc max_request_size 0",
             new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel().setMaxRequestSize(0)),
             OtlpGrpcSpanExporter.getDefault().toBuilder()
+                .setProxy(ProxyOptions.noProxy())
                 .setMaxRequestMessageSize(Long.MAX_VALUE)
                 .setComponentLoader(context)
                 .build()),

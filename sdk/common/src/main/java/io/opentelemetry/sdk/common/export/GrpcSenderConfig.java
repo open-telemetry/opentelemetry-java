@@ -64,6 +64,15 @@ public interface GrpcSenderConfig {
    */
   Supplier<Map<String, List<String>>> getHeadersSupplier();
 
+  /**
+   * The proxy options, or {@code null} if the sender implementation's default proxy behavior is
+   * used. See {@link ProxyOptions#noProxy()} to explicitly disable proxying.
+   */
+  @Nullable
+  default ProxyOptions getProxyOptions() {
+    return null;
+  }
+
   /** The retry policy, or {@code null} if retry is disabled. */
   @Nullable
   RetryPolicy getRetryPolicy();

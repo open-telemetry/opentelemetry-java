@@ -42,7 +42,8 @@ public class ExperimentalResourceDetectionModel {
    * Configure resource detectors.
    *
    * <p>Resource detector names are dependent on the SDK language ecosystem. Please consult
-   * documentation for each respective language.
+   * documentation for each respective language. SDKs may not recognize all detector names.
+   * Unrecognized names are ignored with a warning rather than failing SDK construction.
    *
    * <p>If omitted, no resource detectors are enabled.
    */

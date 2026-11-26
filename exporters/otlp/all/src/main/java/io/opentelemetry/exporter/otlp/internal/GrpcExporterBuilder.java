@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcSenderProvider;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
@@ -71,6 +72,7 @@ public class GrpcExporterBuilder {
   @Nullable private ExecutorService executorService;
   private long maxRequestMessageSize = DEFAULT_MAX_REQUEST_MESSAGE_SIZE;
   @Nullable private List<String> enabledProtocols;
+  @Nullable private ProxyOptions proxyOptions;
 
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
@@ -184,6 +186,11 @@ public class GrpcExporterBuilder {
     return this;
   }
 
+  public GrpcExporterBuilder setProxyOptions(ProxyOptions proxyOptions) {
+    this.proxyOptions = proxyOptions;
+    return this;
+  }
+
   @SuppressWarnings("BuilderReturnThis")
   public GrpcExporterBuilder copy() {
     GrpcExporterBuilder copy =
@@ -205,6 +212,7 @@ public class GrpcExporterBuilder {
     copy.componentLoader = componentLoader;
     copy.maxRequestMessageSize = maxRequestMessageSize;
     copy.enabledProtocols = enabledProtocols;
+    copy.proxyOptions = proxyOptions;
     return copy;
   }
 
@@ -248,7 +256,8 @@ public class GrpcExporterBuilder {
                 // 4mb to align with spec guidance - even though we don't do anything with the
                 // response today, we will so better to have future-looking memory profile
                 4 * 1024L * 1024L,
-                enabledProtocols));
+                enabledProtocols,
+                proxyOptions));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter(
@@ -284,6 +293,9 @@ public class GrpcExporterBuilder {
     }
     if (enabledProtocols != null) {
       joiner.add("enabledProtocols=" + enabledProtocols);
+    }
+    if (proxyOptions != null) {
+      joiner.add("proxyOptions=" + proxyOptions);
     }
     if (grpcChannel != null) {
       joiner.add("grpcChannel=" + grpcChannel);

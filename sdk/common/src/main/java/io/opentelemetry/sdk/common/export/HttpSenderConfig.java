@@ -58,7 +58,10 @@ public interface HttpSenderConfig {
    */
   Supplier<Map<String, List<String>>> getHeadersSupplier();
 
-  /** The proxy options, or {@code null} if no proxy is used. */
+  /**
+   * The proxy options, or {@code null} if the sender implementation's default proxy behavior is
+   * used. See {@link ProxyOptions#noProxy()} to explicitly disable proxying.
+   */
   @Nullable
   ProxyOptions getProxyOptions();
 
