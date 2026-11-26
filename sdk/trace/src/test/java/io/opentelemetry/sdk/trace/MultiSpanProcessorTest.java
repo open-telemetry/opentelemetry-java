@@ -8,11 +8,13 @@ package io.opentelemetry.sdk.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
 import java.util.Arrays;
@@ -86,6 +88,23 @@ class MultiSpanProcessorTest {
     multiSpanProcessor.shutdown();
     verify(spanProcessor1).shutdown();
     verify(spanProcessor2).shutdown();
+  }
+
+  @Test
+  @SuppressLogger(SpanProcessorUtil.class)
+  void firstProcessorThrows() {
+    ExtendedSpanProcessor composite =
+        (ExtendedSpanProcessor) SpanProcessor.composite(spanProcessor1, spanProcessor2);
+    doThrow(new IllegalStateException()).when(spanProcessor1).onStart(any(), any());
+    doThrow(new IllegalStateException()).when(spanProcessor1).onEnding(any());
+    doThrow(new IllegalStateException()).when(spanProcessor1).onEnd(any());
+
+    composite.onStart(Context.root(), readWriteSpan);
+    verify(spanProcessor2).onStart(same(Context.root()), same(readWriteSpan));
+    composite.onEnding(readWriteSpan);
+    verify(spanProcessor2).onEnding(same(readWriteSpan));
+    composite.onEnd(readableSpan);
+    verify(spanProcessor2).onEnd(same(readableSpan));
   }
 
   @Test

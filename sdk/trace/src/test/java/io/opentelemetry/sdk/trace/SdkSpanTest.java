@@ -258,11 +258,24 @@ class SdkSpanTest {
     assertThat(spanLatencyInProcessor.get()).isEqualTo(expectedDuration);
   }
 
-  @Test
-  @SuppressLogger(SdkSpan.class)
-  void onEnding_processorThrows() {
+  private static Stream<Arguments> nonfatalProcessorFailures() {
+    return Stream.of(
+        Arguments.argumentSet("runtime exception", new IllegalStateException()),
+        Arguments.argumentSet("checked exception", new Exception()),
+        Arguments.argumentSet("nonfatal error", new AssertionError()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("nonfatalProcessorFailures")
+  @SuppressLogger(SpanProcessorUtil.class)
+  void onEnding_processorThrows(Throwable failure) {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
-    doThrow(new IllegalStateException("onEnding failed")).when(spanProcessor).onEnding(any());
+    doAnswer(
+            invocation -> {
+              throw failure;
+            })
+        .when(spanProcessor)
+        .onEnding(any());
 
     assertThatCode(span::end).doesNotThrowAnyException();
     assertThat(span.hasEnded()).isTrue();
@@ -271,19 +284,50 @@ class SdkSpanTest {
   }
 
   @Test
-  @SuppressLogger(SdkSpan.class)
-  void onEnding_processorThrowsCheckedException() {
-    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
-    doAnswer(
-            invocation -> {
-              throw new Exception("onEnding failed");
-            })
-        .when(spanProcessor)
-        .onEnding(any());
+  @SuppressLogger(SpanProcessorUtil.class)
+  void onStartAndEnd_processorThrows() {
+    doThrow(new IllegalStateException()).when(spanProcessor).onStart(any(), any());
+    doThrow(new IllegalStateException()).when(spanProcessor).onEnd(any());
 
-    assertThatCode(span::end).doesNotThrowAnyException();
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    assertThat(span.isRecording()).isTrue();
+    span.end();
     assertThat(span.hasEnded()).isTrue();
+    verify(spanProcessor).onStart(any(), same(span));
     verify(spanProcessor).onEnd(same(span));
+  }
+
+  @Test
+  void onStart_processorThrowsFatalError() {
+    LinkageError failure = new LinkageError();
+    doThrow(failure).when(spanProcessor).onStart(any(), any());
+
+    assertThatThrownBy(() -> createTestSpan(SpanKind.INTERNAL)).isSameAs(failure);
+  }
+
+  @Test
+  void onEnding_processorThrowsFatalError() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    LinkageError failure = new LinkageError();
+    doThrow(failure).when(spanProcessor).onEnding(any());
+
+    assertThatThrownBy(span::end).isSameAs(failure);
+    verify(spanProcessor, never()).onEnd(any());
+
+    AttributeKey<String> key = stringKey("afterEnd");
+    span.setAttribute(key, "ignored");
+    assertThat(span.getAttribute(key)).isNull();
+    assertThat(span.isRecording()).isFalse();
+    assertThat(span).extracting("spanEndingThread").isNull();
+  }
+
+  @Test
+  void onEnd_processorThrowsFatalError() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    LinkageError failure = new LinkageError();
+    doThrow(failure).when(spanProcessor).onEnd(any());
+
+    assertThatThrownBy(span::end).isSameAs(failure);
   }
 
   @Test
