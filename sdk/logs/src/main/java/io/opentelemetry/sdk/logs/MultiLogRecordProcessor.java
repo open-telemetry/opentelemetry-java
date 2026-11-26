@@ -36,7 +36,7 @@ final class MultiLogRecordProcessor implements LogRecordProcessor {
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
     for (LogRecordProcessor logRecordProcessor : logRecordProcessors) {
-      logRecordProcessor.onEmit(context, logRecord);
+      LogRecordProcessorUtil.onEmit(logRecordProcessor, context, logRecord);
     }
   }
 
