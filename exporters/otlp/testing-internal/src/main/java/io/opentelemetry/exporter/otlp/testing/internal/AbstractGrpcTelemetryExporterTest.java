@@ -61,6 +61,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.common.internal.SemConvConstants;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -652,6 +653,109 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     }
+  }
+
+  @Test
+  void proxy_tunnel() throws Exception {
+    try (TestHttpProxy proxy = TestHttpProxy.start();
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpsUri().toString())
+                .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+                .setProxyOptions(ProxyOptions.create(proxy.address()))
+                .build()) {
+      assumeOkHttpGrpcSender(exporter);
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(proxy.requests())
+          .anySatisfy(request -> {
+            assertThat(request.method()).isEqualTo("CONNECT");
+            assertThat(request.target()).endsWith(":" + server.httpsPort());
+            assertThat(request.proxyAuthorization()).isNull();
+          });
+      assertThat(exportedResourceTelemetry).containsExactlyElementsOf(toProto(telemetry));
+    }
+  }
+
+  @Test
+  void proxy_basicAuthentication_tunnel() throws Exception {
+    try (TestHttpProxy proxy = TestHttpProxy.startWithBasicAuth("user", "pass:word");
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpsUri().toString())
+                .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+                .setProxyOptions(ProxyOptions.create(proxy.address(), "user", "pass:word"))
+                .build()) {
+      assumeOkHttpGrpcSender(exporter);
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(proxy.requests())
+          .anySatisfy(request -> {
+            assertThat(request.method()).isEqualTo("CONNECT");
+            assertThat(request.proxyAuthorization())
+                .isEqualTo(
+                    "Basic "
+                        + Base64.getEncoder()
+                            .encodeToString("user:pass:word".getBytes(StandardCharsets.UTF_8)));
+          });
+      assertThat(exportedResourceTelemetry).containsExactlyElementsOf(toProto(telemetry));
+    }
+  }
+
+  @Test
+  void proxy_plainHttpTunnel() throws Exception {
+    try (TestHttpProxy proxy = TestHttpProxy.start();
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpUri().toString())
+                .setProxyOptions(ProxyOptions.create(proxy.address()))
+                .build()) {
+      assumeOkHttpGrpcSender(exporter);
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(proxy.requests())
+          .anySatisfy(request -> {
+            assertThat(request.method()).isEqualTo("CONNECT");
+            assertThat(request.target()).endsWith(":" + server.httpPort());
+            assertThat(request.proxyAuthorization()).isNull();
+          });
+      assertThat(exportedResourceTelemetry).containsExactlyElementsOf(toProto(telemetry));
+    }
+  }
+
+  @Test
+  void proxy_basicAuthentication_plainHttpTunnel() throws Exception {
+    try (TestHttpProxy proxy = TestHttpProxy.startWithBasicAuth("user", "pass:word");
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpUri().toString())
+                .setProxyOptions(ProxyOptions.create(proxy.address(), "user", "pass:word"))
+                .build()) {
+      assumeOkHttpGrpcSender(exporter);
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(proxy.requests())
+          .anySatisfy(request -> {
+            assertThat(request.method()).isEqualTo("CONNECT");
+            assertThat(request.target()).endsWith(":" + server.httpPort());
+            assertThat(request.proxyAuthorization())
+                .isEqualTo(
+                    "Basic "
+                        + Base64.getEncoder()
+                            .encodeToString("user:pass:word".getBytes(StandardCharsets.UTF_8)));
+          });
+      assertThat(exportedResourceTelemetry).containsExactlyElementsOf(toProto(telemetry));
+    }
+  }
+
+  private static void assumeOkHttpGrpcSender(TelemetryExporter<?> exporter) {
+    assumeThat(exporter.unwrap())
+        .extracting("delegate.grpcSender")
+        .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
   }
 
   @Test

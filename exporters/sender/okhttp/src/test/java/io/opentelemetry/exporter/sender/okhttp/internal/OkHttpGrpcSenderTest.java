@@ -120,6 +120,7 @@ class OkHttpGrpcSenderTest {
         null,
         null,
         maxResponseBodySize,
+        null,
         null);
   }
 
@@ -141,6 +142,7 @@ class OkHttpGrpcSenderTest {
             null,
             executor,
             Long.MAX_VALUE,
+            null,
             null);
 
     AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
@@ -176,6 +178,7 @@ class OkHttpGrpcSenderTest {
             null,
             executor,
             Long.MAX_VALUE,
+            null,
             null);
 
     CompletableFuture<Throwable> error = new CompletableFuture<>();
@@ -217,6 +220,7 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             Long.MAX_VALUE,
+            null,
             null);
 
     CompletableResultCode sendResult = new CompletableResultCode();
@@ -262,6 +266,7 @@ class OkHttpGrpcSenderTest {
               null,
               customExecutor, // Pass custom executor -> managedExecutor = false
               Long.MAX_VALUE,
+              null,
               null);
 
       CompletableResultCode shutdownResult = sender.shutdown();
@@ -301,6 +306,7 @@ class OkHttpGrpcSenderTest {
             null,
             null, // null executor = managed
             Long.MAX_VALUE,
+            null,
             null);
 
     // Start multiple requests to ensure threads are busy
@@ -365,6 +371,7 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             Long.MAX_VALUE,
+            null,
             null);
 
     // Trigger some activity
@@ -414,6 +421,7 @@ class OkHttpGrpcSenderTest {
                 null,
                 null,
                 Long.MAX_VALUE,
+                null,
                 null))
         .doesNotThrowAnyException();
   }
@@ -440,6 +448,7 @@ class OkHttpGrpcSenderTest {
                   null,
                   null,
                   Long.MAX_VALUE,
+                  null,
                   null))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("Unable to initialize default trust manager")
@@ -470,6 +479,7 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             Long.MAX_VALUE,
+            null,
             null);
 
     CompletableResultCode sendResult = new CompletableResultCode();

@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.Exper
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalPrometheusTranslationStrategyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.PeriodicMetricReaderModelAccessor;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.PullMetricExporterModelAccessor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -110,7 +111,10 @@ class MetricReaderFactoryTest {
                                     new PushMetricExporterModel()
                                         .setOtlpHttp(new OtlpHttpMetricExporterModel()))),
                     PeriodicMetricReader.builder(
-                            OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
+                            OtlpHttpMetricExporter.builder()
+                                .setProxyOptions(ProxyOptions.noProxy())
+                                .setComponentLoader(context)
+                                .build())
                         .build(),
                     null,
                     false),
@@ -128,7 +132,10 @@ class MetricReaderFactoryTest {
                                         new CardinalityLimitsModel().setDefault(100)),
                                 200)),
                     PeriodicMetricReader.builder(
-                            OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
+                            OtlpHttpMetricExporter.builder()
+                                .setProxyOptions(ProxyOptions.noProxy())
+                                .setComponentLoader(context)
+                                .build())
                         .setInterval(Duration.ofMillis(1))
                         .setMaxExportBatchSize(200)
                         .build(),

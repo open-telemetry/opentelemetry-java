@@ -53,6 +53,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamMode
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ResourceModelAccessor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
@@ -330,6 +331,7 @@ class OpenTelemetryConfigurationFactoryTest {
                             .addLogRecordProcessor(
                                 BatchLogRecordProcessor.builder(
                                         OtlpHttpLogRecordExporter.builder()
+                                            .setProxyOptions(ProxyOptions.noProxy())
                                             .setComponentLoader(context)
                                             .build())
                                     .build())
@@ -350,6 +352,7 @@ class OpenTelemetryConfigurationFactoryTest {
                             .addSpanProcessor(
                                 BatchSpanProcessor.builder(
                                         OtlpHttpSpanExporter.builder()
+                                            .setProxy(ProxyOptions.noProxy())
                                             .setComponentLoader(context)
                                             .build())
                                     .build())
@@ -360,6 +363,7 @@ class OpenTelemetryConfigurationFactoryTest {
                             .registerMetricReader(
                                 PeriodicMetricReader.builder(
                                         OtlpHttpMetricExporter.builder()
+                                            .setProxyOptions(ProxyOptions.noProxy())
                                             .setComponentLoader(context)
                                             .build())
                                     .build())

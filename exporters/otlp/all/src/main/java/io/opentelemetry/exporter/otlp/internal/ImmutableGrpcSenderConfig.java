@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.internal;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.exporter.internal.grpc.ExtendedGrpcSenderConfig;
 import io.opentelemetry.sdk.common.export.Compressor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
@@ -40,7 +41,8 @@ public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderCon
       @Nullable ExecutorService executorService,
       @Nullable Object managedChannel,
       long maxResponseBodySize,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      @Nullable ProxyOptions proxyOptions) {
     return new AutoValue_ImmutableGrpcSenderConfig(
         endpoint,
         fullMethodName,
@@ -54,7 +56,8 @@ public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderCon
         executorService,
         managedChannel,
         maxResponseBodySize,
-        enabledProtocols);
+        enabledProtocols,
+        proxyOptions);
   }
 
   @Override
@@ -63,4 +66,8 @@ public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderCon
   @Override
   @Nullable
   public abstract List<String> getEnabledProtocols();
+
+  @Override
+  @Nullable
+  public abstract ProxyOptions getProxyOptions();
 }

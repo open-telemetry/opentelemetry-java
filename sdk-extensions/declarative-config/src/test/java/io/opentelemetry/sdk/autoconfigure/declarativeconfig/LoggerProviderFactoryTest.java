@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.Exper
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerMatcherAndConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LoggerProviderModelAccessor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.LogLimits;
@@ -126,7 +127,10 @@ class LoggerProviderFactoryTest {
                         .build())
                 .addLogRecordProcessor(
                     BatchLogRecordProcessor.builder(
-                            OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())
+                            OtlpHttpLogRecordExporter.builder()
+                                .setProxyOptions(ProxyOptions.noProxy())
+                                .setComponentLoader(context)
+                                .build())
                         .build())
                 .build()));
   }

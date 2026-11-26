@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExport
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalEventToSpanEventBridgeLogRecordProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LogRecordProcessorModelAccessor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.extension.incubator.logs.EventToSpanEventBridge;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
@@ -65,7 +66,10 @@ class LogRecordProcessorFactoryTest {
                         .setExporter(
                             new LogRecordExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))),
             BatchLogRecordProcessor.builder(
-                    OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())
+                    OtlpHttpLogRecordExporter.builder()
+                        .setProxyOptions(ProxyOptions.noProxy())
+                        .setComponentLoader(context)
+                        .build())
                 .build()),
         Arguments.argumentSet(
             "batch otlp_http with options",
@@ -78,7 +82,10 @@ class LogRecordProcessorFactoryTest {
                         .setMaxExportBatchSize(2)
                         .setExportTimeout(3)),
             BatchLogRecordProcessor.builder(
-                    OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())
+                    OtlpHttpLogRecordExporter.builder()
+                        .setProxyOptions(ProxyOptions.noProxy())
+                        .setComponentLoader(context)
+                        .build())
                 .setScheduleDelay(Duration.ofMillis(1))
                 .setMaxExportBatchSize(2)
                 .setExporterTimeout(Duration.ofMillis(3))
@@ -91,7 +98,10 @@ class LogRecordProcessorFactoryTest {
                         .setExporter(
                             new LogRecordExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))),
             SimpleLogRecordProcessor.create(
-                OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())),
+                OtlpHttpLogRecordExporter.builder()
+                    .setProxyOptions(ProxyOptions.noProxy())
+                    .setComponentLoader(context)
+                    .build())),
         Arguments.argumentSet(
             "event_to_span_event_bridge/development",
             LogRecordProcessorModelAccessor.setEventToSpanEventBridge(

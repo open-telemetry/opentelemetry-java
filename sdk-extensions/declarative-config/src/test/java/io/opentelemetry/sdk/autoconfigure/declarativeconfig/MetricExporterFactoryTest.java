@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetric
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.PushMetricExporterModelAccessor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -102,7 +103,10 @@ class MetricExporterFactoryTest {
         Arguments.argumentSet(
             "otlp_http default",
             new PushMetricExporterModel().setOtlpHttp(new OtlpHttpMetricExporterModel()),
-            OtlpHttpMetricExporter.getDefault().toBuilder().setComponentLoader(context).build()),
+            OtlpHttpMetricExporter.getDefault().toBuilder()
+                .setProxyOptions(ProxyOptions.noProxy())
+                .setComponentLoader(context)
+                .build()),
         Arguments.argumentSet(
             "otlp_http with options",
             new PushMetricExporterModel()
@@ -126,6 +130,7 @@ class MetricExporterFactoryTest {
                             ExporterDefaultHistogramAggregationModel
                                 .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
             OtlpHttpMetricExporter.builder()
+                .setProxyOptions(ProxyOptions.noProxy())
                 .setEndpoint("http://example:4318/v1/metrics")
                 .addHeader("key1", "value1")
                 .addHeader("key2", "value2")
@@ -145,13 +150,17 @@ class MetricExporterFactoryTest {
             new PushMetricExporterModel()
                 .setOtlpHttp(new OtlpHttpMetricExporterModel().setMaxRequestSize(0)),
             OtlpHttpMetricExporter.getDefault().toBuilder()
+                .setProxyOptions(ProxyOptions.noProxy())
                 .setMaxRequestBodySize(Long.MAX_VALUE)
                 .setComponentLoader(context)
                 .build()),
         Arguments.argumentSet(
             "otlp_grpc default",
             new PushMetricExporterModel().setOtlpGrpc(new OtlpGrpcMetricExporterModel()),
-            OtlpGrpcMetricExporter.getDefault().toBuilder().setComponentLoader(context).build()),
+            OtlpGrpcMetricExporter.getDefault().toBuilder()
+                .setProxy(ProxyOptions.noProxy())
+                .setComponentLoader(context)
+                .build()),
         Arguments.argumentSet(
             "otlp_grpc with options",
             new PushMetricExporterModel()
@@ -175,6 +184,7 @@ class MetricExporterFactoryTest {
                             ExporterDefaultHistogramAggregationModel
                                 .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
             OtlpGrpcMetricExporter.builder()
+                .setProxy(ProxyOptions.noProxy())
                 .setEndpoint("http://example:4317")
                 .addHeader("key1", "value1")
                 .addHeader("key2", "value2")
@@ -194,6 +204,7 @@ class MetricExporterFactoryTest {
             new PushMetricExporterModel()
                 .setOtlpGrpc(new OtlpGrpcMetricExporterModel().setMaxRequestSize(0)),
             OtlpGrpcMetricExporter.getDefault().toBuilder()
+                .setProxy(ProxyOptions.noProxy())
                 .setMaxRequestMessageSize(Long.MAX_VALUE)
                 .setComponentLoader(context)
                 .build()),

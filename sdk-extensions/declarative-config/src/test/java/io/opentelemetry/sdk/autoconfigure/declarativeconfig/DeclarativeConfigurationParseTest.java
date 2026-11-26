@@ -21,6 +21,8 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterMo
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TraceIdRatioBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalProxyModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.OtlpGrpcExporterModelAccessor;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
@@ -37,6 +39,42 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class DeclarativeConfigurationParseTest {
+
+  @Test
+  void parse_otlpExporterProxy() {
+    String yaml =
+        "file_format: \"1.0\"\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - batch:\n"
+            + "        exporter:\n"
+            + "          otlp_grpc:\n"
+            + "            endpoint: http://collector:4317\n"
+            + "            proxy/development:\n"
+            + "              url: http://proxy:3128\n"
+            + "              username: user\n"
+            + "              password: pass\n";
+
+    OpenTelemetryConfigurationModel model =
+        DeclarativeConfiguration.parse(
+            new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+
+    ExperimentalProxyModel proxy =
+        OtlpGrpcExporterModelAccessor.getProxy(
+            model
+                .getTracerProvider()
+                .getProcessors()
+                .get(0)
+                .getBatch()
+                .getExporter()
+                .getOtlpGrpc());
+    assertThat(proxy)
+        .isEqualTo(
+            new ExperimentalProxyModel()
+                .setUrl("http://proxy:3128")
+                .setUsername("user")
+                .setPassword("pass"));
+  }
 
   @Test
   void parse_BadInputStream() {

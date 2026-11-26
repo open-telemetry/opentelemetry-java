@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -809,6 +810,62 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       List<U> expectedResourceTelemetry = toProto(telemetry);
       assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
     }
+  }
+
+  @Test
+  void proxy_basicAuthentication_tunnel() throws Exception {
+    // The JDK HttpClient disables Basic authentication for CONNECT tunnels by default
+    // (jdk.http.auth.tunneling.disabledSchemes), so only OkHttp is expected to succeed.
+    try (TestHttpProxy proxy = TestHttpProxy.startWithBasicAuth("user", "pass:word");
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpsUri() + path)
+                .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+                .setProxyOptions(ProxyOptions.create(proxy.address(), "user", "pass:word"))
+                .build()) {
+      assumeThat(exporter.unwrap())
+          .extracting("delegate.httpSender")
+          .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpHttpSender"));
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(proxy.requests())
+          .anySatisfy(request -> {
+            assertThat(request.method()).isEqualTo("CONNECT");
+            assertThat(request.proxyAuthorization())
+                .isEqualTo(basicCredentials("user", "pass:word"));
+          });
+      assertThat(exportedResourceTelemetry).containsExactlyElementsOf(toProto(telemetry));
+    }
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void proxy_basicAuthentication_wrongCredentials() throws Exception {
+    try (TestHttpProxy proxy = TestHttpProxy.startWithBasicAuth("user", "pass:word");
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpsUri() + path)
+                .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+                .setProxyOptions(ProxyOptions.create(proxy.address(), "user", "wrong"))
+                .build()) {
+      assertThat(
+              exporter
+                  .export(Collections.singletonList(generateFakeTelemetry()))
+                  .join(10, TimeUnit.SECONDS)
+                  .isSuccess())
+          .isFalse();
+      assertThat(proxy.requests())
+          .isNotEmpty()
+          .allSatisfy(request -> assertThat(request.method()).isEqualTo("CONNECT"));
+      assertThat(exportedResourceTelemetry).isEmpty();
+    }
+  }
+
+  private static String basicCredentials(String username, String password) {
+    return "Basic "
+        + Base64.getEncoder()
+            .encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
   }
 
   @Test

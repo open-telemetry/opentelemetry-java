@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExport
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -63,7 +64,10 @@ class SpanProcessorFactoryTest {
                         .setExporter(
                             new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))),
             BatchSpanProcessor.builder(
-                    OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
+                    OtlpHttpSpanExporter.builder()
+                        .setProxy(ProxyOptions.noProxy())
+                        .setComponentLoader(context)
+                        .build())
                 .build()),
         Arguments.argumentSet(
             "batch with options",
@@ -76,7 +80,10 @@ class SpanProcessorFactoryTest {
                         .setMaxExportBatchSize(2)
                         .setExportTimeout(3)),
             BatchSpanProcessor.builder(
-                    OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
+                    OtlpHttpSpanExporter.builder()
+                        .setProxy(ProxyOptions.noProxy())
+                        .setComponentLoader(context)
+                        .build())
                 .setScheduleDelay(Duration.ofMillis(1))
                 .setMaxExportBatchSize(2)
                 .setExporterTimeout(Duration.ofMillis(3))
@@ -89,7 +96,10 @@ class SpanProcessorFactoryTest {
                         .setExporter(
                             new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))),
             SimpleSpanProcessor.create(
-                OtlpHttpSpanExporter.builder().setComponentLoader(context).build())));
+                OtlpHttpSpanExporter.builder()
+                    .setProxy(ProxyOptions.noProxy())
+                    .setComponentLoader(context)
+                    .build())));
   }
 
   @ParameterizedTest

@@ -16,6 +16,7 @@ import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHtt
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.TEMPORALITY_PREFERENCE;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.TIMEOUT;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.TLS;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.OtlpHttpMetricExporterModelAccessor.EXPERIMENTAL_PROPERTIES;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -23,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -371,7 +371,7 @@ public class OtlpHttpMetricExporterModel {
         name,
         value,
         extensionProperties,
-        Collections.emptyMap(),
+        EXPERIMENTAL_PROPERTIES,
         STABLE_PROPERTIES,
         ALLOWS_ADDITIONAL_PROPERTIES);
     return this;

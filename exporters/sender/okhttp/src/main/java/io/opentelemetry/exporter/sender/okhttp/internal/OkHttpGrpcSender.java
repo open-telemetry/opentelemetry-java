@@ -32,9 +32,12 @@ import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.net.Proxy;
 import java.net.SocketTimeoutException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -106,7 +109,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
       long maxResponseBodySize,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      @Nullable ProxyOptions proxyOptions) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
     this.timeoutNanos = TimeUnit.MILLISECONDS.toNanos(callTimeoutMillis);
@@ -126,6 +130,21 @@ public final class OkHttpGrpcSender implements GrpcSender {
             .callTimeout(Duration.ofMillis(callTimeoutMillis))
             .connectTimeout(Duration.ofMillis(connectTimeoutMillis));
     boolean isPlainHttp = endpoint.startsWith("http://");
+    URI endpointUri = URI.create(endpoint);
+    if (isPlainHttp
+        && proxyOptions != null
+        && GrpcH2cConnectTunnelSocketFactory.selectsHttpProxy(proxyOptions, endpointUri)) {
+      // Plaintext gRPC uses HTTP/2 with prior knowledge, which OkHttp 4.x sends directly to an HTTP
+      // proxy instead of tunneling with CONNECT. Establish the tunnel ourselves so behavior is
+      // consistent across OkHttp versions. The proxy resolves the target hostname.
+      clientBuilder
+          .proxy(Proxy.NO_PROXY)
+          .socketFactory(new GrpcH2cConnectTunnelSocketFactory(proxyOptions, endpointUri))
+          .dns(GrpcH2cConnectTunnelSocketFactory.UNRESOLVED_DNS);
+    } else {
+      OkHttpUtil.configureProxy(clientBuilder, proxyOptions);
+    }
+
     if (isPlainHttp) {
       clientBuilder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
       clientBuilder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));

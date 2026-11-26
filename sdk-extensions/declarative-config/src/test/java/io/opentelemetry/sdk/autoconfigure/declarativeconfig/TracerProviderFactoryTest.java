@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.Exper
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerMatcherAndConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.TracerProviderModelAccessor;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -130,7 +131,10 @@ class TracerProviderFactoryTest {
                 .setSampler(alwaysOn())
                 .addSpanProcessor(
                     BatchSpanProcessor.builder(
-                            OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
+                            OtlpHttpSpanExporter.builder()
+                                .setProxy(ProxyOptions.noProxy())
+                                .setComponentLoader(context)
+                                .build())
                         .build())
                 .build()));
   }

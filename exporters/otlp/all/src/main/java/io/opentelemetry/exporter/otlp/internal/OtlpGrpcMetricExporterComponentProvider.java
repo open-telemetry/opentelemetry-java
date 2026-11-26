@@ -50,6 +50,7 @@ public class OtlpGrpcMetricExporterComponentProvider implements ComponentProvide
         builder::setRetryPolicy,
         builder::setMemoryMode,
         builder::setMaxRequestMessageSize,
+        builder::setProxy,
         /* isHttpProtobuf= */ false,
         builder::setInternalTelemetryVersion,
         () -> builder.setMeterProvider(MeterProvider::noop));

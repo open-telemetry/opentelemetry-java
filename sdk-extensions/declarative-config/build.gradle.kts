@@ -64,7 +64,9 @@ dependencies {
 // To regenerate (e.g. after a schema update), run: ./gradlew :sdk-extensions:declarative-config:syncPojoModelsToSrc
 
 val configurationTag = "1.2.0"
-val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
+// TODO(prototype): points at open-telemetry/opentelemetry-configuration#807 (proxy/development).
+// Revert to "refs/tags/v$configurationTag" once a release includes it.
+val configurationRef = "95673cbf6a92c593c268c333e0397f56000d6b5e" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 

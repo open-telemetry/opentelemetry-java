@@ -113,7 +113,8 @@ final class GrpcProfilesExporterBuilderWrapper implements TelemetryExporterBuild
 
   @Override
   public TelemetryExporterBuilder<ProfileData> setProxyOptions(ProxyOptions proxyOptions) {
-    throw new UnsupportedOperationException("ProxyOptions are not supported for gRPC");
+    builder.setProxy(proxyOptions);
+    return this;
   }
 
   @Override

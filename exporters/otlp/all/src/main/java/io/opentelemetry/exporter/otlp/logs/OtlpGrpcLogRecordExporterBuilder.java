@@ -17,6 +17,7 @@ import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.net.URI;
@@ -330,6 +331,21 @@ public final class OtlpGrpcLogRecordExporterBuilder {
     requireNonNull(enabledProtocols, "enabledProtocols");
     checkArgument(!enabledProtocols.isEmpty(), "enabledProtocols must not be empty");
     delegate.setEnabledProtocols(enabledProtocols);
+    return this;
+  }
+
+  /**
+   * Sets the proxy options. If unset, the sender implementation's default proxy behavior is used.
+   *
+   * <p>The exporter tunnels through the proxy using HTTP {@code CONNECT}, for both {@code https}
+   * and plaintext {@code http} endpoints. Proxy options are ignored by the {@code
+   * ManagedChannel}-based sender.
+   *
+   * @since 1.69.0
+   */
+  public OtlpGrpcLogRecordExporterBuilder setProxy(ProxyOptions proxyOptions) {
+    requireNonNull(proxyOptions, "proxyOptions");
+    delegate.setProxyOptions(proxyOptions);
     return this;
   }
 
