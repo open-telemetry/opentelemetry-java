@@ -232,7 +232,7 @@ final class SdkSpan implements ReadWriteSpan {
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     if (spanProcessor.isStartRequired()) {
-      spanProcessor.onStart(parentContext, span);
+      SpanProcessorUtil.onStart(spanProcessor, parentContext, span);
     }
     return span;
   }
@@ -571,19 +571,22 @@ final class SdkSpan implements ReadWriteSpan {
       spanEndingThread = Thread.currentThread();
       hasEnded = EndState.ENDING;
     }
-    recordEndMetrics.run();
-    if (spanProcessor instanceof ExtendedSpanProcessor) {
-      ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
-      if (extendedSpanProcessor.isOnEndingRequired()) {
-        extendedSpanProcessor.onEnding(this);
+    try {
+      recordEndMetrics.run();
+      if (spanProcessor instanceof ExtendedSpanProcessor) {
+        ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
+        if (extendedSpanProcessor.isOnEndingRequired()) {
+          SpanProcessorUtil.onEnding(extendedSpanProcessor, this);
+        }
+      }
+    } finally {
+      synchronized (lock) {
+        hasEnded = EndState.ENDED;
+        spanEndingThread = null;
       }
     }
-    synchronized (lock) {
-      hasEnded = EndState.ENDED;
-      spanEndingThread = null;
-    }
     if (spanProcessor.isEndRequired()) {
-      spanProcessor.onEnd(this);
+      SpanProcessorUtil.onEnd(spanProcessor, this);
     }
   }
 

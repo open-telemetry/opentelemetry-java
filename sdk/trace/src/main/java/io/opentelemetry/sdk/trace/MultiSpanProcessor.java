@@ -39,7 +39,7 @@ final class MultiSpanProcessor implements ExtendedSpanProcessor {
   @Override
   public void onStart(Context parentContext, ReadWriteSpan readWriteSpan) {
     for (SpanProcessor spanProcessor : spanProcessorsStart) {
-      spanProcessor.onStart(parentContext, readWriteSpan);
+      SpanProcessorUtil.onStart(spanProcessor, parentContext, readWriteSpan);
     }
   }
 
@@ -51,7 +51,7 @@ final class MultiSpanProcessor implements ExtendedSpanProcessor {
   @Override
   public void onEnd(ReadableSpan readableSpan) {
     for (SpanProcessor spanProcessor : spanProcessorsEnd) {
-      spanProcessor.onEnd(readableSpan);
+      SpanProcessorUtil.onEnd(spanProcessor, readableSpan);
     }
   }
 
@@ -63,7 +63,7 @@ final class MultiSpanProcessor implements ExtendedSpanProcessor {
   @Override
   public void onEnding(ReadWriteSpan span) {
     for (ExtendedSpanProcessor spanProcessor : spanProcessorsEnding) {
-      spanProcessor.onEnding(span);
+      SpanProcessorUtil.onEnding(spanProcessor, span);
     }
   }
 
