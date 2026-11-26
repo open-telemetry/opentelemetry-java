@@ -9,6 +9,7 @@ import static io.opentelemetry.api.baggage.Baggage.fromContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
 import io.opentelemetry.api.baggage.Baggage;
@@ -36,13 +37,18 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.event.Level;
 
 /** Unit tests for {@link JaegerPropagator}. */
 @SuppressWarnings("deprecation")
 class JaegerPropagatorTest {
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(JaegerPropagator.class, Level.DEBUG);
 
   private static final String BAGGAGE_HEADER = JaegerPropagator.BAGGAGE_HEADER;
   private static final String BAGGAGE_PREFIX = JaegerPropagator.BAGGAGE_PREFIX;
@@ -347,9 +353,13 @@ class JaegerPropagatorTest {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         PROPAGATION_HEADER,
-        generateTraceIdHeaderValue(TRACE_ID, SPAN_ID, DEPRECATED_PARENT_SPAN, "abcdefr"));
+        generateTraceIdHeaderValue(TRACE_ID, SPAN_ID, DEPRECATED_PARENT_SPAN, "g"));
 
     verifyInvalidBehavior(invalidHeaders);
+    assertThat(
+            logs.assertContains("Invalid Flags in Jaeger header: 'uber-trace-id'").getThrowable())
+        .isNull();
+    assertThat(logs.getEvents()).hasSize(1);
   }
 
   @Test

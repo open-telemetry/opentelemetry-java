@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
@@ -61,6 +62,7 @@ public final class OkHttpHttpSender implements HttpSender {
 
   private static final Logger logger = Logger.getLogger(OkHttpHttpSender.class.getName());
 
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final boolean managedExecutor;
   private final OkHttpClient client;
   private final HttpUrl url;
@@ -221,7 +223,12 @@ public final class OkHttpHttpSender implements HttpSender {
           }
         }
       } catch (IOException e) {
-        logger.log(Level.WARNING, "Failed to read response body", e);
+        throttlingLogger.log(
+            Level.WARNING,
+            "Failed to read response body. Enable FINE logging for "
+                + OkHttpHttpSender.class.getName()
+                + " for details.");
+        logger.log(Level.FINE, "Failed to read response body", e);
       }
 
       if (buffer.size() > maxResponseBodySize) {

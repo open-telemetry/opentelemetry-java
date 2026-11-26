@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
 
 class IdentityTest {
 
@@ -29,7 +30,9 @@ class IdentityTest {
   @RegisterExtension
   LogCapturer viewRegistryLogs = LogCapturer.create().captureForType(ViewRegistry.class);
 
-  @RegisterExtension LogCapturer sdkMeterLogs = LogCapturer.create().captureForType(SdkMeter.class);
+  @RegisterExtension
+  LogCapturer apiUsageLogs =
+      LogCapturer.create().captureForLogger("io.opentelemetry.usage", Level.TRACE);
 
   private InMemoryMetricReader reader;
   private SdkMeterProviderBuilder builder;
@@ -1096,10 +1099,10 @@ class IdentityTest {
   }
 
   @Test
-  @SuppressLogger(SdkMeter.class)
+  @SuppressLogger(loggerName = "io.opentelemetry.usage")
   void instrumentWithInvalidName() {
-    // When an instrument is initialized with an invalid name, a noop instrument is returned
-    // and a warning is logged. No metric data is produced.
+    // An invalid instrument name returns a noop instrument and logs an API usage issue.
+    // No metric data is produced.
     SdkMeterProvider meterProvider = builder.build();
 
     LongCounter counter = meterProvider.get("meter1").counterBuilder("1invalid-name").build();
@@ -1107,11 +1110,9 @@ class IdentityTest {
 
     assertThat(counter.isEnabled()).isFalse();
     assertThat(reader.collectAllMetrics()).isEmpty();
-    assertThat(sdkMeterLogs.getEvents())
-        .allSatisfy(logEvent ->
-            assertThat(logEvent.getMessage())
-                .contains("Instrument name \"1invalid-name\" is invalid"))
-        .hasSize(1);
+    apiUsageLogs.assertContains(
+        logEvent -> logEvent.getLevel() == Level.TRACE,
+        "Meter.counterBuilder(): Instrument name \"1invalid-name\" is invalid");
   }
 
   private static InstrumentationScopeInfo forMeter(String meterName) {

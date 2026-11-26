@@ -18,6 +18,7 @@ import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.ObservableMeasurement;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -192,7 +193,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    if (!checkValidInstrumentName(name)) {
+    if (!checkValidInstrumentName(name, "counterBuilder")) {
       return NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME);
     }
     return INCUBATOR_AVAILABLE
@@ -202,7 +203,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    if (!checkValidInstrumentName(name)) {
+    if (!checkValidInstrumentName(name, "upDownCounterBuilder")) {
       return NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME);
     }
     return INCUBATOR_AVAILABLE
@@ -212,7 +213,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    if (!checkValidInstrumentName(name)) {
+    if (!checkValidInstrumentName(name, "histogramBuilder")) {
       return NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME);
     }
     return INCUBATOR_AVAILABLE
@@ -222,7 +223,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    if (!checkValidInstrumentName(name)) {
+    if (!checkValidInstrumentName(name, "gaugeBuilder")) {
       return NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME);
     }
     return INCUBATOR_AVAILABLE
@@ -360,22 +361,27 @@ final class SdkMeter implements Meter {
     return "SdkMeter{instrumentationScopeInfo=" + instrumentationScopeInfo + "}";
   }
 
-  /** Check if the instrument name is valid. If invalid, log a warning. */
-  // Visible for testing
-  static boolean checkValidInstrumentName(String name) {
-    if (name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {
+  private static boolean checkValidInstrumentName(String name, String methodName) {
+    if (checkValidInstrumentName(name)) {
       return true;
     }
-    if (logger.isLoggable(Level.WARNING)) {
-      logger.log(
-          Level.WARNING,
+    // Q: only called internally so we don't need to check this stuff
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Meter.class, methodName, "name");
+    } else {
+      ApiUsageLogger.logUsageIssue(
+          Meter.class,
+          methodName,
           "Instrument name \""
-              + name
-              + "\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, /, and start with a letter.",
-          new AssertionError());
+              + (name.length() <= 255 ? name : name.substring(0, 255) + "...")
+              + "\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, /, and start with a letter.");
     }
-
     return false;
+  }
+
+  // Visible for testing
+  static boolean checkValidInstrumentName(String name) {
+    return name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches();
   }
 
   private static class MultiWritableMetricStorage implements WriteableMetricStorage {

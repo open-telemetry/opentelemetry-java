@@ -8,17 +8,17 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
   private static final Logger logger = Logger.getLogger(SdkLongHistogram.class.getName());
@@ -109,13 +109,26 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
 
     @Override
     public LongHistogramBuilder setExplicitBucketBoundariesAdvice(List<Long> bucketBoundaries) {
-      List<Double> boundaries;
-      try {
-        Objects.requireNonNull(bucketBoundaries, "bucketBoundaries must not be null");
-        boundaries = bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
-        ExplicitBucketHistogramUtils.validateBucketBoundaries(boundaries);
-      } catch (IllegalArgumentException | NullPointerException e) {
-        logger.log(Level.WARNING, "Error setting explicit bucket boundaries advice", e);
+      if (bucketBoundaries == null) {
+        ApiUsageLogger.logNullParam(
+            LongHistogramBuilder.class, "setExplicitBucketBoundariesAdvice", "bucketBoundaries");
+        return this;
+      }
+      List<Double> boundaries = new ArrayList<>(bucketBoundaries.size());
+      String error = null;
+      for (Long boundary : bucketBoundaries) {
+        if (boundary == null) {
+          error = "bucketBoundaries must not contain null";
+          break;
+        }
+        boundaries.add(boundary.doubleValue());
+      }
+      if (error == null) {
+        error = ExplicitBucketHistogramUtils.getBucketBoundariesValidationError(boundaries);
+      }
+      if (error != null) {
+        ApiUsageLogger.logUsageIssue(
+            LongHistogramBuilder.class, "setExplicitBucketBoundariesAdvice", error);
         return this;
       }
       builder.setExplicitBucketBoundaries(boundaries);

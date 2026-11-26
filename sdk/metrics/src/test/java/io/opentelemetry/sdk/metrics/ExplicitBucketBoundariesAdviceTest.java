@@ -24,16 +24,16 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.event.Level;
 
+@SuppressLogger(loggerName = "io.opentelemetry.usage")
 class ExplicitBucketBoundariesAdviceTest {
 
   private SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
 
   @RegisterExtension
   LogCapturer logCapturer =
-      LogCapturer.create()
-          .captureForLogger(SdkLongHistogram.class.getName())
-          .captureForLogger(SdkDoubleHistogram.class.getName());
+      LogCapturer.create().captureForLogger("io.opentelemetry.usage", Level.TRACE);
 
   @AfterEach
   void cleanup() {
@@ -163,8 +163,6 @@ class ExplicitBucketBoundariesAdviceTest {
 
   @ParameterizedTest
   @MethodSource("histogramsWithInvalidAdvice")
-  @SuppressLogger(SdkDoubleHistogram.class)
-  @SuppressLogger(SdkLongHistogram.class)
   void histogramWithInvalidAdvice(
       Function<SdkMeterProvider, Consumer<Long>> histogramBuilder, String expectedErrorMessage) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
@@ -188,7 +186,11 @@ class ExplicitBucketBoundariesAdviceTest {
                                 0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d,
                                 5_000d, 7_500d, 10_000d))));
 
-    logCapturer.assertContains(expectedErrorMessage);
+    assertThat(
+            logCapturer
+                .assertContains(event -> event.getLevel() == Level.TRACE, expectedErrorMessage)
+                .getThrowable())
+        .isNotNull();
   }
 
   private static Stream<Arguments> histogramsWithoutAdvice() {
@@ -254,7 +256,7 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 },
-            "Error setting explicit bucket boundaries advice"),
+            "DoubleHistogramBuilder.setExplicitBucketBoundariesAdvice(): Bucket boundaries must be in increasing order: 10.0 >= 9.0"),
         Arguments.argumentSet(
             "long histogram unsorted advice",
             (Function<SdkMeterProvider, Consumer<Long>>)
@@ -268,7 +270,7 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 },
-            "Error setting explicit bucket boundaries advice"),
+            "LongHistogramBuilder.setExplicitBucketBoundariesAdvice(): Bucket boundaries must be in increasing order: 10.0 >= 9.0"),
         Arguments.argumentSet(
             "double histogram null advice",
             (Function<SdkMeterProvider, Consumer<Long>>)
@@ -281,6 +283,6 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 },
-            "Error setting explicit bucket boundaries advice"));
+            "DoubleHistogramBuilder.setExplicitBucketBoundariesAdvice(): bucketBoundaries is null"));
   }
 }
