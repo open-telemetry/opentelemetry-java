@@ -12,7 +12,11 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +31,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
@@ -35,9 +40,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -131,6 +140,41 @@ class SdkLogRecordBuilderTest {
         .hasAttributes(Attributes.empty())
         .hasSpanContext(SpanContext.getInvalid())
         .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);
+  }
+
+  private static Stream<Arguments> nonfatalProcessorFailures() {
+    return Stream.of(
+        Arguments.argumentSet("runtime exception", new IllegalStateException()),
+        Arguments.argumentSet("checked exception", new Exception()),
+        Arguments.argumentSet("nonfatal error", new AssertionError()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("nonfatalProcessorFailures")
+  @SuppressLogger(LogRecordProcessorUtil.class)
+  void emit_processorThrows(Throwable failure) {
+    LogRecordProcessor processor = mock(LogRecordProcessor.class);
+    when(loggerSharedState.getLogRecordProcessor()).thenReturn(processor);
+    doAnswer(
+            invocation -> {
+              throw failure;
+            })
+        .when(processor)
+        .onEmit(any(), any());
+
+    assertThatCode(builder::emit).doesNotThrowAnyException();
+    verify(processor).onEmit(any(), any());
+  }
+
+  @Test
+  void emit_processorThrowsFatalError() {
+    LinkageError failure = new LinkageError();
+    when(loggerSharedState.getLogRecordProcessor())
+        .thenReturn((context, logRecord) -> {
+          throw failure;
+        });
+
+    assertThatThrownBy(builder::emit).isSameAs(failure);
   }
 
   @Test

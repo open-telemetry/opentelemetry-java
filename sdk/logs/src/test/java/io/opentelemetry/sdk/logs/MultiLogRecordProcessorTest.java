@@ -7,10 +7,12 @@ package io.opentelemetry.sdk.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,5 +68,18 @@ class MultiLogRecordProcessorTest {
     multiLogRecordProcessor.shutdown();
     verify(logRecordProcessor1).shutdown();
     verify(logRecordProcessor2).shutdown();
+  }
+
+  @Test
+  @SuppressLogger(LogRecordProcessorUtil.class)
+  void onEmit_firstProcessorThrows() {
+    LogRecordProcessor composite =
+        LogRecordProcessor.composite(logRecordProcessor1, logRecordProcessor2);
+    Context context = Context.current();
+    doThrow(new IllegalStateException()).when(logRecordProcessor1).onEmit(context, logRecord);
+
+    composite.onEmit(context, logRecord);
+
+    verify(logRecordProcessor2).onEmit(same(context), same(logRecord));
   }
 }
