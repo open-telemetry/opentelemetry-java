@@ -171,7 +171,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
   // the data.
-  private static final class Worker implements Runnable {
+  static final class Worker implements Runnable {
 
     private final SpanProcessorInstrumentation spanProcessorInstrumentation;
 
@@ -199,7 +199,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final long maxQueueSize;
     private final AtomicInteger droppedSpanCount = new AtomicInteger(0);
 
-    private Worker(
+    Worker(
         SpanExporter spanExporter,
         Supplier<MeterProvider> meterProvider,
         InternalTelemetryVersion telemetryVersion,
@@ -223,7 +223,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
-    private void addSpan(ReadableSpan span) {
+    void addSpan(ReadableSpan span) {
       if (isShutdown.get()) {
         spanProcessorInstrumentation.dropSpansAlreadyShutdown(1);
         return;
@@ -296,7 +296,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       nextExportTime = System.nanoTime() + scheduleDelayNanos;
     }
 
-    private CompletableResultCode shutdown() {
+    CompletableResultCode shutdown() {
       if (isShutdown.getAndSet(true)) {
         return CompletableResultCode.ofSuccess();
       }
@@ -318,7 +318,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return result;
     }
 
-    private CompletableResultCode forceFlush() {
+    CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
       // we set the atomic here to trigger the worker loop to do a flush of the entire queue.
       if (flushRequested.compareAndSet(null, flushResult)) {
