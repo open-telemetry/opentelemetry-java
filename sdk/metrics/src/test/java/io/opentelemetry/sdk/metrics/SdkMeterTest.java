@@ -24,9 +24,11 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
 
 @SuppressLogger(MetricStorageRegistry.class)
 @SuppressLogger(SdkMeter.class)
+@SuppressLogger(loggerName = "io.opentelemetry.usage")
 class SdkMeterTest {
 
   private static final Meter NOOP_METER = MeterProvider.noop().get("noop");
@@ -40,6 +42,10 @@ class SdkMeterTest {
   LogCapturer metricStorageLogs = LogCapturer.create().captureForType(MetricStorageRegistry.class);
 
   @RegisterExtension LogCapturer sdkMeterLogs = LogCapturer.create().captureForType(SdkMeter.class);
+
+  @RegisterExtension
+  LogCapturer apiUsageLogs =
+      LogCapturer.create().captureForLogger("io.opentelemetry.usage", Level.TRACE);
 
   private final Meter sdkMeter = testMeterProvider.get(getClass().getName());
 
@@ -93,9 +99,15 @@ class SdkMeterTest {
 
   @Test
   void checkValidInstrumentName_InvalidNameLogs() {
-    assertThat(checkValidInstrumentName("1")).isFalse();
-    sdkMeterLogs.assertContains(
-        "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, /, and start with a letter.");
+    sdkMeter.counterBuilder("1");
+    assertThat(
+            apiUsageLogs
+                .assertContains(
+                    event -> event.getLevel() == Level.TRACE,
+                    "Meter.counterBuilder(): Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, /, and start with a letter.")
+                .getThrowable())
+        .isNotNull();
+    assertThat(sdkMeterLogs.getEvents()).isEmpty();
   }
 
   @Test

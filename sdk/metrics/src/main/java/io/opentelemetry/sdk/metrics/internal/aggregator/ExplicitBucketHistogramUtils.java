@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nullable;
 
 /**
  * Utilities for interacting with explicit bucket histograms.
@@ -55,27 +57,42 @@ public final class ExplicitBucketHistogramUtils {
    * @throws IllegalArgumentException if boundaries are not specified correctly.
    */
   public static void validateBucketBoundaries(List<Double> boundaries) {
-    for (double v : boundaries) {
+    for (Double boundary : boundaries) {
+      Objects.requireNonNull(boundary);
+    }
+    String error = getBucketBoundariesValidationError(boundaries);
+    if (error != null) {
+      throw new IllegalArgumentException(error);
+    }
+  }
+
+  /** Returns a validation error, or {@code null} if the boundaries are valid. */
+  @Nullable
+  public static String getBucketBoundariesValidationError(List<Double> boundaries) {
+    for (Double v : boundaries) {
+      if (v == null) {
+        return "bucketBoundaries must not contain null";
+      }
       if (Double.isNaN(v)) {
-        throw new IllegalArgumentException("invalid bucket boundary: NaN");
+        return "invalid bucket boundary: NaN";
       }
     }
     for (int i = 1; i < boundaries.size(); ++i) {
       if (boundaries.get(i - 1) >= boundaries.get(i)) {
-        throw new IllegalArgumentException(
-            "Bucket boundaries must be in increasing order: "
-                + boundaries.get(i - 1)
-                + " >= "
-                + boundaries.get(i));
+        return "Bucket boundaries must be in increasing order: "
+            + boundaries.get(i - 1)
+            + " >= "
+            + boundaries.get(i);
       }
     }
     if (!boundaries.isEmpty()) {
       if (boundaries.get(0) == Double.NEGATIVE_INFINITY) {
-        throw new IllegalArgumentException("invalid bucket boundary: -Inf");
+        return "invalid bucket boundary: -Inf";
       }
       if (boundaries.get(boundaries.size() - 1) == Double.POSITIVE_INFINITY) {
-        throw new IllegalArgumentException("invalid bucket boundary: +Inf");
+        return "invalid bucket boundary: +Inf";
       }
     }
+    return null;
   }
 }

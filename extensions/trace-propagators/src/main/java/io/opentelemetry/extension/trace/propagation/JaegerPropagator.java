@@ -193,12 +193,7 @@ public final class JaegerPropagator implements TextMapPropagator {
         // the propagation value
         value = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException | IllegalArgumentException e) {
-        logger.fine(
-            "Error decoding '"
-                + PROPAGATION_HEADER
-                + "' with value "
-                + value
-                + ". Returning INVALID span context.");
+        logger.fine("Error decoding '" + PROPAGATION_HEADER + "'. Returning INVALID span context.");
         return SpanContext.getInvalid();
       }
     }
@@ -207,12 +202,7 @@ public final class JaegerPropagator implements TextMapPropagator {
     // large token array before the length check below.
     String[] parts = value.split(String.valueOf(PROPAGATION_HEADER_DELIMITER), 5);
     if (parts.length != 4) {
-      logger.fine(
-          "Invalid header '"
-              + PROPAGATION_HEADER
-              + "' with value "
-              + value
-              + ". Returning INVALID span context.");
+      logger.fine("Invalid header '" + PROPAGATION_HEADER + "'. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
@@ -221,9 +211,7 @@ public final class JaegerPropagator implements TextMapPropagator {
       logger.fine(
           "Invalid TraceId in Jaeger header: '"
               + PROPAGATION_HEADER
-              + "' with traceId "
-              + traceId
-              + ". Returning INVALID span context.");
+              + "'. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
@@ -398,22 +386,16 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
-    try {
-      String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
-      String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);
-      int flagsInt = Integer.parseInt(flags, 16);
-      return SpanContext.createFromRemoteParent(
-          otelTraceId,
-          otelSpanId,
-          ((flagsInt & 1) == 1) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
-          TraceState.getDefault());
-    } catch (RuntimeException e) {
-      logger.log(
-          Level.FINE,
-          "Error parsing '" + PROPAGATION_HEADER + "' header. Returning INVALID span context.",
-          e);
-      return SpanContext.getInvalid();
-    }
+    // Q: can you explain the code changes in this file besides avoiding logging the exception in
+    // this method, which was the original ask?
+    String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
+    String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);
+    int flagsInt = Integer.parseInt(flags, 16);
+    return SpanContext.createFromRemoteParent(
+        otelTraceId,
+        otelSpanId,
+        ((flagsInt & 1) == 1) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
+        TraceState.getDefault());
   }
 
   private static boolean isTraceIdValid(String value) {
@@ -425,6 +407,18 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   private static boolean isFlagsValid(String value) {
-    return !value.isEmpty() && value.length() <= MAX_FLAGS_LENGTH;
+    if (value.isEmpty() || value.length() > MAX_FLAGS_LENGTH) {
+      return false;
+    }
+    int start = value.charAt(0) == '+' || value.charAt(0) == '-' ? 1 : 0;
+    if (start == value.length()) {
+      return false;
+    }
+    for (int i = start; i < value.length(); i++) {
+      if (Character.digit(value.charAt(i), 16) == -1) {
+        return false;
+      }
+    }
+    return true;
   }
 }
