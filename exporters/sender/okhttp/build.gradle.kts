@@ -24,7 +24,7 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
-  implementation(project(":exporters:common"))
+  testImplementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
 
   annotationProcessor("com.google.auto.value:auto-value")

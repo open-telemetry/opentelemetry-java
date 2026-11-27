@@ -325,7 +325,8 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
       await()
           .untilAsserted(() -> {
-            LoggingEvent log = logs.assertContains("Server is UNAVAILABLE");
+            LoggingEvent log = logs.assertContains("クマ🐻 resource exhausted");
+            assertThat(log.getMessage()).contains("Server is UNAVAILABLE");
             assertThat(log.getLevel()).isEqualTo(Level.ERROR);
           });
     }

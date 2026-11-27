@@ -8,8 +8,12 @@ package io.opentelemetry.sdk.common.export;
 import java.io.OutputStream;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -114,5 +118,13 @@ public interface HttpSenderConfig {
   @Nullable
   default List<String> getEnabledProtocols() {
     return null;
+  }
+
+  /**
+   * The HTTP status codes that should be retried. Defaults to OTLP-defined retryable status codes
+   * (429, 502, 503, 504).
+   */
+  default Set<Integer> getRetryableHttpResponseCodes() {
+    return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(429, 502, 503, 504)));
   }
 }

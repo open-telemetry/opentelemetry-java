@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.impl.InstrumentationUtil;
-import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.HttpResponse;
@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.common.export.impl.HttpExportUtil;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +33,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -69,7 +70,7 @@ public final class OkHttpHttpSender implements HttpSender {
   @Nullable private final Compressor compressor;
   private final long maxResponseBodySize;
 
-  /** Create a sender. */
+  /** Create a sender with custom retryable status codes. */
   @SuppressWarnings("TooManyParameters")
   public OkHttpHttpSender(
       URI endpoint,
@@ -84,7 +85,8 @@ public final class OkHttpHttpSender implements HttpSender {
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
       long maxResponseBodySize,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      Set<Integer> retryableHttpResponseCodes) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -110,7 +112,9 @@ public final class OkHttpHttpSender implements HttpSender {
     if (retryPolicy != null) {
       builder.addInterceptor(
           new RetryInterceptor(
-              retryPolicy, OkHttpHttpSender::isRetryable, OkHttpHttpSender::retryDelayNanos));
+              retryPolicy,
+              response -> retryableHttpResponseCodes.contains(response.code()),
+              OkHttpHttpSender::retryDelayNanos));
     }
 
     boolean isPlainHttp = endpoint.getScheme().equals("http");
@@ -118,15 +122,8 @@ public final class OkHttpHttpSender implements HttpSender {
       builder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
     } else {
       if (sslContext != null) {
-        X509TrustManager effectiveTrustManager = trustManager;
-        if (effectiveTrustManager == null) {
-          try {
-            effectiveTrustManager = TlsUtil.defaultTrustManager();
-          } catch (SSLException e) {
-            throw new IllegalStateException("Unable to initialize default trust manager", e);
-          }
-        }
-        builder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
+        requireNonNull(trustManager, "trustManager must be non-null when sslContext is non-null");
+        builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
       }
       if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
         TlsVersion[] versions =
@@ -149,7 +146,7 @@ public final class OkHttpHttpSender implements HttpSender {
 
   // Visible for testing
   static OptionalLong retryDelayNanos(Response response) {
-    return RetryUtil.retryAfterNanos(response.header("Retry-After"));
+    return HttpExportUtil.retryAfterNanos(response.header("Retry-After"));
   }
 
   @Override
@@ -274,10 +271,6 @@ public final class OkHttpHttpSender implements HttpSender {
     }
 
     return CompletableResultCode.ofSuccess();
-  }
-
-  static boolean isRetryable(Response response) {
-    return RetryUtil.retryableHttpResponseCodes().contains(response.code());
   }
 
   private static class RequestBodyImpl extends RequestBody {

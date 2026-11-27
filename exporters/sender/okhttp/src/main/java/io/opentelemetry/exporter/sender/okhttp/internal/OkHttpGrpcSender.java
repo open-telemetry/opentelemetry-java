@@ -23,9 +23,9 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.impl.InstrumentationUtil;
-import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -92,8 +92,9 @@ public final class OkHttpGrpcSender implements GrpcSender {
   private final long maxResponseBodySize;
   @Nullable private final RetryPolicy retryPolicy;
   private final long timeoutNanos;
+  private final Set<GrpcStatusCode> retryableGrpcStatusCodes;
 
-  /** Creates a new {@link OkHttpGrpcSender}. */
+  /** Creates a new {@link OkHttpGrpcSender} with custom retryable status codes. */
   @SuppressWarnings("TooManyParameters")
   public OkHttpGrpcSender(
       String endpoint,
@@ -106,7 +107,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
       long maxResponseBodySize,
-      @Nullable List<String> enabledProtocols) {
+      @Nullable List<String> enabledProtocols,
+      Set<GrpcStatusCode> retryableGrpcStatusCodes) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
     this.timeoutNanos = TimeUnit.MILLISECONDS.toNanos(callTimeoutMillis);
@@ -132,15 +134,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
     } else {
       clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
       if (sslContext != null) {
-        X509TrustManager effectiveTrustManager = trustManager;
-        if (effectiveTrustManager == null) {
-          try {
-            effectiveTrustManager = TlsUtil.defaultTrustManager();
-          } catch (SSLException e) {
-            throw new IllegalStateException("Unable to initialize default trust manager", e);
-          }
-        }
-        clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
+        requireNonNull(trustManager, "trustManager must be non-null when sslContext is non-null");
+        clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
       }
       if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
         TlsVersion[] versions =
@@ -159,6 +154,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
     this.url = HttpUrl.get(endpoint);
     this.maxResponseBodySize = maxResponseBodySize;
     this.retryPolicy = retryPolicy;
+    this.retryableGrpcStatusCodes = retryableGrpcStatusCodes;
   }
 
   @Override
@@ -492,9 +488,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
   }
 
   /** Whether a resolved response is retriable or not. */
-  static boolean isRetryable(GrpcResponse response) {
-    return RetryUtil.retryableGrpcStatusCodes()
-        .contains(Integer.toString(response.getStatusCode().getValue()));
+  boolean isRetryable(GrpcResponse response) {
+    return retryableGrpcStatusCodes.contains(response.getStatusCode());
   }
 
   // From grpc-java

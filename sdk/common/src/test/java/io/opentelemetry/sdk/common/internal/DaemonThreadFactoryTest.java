@@ -6,57 +6,25 @@
 package io.opentelemetry.sdk.common.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Testing deprecated code
 class DaemonThreadFactoryTest {
 
   @Test
-  void verifyUncaughtExceptions()
-      throws ExecutionException, InterruptedException, TimeoutException {
-    Thread.UncaughtExceptionHandler defaultHandler = mock();
-    ThreadFactory delegateFactory =
-        r -> {
-          Thread thread = Executors.defaultThreadFactory().newThread(r);
-          thread.setUncaughtExceptionHandler(defaultHandler);
-          return thread;
-        };
-    ExecutorService service =
-        Executors.newSingleThreadExecutor(new DaemonThreadFactory("test", delegateFactory));
-    Callable<Boolean> callable =
-        () -> {
-          Thread.UncaughtExceptionHandler uncaughtExceptionHandler =
-              Thread.currentThread().getUncaughtExceptionHandler();
+  void newThread() {
+    ThreadFactory factory1 = new DaemonThreadFactory("test-internal-1");
+    Thread thread1 = factory1.newThread(() -> {});
+    assertThat(thread1.isDaemon()).isTrue();
+    assertThat(thread1.getName()).startsWith("test-internal-1-");
 
-          assertThat(uncaughtExceptionHandler)
-              .isInstanceOf(DaemonThreadFactory.ManagedUncaughtExceptionHandler.class);
-
-          Thread threadMock = mock();
-
-          // Verify interrupted exception
-          uncaughtExceptionHandler.uncaughtException(threadMock, new InterruptedException());
-          verify(threadMock).interrupt();
-          verifyNoInteractions(defaultHandler);
-
-          // Verify delegate exception
-          clearInvocations(threadMock, defaultHandler);
-          IllegalStateException e = new IllegalStateException();
-          uncaughtExceptionHandler.uncaughtException(threadMock, e);
-          verify(defaultHandler).uncaughtException(threadMock, e);
-          return true;
-        };
-
-    assertThat(service.submit(callable).get(5, TimeUnit.SECONDS)).isTrue();
+    ThreadFactory factory2 =
+        new DaemonThreadFactory("test-internal-2", Executors.defaultThreadFactory());
+    Thread thread2 = factory2.newThread(() -> {});
+    assertThat(thread2.isDaemon()).isTrue();
+    assertThat(thread2.getName()).startsWith("test-internal-2-");
   }
 }

@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
-import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.impl.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -66,7 +66,8 @@ public final class JaegerRemoteSampler implements Sampler {
     this.endpoint = endpoint;
     this.pollingIntervalMs = pollingIntervalMs;
     this.sampler = initialSampler;
-    pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
+    pollExecutor =
+        Executors.newScheduledThreadPool(1, DaemonThreadFactory.create(WORKER_THREAD_NAME));
     pollFuture =
         pollExecutor.scheduleWithFixedDelay(
             this::getAndUpdateSampler, 0, pollingIntervalMs, TimeUnit.MILLISECONDS);

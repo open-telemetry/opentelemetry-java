@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
@@ -108,5 +109,29 @@ class TlsConfigHelperTest {
     assertThatThrownBy(() -> helper.setSslContext(sslContext, trustManager))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("keyManager has been previously configured");
+  }
+
+  @Test
+  void getTrustManager_notConfigured_resolvesDefaultTrustManager() {
+    assertThat(helper.getTrustManager()).isNotNull();
+    assertThat(helper.getSslContext()).isNotNull();
+  }
+
+  @Test
+  void gettersDoNotMutateState_allowsSubsequentConfiguration() throws Exception {
+    helper.getSslContext();
+    helper.getTrustManager();
+
+    TlsConfigHelper certCopy = helper.copy();
+    assertThatCode(() -> certCopy.setTrustManagerFromCerts(serverTls.certificate().getEncoded()))
+        .doesNotThrowAnyException();
+    assertThat(certCopy.getTrustManager()).isNotNull();
+
+    TlsConfigHelper keyCopy = helper.copy();
+    assertThatCode(() ->
+            keyCopy.setKeyManagerFromCerts(
+                serverTls.privateKey().getEncoded(), serverTls.certificate().getEncoded()))
+        .doesNotThrowAnyException();
+    assertThat(keyCopy.getKeyManager()).isNotNull();
   }
 }

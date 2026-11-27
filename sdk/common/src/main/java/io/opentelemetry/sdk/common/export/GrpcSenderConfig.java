@@ -8,8 +8,11 @@ package io.opentelemetry.sdk.common.export;
 import java.io.OutputStream;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -116,5 +119,20 @@ public interface GrpcSenderConfig {
   @Nullable
   default List<String> getEnabledProtocols() {
     return null;
+  }
+
+  /**
+   * The gRPC status codes that should be retried. Defaults to OTLP-defined retryable status codes.
+   */
+  default Set<GrpcStatusCode> getRetryableGrpcStatusCodes() {
+    return Collections.unmodifiableSet(
+        EnumSet.of(
+            GrpcStatusCode.CANCELLED,
+            GrpcStatusCode.DEADLINE_EXCEEDED,
+            GrpcStatusCode.RESOURCE_EXHAUSTED,
+            GrpcStatusCode.ABORTED,
+            GrpcStatusCode.OUT_OF_RANGE,
+            GrpcStatusCode.UNAVAILABLE,
+            GrpcStatusCode.DATA_LOSS));
   }
 }

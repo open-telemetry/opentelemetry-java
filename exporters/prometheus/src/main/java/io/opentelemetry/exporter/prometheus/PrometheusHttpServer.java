@@ -14,7 +14,7 @@ import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
-import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.impl.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -95,7 +95,7 @@ public final class PrometheusHttpServer implements MetricReader {
               0L,
               TimeUnit.MILLISECONDS,
               new LinkedBlockingQueue<>(),
-              new DaemonThreadFactory("prometheus-http-server"));
+              DaemonThreadFactory.create("prometheus-http-server"));
     }
     HTTPServer.Builder httpServerBuilder = HTTPServer.builder();
     if (translationStrategy != TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES) {

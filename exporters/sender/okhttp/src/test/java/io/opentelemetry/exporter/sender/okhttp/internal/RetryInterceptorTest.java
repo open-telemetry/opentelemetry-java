@@ -222,7 +222,7 @@ class RetryInterceptorTest {
                 .setMaxBackoff(Duration.ofSeconds(1))
                 .setMaxAttempts(2)
                 .build(),
-            OkHttpHttpSender::isRetryable,
+            r -> !r.isSuccessful(),
             OkHttpHttpSender::retryDelayNanos,
             retryExceptionPredicate,
             sleeper,
@@ -352,9 +352,7 @@ class RetryInterceptorTest {
   void isRetryableExceptionDefaultBehaviour() {
     RetryInterceptor retryInterceptor =
         new RetryInterceptor(
-            RetryPolicy.getDefault(),
-            OkHttpHttpSender::isRetryable,
-            response -> OptionalLong.empty());
+            RetryPolicy.getDefault(), r -> false, response -> OptionalLong.empty());
     assertThat(
             retryInterceptor.shouldRetryOnException(
                 new SocketTimeoutException("Connect timed out")))
@@ -370,7 +368,7 @@ class RetryInterceptorTest {
             RetryPolicy.builder()
                 .setRetryExceptionPredicate((IOException e) -> e.getMessage().equals("retry"))
                 .build(),
-            OkHttpHttpSender::isRetryable,
+            r -> false,
             response -> OptionalLong.empty());
 
     assertThat(retryInterceptor.shouldRetryOnException(new IOException("some message"))).isFalse();

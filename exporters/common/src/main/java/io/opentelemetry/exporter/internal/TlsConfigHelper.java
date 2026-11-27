@@ -115,9 +115,15 @@ public class TlsConfigHelper {
   }
 
   /** Get the {@link X509TrustManager}. */
-  @Nullable
   public X509TrustManager getTrustManager() {
-    return trustManager;
+    if (trustManager != null) {
+      return trustManager;
+    }
+    try {
+      return TlsUtil.defaultTrustManager();
+    } catch (SSLException e) {
+      throw new IllegalStateException("Could not build default TrustManager.", e);
+    }
   }
 
   /** Get the {@link SSLContext}. */
@@ -129,9 +135,10 @@ public class TlsConfigHelper {
 
     try {
       SSLContext sslContext = SSLContext.getInstance("TLS");
+      X509TrustManager resolvedTrustManager = getTrustManager();
       sslContext.init(
           keyManager == null ? null : new KeyManager[] {keyManager},
-          trustManager == null ? null : new TrustManager[] {trustManager},
+          new TrustManager[] {resolvedTrustManager},
           null);
       return sslContext;
     } catch (NoSuchAlgorithmException | KeyManagementException e) {
