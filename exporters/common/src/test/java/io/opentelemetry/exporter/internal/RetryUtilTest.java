@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -58,6 +59,31 @@ class RetryUtilTest {
             ZonedDateTime.ofInstant(NOW.minusSeconds(1), ZoneOffset.UTC)
                 .format(DateTimeFormatter.RFC_1123_DATE_TIME),
             NOW,
-            0L));
+            0L),
+        argumentSet(
+            "RFC 850 date", "Friday, 17-Jul-26 00:00:45 GMT", NOW, TimeUnit.SECONDS.toNanos(45)),
+        argumentSet(
+            "RFC 850 date at the 50-year limit",
+            "Friday, 17-Jul-76 00:00:00 GMT",
+            NOW,
+            Duration.between(NOW, NOW.atOffset(ZoneOffset.UTC).plusYears(50)).toNanos()),
+        argumentSet(
+            "RFC 850 date beyond the 50-year limit resolves to the past",
+            "Saturday, 17-Jul-76 00:00:01 GMT",
+            NOW,
+            0L),
+        argumentSet(
+            "RFC 850 date in the next century",
+            "Friday, 01-Jan-00 00:00:00 GMT",
+            Instant.parse("2099-12-31T23:59:59Z"),
+            TimeUnit.SECONDS.toNanos(1)),
+        argumentSet("asctime date", "Fri Jul 17 00:00:45 2026", NOW, TimeUnit.SECONDS.toNanos(45)),
+        argumentSet(
+            "asctime date with a space-padded day",
+            "Tue Jul  7 00:00:45 2026",
+            NOW.minusSeconds(TimeUnit.DAYS.toSeconds(10)),
+            TimeUnit.SECONDS.toNanos(45)),
+        argumentSet("invalid RFC 850 date", "Friday, 31-Feb-26 00:00:45 GMT", NOW, null),
+        argumentSet("invalid asctime date", "Fri Jul 17 24:00:00 2026", NOW, null));
   }
 }
