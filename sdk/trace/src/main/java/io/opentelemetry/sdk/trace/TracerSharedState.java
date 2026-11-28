@@ -64,10 +64,7 @@ final class TracerSharedState {
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.tracerInstrumentation = tracerInstrumentation;
     this.contextScopedAttributesFilter = contextScopedAttributesFilter;
-    // Note: This relies on SpanProcessor.composite(..) returning NoopSpanProcessor unwrapped
-    // when given an empty list. If SpanProcessor.composite(..) behavior changes, this instanceof
-    // check must change too
-    this.noSpanProcessor = activeSpanProcessor instanceof NoopSpanProcessor;
+    this.noSpanProcessor = spanProcessors.isEmpty();
   }
 
   Clock getClock() {

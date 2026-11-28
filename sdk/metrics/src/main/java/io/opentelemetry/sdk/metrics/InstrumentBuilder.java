@@ -128,4 +128,8 @@ final class InstrumentBuilder {
   void setExplicitBucketBoundaries(List<Double> bucketBoundaries) {
     adviceBuilder.setExplicitBucketBoundaries(bucketBoundaries);
   }
+
+  void setAdviceOptIn(boolean optIn) {
+    adviceBuilder.setOptIn(optIn);
+  }
 }

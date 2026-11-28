@@ -39,8 +39,6 @@ import java.util.logging.Logger;
  */
 public final class SimpleLogRecordProcessor implements LogRecordProcessor {
 
-  private static final ComponentId COMPONENT_ID = ComponentId.generateLazy("simple_log_processor");
-
   private static final Logger logger = Logger.getLogger(SimpleLogRecordProcessor.class.getName());
 
   private final LogRecordExporter logRecordExporter;
@@ -81,7 +79,9 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
     this.logRecordExporter = requireNonNull(logRecordExporter, "logRecordExporter");
     logProcessorInstrumentation =
         LogRecordProcessorInstrumentation.get(
-            InternalTelemetryVersion.LATEST, COMPONENT_ID, meterProvider);
+            InternalTelemetryVersion.LATEST,
+            ComponentId.generateLazy("simple_log_processor"),
+            meterProvider);
   }
 
   @Override

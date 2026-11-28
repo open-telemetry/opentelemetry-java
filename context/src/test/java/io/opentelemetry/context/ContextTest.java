@@ -946,7 +946,8 @@ class ContextTest {
     assertThat(wrapped).isSameAs(executor);
   }
 
-  @SuppressWarnings("HashCodeToString")
+  // Identity equality with a constant hash code intentionally creates collisions.
+  @SuppressWarnings({"EqualsHashCode", "HashCodeToString"})
   private static class HashCollidingKey implements ContextKey<String> {
     @Override
     public int hashCode() {

@@ -205,11 +205,12 @@ unambiguously.
 
 ### Runtime / instrumentation-time boundaries (Span methods, metric recordings, log builders)
 
-Do **not** throw. Log the violation via
-[`ApiUsageLogger`](../../common/src/main/java/io/opentelemetry/common/impl/ApiUsageLogger.java) —
-which logs at `FINEST` with a stack trace so the offending call site is visible — then degrade
-gracefully (return `this`, an empty/noop result, or substitute a safe default such as
-`Attributes.empty()` or `Context.current()`):
+Do **not** throw. Report the violation via `ApiUsageLogger`, then degrade gracefully (return `this`,
+an empty/noop result, or substitute a safe default such as `Attributes.empty()` or
+`Context.current()`). See [API usage diagnostics](logging-patterns.md#api-usage-diagnostics) for
+logging details.
+
+For example:
 
 ```java
 @Override
@@ -229,12 +230,8 @@ tolerate null.
 Check non-`@Nullable` reference arguments in declaration order, logging each null once unless an
 early return ends the call.
 
-The class and method arguments identify the problem immediately in the log message without requiring
-stack trace analysis. Use `ApiUsageLogger.log(...)` directly when the message is not simply "X is
-null" (e.g. `"spanIdBytes is null or too short"`). `FINEST` is silent by default, so there is no
-production noise. To investigate misuse, enable the logger named `io.opentelemetry.usage` at
-`FINEST` in development, or periodically in staging/production. Check each argument once, at the
-first public entry point — internal methods called by that entry point do not need to re-validate.
+Check each argument once, at the first public entry point. Internal methods called by that entry
+point do not need to re-validate.
 
 ### SDK extension interfaces and SPIs
 

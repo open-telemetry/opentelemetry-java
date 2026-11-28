@@ -28,7 +28,7 @@ public abstract class Advice {
   }
 
   public static AdviceBuilder builder() {
-    return new AutoValue_Advice.Builder();
+    return new AutoValue_Advice.Builder().setOptIn(false);
   }
 
   Advice() {}
@@ -38,6 +38,8 @@ public abstract class Advice {
 
   @Nullable
   public abstract List<AttributeKey<?>> getAttributes();
+
+  public abstract boolean isOptIn();
 
   public boolean hasAttributes() {
     return getAttributes() != null;
@@ -81,6 +83,17 @@ public abstract class Advice {
         attributes = Collections.unmodifiableList(new ArrayList<>(attributes));
       }
       return attributes(attributes);
+    }
+
+    abstract AdviceBuilder optIn(boolean optIn);
+
+    /**
+     * Sets whether the instrument requires explicit opt-in via a view to produce metric data.
+     *
+     * @param optIn whether the instrument is opt-in.
+     */
+    public AdviceBuilder setOptIn(boolean optIn) {
+      return optIn(optIn);
     }
 
     public abstract Advice build();

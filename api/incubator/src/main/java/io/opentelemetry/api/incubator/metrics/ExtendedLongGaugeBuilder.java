@@ -19,4 +19,12 @@ public interface ExtendedLongGaugeBuilder extends LongGaugeBuilder {
   default ExtendedLongGaugeBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
     return this;
   }
+
+  /**
+   * Specify the opt-in advice, which indicates whether this gauge should be disabled by default and
+   * require explicit opt-in via a view to produce metric data.
+   */
+  default ExtendedLongGaugeBuilder setOptInAdvice(boolean optIn) {
+    return this;
+  }
 }
